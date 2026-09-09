@@ -140,3 +140,78 @@ class TestOldArchivesStillParse:
         detail = detail_from_html(archive_html("68819631"), "68819631")
         assert detail.price == 102199 and detail.mileage_km == 30244
         assert detail.year == 2022
+
+
+class TestHostileValueShapes:
+    """The front-end state nests numbers and places inside objects and lists."""
+
+    @pytest.mark.parametrize("value,expected", [
+        (134998, 134998),
+        ("134,998", 134998),
+        ("$102,199", 102199),
+        (102199.0, 102199),
+        ({"amount": 134998, "currency": "CAD"}, 134998),
+        ({"consumerPrice": {"amount": 98995}}, 98995),
+        ([114910, 114900, 114912], 114910),
+        ({"nothing": "here"}, None),
+        ([], None), (None, None), (True, None), (0, None), ("", None),
+    ])
+    def test_numbers_are_unwrapped_not_stringified(self, value, expected):
+        from autotrader.parser import _to_int
+        assert _to_int(value) == expected
+
+    def test_a_list_of_prices_does_not_become_one_absurd_number(self):
+        """str([114910, 114900, 114912]) once produced $114,910,114,900,114,912."""
+        from autotrader.parser import _to_int
+        assert _to_int([114910, 114900, 114912]) == 114910
+
+    def test_deeply_nested_junk_terminates(self):
+        from autotrader.parser import _to_int
+        nest = {"amount": {"amount": {"amount": {"amount": {"amount": {"amount": 5}}}}}}
+        assert _to_int(nest) in (5, None)   # bounded, and never raises
+
+    @pytest.mark.parametrize("value,city,province", [
+        ({"countryCode": "CA", "provinceCode": "AB", "city": "CALGARY",
+          "street": "34 Heritage Meadows Rd. SE"}, "Calgary", "AB"),
+        ({"addressLocality": "MONTRÉAL", "addressRegion": "QC"}, "Montréal", "QC"),
+        ("Toronto", "Toronto", ""),
+        (None, "", ""), (42, "", ""), ({}, "", ""),
+    ])
+    def test_places_are_unwrapped_not_stringified(self, value, city, province):
+        from autotrader.parser import _place_from
+        assert _place_from(value) == (city, province)
+
+    def test_a_location_object_never_reaches_a_notification(self):
+        """A raw dict once appeared verbatim in the alert text."""
+        from autotrader.parser import _place_from
+        rendered = _place_from({"countryCode": "CA", "provinceCode": "AB",
+                                "zip": "T2H3C1", "city": "CALGARY"})
+        assert "{" not in "".join(rendered)
+        assert "countryCode" not in "".join(rendered)
+
+
+class TestImplausibleValuesAreDropped:
+    def _listing(self, price=None, mileage=None):
+        from autotrader.parser import _listing_from_json
+        node = {"@type": ["Car", "Product"], "name": "BMW M5",
+                "url": OFFER, "offers": {"price": price, "priceCurrency": "CAD"}}
+        if mileage is not None:
+            node["mileageFromOdometer"] = {"value": mileage}
+        return _listing_from_json(node, BASE)
+
+    @pytest.mark.parametrize("price", [1, 499, 134_998_134_998, 114_910_114_900_114_912])
+    def test_an_impossible_price_is_discarded(self, price):
+        assert self._listing(price=price).price is None
+
+    @pytest.mark.parametrize("price", [500, 77_998, 125_669, 4_999_999])
+    def test_a_plausible_price_is_kept(self, price):
+        assert self._listing(price=price).price == price
+
+    def test_an_impossible_odometer_is_discarded(self):
+        assert self._listing(price=99000, mileage=5_121_400).mileage_km is None
+
+    def test_dropping_a_bad_price_does_not_drop_the_listing(self):
+        """A car with an unreadable price is still a car worth telling you about."""
+        listing = self._listing(price=134_998_134_998)
+        assert listing is not None and listing.id == UUID
+        assert listing.price_text == "Price not listed"

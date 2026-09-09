@@ -61,7 +61,8 @@ jobs:
         env:
           SEARCH_URL: ${{ secrets.SEARCH_URL }}
         run: |
-          python -m autotrader setup --non-interactive --no-colour | tee setup.log
+          set -o pipefail
+          python -m autotrader --no-colour setup --non-interactive | tee setup.log
           {
             echo "## Setup"
             echo '```'
@@ -88,7 +89,8 @@ jobs:
           TWILIO_FROM:         ${{ secrets.TWILIO_FROM }}
           TWILIO_TO:           ${{ secrets.TWILIO_TO }}
         run: |
-          python -m autotrader run ${{ inputs.dry_run && '--dry-run' || '' }} | tee run.log
+          set -o pipefail
+          python -m autotrader --no-colour run ${{ inputs.dry_run && '--dry-run' || '' }} | tee run.log
         # The bot exits non-zero when a search failed. State is already saved by
         # then, so the commit below must still happen; the job is failed at the
         # end instead, after the results are safely stored.

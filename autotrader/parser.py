@@ -93,13 +93,40 @@ class ParseResult:
 # ---------------------------------------------------------------- helpers
 
 
-def _to_int(value: Any) -> int | None:
-    """Parse '102,199', '$102 199', 102199.0 -> 102199.  Returns None on junk."""
-    if value is None or isinstance(value, bool):
+# Keys a nested price or measurement object hides its number under.
+_NUMERIC_KEYS = ("amount", "value", "price", "consumerPrice", "raw", "number",
+                 "displayValue", "amountInCents")
+
+
+def _to_int(value: Any, _depth: int = 0) -> int | None:
+    """Parse '102,199', 102199.0, {'amount': 102199} -> 102199.
+
+    Containers are unwrapped rather than stringified. Blindly calling str() on
+    a list of three prices produced "$114,910,114,900,114,912" - three real
+    figures concatenated into one absurd number - which is exactly the kind of
+    garbage the first-run check exists to catch.
+    """
+    if value is None or isinstance(value, bool) or _depth > 4:
         return None
     if isinstance(value, (int, float)):
         return int(value) if value > 0 else None
-    text = re.sub(r"[^\d.]", "", str(value))
+    if isinstance(value, dict):
+        for key in _NUMERIC_KEYS:
+            for variant in (key, key[0].upper() + key[1:]):
+                if variant in value:
+                    found = _to_int(value[variant], _depth + 1)
+                    if found is not None:
+                        return found
+        return None
+    if isinstance(value, (list, tuple, set)):
+        for item in value:
+            found = _to_int(item, _depth + 1)
+            if found is not None:
+                return found
+        return None
+    if not isinstance(value, str):
+        return None
+    text = re.sub(r"[^\d.]", "", value)
     if not text:
         return None
     try:
@@ -107,6 +134,24 @@ def _to_int(value: Any) -> int | None:
     except ValueError:
         return None
     return number if number > 0 else None
+
+
+def _place_from(value: Any) -> tuple[str, str]:
+    """City and province from whatever shape the payload uses.
+
+    The front-end state carries a location object
+    ({'city': 'CALGARY', 'provinceCode': 'AB', 'zip': ..., 'street': ...});
+    stringifying that put a raw Python dict in the notification.
+    """
+    if isinstance(value, dict):
+        city = (value.get("city") or value.get("addressLocality")
+                or value.get("name") or value.get("locality") or "")
+        province = (value.get("provinceCode") or value.get("addressRegion")
+                    or value.get("province") or value.get("region") or "")
+        return _titlecase_place(str(city)), _clean(str(province))[:24]
+    if isinstance(value, str):
+        return _titlecase_place(value), ""
+    return "", ""
 
 
 def _clean(text: str) -> str:
@@ -260,6 +305,17 @@ def _listing_from_json(node: dict, base_url: str) -> Listing | None:
     if isinstance(make, dict):
         make = make.get("name")
 
+    # A figure outside these bounds is a parsing accident, not a bargain.
+    if price is not None and not (500 <= price <= 5_000_000):
+        price = None
+    if mileage is not None and not (0 <= mileage <= 2_000_000):
+        mileage = None
+
+    json_city, json_region = _place_from(_first_key(node, _JSON_KEYS["location"]))
+    if not json_city:
+        json_city, json_region2 = _place_from(node.get("address"))
+        json_region = json_region or json_region2
+
     return Listing(
         id=lid,
         url=canonical_listing_url(url),
@@ -273,9 +329,10 @@ def _listing_from_json(node: dict, base_url: str) -> Listing | None:
         card_price=price,
         currency=currency if isinstance(currency, str) else "CAD",
         mileage_km=mileage,
-        location=_titlecase_place(city) or _clean(_first_key(node, _JSON_KEYS["location"]) or ""),
-        province=_clean(region) or _clean(_first_key(node, _JSON_KEYS["province"]) or ""),
-        seller=_clean(seller_name) or _clean(_first_key(node, _JSON_KEYS["seller"]) or ""),
+        location=_titlecase_place(city) or json_city,
+        province=_clean(region) or json_region
+                 or _place_from(_first_key(node, _JSON_KEYS["province"]))[0],
+        seller=_clean(seller_name) or _clean(str(_first_key(node, _JSON_KEYS["seller"]) or ""))[:80],
         body=_clean(node.get("bodyType") or node.get("body") or ""),
         color=_clean(node.get("color") or ""),
         transmission=_clean(node.get("vehicleTransmission") or ""),

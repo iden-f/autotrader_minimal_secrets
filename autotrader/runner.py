@@ -312,6 +312,16 @@ def run(cfg: Config | None = None, state: State | None = None, *,
             enrich_listings(disputed + unknown, cfg, fetcher, report)
 
             if report.first_run and not assessments[-1].trustworthy:
+                # Keep the evidence: a parse that produced nonsense is as hard
+                # to fix from a log line as one that produced nothing.
+                if first_page is not None and not report.diagnostics:
+                    try:
+                        data = diagnose.capture(
+                            first_page.url, first_page.text, first_page.status,
+                            first_page.elapsed_ms, search.name)
+                        report.diagnostics.append(str(diagnose.write(data, search.id)))
+                    except Exception as exc:  # noqa: BLE001
+                        log.warning("could not capture the page: %s", exc)
                 # The parser has never been shown to work against the live
                 # site, and this parse looks wrong. Recording it would fill
                 # state with debris and archive garbage, and every one of those
