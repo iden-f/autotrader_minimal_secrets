@@ -49,11 +49,5 @@ Pick a new one in the dashboard, or:
 python -m autotrader setup --new-topic
 ```
 
-## See everything at once
-
-The dashboard lists every car found, with price history:
-
-<https://iden-f.github.io/autotrader_minimal_secrets/>
-
 *This file is written by the bot. Editing it changes nothing — the topic lives
 in `config.json`.*

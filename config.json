@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "legacy_search_url_adopted": false,
+  "legacy_search_url_adopted": true,
   "searches": [
     {
       "id": "bmw-m5-canada-wide-77b629",
@@ -8,6 +8,13 @@
       "url": "https://www.autotrader.ca/cars/bmw/m5/?rcp=15&rcs=0&srt=35&prx=-2&loc=M5V&hprc=True&wcp=True&iNC=1&sts=New-Used&inMarket=advancedSearch",
       "enabled": true,
       "notes": "Seeded from the search link you pasted when this rebuild started. Edit or remove it in the dashboard's Searches tab, or with 'python -m autotrader remove <id>'."
+    },
+    {
+      "id": "2021-2023-bmw-m5-310324",
+      "name": "2021-2023 BMW M5",
+      "url": "https://www.autotrader.ca/cars/bmw/m5/?rcp=25&rcs=0&srt=9&yRng=2021%2C2023&prx=-1&loc=V6N+3B5&hprc=False&wcp=False&inMarket=advancedSearch",
+      "enabled": true,
+      "notes": "Imported from the SEARCH_URL repository secret. That secret is no longer read - you can delete it."
     }
   ],
   "filters": {

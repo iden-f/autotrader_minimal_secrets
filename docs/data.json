@@ -1,10 +1,11 @@
 {
- "generated_at": "2026-09-09T20:55:11+00:00",
+ "generated_at": "2026-09-09T20:55:29+00:00",
  "notify": {
   "ntfy_topic": "autotrader-2q592ak9gnx7sqrere5r",
   "ntfy_url": "https://ntfy.sh/autotrader-2q592ak9gnx7sqrere5r",
   "active": [
-   "ntfy"
+   "ntfy",
+   "email"
   ]
  },
  "version": 2,
@@ -2206,11 +2207,48 @@
     ]
    },
    "health": {
-    "last_ok": null,
-    "last_error": null,
+    "last_ok": "2026-09-09T20:55:25+00:00",
+    "last_error": "HTTP 200 but zero listings parsed",
     "last_count": 0,
-    "last_strategy": null,
-    "consecutive_failures": 0
+    "last_strategy": "none",
+    "consecutive_failures": 1
+   },
+   "active_count": 0
+  },
+  {
+   "id": "2021-2023-bmw-m5-310324",
+   "name": "2021-2023 BMW M5",
+   "url": "https://www.autotrader.ca/cars/bmw/m5/?rcp=25&rcs=0&srt=9&yRng=2021%2C2023&prx=-1&loc=V6N+3B5&hprc=False&wcp=False&inMarket=advancedSearch",
+   "enabled": true,
+   "notes": "Imported from the SEARCH_URL repository secret. That secret is no longer read - you can delete it.",
+   "summary": {
+    "make": "BMW",
+    "model": "M5",
+    "year_min": 2021,
+    "year_max": 2023,
+    "price_min": null,
+    "price_max": null,
+    "mileage_max": null,
+    "location": "V6N 3B5",
+    "radius_km": null,
+    "province": null,
+    "body": null,
+    "condition": null,
+    "keywords": null,
+    "per_page": 25,
+    "valid": true,
+    "problems": [],
+    "title": "2021-2023 BMW M5",
+    "chips": [
+     "near V6N 3B5"
+    ]
+   },
+   "health": {
+    "last_ok": "2026-09-09T20:55:28+00:00",
+    "last_error": "HTTP 200 but zero listings parsed",
+    "last_count": 0,
+    "last_strategy": "none",
+    "consecutive_failures": 1
    },
    "active_count": 0
   }
@@ -2275,11 +2313,8 @@
     "GMAIL_APP_PASSWORD"
    ],
    "setting": "auto",
-   "missing": [
-    "GMAIL_USER",
-    "GMAIL_APP_PASSWORD"
-   ],
-   "active": false
+   "missing": [],
+   "active": true
   },
   "webhook": {
    "label": "Custom webhook",
@@ -2303,12 +2338,7 @@
     "TWILIO_TO"
    ],
    "setting": false,
-   "missing": [
-    "TWILIO_SID",
-    "TWILIO_TOKEN",
-    "TWILIO_FROM",
-    "TWILIO_TO"
-   ],
+   "missing": [],
    "active": false
   }
  },
@@ -2371,8 +2401,84 @@
    "help": "Costs money per message and per phone number. Telegram or ntfy give you the same phone alert for free."
   }
  },
- "runs": [],
- "last_run": null,
+ "runs": [
+  {
+   "at": "2026-09-09T20:55:29+00:00",
+   "ok": false,
+   "duration_s": 4.7,
+   "searches_run": 2,
+   "searches_failed": 0,
+   "listings_seen": 0,
+   "new": 0,
+   "price_drops": 0,
+   "price_rises": 0,
+   "removed": 0,
+   "filtered_out": 0,
+   "requests_made": 2,
+   "budget_exhausted": false,
+   "empty_parses": [
+    "BMW M5 (Canada-wide)",
+    "2021-2023 BMW M5"
+   ],
+   "first_run": true,
+   "validation_ok": false,
+   "notified": [],
+   "errors": [
+    "BMW M5 (Canada-wide): the page loaded (none) but no listings could be read, and the site did not say the search was empty. Run: python -m autotrader doctor --live",
+    "BMW M5 (Canada-wide): first-run parse check failed - No listings were read from a page that loaded successfully, and the site did not say the search was empty. Every parser strategy has probably fallen behind AutoTrader's markup.",
+    "2021-2023 BMW M5: the page loaded (none) but no listings could be read, and the site did not say the search was empty. Run: python -m autotrader doctor --live",
+    "2021-2023 BMW M5: first-run parse check failed - No listings were read from a page that loaded successfully, and the site did not say the search was empty. Every parser strategy has probably fallen behind AutoTrader's markup."
+   ],
+   "warnings": [
+    "setup: adopted the SEARCH_URL secret into config.json",
+    "sent the first-run check: ntfy: sent - text, email: FAILED - (535, b'5.7.8 Username and Password not accepted. For more information, go to\\n5.7.8  https://support.google.com/mail/?p=BadCredentials 5a478bee46e88-3397d6d1becsm8843382eec.22 - gsmtp')"
+   ],
+   "strategies": {
+    "bmw-m5-canada-wide-77b629": "none",
+    "2021-2023-bmw-m5-310324": "none"
+   },
+   "quiet": false,
+   "dry_run": false
+  }
+ ],
+ "last_run": {
+  "at": "2026-09-09T20:55:29+00:00",
+  "ok": false,
+  "duration_s": 4.7,
+  "searches_run": 2,
+  "searches_failed": 0,
+  "listings_seen": 0,
+  "new": 0,
+  "price_drops": 0,
+  "price_rises": 0,
+  "removed": 0,
+  "filtered_out": 0,
+  "requests_made": 2,
+  "budget_exhausted": false,
+  "empty_parses": [
+   "BMW M5 (Canada-wide)",
+   "2021-2023 BMW M5"
+  ],
+  "first_run": true,
+  "validation_ok": false,
+  "notified": [],
+  "errors": [
+   "BMW M5 (Canada-wide): the page loaded (none) but no listings could be read, and the site did not say the search was empty. Run: python -m autotrader doctor --live",
+   "BMW M5 (Canada-wide): first-run parse check failed - No listings were read from a page that loaded successfully, and the site did not say the search was empty. Every parser strategy has probably fallen behind AutoTrader's markup.",
+   "2021-2023 BMW M5: the page loaded (none) but no listings could be read, and the site did not say the search was empty. Run: python -m autotrader doctor --live",
+   "2021-2023 BMW M5: first-run parse check failed - No listings were read from a page that loaded successfully, and the site did not say the search was empty. Every parser strategy has probably fallen behind AutoTrader's markup."
+  ],
+  "warnings": [
+   "setup: adopted the SEARCH_URL secret into config.json",
+   "sent the first-run check: ntfy: sent - text, email: FAILED - (535, b'5.7.8 Username and Password not accepted. For more information, go to\\n5.7.8  https://support.google.com/mail/?p=BadCredentials 5a478bee46e88-3397d6d1becsm8843382eec.22 - gsmtp')"
+  ],
+  "strategies": {
+   "bmw-m5-canada-wide-77b629": "none",
+   "2021-2023-bmw-m5-310324": "none"
+  },
+  "quiet": false,
+  "dry_run": false
+ },
  "archive": {
   "folders": 50,
   "bytes": 11230131,
@@ -2381,7 +2487,7 @@
  },
  "config": {
   "version": 2,
-  "legacy_search_url_adopted": false,
+  "legacy_search_url_adopted": true,
   "searches": [
    {
     "id": "bmw-m5-canada-wide-77b629",
@@ -2389,6 +2495,13 @@
     "url": "https://www.autotrader.ca/cars/bmw/m5/?rcp=15&rcs=0&srt=35&prx=-2&loc=M5V&hprc=True&wcp=True&iNC=1&sts=New-Used&inMarket=advancedSearch",
     "enabled": true,
     "notes": "Seeded from the search link you pasted when this rebuild started. Edit or remove it in the dashboard's Searches tab, or with 'python -m autotrader remove <id>'."
+   },
+   {
+    "id": "2021-2023-bmw-m5-310324",
+    "name": "2021-2023 BMW M5",
+    "url": "https://www.autotrader.ca/cars/bmw/m5/?rcp=25&rcs=0&srt=9&yRng=2021%2C2023&prx=-1&loc=V6N+3B5&hprc=False&wcp=False&inMarket=advancedSearch",
+    "enabled": true,
+    "notes": "Imported from the SEARCH_URL repository secret. That secret is no longer read - you can delete it."
    }
   ],
   "filters": {

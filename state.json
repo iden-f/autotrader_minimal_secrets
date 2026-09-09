@@ -2508,8 +2508,64 @@
    "year": 2022
   }
  },
- "runs": [],
- "searches": {},
- "updated_at": "2026-09-09T17:22:44+00:00",
+ "runs": [
+  {
+   "at": "2026-09-09T20:55:29+00:00",
+   "budget_exhausted": false,
+   "dry_run": false,
+   "duration_s": 4.7,
+   "empty_parses": [
+    "BMW M5 (Canada-wide)",
+    "2021-2023 BMW M5"
+   ],
+   "errors": [
+    "BMW M5 (Canada-wide): the page loaded (none) but no listings could be read, and the site did not say the search was empty. Run: python -m autotrader doctor --live",
+    "BMW M5 (Canada-wide): first-run parse check failed - No listings were read from a page that loaded successfully, and the site did not say the search was empty. Every parser strategy has probably fallen behind AutoTrader's markup.",
+    "2021-2023 BMW M5: the page loaded (none) but no listings could be read, and the site did not say the search was empty. Run: python -m autotrader doctor --live",
+    "2021-2023 BMW M5: first-run parse check failed - No listings were read from a page that loaded successfully, and the site did not say the search was empty. Every parser strategy has probably fallen behind AutoTrader's markup."
+   ],
+   "filtered_out": 0,
+   "first_run": true,
+   "listings_seen": 0,
+   "new": 0,
+   "notified": [],
+   "ok": false,
+   "price_drops": 0,
+   "price_rises": 0,
+   "quiet": false,
+   "removed": 0,
+   "requests_made": 2,
+   "searches_failed": 0,
+   "searches_run": 2,
+   "strategies": {
+    "2021-2023-bmw-m5-310324": "none",
+    "bmw-m5-canada-wide-77b629": "none"
+   },
+   "validation_ok": false,
+   "warnings": [
+    "setup: adopted the SEARCH_URL secret into config.json",
+    "sent the first-run check: ntfy: sent - text, email: FAILED - (535, b'5.7.8 Username and Password not accepted. For more information, go to\\n5.7.8  https://support.google.com/mail/?p=BadCredentials 5a478bee46e88-3397d6d1becsm8843382eec.22 - gsmtp')"
+   ]
+  }
+ ],
+ "searches": {
+  "2021-2023-bmw-m5-310324": {
+   "consecutive_failures": 1,
+   "last_count": 0,
+   "last_error": "HTTP 200 but zero listings parsed",
+   "last_error_at": "2026-09-09T20:55:28+00:00",
+   "last_ok": "2026-09-09T20:55:28+00:00",
+   "last_strategy": "none"
+  },
+  "bmw-m5-canada-wide-77b629": {
+   "consecutive_failures": 1,
+   "last_count": 0,
+   "last_error": "HTTP 200 but zero listings parsed",
+   "last_error_at": "2026-09-09T20:55:25+00:00",
+   "last_ok": "2026-09-09T20:55:25+00:00",
+   "last_strategy": "none"
+  }
+ },
+ "updated_at": "2026-09-09T20:55:29+00:00",
  "version": 2
 }
