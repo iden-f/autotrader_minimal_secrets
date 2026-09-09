@@ -113,6 +113,14 @@ def _clean(text: str) -> str:
     return re.sub(r"\s+", " ", htmllib.unescape(str(text or ""))).strip()
 
 
+def _titlecase_place(text: str) -> str:
+    """Dealer addresses arrive shouted ("MONTREAL", "TORONTO")."""
+    text = _clean(text)
+    if text and text == text.upper():
+        return "-".join(part.capitalize() for part in text.split("-"))
+    return text
+
+
 def _first_key(node: dict, names: Iterable[str]) -> Any:
     for name in names:
         for key in (name, name[0].upper() + name[1:]):
@@ -168,6 +176,16 @@ def _images_from(value: Any) -> list[str]:
     return [u for u in out if u.startswith("http")][:12]
 
 
+def _types_of(node: dict) -> set[str]:
+    """schema.org @type, which may be a string or a list of strings."""
+    raw = node.get("@type")
+    if isinstance(raw, str):
+        return {raw.lower()}
+    if isinstance(raw, list):
+        return {str(t).lower() for t in raw}
+    return set()
+
+
 def _iter_json_objects(node: Any, depth: int = 0) -> Iterable[dict]:
     if depth > 12:
         return
@@ -182,12 +200,31 @@ def _iter_json_objects(node: Any, depth: int = 0) -> Iterable[dict]:
 
 def _listing_from_json(node: dict, base_url: str) -> Listing | None:
     """Build a Listing from an arbitrary JSON object, if it looks like one."""
-    url = _first_key(node, _JSON_KEYS["url"])
-    if isinstance(url, dict):
-        url = url.get("url") or url.get("href")
+    # The link can live in several places depending on the vintage of the
+    # markup: a plain "url", the node's "@id" (with a #vehicle fragment), or
+    # inside the offer. Try all of them before giving up.
+    candidates: list[Any] = [_first_key(node, _JSON_KEYS["url"]), node.get("@id")]
+    offer = node.get("offers")
+    if isinstance(offer, dict):
+        candidates.append(offer.get("url"))
+    elif isinstance(offer, list) and offer and isinstance(offer[0], dict):
+        candidates.append(offer[0].get("url"))
+
+    url = None
     lid = None
-    if isinstance(url, str) and "/a/" in url:
-        lid = listing_id_from_url(url)
+    for candidate in candidates:
+        if isinstance(candidate, dict):
+            candidate = candidate.get("url") or candidate.get("href")
+        if not isinstance(candidate, str) or not candidate:
+            continue
+        cleaned = candidate.split("#", 1)[0]
+        found_id = listing_id_from_url(cleaned)
+        if found_id:
+            url, lid = cleaned, found_id
+            break
+        if url is None:
+            url = cleaned
+
     if not lid:
         raw_id = _first_key(node, _JSON_KEYS["id"])
         if raw_id is not None and re.fullmatch(r"\d{5,}", str(raw_id)):
@@ -198,9 +235,19 @@ def _listing_from_json(node: dict, base_url: str) -> Listing | None:
     offers = node.get("offers")
     price = None
     currency = "CAD"
+    seller_name = ""
+    city = ""
+    region = ""
     if isinstance(offers, dict):
         price = _to_int(offers.get("price"))
         currency = offers.get("priceCurrency") or "CAD"
+        seller = offers.get("seller")
+        if isinstance(seller, dict):
+            seller_name = str(seller.get("name") or "")
+            address = seller.get("address")
+            if isinstance(address, dict):
+                city = str(address.get("addressLocality") or "")
+                region = str(address.get("addressRegion") or "")
     if price is None:
         price = _to_int(_first_key(node, _JSON_KEYS["price"]))
 
@@ -226,12 +273,13 @@ def _listing_from_json(node: dict, base_url: str) -> Listing | None:
         card_price=price,
         currency=currency if isinstance(currency, str) else "CAD",
         mileage_km=mileage,
-        location=_clean(_first_key(node, _JSON_KEYS["location"]) or ""),
-        province=_clean(_first_key(node, _JSON_KEYS["province"]) or ""),
-        seller=_clean(_first_key(node, _JSON_KEYS["seller"]) or ""),
+        location=_titlecase_place(city) or _clean(_first_key(node, _JSON_KEYS["location"]) or ""),
+        province=_clean(region) or _clean(_first_key(node, _JSON_KEYS["province"]) or ""),
+        seller=_clean(seller_name) or _clean(_first_key(node, _JSON_KEYS["seller"]) or ""),
         body=_clean(node.get("bodyType") or node.get("body") or ""),
         color=_clean(node.get("color") or ""),
         transmission=_clean(node.get("vehicleTransmission") or ""),
+        fuel=_clean(node.get("fuelType") or ""),
         images=_images_from(_first_key(node, _JSON_KEYS["image"])),
     )
 
@@ -249,10 +297,13 @@ def _strategy_jsonld(soup: BeautifulSoup, html: str, base_url: str) -> list[List
         except (json.JSONDecodeError, TypeError):
             continue
         for node in _iter_json_objects(data):
-            node_type = str(node.get("@type", "")).lower()
-            if node_type not in {"vehicle", "car", "product", "offer", "listitem", "itemlist"}:
+            # Since the 2026 platform change @type is often a list, e.g.
+            # ["Car","Product"]. str() on that yields "['car', 'product']",
+            # which matched nothing and silently zeroed this whole strategy.
+            types = _types_of(node)
+            if not types & {"vehicle", "car", "product", "offer", "listitem", "itemlist"}:
                 continue
-            target = node.get("item") if node_type == "listitem" else node
+            target = node.get("item") if "listitem" in types else node
             if not isinstance(target, dict):
                 continue
             listing = _listing_from_json(target, base_url)

@@ -24,7 +24,8 @@ from .parser import parse_search_page
 DIAGNOSTIC_DIR = Path("diagnostics")
 
 HEAD_CHARS = 2500
-MAX_JSONLD = 6000
+MAX_JSONLD = 40000
+MAX_NEXT_DATA = 6000
 MAX_CONTEXTS = 25
 CONTEXT_WINDOW = 180
 
@@ -84,6 +85,22 @@ def capture(url: str, response_text: str, status: int, elapsed_ms: int,
         if len(contexts) >= MAX_CONTEXTS:
             break
 
+    # The front-end state blob is where anything missing from the structured
+    # data (the model year, for one) is most likely to be found.
+    next_data: dict[str, Any] = {}
+    match = re.search(
+        r'<script[^>]*id="__NEXT_DATA__"[^>]*>(.*?)</script>', text, re.S)
+    if match:
+        try:
+            parsed_next = json.loads(match.group(1))
+            next_data = {
+                "top_level_keys": sorted(parsed_next.keys())[:30],
+                "key_frequency": _key_frequency(parsed_next),
+                "sample": json.dumps(parsed_next, separators=(",", ":"))[:MAX_NEXT_DATA],
+            }
+        except (json.JSONDecodeError, TypeError, AttributeError) as exc:
+            next_data = {"error": f"could not parse: {exc}"}
+
     blocked_markers = [m for m in BLOCK_MARKERS if m in text[:20000].lower()]
 
     return {
@@ -103,7 +120,24 @@ def capture(url: str, response_text: str, status: int, elapsed_ms: int,
         "head": text[:HEAD_CHARS],
         "json_ld": jsonld,
         "listing_link_contexts": contexts,
+        "next_data": next_data,
     }
+
+
+def _key_frequency(node: Any, counts: dict[str, int] | None = None,
+                   depth: int = 0) -> dict[str, int]:
+    """Which field names appear in a blob, and how often."""
+    counts = counts if counts is not None else {}
+    if depth > 12:
+        return counts
+    if isinstance(node, dict):
+        for key, value in node.items():
+            counts[str(key)] = counts.get(str(key), 0) + 1
+            _key_frequency(value, counts, depth + 1)
+    elif isinstance(node, list):
+        for value in node[:50]:
+            _key_frequency(value, counts, depth + 1)
+    return dict(sorted(counts.items(), key=lambda kv: -kv[1])[:60])
 
 
 def to_markdown(data: dict[str, Any]) -> str:
@@ -162,6 +196,27 @@ def to_markdown(data: dict[str, Any]) -> str:
         lines.append("## Context around listing-shaped links")
         lines.append("")
         lines.append("_No `/a/` links anywhere in the payload._")
+        lines.append("")
+
+    if data.get("next_data"):
+        lines.append("## Front-end state (`__NEXT_DATA__`)")
+        lines.append("")
+        nd = data["next_data"]
+        if nd.get("error"):
+            lines.append(f"_{nd['error']}_")
+        else:
+            lines.append(f"Top-level keys: `{nd.get('top_level_keys')}`")
+            lines.append("")
+            lines.append("Most common field names:")
+            lines.append("")
+            lines.append("```")
+            for name, count in list((nd.get("key_frequency") or {}).items())[:40]:
+                lines.append(f"{count:>5}  {name}")
+            lines.append("```")
+            lines.append("")
+            lines.append("```json")
+            lines.append(nd.get("sample", ""))
+            lines.append("```")
         lines.append("")
 
     lines.append("## First few KB of the page")

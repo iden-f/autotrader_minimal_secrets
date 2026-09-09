@@ -26,6 +26,15 @@ KNOWN_HOSTS = {"www.autotrader.ca", "autotrader.ca", "www.autohebdo.net", "autoh
 # and the third an opaque reference that changes between renders.
 LISTING_PATH_RE = re.compile(r"/a/(?:[^/]+/)*?(\d+)_(\d{5,})_([^/]*)/?", re.I)
 
+# In 2026 autotrader.ca moved onto the AutoScout24 platform and listing URLs
+# became /offers/<descriptive-slug>-<uuid>. The trailing UUID is the listing's
+# identity; everything before it is SEO text that changes when the seller edits
+# the ad, and the "cat_..." segment in the middle is a search token shared by
+# every result on a page.
+OFFER_PATH_RE = re.compile(
+    r"/offers?/[^/?#]*?([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})",
+    re.I)
+
 # Fallback for links we cannot fully structure but that still carry an id.
 LOOSE_ID_RE = re.compile(r"[_/-](\d{5,})(?:[_/?#]|$)")
 
@@ -60,6 +69,9 @@ def listing_id_from_url(url: str) -> str | None:
     m = LISTING_PATH_RE.search(path)
     if m:
         return m.group(2)
+    m = OFFER_PATH_RE.search(path)
+    if m:
+        return m.group(1).lower()
     m = LOOSE_ID_RE.search(path)
     return m.group(1) if m else None
 
@@ -68,6 +80,14 @@ def _place(slug: str) -> str:
     """Title-case a place name, keeping hyphens (Trois-Rivieres, Saint-Hubert)."""
     text = unquote(slug).replace("+", " ")
     return "-".join(_titlecase(part) for part in text.split("-") if part)
+
+
+def is_offer_url(url: str) -> bool:
+    """True for the post-2026 /offers/<slug>-<uuid> listing links."""
+    try:
+        return bool(OFFER_PATH_RE.search(urlparse(url).path))
+    except ValueError:
+        return False
 
 
 def location_from_url(url: str) -> tuple[str, str]:
@@ -83,6 +103,8 @@ def location_from_url(url: str) -> tuple[str, str]:
         return "", ""
     segments = [s for s in path.split("/") if s]
     if not segments or segments[0].lower() != "a":
+        # /offers/<slug>-<uuid> has no location in the path; the page's
+        # structured data carries the seller's address instead.
         return "", ""
     # The id segment looks like "19_13166607_"; city and province are the two
     # segments immediately before it.
@@ -281,7 +303,7 @@ def describe_search(url: str) -> SearchSummary:
             "autotrader.ca (or autohebdo.net)."
         )
         return s
-    if is_listing_url(url):
+    if is_listing_url(url) or is_offer_url(url):
         s.valid = False
         s.problems.append(
             "That is a single car listing, not a search. Run the search on "

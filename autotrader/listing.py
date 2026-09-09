@@ -55,9 +55,27 @@ class Listing:
                 self.year = int(m.group(1))
 
     @property
+    def short_trim(self) -> str:
+        """The first meaningful part of a trim.
+
+        Dealers on the current platform stuff the trim field with a pipe- or
+        comma-separated feature list ("Competition | Premium | Aide a la
+        conduite avance"), which is unreadable in a notification.
+        """
+        trim = (self.trim or "").strip()
+        if not trim:
+            return ""
+        for separator in ("|", ",", "/"):
+            if separator in trim:
+                trim = trim.split(separator)[0].strip()
+                break
+        return trim[:40].strip()
+
+    @property
     def display_title(self) -> str:
         """A tidy 'YEAR MAKE MODEL TRIM' when we know enough, else the title."""
-        parts = [str(self.year) if self.year else "", self.make, self.model, self.trim]
+        parts = [str(self.year) if self.year else "", self.make, self.model,
+                 self.short_trim]
         built = " ".join(p for p in parts if p).strip()
         if len(built.split()) >= 2:
             return built

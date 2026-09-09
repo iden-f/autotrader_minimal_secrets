@@ -19,7 +19,7 @@ from typing import Any
 from bs4 import BeautifulSoup
 
 from .listing import Listing
-from .parser import _clean, _to_int
+from .parser import _clean, _titlecase_place, _to_int, _types_of
 from .urls import location_from_url
 
 log = logging.getLogger(__name__)
@@ -42,7 +42,8 @@ def _vehicle_blocks(html: str) -> list[dict]:
         except (json.JSONDecodeError, TypeError):
             continue
         for node in _walk(data):
-            if isinstance(node, dict) and str(node.get("@type", "")).lower() in {"vehicle", "car"}:
+            # @type may be a list on the post-2026 platform, e.g. ["Car","Product"].
+            if isinstance(node, dict) and _types_of(node) & {"vehicle", "car"}:
                 out.append(node)
     return out
 
@@ -134,8 +135,17 @@ def detail_from_html(html: str, listing_id: str = "", url: str = "") -> Listing 
         images=images[:12],
         enriched=True,
     )
-    # schema.org Vehicle has no location field, but the listing URL encodes it.
+    # Older listings encode the city in the URL path; newer ones carry the
+    # seller's address inside the offer instead.
     listing.location, listing.province = location_from_url(listing.url or url)
+    if not listing.location and isinstance(offers, dict):
+        seller = offers.get("seller")
+        if isinstance(seller, dict):
+            listing.seller = _clean(seller.get("name") or "")
+            address = seller.get("address")
+            if isinstance(address, dict):
+                listing.location = _titlecase_place(str(address.get("addressLocality") or ""))
+                listing.province = _clean(str(address.get("addressRegion") or ""))
     # The trim often repeats the body style ("Competition Sedan" + body "Sedan").
     if listing.trim and listing.body and listing.trim.lower().endswith(listing.body.lower()):
         trimmed = listing.trim[: -len(listing.body)].strip()
