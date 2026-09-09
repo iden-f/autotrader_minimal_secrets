@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-09-09T20:45:01+00:00",
+ "generated_at": "2026-09-09T20:55:11+00:00",
  "notify": {
   "ntfy_topic": "autotrader-2q592ak9gnx7sqrere5r",
   "ntfy_url": "https://ntfy.sh/autotrader-2q592ak9gnx7sqrere5r",
@@ -2176,7 +2176,45 @@
    "is_new": false
   }
  ],
- "searches": [],
+ "searches": [
+  {
+   "id": "bmw-m5-canada-wide-77b629",
+   "name": "BMW M5 (Canada-wide)",
+   "url": "https://www.autotrader.ca/cars/bmw/m5/?rcp=15&rcs=0&srt=35&prx=-2&loc=M5V&hprc=True&wcp=True&iNC=1&sts=New-Used&inMarket=advancedSearch",
+   "enabled": true,
+   "notes": "Seeded from the search link you pasted when this rebuild started. Edit or remove it in the dashboard's Searches tab, or with 'python -m autotrader remove <id>'.",
+   "summary": {
+    "make": "BMW",
+    "model": "M5",
+    "year_min": null,
+    "year_max": null,
+    "price_min": null,
+    "price_max": null,
+    "mileage_max": null,
+    "location": "M5V",
+    "radius_km": null,
+    "province": null,
+    "body": null,
+    "condition": null,
+    "keywords": null,
+    "per_page": 15,
+    "valid": true,
+    "problems": [],
+    "title": "BMW M5",
+    "chips": [
+     "near M5V"
+    ]
+   },
+   "health": {
+    "last_ok": null,
+    "last_error": null,
+    "last_count": 0,
+    "last_strategy": null,
+    "consecutive_failures": 0
+   },
+   "active_count": 0
+  }
+ ],
  "channels": {
   "telegram": {
    "label": "Telegram",
@@ -2344,7 +2382,15 @@
  "config": {
   "version": 2,
   "legacy_search_url_adopted": false,
-  "searches": [],
+  "searches": [
+   {
+    "id": "bmw-m5-canada-wide-77b629",
+    "name": "BMW M5 (Canada-wide)",
+    "url": "https://www.autotrader.ca/cars/bmw/m5/?rcp=15&rcs=0&srt=35&prx=-2&loc=M5V&hprc=True&wcp=True&iNC=1&sts=New-Used&inMarket=advancedSearch",
+    "enabled": true,
+    "notes": "Seeded from the search link you pasted when this rebuild started. Edit or remove it in the dashboard's Searches tab, or with 'python -m autotrader remove <id>'."
+   }
+  ],
   "filters": {
    "min_price": null,
    "max_price": null,

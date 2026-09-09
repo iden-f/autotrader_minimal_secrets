@@ -1,7 +1,15 @@
 {
   "version": 2,
   "legacy_search_url_adopted": false,
-  "searches": [],
+  "searches": [
+    {
+      "id": "bmw-m5-canada-wide-77b629",
+      "name": "BMW M5 (Canada-wide)",
+      "url": "https://www.autotrader.ca/cars/bmw/m5/?rcp=15&rcs=0&srt=35&prx=-2&loc=M5V&hprc=True&wcp=True&iNC=1&sts=New-Used&inMarket=advancedSearch",
+      "enabled": true,
+      "notes": "Seeded from the search link you pasted when this rebuild started. Edit or remove it in the dashboard's Searches tab, or with 'python -m autotrader remove <id>'."
+    }
+  ],
   "filters": {
     "min_price": null,
     "max_price": null,
