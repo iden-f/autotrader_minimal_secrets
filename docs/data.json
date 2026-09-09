@@ -1,23 +1,685 @@
 {
- "generated_at": "2026-09-09T21:03:58+00:00",
+ "generated_at": "2026-09-09T21:13:07+00:00",
  "notify": {
   "ntfy_topic": "autotrader-2q592ak9gnx7sqrere5r",
   "ntfy_url": "https://ntfy.sh/autotrader-2q592ak9gnx7sqrere5r",
   "active": [
-   "ntfy"
+   "ntfy",
+   "email"
   ]
  },
  "version": 2,
  "stats": {
-  "total": 50,
-  "active": 0,
+  "total": 69,
+  "active": 19,
   "gone": 50,
-  "with_price": 0,
-  "min_price": null,
-  "max_price": null,
-  "median_price": null
+  "with_price": 11,
+  "min_price": 69995,
+  "max_price": 152000,
+  "median_price": 114900
  },
  "listings": [
+  {
+   "id": "f79007d5-6679-4bad-adff-6fee67bf2a88",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-competition-gasoline-black-cat_ma13gr202609tr17957-f79007d5-6679-4bad-adff-6fee67bf2a88",
+   "title": "BMW M5",
+   "year": null,
+   "make": "BMW",
+   "model": "M5",
+   "trim": "Competition",
+   "price": 152000,
+   "currency": "CAD",
+   "mileage_km": 6000,
+   "location": "Spruce grove",
+   "province": "AB",
+   "seller": "",
+   "body": "Sedan",
+   "color": "Black",
+   "transmission": "Automatic",
+   "drivetrain": "",
+   "fuel": "Gasoline",
+   "engine": "",
+   "images": [
+    "https://prod.pictures.autoscout24.net/listing-images/f79007d5-6679-4bad-adff-6fee67bf2a88_b3adc80a-7ea8-40ef-9e3a-94b4095f38dd.jpg/1920x1080.jpg"
+   ],
+   "search_id": "2021-2023-bmw-m5-310324",
+   "search_name": "2021-2023 BMW M5",
+   "first_seen": "2026-09-09T21:13:04+00:00",
+   "last_seen": "2026-09-09T21:13:04+00:00",
+   "status": "active",
+   "price_history": [
+    {
+     "at": "2026-09-09T21:13:04+00:00",
+     "price": 152000
+    }
+   ],
+   "price_source": "search",
+   "is_new": false
+  },
+  {
+   "id": "f3b59e36-c73b-4e58-88c4-746af0d18a45",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-competition-premium-aide-a-la-conduite-avance-gasoline-blue-cat_ma13gr202609tr17957-f3b59e36-c73b-4e58-88c4-746af0d18a45",
+   "title": "BMW M5",
+   "year": null,
+   "make": "BMW",
+   "model": "M5",
+   "trim": "Competition | Premium | Aide à la conduite avancé",
+   "price": 125669,
+   "currency": "CAD",
+   "mileage_km": 27314,
+   "location": "Montréal",
+   "province": "QC",
+   "seller": "BMW MINI Montréal Centre",
+   "body": "Sedan",
+   "color": "Blue",
+   "transmission": "Automatic",
+   "drivetrain": "",
+   "fuel": "Gasoline",
+   "engine": "",
+   "images": [
+    "https://prod.pictures.autoscout24.net/listing-images/f3b59e36-c73b-4e58-88c4-746af0d18a45_09b5ff59-e13b-4862-a631-294aead8009d.jpg/1920x1080.jpg"
+   ],
+   "search_id": "2021-2023-bmw-m5-310324",
+   "search_name": "2021-2023 BMW M5",
+   "first_seen": "2026-09-09T21:13:04+00:00",
+   "last_seen": "2026-09-09T21:13:04+00:00",
+   "status": "active",
+   "price_history": [
+    {
+     "at": "2026-09-09T21:13:04+00:00",
+     "price": 125669
+    }
+   ],
+   "price_source": "search",
+   "is_new": false
+  },
+  {
+   "id": "f05e1f57-d2ca-4293-b77f-e0592976e000",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-competition-gasoline-white-cat_ma13gr202609tr17957-f05e1f57-d2ca-4293-b77f-e0592976e000",
+   "title": "BMW M5",
+   "year": null,
+   "make": "BMW",
+   "model": "M5",
+   "trim": "Competition",
+   "price": 89999,
+   "currency": "CAD",
+   "mileage_km": 46371,
+   "location": "Mississauga",
+   "province": "ON",
+   "seller": "Vantage Motors",
+   "body": "Sedan",
+   "color": "White",
+   "transmission": "Automatic",
+   "drivetrain": "",
+   "fuel": "Gasoline",
+   "engine": "",
+   "images": [
+    "https://prod.pictures.autoscout24.net/listing-images/f05e1f57-d2ca-4293-b77f-e0592976e000_76cdf3c7-f76a-4dab-ba61-7f8891fbce01.jpg/1920x1080.jpg"
+   ],
+   "search_id": "2021-2023-bmw-m5-310324",
+   "search_name": "2021-2023 BMW M5",
+   "first_seen": "2026-09-09T21:13:04+00:00",
+   "last_seen": "2026-09-09T21:13:04+00:00",
+   "status": "active",
+   "price_history": [
+    {
+     "at": "2026-09-09T21:13:04+00:00",
+     "price": 89999
+    }
+   ],
+   "price_source": "search",
+   "is_new": false
+  },
+  {
+   "id": "eb1a498c-37bc-42a2-a6bd-ea6737da591d",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-white-cat_ma13gr202609-eb1a498c-37bc-42a2-a6bd-ea6737da591d",
+   "title": "BMW M5",
+   "year": null,
+   "make": "",
+   "model": "M5",
+   "trim": "",
+   "price": null,
+   "currency": "CAD",
+   "mileage_km": 14176,
+   "location": "Montreal",
+   "province": "QC",
+   "seller": "",
+   "body": "Wagon",
+   "color": "White",
+   "transmission": "",
+   "drivetrain": "",
+   "fuel": "",
+   "engine": "",
+   "images": [
+    "https://prod.pictures.autoscout24.net/listing-images/eb1a498c-37bc-42a2-a6bd-ea6737da591d_68fb8e8f-a7a1-4bed-8562-4de201748116.jpg/1920x1080.jpg"
+   ],
+   "search_id": "2021-2023-bmw-m5-310324",
+   "search_name": "2021-2023 BMW M5",
+   "first_seen": "2026-09-09T21:13:04+00:00",
+   "last_seen": "2026-09-09T21:13:04+00:00",
+   "status": "active",
+   "price_history": [],
+   "price_source": "",
+   "is_new": false
+  },
+  {
+   "id": "d688f2af-dbd2-4e72-be59-0a91499a5a19",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-m5-competition-sedan-ultimate-package-bowers-gasoline-black-cat_ma13gr202609tr17957-d688f2af-dbd2-4e72-be59-0a91499a5a19",
+   "title": "BMW M5",
+   "year": null,
+   "make": "BMW",
+   "model": "M5",
+   "trim": "M5 Competition Sedan | Ultimate Package | Bowers &",
+   "price": 109910,
+   "currency": "CAD",
+   "mileage_km": 54021,
+   "location": "Edmonton",
+   "province": "AB",
+   "seller": "Bavaria BMW",
+   "body": "Sedan",
+   "color": "Black",
+   "transmission": "Automatic",
+   "drivetrain": "",
+   "fuel": "Gasoline",
+   "engine": "",
+   "images": [],
+   "search_id": "2021-2023-bmw-m5-310324",
+   "search_name": "2021-2023 BMW M5",
+   "first_seen": "2026-09-09T21:13:04+00:00",
+   "last_seen": "2026-09-09T21:13:04+00:00",
+   "status": "active",
+   "price_history": [
+    {
+     "at": "2026-09-09T21:13:04+00:00",
+     "price": 109910
+    }
+   ],
+   "price_source": "search",
+   "is_new": false
+  },
+  {
+   "id": "c8fd95f4-d40c-4ac9-b644-a323d65b3924",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-competition-gasoline-blue-cat_ma13gr202609tr17957-c8fd95f4-d40c-4ac9-b644-a323d65b3924",
+   "title": "BMW M5",
+   "year": null,
+   "make": "BMW",
+   "model": "M5",
+   "trim": "Competition",
+   "price": 117000,
+   "currency": "CAD",
+   "mileage_km": 49500,
+   "location": "Saint-Paul",
+   "province": "QC",
+   "seller": "",
+   "body": "Sedan",
+   "color": "Blue",
+   "transmission": "Automatic",
+   "drivetrain": "",
+   "fuel": "Gasoline",
+   "engine": "",
+   "images": [
+    "https://prod.pictures.autoscout24.net/listing-images/c8fd95f4-d40c-4ac9-b644-a323d65b3924_eccb5966-1c8c-482a-a96b-4b6acf667ad5.jpg/1920x1080.jpg"
+   ],
+   "search_id": "2021-2023-bmw-m5-310324",
+   "search_name": "2021-2023 BMW M5",
+   "first_seen": "2026-09-09T21:13:04+00:00",
+   "last_seen": "2026-09-09T21:13:04+00:00",
+   "status": "active",
+   "price_history": [
+    {
+     "at": "2026-09-09T21:13:04+00:00",
+     "price": 117000
+    }
+   ],
+   "price_source": "search",
+   "is_new": false
+  },
+  {
+   "id": "ba50e615-5f4e-4b95-8212-51c1f9e8341a",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-competition-ultimate-m-performance-exhaust-f-gasoline-blue-cat_ma13gr202609tr17957-ba50e615-5f4e-4b95-8212-51c1f9e8341a",
+   "title": "BMW M5",
+   "year": null,
+   "make": "BMW",
+   "model": "M5",
+   "trim": "Competition | Ultimate | M Performance Exhaust | F",
+   "price": 114910,
+   "currency": "CAD",
+   "mileage_km": 52771,
+   "location": "Edmonton",
+   "province": "AB",
+   "seller": "Bavaria BMW",
+   "body": "Sedan",
+   "color": "Blue",
+   "transmission": "Automatic",
+   "drivetrain": "",
+   "fuel": "Gasoline",
+   "engine": "",
+   "images": [
+    "https://prod.pictures.autoscout24.net/listing-images/ba50e615-5f4e-4b95-8212-51c1f9e8341a_1ee4adf0-ed7e-4e94-be26-ac7c760f51fd.jpg/1920x1080.jpg"
+   ],
+   "search_id": "2021-2023-bmw-m5-310324",
+   "search_name": "2021-2023 BMW M5",
+   "first_seen": "2026-09-09T21:13:04+00:00",
+   "last_seen": "2026-09-09T21:13:04+00:00",
+   "status": "active",
+   "price_history": [
+    {
+     "at": "2026-09-09T21:13:04+00:00",
+     "price": 114910
+    }
+   ],
+   "price_source": "search",
+   "is_new": false
+  },
+  {
+   "id": "a5f73b97-2d46-4fbf-9c1b-28b061887307",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-advanced-driver-assist-no-accidents-electric-black-cat_ma13gr202609-a5f73b97-2d46-4fbf-9c1b-28b061887307",
+   "title": "BMW M5",
+   "year": null,
+   "make": "",
+   "model": "M5",
+   "trim": "",
+   "price": null,
+   "currency": "CAD",
+   "mileage_km": 13913,
+   "location": "Vancouver",
+   "province": "BC",
+   "seller": "",
+   "body": "Wagon",
+   "color": "Black",
+   "transmission": "Automatic",
+   "drivetrain": "",
+   "fuel": "",
+   "engine": "",
+   "images": [
+    "https://prod.pictures.autoscout24.net/listing-images/a5f73b97-2d46-4fbf-9c1b-28b061887307_6b9d40b2-c4fd-42db-b53a-c44c24485770.jpg/1920x1080.jpg"
+   ],
+   "search_id": "2021-2023-bmw-m5-310324",
+   "search_name": "2021-2023 BMW M5",
+   "first_seen": "2026-09-09T21:13:04+00:00",
+   "last_seen": "2026-09-09T21:13:04+00:00",
+   "status": "active",
+   "price_history": [],
+   "price_source": "",
+   "is_new": false
+  },
+  {
+   "id": "a55b546d-1b3a-4aaf-9958-3b886ac37f99",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-ultimate-package-bc-local-clean-gasoline-blue-cat_ma13gr202609-a55b546d-1b3a-4aaf-9958-3b886ac37f99",
+   "title": "BMW M5",
+   "year": null,
+   "make": "",
+   "model": "M5",
+   "trim": "",
+   "price": null,
+   "currency": "CAD",
+   "mileage_km": 78400,
+   "location": "Vancouver",
+   "province": "BC",
+   "seller": "",
+   "body": "Sedan",
+   "color": "Blue",
+   "transmission": "Automatic",
+   "drivetrain": "",
+   "fuel": "",
+   "engine": "",
+   "images": [
+    "https://prod.pictures.autoscout24.net/listing-images/a55b546d-1b3a-4aaf-9958-3b886ac37f99_9b61ecb1-4632-4610-8954-14a56badb004.jpg/1920x1080.jpg"
+   ],
+   "search_id": "2021-2023-bmw-m5-310324",
+   "search_name": "2021-2023 BMW M5",
+   "first_seen": "2026-09-09T21:13:04+00:00",
+   "last_seen": "2026-09-09T21:13:04+00:00",
+   "status": "active",
+   "price_history": [],
+   "price_source": "",
+   "is_new": false
+  },
+  {
+   "id": "89ab3c02-9921-429b-ada5-f6d6bae051a8",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-premium-package-m-drivers-package-gasoline-black-cat_ma13gr202609tr17957-89ab3c02-9921-429b-ada5-f6d6bae051a8",
+   "title": "BMW M5",
+   "year": null,
+   "make": "BMW",
+   "model": "M5",
+   "trim": "Premium Package, M Drivers Package!",
+   "price": 98995,
+   "currency": "CAD",
+   "mileage_km": 68339,
+   "location": "Calgary",
+   "province": "AB",
+   "seller": "Mercedes-Benz South Calgary",
+   "body": "Sedan",
+   "color": "Black",
+   "transmission": "Automatic",
+   "drivetrain": "",
+   "fuel": "Gasoline",
+   "engine": "",
+   "images": [
+    "https://prod.pictures.autoscout24.net/listing-images/89ab3c02-9921-429b-ada5-f6d6bae051a8_873aaf5d-712b-4b4d-8cf9-73816f0c1142.jpg/1920x1080.jpg"
+   ],
+   "search_id": "2021-2023-bmw-m5-310324",
+   "search_name": "2021-2023 BMW M5",
+   "first_seen": "2026-09-09T21:13:04+00:00",
+   "last_seen": "2026-09-09T21:13:04+00:00",
+   "status": "active",
+   "price_history": [
+    {
+     "at": "2026-09-09T21:13:04+00:00",
+     "price": 98995
+    }
+   ],
+   "price_source": "search",
+   "is_new": false
+  },
+  {
+   "id": "80596d1c-d141-45a0-9aef-370f33497c4d",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-incoming-i-advanced-driver-assistance-pack-gas-electric-hybrid-green-cat_ma13gr202609ge10767va2324-80596d1c-d141-45a0-9aef-370f33497c4d",
+   "title": "BMW M5",
+   "year": null,
+   "make": "",
+   "model": "M5",
+   "trim": "",
+   "price": null,
+   "currency": "CAD",
+   "mileage_km": 90,
+   "location": "Aurora",
+   "province": "ON",
+   "seller": "",
+   "body": "Wagon",
+   "color": "Green",
+   "transmission": "Automatic",
+   "drivetrain": "",
+   "fuel": "",
+   "engine": "",
+   "images": [
+    "https://prod.pictures.autoscout24.net/listing-images/80596d1c-d141-45a0-9aef-370f33497c4d_b7317bb3-3195-4a28-85f5-a414ff196ca5.jpg/1920x1080.jpg"
+   ],
+   "search_id": "2021-2023-bmw-m5-310324",
+   "search_name": "2021-2023 BMW M5",
+   "first_seen": "2026-09-09T21:13:04+00:00",
+   "last_seen": "2026-09-09T21:13:04+00:00",
+   "status": "active",
+   "price_history": [],
+   "price_source": "",
+   "is_new": false
+  },
+  {
+   "id": "727d36cb-6045-44ea-bb97-7e3c022e2674",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-competition-ultimate-package-m-drivers-pkg-fu-gasoline-grey-cat_ma13gr202609tr17957-727d36cb-6045-44ea-bb97-7e3c022e2674",
+   "title": "BMW M5",
+   "year": null,
+   "make": "BMW",
+   "model": "M5",
+   "trim": "Competition, Ultimate Package!! M Drivers Pkg!! Fu",
+   "price": 134998,
+   "currency": "CAD",
+   "mileage_km": 24277,
+   "location": "Calgary",
+   "province": "AB",
+   "seller": "Calgary BMW",
+   "body": "Sedan",
+   "color": "Grey",
+   "transmission": "Automatic",
+   "drivetrain": "",
+   "fuel": "Gasoline",
+   "engine": "",
+   "images": [
+    "https://prod.pictures.autoscout24.net/listing-images/727d36cb-6045-44ea-bb97-7e3c022e2674_7b1c3769-ca28-4ea0-b7aa-fd5807e931cf.jpg/1920x1080.jpg"
+   ],
+   "search_id": "2021-2023-bmw-m5-310324",
+   "search_name": "2021-2023 BMW M5",
+   "first_seen": "2026-09-09T21:13:04+00:00",
+   "last_seen": "2026-09-09T21:13:04+00:00",
+   "status": "active",
+   "price_history": [
+    {
+     "at": "2026-09-09T21:13:04+00:00",
+     "price": 134998
+    }
+   ],
+   "price_source": "search",
+   "is_new": false
+  },
+  {
+   "id": "4f548e17-401f-49de-9a78-fbd238920fe2",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-sedan-bowers-wilkins-frozen-optics-package-gasoline-white-cat_ma13gr202609-4f548e17-401f-49de-9a78-fbd238920fe2",
+   "title": "BMW M5",
+   "year": null,
+   "make": "",
+   "model": "M5",
+   "trim": "",
+   "price": null,
+   "currency": "CAD",
+   "mileage_km": 51900,
+   "location": "Edmonton",
+   "province": "AB",
+   "seller": "",
+   "body": "Sedan",
+   "color": "White",
+   "transmission": "Automatic",
+   "drivetrain": "",
+   "fuel": "",
+   "engine": "",
+   "images": [
+    "https://prod.pictures.autoscout24.net/listing-images/4f548e17-401f-49de-9a78-fbd238920fe2_47f3f699-d386-4fb1-a2bd-1c522865fd48.jpg/1920x1080.jpg"
+   ],
+   "search_id": "2021-2023-bmw-m5-310324",
+   "search_name": "2021-2023 BMW M5",
+   "first_seen": "2026-09-09T21:13:04+00:00",
+   "last_seen": "2026-09-09T21:13:04+00:00",
+   "status": "active",
+   "price_history": [],
+   "price_source": "",
+   "is_new": false
+  },
+  {
+   "id": "392b2244-0617-4963-b7c1-95c72d6946cf",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-competition-gasoline-cat_ma13gr202609-392b2244-0617-4963-b7c1-95c72d6946cf",
+   "title": "BMW M5",
+   "year": null,
+   "make": "",
+   "model": "M5",
+   "trim": "",
+   "price": null,
+   "currency": "CAD",
+   "mileage_km": 54000,
+   "location": "Calgary",
+   "province": "AB",
+   "seller": "",
+   "body": "Sedan",
+   "color": "",
+   "transmission": "Automatic",
+   "drivetrain": "",
+   "fuel": "",
+   "engine": "",
+   "images": [
+    "https://prod.pictures.autoscout24.net/listing-images/392b2244-0617-4963-b7c1-95c72d6946cf_7ef60035-ea52-4895-9cd6-22b88508bb81.jpg/1920x1080.jpg"
+   ],
+   "search_id": "2021-2023-bmw-m5-310324",
+   "search_name": "2021-2023 BMW M5",
+   "first_seen": "2026-09-09T21:13:04+00:00",
+   "last_seen": "2026-09-09T21:13:04+00:00",
+   "status": "active",
+   "price_history": [],
+   "price_source": "",
+   "is_new": false
+  },
+  {
+   "id": "38bb776a-c232-4605-a086-3cf260c51075",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-m5-m-drivers-package-i-advanced-driver-assistance-gas-electric-hybrid-black-cat_ma13gr202609ge10767va3044-38bb776a-c232-4605-a086-3cf260c51075",
+   "title": "BMW M5",
+   "year": null,
+   "make": "",
+   "model": "M5",
+   "trim": "",
+   "price": null,
+   "currency": "CAD",
+   "mileage_km": 90,
+   "location": "Aurora",
+   "province": "ON",
+   "seller": "",
+   "body": "Sedan",
+   "color": "Black",
+   "transmission": "Automatic",
+   "drivetrain": "",
+   "fuel": "",
+   "engine": "",
+   "images": [
+    "https://prod.pictures.autoscout24.net/listing-images/38bb776a-c232-4605-a086-3cf260c51075_8532878d-6e64-4204-b338-505791137511.jpg/1920x1080.jpg"
+   ],
+   "search_id": "2021-2023-bmw-m5-310324",
+   "search_name": "2021-2023 BMW M5",
+   "first_seen": "2026-09-09T21:13:04+00:00",
+   "last_seen": "2026-09-09T21:13:04+00:00",
+   "status": "active",
+   "price_history": [],
+   "price_source": "",
+   "is_new": false
+  },
+  {
+   "id": "376b8b26-c496-47b4-82cf-6357eef6cb27",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-competition-sedan-gasoline-cat_ma13gr202609-376b8b26-c496-47b4-82cf-6357eef6cb27",
+   "title": "BMW M5",
+   "year": null,
+   "make": "BMW",
+   "model": "M5",
+   "trim": "Competition Sedan",
+   "price": 114900,
+   "currency": "CAD",
+   "mileage_km": 45000,
+   "location": "Calgary",
+   "province": "AB",
+   "seller": "",
+   "body": "Sedan",
+   "color": "",
+   "transmission": "Automatic",
+   "drivetrain": "",
+   "fuel": "Gasoline",
+   "engine": "",
+   "images": [
+    "https://prod.pictures.autoscout24.net/listing-images/376b8b26-c496-47b4-82cf-6357eef6cb27_8750807c-77fd-4665-a825-16e8b66558ee.jpg/1920x1080.jpg"
+   ],
+   "search_id": "2021-2023-bmw-m5-310324",
+   "search_name": "2021-2023 BMW M5",
+   "first_seen": "2026-09-09T21:13:04+00:00",
+   "last_seen": "2026-09-09T21:13:04+00:00",
+   "status": "active",
+   "price_history": [
+    {
+     "at": "2026-09-09T21:13:04+00:00",
+     "price": 114900
+    }
+   ],
+   "price_source": "search",
+   "is_new": false
+  },
+  {
+   "id": "36418c13-b328-4d73-9621-643fe01969fa",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-competition-awd-hud-navi-sunroof-gasoline-black-cat_ma13gr202609tr17957-36418c13-b328-4d73-9621-643fe01969fa",
+   "title": "BMW M5",
+   "year": null,
+   "make": "BMW",
+   "model": "M5",
+   "trim": "COMPETITION AWD | HUD | NAVI | SUNROOF |",
+   "price": 77998,
+   "currency": "CAD",
+   "mileage_km": 127814,
+   "location": "Toronto",
+   "province": "ON",
+   "seller": "Canadian Fine Motors",
+   "body": "Sedan",
+   "color": "Black",
+   "transmission": "Automatic",
+   "drivetrain": "",
+   "fuel": "Gasoline",
+   "engine": "",
+   "images": [
+    "https://prod.pictures.autoscout24.net/listing-images/36418c13-b328-4d73-9621-643fe01969fa_c7c29f7b-af50-4d29-9d15-27620d43e942.jpg/1920x1080.jpg"
+   ],
+   "search_id": "2021-2023-bmw-m5-310324",
+   "search_name": "2021-2023 BMW M5",
+   "first_seen": "2026-09-09T21:13:04+00:00",
+   "last_seen": "2026-09-09T21:13:04+00:00",
+   "status": "active",
+   "price_history": [
+    {
+     "at": "2026-09-09T21:13:04+00:00",
+     "price": 77998
+    }
+   ],
+   "price_source": "search",
+   "is_new": false
+  },
+  {
+   "id": "339aa830-e262-4886-9ab1-15319df7e984",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-m-performance-carbon-fibre-body-kit-gas-electric-hybrid-grey-cat_ma13gr202609-339aa830-e262-4886-9ab1-15319df7e984",
+   "title": "BMW M5",
+   "year": null,
+   "make": "",
+   "model": "M5",
+   "trim": "",
+   "price": null,
+   "currency": "CAD",
+   "mileage_km": 90,
+   "location": "Winnipeg",
+   "province": "MB",
+   "seller": "",
+   "body": "Wagon",
+   "color": "Grey",
+   "transmission": "Automatic",
+   "drivetrain": "",
+   "fuel": "",
+   "engine": "",
+   "images": [
+    "https://prod.pictures.autoscout24.net/listing-images/339aa830-e262-4886-9ab1-15319df7e984_1174f6f3-e827-4329-9063-e86f46cd104c.png/1920x1080.jpg"
+   ],
+   "search_id": "2021-2023-bmw-m5-310324",
+   "search_name": "2021-2023 BMW M5",
+   "first_seen": "2026-09-09T21:13:04+00:00",
+   "last_seen": "2026-09-09T21:13:04+00:00",
+   "status": "active",
+   "price_history": [],
+   "price_source": "",
+   "is_new": false
+  },
+  {
+   "id": "2a2e28df-a6c8-46c4-9ef4-8736a3956d89",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-competition-gasoline-black-cat_ma13gr202609tr17957-2a2e28df-a6c8-46c4-9ef4-8736a3956d89",
+   "title": "BMW M5",
+   "year": null,
+   "make": "BMW",
+   "model": "M5",
+   "trim": "COMPETITION",
+   "price": 69995,
+   "currency": "CAD",
+   "mileage_km": 142500,
+   "location": "Cambridge",
+   "province": "ON",
+   "seller": "N&P Platinum Auto Sales",
+   "body": "Sedan",
+   "color": "Black",
+   "transmission": "Automatic",
+   "drivetrain": "",
+   "fuel": "Gasoline",
+   "engine": "",
+   "images": [
+    "https://prod.pictures.autoscout24.net/listing-images/2a2e28df-a6c8-46c4-9ef4-8736a3956d89_196995bf-df17-459b-a872-ae092d260ee5.png/1920x1080.jpg"
+   ],
+   "search_id": "2021-2023-bmw-m5-310324",
+   "search_name": "2021-2023 BMW M5",
+   "first_seen": "2026-09-09T21:13:04+00:00",
+   "last_seen": "2026-09-09T21:13:04+00:00",
+   "status": "active",
+   "price_history": [
+    {
+     "at": "2026-09-09T21:13:04+00:00",
+     "price": 69995
+    }
+   ],
+   "price_source": "search",
+   "is_new": false
+  },
   {
    "id": "68819631",
    "url": "https://www.autotrader.ca/a/bmw/m5/st.%20catharines/ontario/5_68819631_on20080114122939242/",
@@ -2206,13 +2868,13 @@
     ]
    },
    "health": {
-    "last_ok": "2026-09-09T20:58:40+00:00",
-    "last_error": "HTTP 200 but zero listings parsed",
-    "last_count": 0,
-    "last_strategy": "none",
-    "consecutive_failures": 1
+    "last_ok": "2026-09-09T21:12:25+00:00",
+    "last_error": null,
+    "last_count": 19,
+    "last_strategy": "embedded_json",
+    "consecutive_failures": 0
    },
-   "active_count": 0
+   "active_count": 19
   }
  ],
  "channels": {
@@ -2275,11 +2937,8 @@
     "GMAIL_APP_PASSWORD"
    ],
    "setting": "auto",
-   "missing": [
-    "GMAIL_USER",
-    "GMAIL_APP_PASSWORD"
-   ],
-   "active": false
+   "missing": [],
+   "active": true
   },
   "webhook": {
    "label": "Custom webhook",
@@ -2303,12 +2962,7 @@
     "TWILIO_TO"
    ],
    "setting": false,
-   "missing": [
-    "TWILIO_SID",
-    "TWILIO_TOKEN",
-    "TWILIO_FROM",
-    "TWILIO_TO"
-   ],
+   "missing": [],
    "active": false
   }
  },
@@ -2372,6 +3026,39 @@
   }
  },
  "runs": [
+  {
+   "at": "2026-09-09T21:13:07+00:00",
+   "ok": true,
+   "duration_s": 45.5,
+   "searches_run": 1,
+   "searches_failed": 0,
+   "listings_seen": 19,
+   "new": 19,
+   "price_drops": 0,
+   "price_rises": 0,
+   "removed": 0,
+   "filtered_out": 0,
+   "requests_made": 21,
+   "budget_exhausted": false,
+   "empty_parses": [],
+   "diagnostics": [],
+   "first_run": true,
+   "validation_ok": true,
+   "notified": [
+    "ntfy: sent - 19 change(s)",
+    "email: FAILED - (535, b'5.7.8 Username and Password not accepted. For more information, go to\\n5.7.8  https://support.google.com/mail/?p=BadCredentials 5a478bee46e88-3396e7e477csm15266568eec.29 - gsmtp')"
+   ],
+   "errors": [],
+   "warnings": [
+    "notification failed: email: FAILED - (535, b'5.7.8 Username and Password not accepted. For more information, go to\\n5.7.8  https://support.google.com/mail/?p=BadCredentials 5a478bee46e88-3396e7e477csm15266568eec.29 - gsmtp')",
+    "sent the first-run check: ntfy: sent - text, email: FAILED - (535, b'5.7.8 Username and Password not accepted. For more information, go to\\n5.7.8  https://support.google.com/mail/?p=BadCredentials 5a478bee46e88-3339b314cfcsm46508790eec.19 - gsmtp')"
+   ],
+   "strategies": {
+    "2021-2023-bmw-m5-310324": "embedded_json"
+   },
+   "quiet": false,
+   "dry_run": false
+  },
   {
    "at": "2026-09-09T20:58:42+00:00",
    "budget_exhausted": false,
@@ -2453,49 +3140,41 @@
   }
  ],
  "last_run": {
-  "at": "2026-09-09T20:58:42+00:00",
-  "budget_exhausted": false,
-  "diagnostics": [
-   "diagnostics/bmw-m5-canada-wide-77b629.md",
-   "diagnostics/2021-2023-bmw-m5-310324.md"
-  ],
-  "dry_run": false,
-  "duration_s": 3.9,
-  "empty_parses": [
-   "BMW M5 (Canada-wide)",
-   "2021-2023 BMW M5"
-  ],
-  "errors": [
-   "BMW M5 (Canada-wide): the page loaded (none) but no listings could be read, and the site did not say the search was empty. Run: python -m autotrader doctor --live",
-   "BMW M5 (Canada-wide): first-run parse check failed - No listings were read from a page that loaded successfully, and the site did not say the search was empty. Every parser strategy has probably fallen behind AutoTrader's markup.",
-   "2021-2023 BMW M5: the page loaded (none) but no listings could be read, and the site did not say the search was empty. Run: python -m autotrader doctor --live",
-   "2021-2023 BMW M5: first-run parse check failed - No listings were read from a page that loaded successfully, and the site did not say the search was empty. Every parser strategy has probably fallen behind AutoTrader's markup."
-  ],
-  "filtered_out": 0,
-  "first_run": true,
-  "listings_seen": 0,
-  "new": 0,
-  "notified": [],
-  "ok": false,
+  "at": "2026-09-09T21:13:07+00:00",
+  "ok": true,
+  "duration_s": 45.5,
+  "searches_run": 1,
+  "searches_failed": 0,
+  "listings_seen": 19,
+  "new": 19,
   "price_drops": 0,
   "price_rises": 0,
-  "quiet": false,
   "removed": 0,
-  "requests_made": 2,
-  "searches_failed": 0,
-  "searches_run": 2,
-  "strategies": {
-   "2021-2023-bmw-m5-310324": "none",
-   "bmw-m5-canada-wide-77b629": "none"
-  },
-  "validation_ok": false,
+  "filtered_out": 0,
+  "requests_made": 21,
+  "budget_exhausted": false,
+  "empty_parses": [],
+  "diagnostics": [],
+  "first_run": true,
+  "validation_ok": true,
+  "notified": [
+   "ntfy: sent - 19 change(s)",
+   "email: FAILED - (535, b'5.7.8 Username and Password not accepted. For more information, go to\\n5.7.8  https://support.google.com/mail/?p=BadCredentials 5a478bee46e88-3396e7e477csm15266568eec.29 - gsmtp')"
+  ],
+  "errors": [],
   "warnings": [
-   "sent the first-run check: ntfy: sent - text, email: FAILED - (535, b'5.7.8 Username and Password not accepted. For more information, go to\\n5.7.8  https://support.google.com/mail/?p=BadCredentials 6a1803df08f44-9106438f6cfsm55574706d6.27 - gsmtp')"
-  ]
+   "notification failed: email: FAILED - (535, b'5.7.8 Username and Password not accepted. For more information, go to\\n5.7.8  https://support.google.com/mail/?p=BadCredentials 5a478bee46e88-3396e7e477csm15266568eec.29 - gsmtp')",
+   "sent the first-run check: ntfy: sent - text, email: FAILED - (535, b'5.7.8 Username and Password not accepted. For more information, go to\\n5.7.8  https://support.google.com/mail/?p=BadCredentials 5a478bee46e88-3339b314cfcsm46508790eec.19 - gsmtp')"
+  ],
+  "strategies": {
+   "2021-2023-bmw-m5-310324": "embedded_json"
+  },
+  "quiet": false,
+  "dry_run": false
  },
  "archive": {
-  "folders": 50,
-  "bytes": 11230131,
+  "folders": 69,
+  "bytes": 11248793,
   "html_bytes": 10093654,
   "image_bytes": 1111326
  },
