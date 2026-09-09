@@ -7,13 +7,18 @@
       "name": "2021-2023 BMW M5",
       "url": "https://www.autotrader.ca/cars/bmw/m5/?rcp=25&rcs=0&srt=9&yRng=2021%2C2023&prx=-1&loc=V6N+3B5&hprc=False&wcp=False&inMarket=advancedSearch",
       "enabled": true,
-      "notes": "Imported from the SEARCH_URL repository secret. That secret is no longer read - you can delete it."
+      "notes": "Imported from the SEARCH_URL repository secret. The year range is also enforced here because the new AutoScout24 platform no longer honours the yRng parameter in the original link - a live run returned 2014 and 2027 cars for it.",
+      "filters": {
+        "min_year": 2021,
+        "max_year": 2023
+      }
     },
     {
       "id": "bmw-m5-bargains-any-year-f2f097",
       "name": "BMW M5 bargains (any year)",
       "url": "https://www.autotrader.ca/cars/bmw/m5/?prx=-2&inMarket=advancedSearch",
       "enabled": true,
+      "notes": "A wider net on the same car: any year, Canada-wide, with the price ceiling applied by the bot rather than by the search link. Remove it in the dashboard if you only want the 2021-2023 watch.",
       "filters": {
         "max_price": 100000,
         "require_price": true,
@@ -21,8 +26,7 @@
       },
       "notify_on": {
         "removed": true
-      },
-      "notes": "A wider net on the same car: any year, Canada-wide, with the price ceiling applied by the bot rather than by the search link. Remove it in the dashboard if you only want the 2021-2023 watch."
+      }
     }
   ],
   "filters": {

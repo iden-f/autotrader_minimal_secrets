@@ -180,7 +180,8 @@ class State:
         raw = self.listings.get(listing_id)
         return Listing.from_dict(raw) if raw else None
 
-    def record(self, listing: Listing, *, seen_at: str | None = None) -> Change | None:
+    def record(self, listing: Listing, *, seen_at: str | None = None,
+               filtered: bool = False) -> Change | None:
         """Store a listing and return what changed about it, if anything.
 
         Returns a Change for a genuinely new car or a price move, and None when
@@ -193,7 +194,7 @@ class State:
             entry = listing.to_dict()
             entry.update({
                 "first_seen": now, "last_seen": now, "status": "active",
-                "notified": False,
+                "notified": False, "filtered": filtered,
                 "price_history": ([{"at": now, "price": listing.price}]
                                   if listing.price is not None else []),
             })
@@ -225,6 +226,7 @@ class State:
         # a car that reappears cannot be carried across the removal threshold
         # by misses it accrued before.
         entry["misses"] = 0
+        entry["filtered"] = filtered
         entry.pop("removed_at", None)
         entry["notified"] = True if was_imported else existing.get("notified", False)
         history = list(existing.get("price_history") or [])
@@ -392,6 +394,18 @@ class State:
 
     # ---------------- housekeeping ----------------
 
+    def forget_searches(self, keep_ids: set[str]) -> list[str]:
+        """Drop health rows for searches that are no longer configured.
+
+        Without this, a search you removed keeps its last failure forever and
+        shows up on the dashboard as permanently broken.
+        """
+        searches = self.data.get("searches") or {}
+        gone = [sid for sid in searches if sid not in keep_ids]
+        for sid in gone:
+            del searches[sid]
+        return gone
+
     def prune(self, *, keep_days: int = 730, keep_max: int = 5000) -> int:
         """Forget cars that went away a long time ago, so state stays small."""
         if keep_days <= 0 and keep_max <= 0:
@@ -413,7 +427,10 @@ class State:
         return removed
 
     def stats(self) -> dict[str, Any]:
-        active = [e for e in self.listings.values() if e.get("status") == "active"]
+        # A car hidden by the user's own filters is not something they are
+        # watching, so it does not count towards what is live.
+        active = [e for e in self.listings.values()
+                  if e.get("status") == "active" and not e.get("filtered")]
         priced = [e["price"] for e in active if e.get("price")]
         return {
             "total": len(self.listings),

@@ -42,6 +42,8 @@ def build_payload(cfg: Config, state: State, env: dict[str, str] | None = None
     for entry in state.listings.values():
         if entry.get("imported_from"):
             continue  # a bare id from v1 with no data - nothing to show
+        if entry.get("filtered"):
+            continue  # hidden by the user's own filters
         item = {k: entry.get(k) for k in LISTING_FIELDS if k in entry}
         item["price_history"] = (entry.get("price_history") or [])[-20:]
         item["is_new"] = False

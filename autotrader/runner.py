@@ -376,7 +376,7 @@ def run(cfg: Config | None = None, state: State | None = None, *,
 
             seen_ids = {l.id for l in listings}
             for listing in kept:
-                change = state.record(listing)
+                change = state.record(listing, filtered=False)
                 if change is None:
                     continue
                 if change.kind == Change.NEW:
@@ -403,7 +403,7 @@ def run(cfg: Config | None = None, state: State | None = None, *,
             # Cars that were filtered out still count as "seen", so they do not
             # look like removals on the next pass.
             for listing in (l for l, _ in dropped):
-                state.record(listing)
+                state.record(listing, filtered=True)
                 state.mark_notified([listing.id])
 
             for change in state.mark_missing(search.id, seen_ids):
@@ -480,6 +480,10 @@ def run(cfg: Config | None = None, state: State | None = None, *,
 
         # ---- housekeeping -------------------------------------------
         if not dry_run:
+            forgotten = state.forget_searches({s.id for s in cfg.searches})
+            if forgotten:
+                report.warnings.append(
+                    f"forgot {len(forgotten)} search(es) no longer configured")
             pruned = archive_mod.prune(archive_conf)
             if pruned:
                 report.warnings.append(f"pruned {len(pruned)} old archive folder(s)")

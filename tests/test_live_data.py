@@ -323,3 +323,72 @@ class TestFiltersOnRealCars:
         for _ in range(4):
             report = live.run()
         assert report.removed == 0
+
+
+class TestFilteredCarsStayOutOfSight:
+    def test_a_filtered_car_is_not_published_to_the_dashboard(self, live):
+        from autotrader.dashboard import build_payload
+        live.cfg.set("filters.max_price", 100000)
+        live.cfg.save()
+        live.run()
+
+        state = State.load(live.path / "state.json")
+        payload = build_payload(live.cfg, state, {})
+        for item in payload["listings"]:
+            assert item.get("price") is None or item["price"] <= 100000
+
+    def test_the_live_count_excludes_filtered_cars(self, live):
+        live.cfg.set("filters.max_price", 100000)
+        live.cfg.save()
+        live.run()
+        state = State.load(live.path / "state.json")
+        active = [v for v in state.listings.values()
+                  if v.get("status") == "active" and not v.get("filtered")]
+        assert state.stats()["active"] == len(active)
+        assert all((v.get("price") or 0) <= 100000 for v in active)
+
+    def test_filtered_cars_are_still_tracked_internally(self, live):
+        """They must be, or the next run reports them as removed."""
+        live.cfg.set("filters.max_price", 100000)
+        live.cfg.data["searches"][0]["notify_on"] = {"removed": True}
+        live.cfg.save()
+        for _ in range(4):
+            report = live.run()
+        assert report.removed == 0
+        state = State.load(live.path / "state.json")
+        assert any(v.get("filtered") for v in state.listings.values())
+
+    def test_a_car_that_stops_being_filtered_becomes_visible(self, live):
+        live.cfg.set("filters.max_price", 80000)
+        live.cfg.save()
+        live.run()
+        before = State.load(live.path / "state.json").stats()["active"]
+
+        live.cfg.set("filters.max_price", None)
+        live.cfg.save()
+        live.run()
+        after = State.load(live.path / "state.json").stats()["active"]
+        assert after > before
+
+
+class TestForgettingRemovedSearches:
+    def test_a_removed_search_stops_being_reported(self, live):
+        live.run()
+        state = State.load(live.path / "state.json")
+        assert set(state.data["searches"])
+
+        stale = live.cfg.searches[0].id
+        live.cfg.remove_search(stale)
+        live.cfg.add_search("https://www.autotrader.ca/cars/bmw/m3/?prx=-2", "M3")
+        live.cfg.save()
+        live.run()
+
+        state = State.load(live.path / "state.json")
+        assert stale not in state.data["searches"], \
+            "a search you deleted must not keep reporting its last failure"
+
+    def test_configured_searches_are_kept(self, live):
+        live.run()
+        live.run()
+        state = State.load(live.path / "state.json")
+        assert {s.id for s in live.cfg.searches} <= set(state.data["searches"])
