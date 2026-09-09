@@ -1,0 +1,135 @@
+# NOTE ON THE FILENAME
+# This lives at watch.yml, not the old run_bot.yml, on purpose. GitHub keys a
+# workflow by its file path and remembers that run_bot.yml was disabled on
+# 2026-01-08 - renaming the `name:` would not have cleared that, and the bot
+# would have stayed silently switched off after merging. A new path registers
+# as a new workflow, enabled by default.
+
+name: Check AutoTrader
+
+on:
+  schedule:
+    # Every 30 minutes. GitHub queues scheduled jobs on a best-effort basis and
+    # drops them under load, so */15 does not actually run every 15 minutes -
+    # the old workflow asked for 96 runs a day and got far fewer, unevenly.
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Report what would happen without sending anything'
+        type: boolean
+        default: false
+
+# Two runs pushing to the same branch collide. Let an in-flight run finish.
+concurrency:
+  group: autotrader-bot
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # Idempotent: on a fresh install this adopts the old SEARCH_URL secret
+      # and sets up a private ntfy topic so the bot can reach you without any
+      # token at all. On every run after that it prints the state and exits.
+      - name: First-run setup
+        env:
+          SEARCH_URL: ${{ secrets.SEARCH_URL }}
+        run: |
+          python -m autotrader setup --non-interactive --no-colour | tee setup.log
+          {
+            echo "## Setup"
+            echo '```'
+            cat setup.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Check for new listings
+        id: bot
+        env:
+          # Non-secret settings live in config.json. Only credentials are here,
+          # and every one of them is optional - the bot enables whichever
+          # channels it finds and says so in the log.
+          SEARCH_URL:          ${{ secrets.SEARCH_URL }}
+          TELEGRAM_BOT_TOKEN:  ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:    ${{ secrets.TELEGRAM_CHAT_ID }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL:   ${{ secrets.SLACK_WEBHOOK_URL }}
+          NTFY_TOKEN:          ${{ secrets.NTFY_TOKEN }}
+          GMAIL_USER:          ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD:  ${{ secrets.GMAIL_APP_PASSWORD }}
+          TWILIO_SID:          ${{ secrets.TWILIO_SID }}
+          TWILIO_TOKEN:        ${{ secrets.TWILIO_TOKEN }}
+          TWILIO_FROM:         ${{ secrets.TWILIO_FROM }}
+          TWILIO_TO:           ${{ secrets.TWILIO_TO }}
+        run: |
+          python -m autotrader run ${{ inputs.dry_run && '--dry-run' || '' }} | tee run.log
+        # The bot exits non-zero when a search failed. State is already saved by
+        # then, so the commit below must still happen; the job is failed at the
+        # end instead, after the results are safely stored.
+        continue-on-error: true
+
+      - name: Save results
+        if: ${{ !inputs.dry_run }}
+        run: |
+          git config user.name  "autotrader-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A state.json docs/data.json archives config.json NOTIFY.md 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "nothing changed"
+            exit 0
+          fi
+          git commit -m "Update listings [skip ci]"
+          # Another run may have pushed while this one was scraping; rebase
+          # rather than failing, and retry a few times on a busy repository.
+          for attempt in 1 2 3 4 5; do
+            git pull --rebase --autostash origin "${GITHUB_REF_NAME}" && \
+              git push origin "HEAD:${GITHUB_REF_NAME}" && exit 0
+            echo "push attempt $attempt failed; retrying"
+            sleep $((attempt * 4))
+          done
+          echo "could not push after 5 attempts"
+          exit 1
+
+      - name: Upload logs and the first-run parse check
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: run-${{ github.run_number }}
+          path: |
+            run.log
+            setup.log
+            validation-report.md
+          retention-days: 30
+          if-no-files-found: ignore
+
+      # The first real run against the live site is the first time anyone finds
+      # out whether the search-results parser works. It writes its verdict here.
+      - name: Show the first-run parse check
+        if: always() && hashFiles('validation-report.md') != ''
+        run: cat validation-report.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Report failure
+        if: steps.bot.outcome == 'failure'
+        run: |
+          echo "::error::The bot reported a problem. Results were still saved."
+          if [ -f validation-report.md ] && grep -q "looks wrong" validation-report.md; then
+            echo "::error::The first-run parse check failed - nothing was recorded."
+          fi
+          tail -40 run.log || true
+          exit 1

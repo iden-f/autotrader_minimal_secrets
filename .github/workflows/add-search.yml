@@ -1,0 +1,52 @@
+name: Add a search
+
+# Paste an autotrader.ca search link straight into GitHub's own UI:
+# Actions -> Add a search -> Run workflow. No local setup, no config editing.
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: 'Paste the autotrader.ca search link'
+        required: true
+        type: string
+      name:
+        description: 'Name for this search (optional)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: autotrader-config
+
+jobs:
+  add:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - run: pip install -r requirements.txt
+
+      - name: Add the search
+        env:
+          SEARCH_URL_INPUT: ${{ inputs.url }}
+          SEARCH_NAME: ${{ inputs.name }}
+        run: |
+          python -m autotrader add "$SEARCH_URL_INPUT" --name "$SEARCH_NAME"
+          python -m autotrader list
+
+      - name: Commit
+        run: |
+          git config user.name  "autotrader-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add config.json docs/data.json 2>/dev/null || true
+          git diff --cached --quiet && exit 0
+          git commit -m "Watch a new search"
+          git pull --rebase --autostash origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"

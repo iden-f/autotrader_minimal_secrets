@@ -1,0 +1,90 @@
+{
+  "version": 2,
+  "legacy_search_url_adopted": false,
+  "searches": [],
+  "filters": {
+    "min_price": null,
+    "max_price": null,
+    "min_year": null,
+    "max_year": null,
+    "max_mileage_km": null,
+    "include_keywords": [],
+    "exclude_keywords": [],
+    "exclude_sellers": [],
+    "require_price": false
+  },
+  "notifications": {
+    "digest": true,
+    "max_listings_per_message": 12,
+    "timezone": "America/Toronto",
+    "quiet_hours": {
+      "enabled": false,
+      "start": "23:00",
+      "end": "07:00"
+    },
+    "notify_on": {
+      "new": true,
+      "price_drop": true,
+      "price_rise": false,
+      "removed": false,
+      "errors": true
+    },
+    "price_drop_min_pct": 1.0,
+    "price_drop_min_abs": 250,
+    "channels": {
+      "telegram": {
+        "enabled": "auto",
+        "photos": true
+      },
+      "discord": {
+        "enabled": "auto"
+      },
+      "ntfy": {
+        "enabled": true,
+        "server": "https://ntfy.sh",
+        "topic": "autotrader-2q592ak9gnx7sqrere5r",
+        "priority": "default"
+      },
+      "slack": {
+        "enabled": "auto"
+      },
+      "email": {
+        "enabled": "auto",
+        "to": "",
+        "html": true
+      },
+      "webhook": {
+        "enabled": false,
+        "url": ""
+      },
+      "twilio": {
+        "enabled": false
+      }
+    }
+  },
+  "scraping": {
+    "max_pages": 3,
+    "results_per_page": 50,
+    "timeout_seconds": 30,
+    "retries": 3,
+    "delay_ms": 1200,
+    "enrich_details": true,
+    "enrich_limit": 25,
+    "request_budget": 250,
+    "user_agent": "auto"
+  },
+  "archive": {
+    "mode": "metadata",
+    "images": 0,
+    "keep_last": 400,
+    "keep_days": 730
+  },
+  "health": {
+    "alert_after_failures": 3,
+    "heartbeat_hours": 0
+  },
+  "dashboard": {
+    "enabled": true,
+    "max_listings": 500
+  }
+}
