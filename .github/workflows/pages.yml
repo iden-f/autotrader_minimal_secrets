@@ -35,7 +35,13 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
+      # Check out the branch tip, not the commit that triggered this run. When
+      # the watcher calls this workflow, it has just committed the results of
+      # the run that is still in progress - checking out github.sha would
+      # publish the state from *before* those results existed.
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
 
       - uses: actions/setup-python@v5
         with:
