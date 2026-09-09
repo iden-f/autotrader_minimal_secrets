@@ -1,0 +1,181 @@
+"""Capturing what the scraper actually saw, when it saw nothing.
+
+A parse that returns zero listings is almost useless to debug from a log line.
+This writes a small, targeted description of the page - its shape, its markers,
+its structured data, and the context around anything that looks like a listing
+link - so a broken parser can be fixed from the evidence rather than guesswork.
+
+It is deliberately not a full page dump: those are ~400 KB each and would bloat
+the repository they get committed to.
+"""
+
+from __future__ import annotations
+
+import html as htmllib
+import json
+import re
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+from .http import BLOCK_MARKERS, looks_blocked
+from .parser import parse_search_page
+
+DIAGNOSTIC_DIR = Path("diagnostics")
+
+HEAD_CHARS = 2500
+MAX_JSONLD = 6000
+MAX_CONTEXTS = 25
+CONTEXT_WINDOW = 180
+
+# Things whose presence or absence says something about how the page is built.
+MARKERS = {
+    "listing path /a/": r"/a/",
+    "listing id pattern": r"\d+_\d{5,}_",
+    "json-ld blocks": r"application/ld\+json",
+    "__NEXT_DATA__": r"__NEXT_DATA__",
+    "window.__INITIAL_STATE__": r"__INITIAL_STATE__",
+    "data-listing-id": r"data-listing-id",
+    "srp / results container": r"(?i)search-?results|srp-|result-item|listing-item",
+    "vehicle image CDN": r"vehicleimages",
+    "price markup": r"(?i)price-amount|\bprice\b",
+    "noscript block": r"<noscript",
+    "meta refresh": r"(?i)http-equiv=[\"']?refresh",
+    "captcha/challenge word": r"(?i)captcha|challenge|verify you",
+}
+
+
+def capture(url: str, response_text: str, status: int, elapsed_ms: int,
+            search_name: str = "") -> dict[str, Any]:
+    """Summarise a page in enough detail to fix a parser from."""
+    text = response_text or ""
+    parsed = parse_search_page(text, url)
+
+    title = ""
+    match = re.search(r"<title[^>]*>(.*?)</title>", text, re.S | re.I)
+    if match:
+        title = htmllib.unescape(re.sub(r"\s+", " ", match.group(1))).strip()[:200]
+
+    markers = {name: len(re.findall(pattern, text))
+               for name, pattern in MARKERS.items()}
+
+    jsonld: list[str] = []
+    budget = MAX_JSONLD
+    for block in re.findall(r'<script[^>]*application/ld\+json[^>]*>(.*?)</script>',
+                            text, re.S | re.I):
+        block = block.strip()
+        if not block or budget <= 0:
+            continue
+        try:
+            # Re-serialise compactly: pretty-printed blocks waste the budget.
+            block = json.dumps(json.loads(block), separators=(",", ":"))
+        except (json.JSONDecodeError, TypeError):
+            block = "UNPARSEABLE: " + block[:400]
+        jsonld.append(block[:budget])
+        budget -= len(block)
+
+    # The context around anything resembling a listing link is what a broken
+    # anchor strategy most needs.
+    contexts: list[str] = []
+    for hit in re.finditer(r"/a/[^\"'\s<>]{0,120}", text):
+        start = max(0, hit.start() - CONTEXT_WINDOW)
+        end = min(len(text), hit.end() + CONTEXT_WINDOW)
+        contexts.append(re.sub(r"\s+", " ", text[start:end]))
+        if len(contexts) >= MAX_CONTEXTS:
+            break
+
+    blocked_markers = [m for m in BLOCK_MARKERS if m in text[:20000].lower()]
+
+    return {
+        "captured_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "search": search_name,
+        "url": url,
+        "http_status": status,
+        "elapsed_ms": elapsed_ms,
+        "bytes": len(text),
+        "title": title,
+        "looks_blocked": looks_blocked(text, status),
+        "block_markers_found": blocked_markers,
+        "strategy_scores": parsed.candidates,
+        "strategy_used": parsed.strategy,
+        "listings_found": len(parsed.listings),
+        "markers": markers,
+        "head": text[:HEAD_CHARS],
+        "json_ld": jsonld,
+        "listing_link_contexts": contexts,
+    }
+
+
+def to_markdown(data: dict[str, Any]) -> str:
+    lines = [f"# What the scraper saw: {data.get('search') or 'search'}", ""]
+    lines.append(f"- Captured: `{data['captured_at']}`")
+    lines.append(f"- URL: <{data['url']}>")
+    lines.append(f"- HTTP {data['http_status']}, {data['bytes']:,} bytes, "
+                 f"{data['elapsed_ms']} ms")
+    lines.append(f"- Title: `{data['title'] or '(none)'}`")
+    lines.append(f"- Looks like an anti-bot page: **{data['looks_blocked']}**")
+    if data["block_markers_found"]:
+        lines.append(f"- Block markers matched: {data['block_markers_found']}")
+    lines.append(f"- Listings parsed: **{data['listings_found']}** "
+                 f"(strategy: `{data['strategy_used']}`)")
+    lines.append("")
+
+    lines.append("## Strategy scores")
+    lines.append("")
+    lines.append("| strategy | listings |")
+    lines.append("|---|---|")
+    for name, count in data["strategy_scores"].items():
+        lines.append(f"| `{name}` | {count} |")
+    lines.append("")
+
+    lines.append("## Markers present in the HTML")
+    lines.append("")
+    lines.append("| marker | occurrences |")
+    lines.append("|---|---|")
+    for name, count in data["markers"].items():
+        lines.append(f"| {name} | {count} |")
+    lines.append("")
+
+    if data["json_ld"]:
+        lines.append("## Structured data found")
+        lines.append("")
+        for block in data["json_ld"]:
+            lines.append("```json")
+            lines.append(block)
+            lines.append("```")
+            lines.append("")
+    else:
+        lines.append("## Structured data found")
+        lines.append("")
+        lines.append("_None. The page carries no schema.org JSON-LD._")
+        lines.append("")
+
+    if data["listing_link_contexts"]:
+        lines.append("## Context around listing-shaped links")
+        lines.append("")
+        for context in data["listing_link_contexts"]:
+            lines.append("```html")
+            lines.append(context)
+            lines.append("```")
+            lines.append("")
+    else:
+        lines.append("## Context around listing-shaped links")
+        lines.append("")
+        lines.append("_No `/a/` links anywhere in the payload._")
+        lines.append("")
+
+    lines.append("## First few KB of the page")
+    lines.append("")
+    lines.append("```html")
+    lines.append(data["head"])
+    lines.append("```")
+    return "\n".join(lines)
+
+
+def write(data: dict[str, Any], slug: str, root: Path = DIAGNOSTIC_DIR) -> Path:
+    root.mkdir(parents=True, exist_ok=True)
+    path = root / f"{slug}.md"
+    path.write_text(to_markdown(data), encoding="utf-8")
+    (root / f"{slug}.json").write_text(
+        json.dumps(data, indent=1, ensure_ascii=False), encoding="utf-8")
+    return path

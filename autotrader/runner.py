@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Any
 
 from . import archive as archive_mod
-from . import filters, notifiers, provision, validate
+from . import diagnose, filters, notifiers, provision, validate
 from .config import Config
 from .enrich import enrich
 from .http import BlockedError, BudgetExhausted, FetchError, Fetcher
@@ -36,6 +36,7 @@ class RunReport:
     requests_made: int = 0
     budget_exhausted: bool = False
     empty_parses: list[str] = field(default_factory=list)
+    diagnostics: list[str] = field(default_factory=list)
     first_run: bool = False
     validation_ok: bool = True
     validation_report: str = ""
@@ -71,6 +72,7 @@ class RunReport:
             "requests_made": self.requests_made,
             "budget_exhausted": self.budget_exhausted,
             "empty_parses": self.empty_parses,
+            "diagnostics": self.diagnostics,
             "first_run": self.first_run,
             "validation_ok": self.validation_ok,
             "notified": self.notified, "errors": self.errors[:10],
@@ -86,7 +88,7 @@ class RunReport:
 
 
 def scrape_search(search, cfg: Config, fetcher: Fetcher
-                  ) -> tuple[list[Listing], str, bool, dict[str, int]]:
+                  ) -> tuple[list[Listing], str, bool, dict[str, int], Any]:
     """Fetch and parse every page of one search.  Raises on a hard failure."""
     scraping = cfg.get("scraping", {}) or {}
     max_pages = max(1, int(search.max_pages or scraping.get("max_pages", 3) or 1))
@@ -96,6 +98,7 @@ def scrape_search(search, cfg: Config, fetcher: Fetcher
     strategy = "none"
     candidates: dict[str, int] = {}
     said_no_results = False
+    first_page = None
     referer = "https://www.autotrader.ca/"
 
     for page in range(1, max_pages + 1):
@@ -107,6 +110,7 @@ def scrape_search(search, cfg: Config, fetcher: Fetcher
             strategy = result.strategy
             candidates = dict(result.candidates)
             said_no_results = looks_like_no_results(response.text)
+            first_page = response
             if not result.listings:
                 # An empty first page is either a genuinely empty search or a
                 # parser that has fallen behind the site.  Both need saying.
@@ -125,7 +129,7 @@ def scrape_search(search, cfg: Config, fetcher: Fetcher
         if fresh == 0:
             break
 
-    return list(found.values()), strategy, said_no_results, candidates
+    return list(found.values()), strategy, said_no_results, candidates, first_page
 
 
 def _price_disagrees(listing: Listing, state: State) -> bool:
@@ -234,7 +238,7 @@ def run(cfg: Config | None = None, state: State | None = None, *,
 
         for search in searches:
             try:
-                listings, strategy, said_no_results, candidates = scrape_search(
+                listings, strategy, said_no_results, candidates, first_page = scrape_search(
                     search, cfg, fetcher)
                 report.strategies[search.id] = strategy
             except BudgetExhausted as exc:
@@ -277,8 +281,19 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                     f"{search.name}: AutoTrader reports no results for this search.")
             elif not listings:
                 # A 200 with listings we could not read, and no "no results"
-                # message: every strategy has fallen behind the site. Failing
-                # loudly here is the whole point - v1 died quietly.
+                # message: every strategy has fallen behind the site. Capture
+                # what the page actually looked like, because a log line saying
+                # "found 0" is almost useless to fix a parser from.
+                if first_page is not None:
+                    try:
+                        data = diagnose.capture(
+                            first_page.url, first_page.text, first_page.status,
+                            first_page.elapsed_ms, search.name)
+                        written = diagnose.write(data, search.id)
+                        report.diagnostics.append(str(written))
+                        log.warning("wrote a page capture to %s", written)
+                    except Exception as exc:  # noqa: BLE001 - never fatal
+                        log.warning("could not capture the page: %s", exc)
                 report.errors.append(
                     f"{search.name}: the page loaded ({strategy}) but no listings "
                     f"could be read, and the site did not say the search was empty. "
