@@ -1,0 +1,33 @@
+{
+  "id": "d5ab509e-9f04-4b9b-830a-3e4733d615ae",
+  "url": "https://www.autotrader.ca/offers/bmw-m5-competition-gasoline-red-cat_ma13gr202609tr17957-d5ab509e-9f04-4b9b-830a-3e4733d615ae",
+  "title": "BMW M5",
+  "year": 2019,
+  "make": "BMW",
+  "model": "M5",
+  "trim": "Competition",
+  "price": 79900,
+  "price_source": "search",
+  "card_price": 79900,
+  "currency": "CAD",
+  "mileage_km": 82970,
+  "location": "Airdrie",
+  "province": "AB",
+  "seller": "409 Motor Company",
+  "seller_type": "",
+  "body": "Sedan",
+  "color": "Red",
+  "transmission": "Automatic",
+  "drivetrain": "",
+  "fuel": "Gasoline",
+  "engine": "",
+  "vin": "",
+  "images": [
+    "https://prod.pictures.autoscout24.net/listing-images/d5ab509e-9f04-4b9b-830a-3e4733d615ae_9c6fa6d8-6bdf-4294-8c68-8670c5bbdbcb.jpg/1920x1080.jpg"
+  ],
+  "search_id": "bmw-m5-bargains-any-year-f2f097",
+  "search_name": "BMW M5 bargains (any year)",
+  "source": "jsonld",
+  "enriched": true,
+  "archived_at": "2026-09-09T22:52:45+00:00"
+}
