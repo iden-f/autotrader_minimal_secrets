@@ -12,9 +12,10 @@ on:
   push:
     branches: [main]
     paths:
+      # Only the page itself. Changes to state.json and config.json come from
+      # the watcher, which calls this workflow directly when a run finishes -
+      # listing them here as well made every run publish the dashboard twice.
       - 'docs/**'
-      - 'state.json'
-      - 'config.json'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 
