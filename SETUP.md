@@ -213,18 +213,21 @@ python -m autotrader ui
 Opens `http://127.0.0.1:8765`. Changes you make in **Settings** save straight
 to `config.json`.
 
-### On the web — GitHub Pages
+### On the web — already live
 
-1. **Settings** tab → left sidebar → **Pages**.
-2. Under **Build and deployment** → **Source**, choose **Deploy from a branch**.
-3. **Branch**: `main`. **Folder**: `/docs`. Click **Save**.
-4. Wait 1–2 minutes. The page reloads with *"Your site is live at
-   `https://iden-f.github.io/autotrader_minimal_secrets/`"*.
+**<https://iden-f.github.io/autotrader_minimal_secrets/>**
 
-> **Free plan?** Pages only serves **public** repositories on GitHub Free. If
-> this repo is private, either make it public (check first that nothing
-> sensitive is committed — `config.json` holds no secrets, but look anyway),
-> or just use the local UI above. Nothing else depends on Pages.
+Nothing to switch on. The *Publish dashboard* workflow builds `docs/` onto the
+`gh-pages` branch, and GitHub serves it; it republishes after every run that
+changes something.
+
+If that URL ever 404s, the Pages source has been changed. Put it back at
+**Settings** → **Pages** → **Source: Deploy from a branch** → **gh-pages** →
+**/ (root)**.
+
+> Pages only serves **public** repositories on GitHub Free. If you make this
+> repository private, the dashboard stops being published and the local UI
+> above is the way to see it. Nothing else depends on Pages.
 
 The published page is **read-only**: a static page cannot write to your repo.
 Editing settings there gives you **Copy config.json**, which you paste over the

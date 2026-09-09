@@ -104,15 +104,21 @@ it checks every 30 minutes. To run it right away: Actions → **Check AutoTrader
 
 ## The dashboard
 
-`docs/index.html` is a single self-contained page: every car found, its price
-history, your searches and their health, and all the settings.
+**Live at <https://iden-f.github.io/autotrader_minimal_secrets/>**
+
+Every car found, its price history, your searches and their health, and all
+the settings. It is republished automatically after every run that changes
+something.
+
+`docs/index.html` is a single self-contained page with no build step.
 
 - **Locally** — `python -m autotrader ui` opens it and can save settings
   straight back to `config.json`.
-- **On the web** — Settings → Pages → deploy from `main` / `/docs`. It becomes
-  read-only there (a static page cannot write to your repository), so it offers
-  *Copy config.json* and *Download* instead. Pages is free on public
-  repositories; a private repository needs a paid plan.
+- **On the web** — already published, by the *Publish dashboard* workflow,
+  which builds `docs/` onto the `gh-pages` branch. It is read-only there (a
+  static page cannot write to your repository), so it offers *Copy config.json*
+  and *Download* instead. Pages is free on public repositories; a private
+  repository needs a paid plan.
 
 ## Commands
 
