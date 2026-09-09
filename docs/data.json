@@ -1,10 +1,11 @@
 {
- "generated_at": "2026-09-09T22:55:25+00:00",
+ "generated_at": "2026-09-09T22:56:32+00:00",
  "notify": {
   "ntfy_topic": "autotrader-2q592ak9gnx7sqrere5r",
   "ntfy_url": "https://ntfy.sh/autotrader-2q592ak9gnx7sqrere5r",
   "active": [
-   "ntfy"
+   "ntfy",
+   "email"
   ]
  },
  "version": 2,
@@ -21,7 +22,7 @@
   {
    "id": "d5ab509e-9f04-4b9b-830a-3e4733d615ae",
    "url": "https://www.autotrader.ca/offers/bmw-m5-competition-gasoline-red-cat_ma13gr202609tr17957-d5ab509e-9f04-4b9b-830a-3e4733d615ae",
-   "title": "BMW M5",
+   "title": "BMW M5 Competition",
    "year": 2019,
    "make": "BMW",
    "model": "M5",
@@ -39,12 +40,23 @@
    "fuel": "Gasoline",
    "engine": "",
    "images": [
-    "https://prod.pictures.autoscout24.net/listing-images/d5ab509e-9f04-4b9b-830a-3e4733d615ae_9c6fa6d8-6bdf-4294-8c68-8670c5bbdbcb.jpg/1920x1080.jpg"
+    "https://prod.pictures.autoscout24.net/listing-images/d5ab509e-9f04-4b9b-830a-3e4733d615ae_9c6fa6d8-6bdf-4294-8c68-8670c5bbdbcb.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/d5ab509e-9f04-4b9b-830a-3e4733d615ae_402e0b20-17f9-403c-9cb5-fda740306d48.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/d5ab509e-9f04-4b9b-830a-3e4733d615ae_cf8b1d55-6537-4832-976b-dfd4c00b7c6b.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/d5ab509e-9f04-4b9b-830a-3e4733d615ae_2225ebe9-152c-456d-bc0a-4a643647aa37.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/d5ab509e-9f04-4b9b-830a-3e4733d615ae_dc4c1264-98ef-4a54-82b4-fb4767b5e5f7.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/d5ab509e-9f04-4b9b-830a-3e4733d615ae_49dbbc0f-fc2f-4285-8a41-28b9b89cfd0c.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/d5ab509e-9f04-4b9b-830a-3e4733d615ae_07eebacd-e026-4645-9778-d55e7e12c387.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/d5ab509e-9f04-4b9b-830a-3e4733d615ae_6e90c41c-03f2-4032-962e-546593ad2b44.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/d5ab509e-9f04-4b9b-830a-3e4733d615ae_a75d6057-c0c3-4e7f-8542-e268a7dcca15.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/d5ab509e-9f04-4b9b-830a-3e4733d615ae_101fe8b4-0c93-470e-ac45-c278ac018355.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/d5ab509e-9f04-4b9b-830a-3e4733d615ae_d279017a-e1e8-4708-90d5-0d7b18e61f08.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/d5ab509e-9f04-4b9b-830a-3e4733d615ae_30bf7f4a-48e9-488b-878d-73c3a42097e8.jpg/250x188.webp"
    ],
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-09T22:52:45+00:00",
-   "last_seen": "2026-09-09T22:52:45+00:00",
+   "last_seen": "2026-09-09T22:56:32+00:00",
    "status": "active",
    "price_history": [
     {
@@ -58,7 +70,7 @@
   {
    "id": "c3c3ed26-b898-4107-aaa3-c665ed5ea184",
    "url": "https://www.autotrader.ca/offers/bmw-m5-no-accidents-super-low-km-brown-interior-new-tires-gasoline-grey-cat_ma13gr202609-c3c3ed26-b898-4107-aaa3-c665ed5ea184",
-   "title": "BMW M5",
+   "title": "BMW M5 NO ACCIDENTS|SUPER LOW KM|BROWN INTERIOR|NEW TIRES",
    "year": 2019,
    "make": "BMW",
    "model": "M5",
@@ -76,12 +88,23 @@
    "fuel": "Gasoline",
    "engine": "",
    "images": [
-    "https://prod.pictures.autoscout24.net/listing-images/c3c3ed26-b898-4107-aaa3-c665ed5ea184_fdbc3eff-0c02-464f-905c-ad1542d553ab.jpg/1920x1080.jpg"
+    "https://prod.pictures.autoscout24.net/listing-images/c3c3ed26-b898-4107-aaa3-c665ed5ea184_fdbc3eff-0c02-464f-905c-ad1542d553ab.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/c3c3ed26-b898-4107-aaa3-c665ed5ea184_b99fce91-8a2f-4131-acee-0dcc6ede2215.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/c3c3ed26-b898-4107-aaa3-c665ed5ea184_58f378c3-583c-4787-873c-051bbb2ed19c.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/c3c3ed26-b898-4107-aaa3-c665ed5ea184_17cffb1f-79b7-4c44-8bd8-188992c462cd.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/c3c3ed26-b898-4107-aaa3-c665ed5ea184_f10134d6-c0d7-4d31-a962-853e0d81d4d0.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/c3c3ed26-b898-4107-aaa3-c665ed5ea184_42eddf5d-bf09-4f58-a8b4-f9348baf4bfb.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/c3c3ed26-b898-4107-aaa3-c665ed5ea184_99bf23d6-42bd-4387-b760-4800d9dcd6b0.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/c3c3ed26-b898-4107-aaa3-c665ed5ea184_4db9b607-2cd9-4f02-8d0d-7b269490f088.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/c3c3ed26-b898-4107-aaa3-c665ed5ea184_fd77e28b-2935-4c19-994a-64ac7feceff0.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/c3c3ed26-b898-4107-aaa3-c665ed5ea184_68675d9a-21cd-4b0d-be0d-c1fd13442068.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/c3c3ed26-b898-4107-aaa3-c665ed5ea184_891799ed-ad60-478b-bb4a-5e54b75137b7.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/c3c3ed26-b898-4107-aaa3-c665ed5ea184_7f5b1639-0548-459a-8ded-6f135f25d8ab.jpg/250x188.webp"
    ],
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-09T22:52:45+00:00",
-   "last_seen": "2026-09-09T22:52:45+00:00",
+   "last_seen": "2026-09-09T22:56:32+00:00",
    "status": "active",
    "price_history": [
     {
@@ -95,7 +118,7 @@
   {
    "id": "a072e39a-ded6-4fa8-b257-51dd7e9974b2",
    "url": "https://www.autotrader.ca/offers/bmw-m5-competition-gasoline-blue-cat_ma13gr202609tr17957-a072e39a-ded6-4fa8-b257-51dd7e9974b2",
-   "title": "BMW M5",
+   "title": "BMW M5 Competition",
    "year": 2020,
    "make": "BMW",
    "model": "M5",
@@ -113,12 +136,23 @@
    "fuel": "Gasoline",
    "engine": "",
    "images": [
-    "https://prod.pictures.autoscout24.net/listing-images/a072e39a-ded6-4fa8-b257-51dd7e9974b2_e9fbea34-025a-4d8b-a2f7-11fd9c186d81.jpg/1920x1080.jpg"
+    "https://prod.pictures.autoscout24.net/listing-images/a072e39a-ded6-4fa8-b257-51dd7e9974b2_e9fbea34-025a-4d8b-a2f7-11fd9c186d81.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/a072e39a-ded6-4fa8-b257-51dd7e9974b2_0d85be9d-b165-4f3d-98b5-18946e3a15e5.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/a072e39a-ded6-4fa8-b257-51dd7e9974b2_cec9a557-32c6-441e-9615-344010396765.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/a072e39a-ded6-4fa8-b257-51dd7e9974b2_e73e578d-8042-46de-8d57-09f9fdc06ed7.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/a072e39a-ded6-4fa8-b257-51dd7e9974b2_a10cc1d5-3444-4a39-9d0c-8277e886b1ac.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/a072e39a-ded6-4fa8-b257-51dd7e9974b2_4ae3757c-d8a3-432b-860a-ba14940394b8.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/a072e39a-ded6-4fa8-b257-51dd7e9974b2_67780371-7f2b-4f8d-9a67-20924427a403.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/a072e39a-ded6-4fa8-b257-51dd7e9974b2_b8fca47f-2172-4359-a54b-e69d0e7b5f36.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/a072e39a-ded6-4fa8-b257-51dd7e9974b2_60ced427-ad5f-44c1-bc70-83b5c14a4b02.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/a072e39a-ded6-4fa8-b257-51dd7e9974b2_c6cc4061-61a1-4b4c-ba26-38b846c686cd.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/a072e39a-ded6-4fa8-b257-51dd7e9974b2_e1088e83-fd98-462e-b90d-043277d43651.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/a072e39a-ded6-4fa8-b257-51dd7e9974b2_c09d2833-97b9-4b19-95dd-6f006291ed72.jpg/250x188.webp"
    ],
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-09T22:52:45+00:00",
-   "last_seen": "2026-09-09T22:52:45+00:00",
+   "last_seen": "2026-09-09T22:56:32+00:00",
    "status": "active",
    "price_history": [
     {
@@ -132,7 +166,7 @@
   {
    "id": "936d1ab5-fb85-466b-a15b-c7a24255a373",
    "url": "https://www.autotrader.ca/offers/bmw-m5-competition-sedan-catless-downpipes-m-performan-gasoline-red-cat_ma13gr202609tr17957-936d1ab5-fb85-466b-a15b-c7a24255a373",
-   "title": "BMW M5",
+   "title": "BMW M5 Competition Sedan Catless downpipes, M Performan",
    "year": 2019,
    "make": "BMW",
    "model": "M5",
@@ -150,12 +184,23 @@
    "fuel": "Gasoline",
    "engine": "",
    "images": [
-    "https://prod.pictures.autoscout24.net/listing-images/936d1ab5-fb85-466b-a15b-c7a24255a373_54122f46-8c30-4a32-959f-7348a1e6cfbe.png/1920x1080.jpg"
+    "https://prod.pictures.autoscout24.net/listing-images/936d1ab5-fb85-466b-a15b-c7a24255a373_54122f46-8c30-4a32-959f-7348a1e6cfbe.png/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/936d1ab5-fb85-466b-a15b-c7a24255a373_5de27bc1-ae72-4271-befa-5ec32dd9ee61.png/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/936d1ab5-fb85-466b-a15b-c7a24255a373_946f1d5e-48eb-49b0-97cf-ec9976e10e12.png/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/936d1ab5-fb85-466b-a15b-c7a24255a373_e87dc139-66cc-4481-97e6-86128d6eca50.png/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/936d1ab5-fb85-466b-a15b-c7a24255a373_7d3403b5-8844-4281-82c0-e338022fc49f.png/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/936d1ab5-fb85-466b-a15b-c7a24255a373_000f6de6-306c-4a75-865e-82414e3fe298.png/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/936d1ab5-fb85-466b-a15b-c7a24255a373_ee27344a-49a6-4fbd-9a13-9498243eaece.png/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/936d1ab5-fb85-466b-a15b-c7a24255a373_f858c331-1539-41bf-b89d-8025c0879c06.png/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/936d1ab5-fb85-466b-a15b-c7a24255a373_c58de419-1c3c-4e0e-813b-0449851f6987.png/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/936d1ab5-fb85-466b-a15b-c7a24255a373_49863b95-9f0f-4975-8f7d-c16e65b9987a.png/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/936d1ab5-fb85-466b-a15b-c7a24255a373_0a0eeb25-65aa-475c-9b80-d124379ae705.png/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/936d1ab5-fb85-466b-a15b-c7a24255a373_5e9bbeca-4fb7-4264-80f4-692b7f18b9d1.png/250x188.webp"
    ],
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-09T22:52:45+00:00",
-   "last_seen": "2026-09-09T22:52:45+00:00",
+   "last_seen": "2026-09-09T22:56:32+00:00",
    "status": "active",
    "price_history": [
     {
@@ -169,7 +214,7 @@
   {
    "id": "8d8621e3-0661-421e-8126-144151b883bd",
    "url": "https://www.autotrader.ca/offers/bmw-m5-bowers-wilkins-carbon-roof-acc-lka-gasoline-grey-cat_ma13gr202609-8d8621e3-0661-421e-8126-144151b883bd",
-   "title": "BMW M5",
+   "title": "BMW M5 BOWERS & WILKINS|CARBON ROOF|ACC|LKA|",
    "year": 2018,
    "make": "BMW",
    "model": "M5",
@@ -187,12 +232,23 @@
    "fuel": "Gasoline",
    "engine": "",
    "images": [
-    "https://prod.pictures.autoscout24.net/listing-images/8d8621e3-0661-421e-8126-144151b883bd_af869dfc-38d5-4634-8718-941f75852af0.jpg/1920x1080.jpg"
+    "https://prod.pictures.autoscout24.net/listing-images/8d8621e3-0661-421e-8126-144151b883bd_af869dfc-38d5-4634-8718-941f75852af0.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/8d8621e3-0661-421e-8126-144151b883bd_15f19318-283d-4f83-b242-4f0e1cb7f6f8.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/8d8621e3-0661-421e-8126-144151b883bd_e1907044-979e-461a-a00a-f8caa81000e4.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/8d8621e3-0661-421e-8126-144151b883bd_66d6653a-ffc1-4ef0-acc6-a85427318cd7.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/8d8621e3-0661-421e-8126-144151b883bd_1a79edb3-8c72-4d91-87a8-3f1ad8e67c3a.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/8d8621e3-0661-421e-8126-144151b883bd_482a3809-d044-4897-808c-1ade87d21e92.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/8d8621e3-0661-421e-8126-144151b883bd_76e65705-828d-4a22-ae84-a6f480d9aafb.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/8d8621e3-0661-421e-8126-144151b883bd_7c86356e-9b5f-40ff-b593-21c076151373.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/8d8621e3-0661-421e-8126-144151b883bd_fc42bdd3-d46e-49f1-a942-599babaa57f3.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/8d8621e3-0661-421e-8126-144151b883bd_06d8d404-6483-435f-8428-0521bdfcbc79.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/8d8621e3-0661-421e-8126-144151b883bd_896dea89-52ab-418e-92f5-355425ecd151.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/8d8621e3-0661-421e-8126-144151b883bd_a0bc2c6c-74e3-4a8d-a312-d78112121b25.jpg/250x188.webp"
    ],
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-09T22:52:45+00:00",
-   "last_seen": "2026-09-09T22:52:45+00:00",
+   "last_seen": "2026-09-09T22:56:32+00:00",
    "status": "active",
    "price_history": [
     {
@@ -206,7 +262,7 @@
   {
    "id": "32dccae4-3921-4773-a293-1c9d7f3f7873",
    "url": "https://www.autotrader.ca/offers/bmw-m5-competition-one-owner-two-sets-premium-pkg-adva-gasoline-black-cat_ma13gr202609tr17957-32dccae4-3921-4773-a293-1c9d7f3f7873",
-   "title": "BMW M5",
+   "title": "BMW M5 Competition, One Owner, Two Sets Premium Pkg, Adva",
    "year": 2019,
    "make": "BMW",
    "model": "M5",
@@ -224,12 +280,23 @@
    "fuel": "Gasoline",
    "engine": "",
    "images": [
-    "https://prod.pictures.autoscout24.net/listing-images/32dccae4-3921-4773-a293-1c9d7f3f7873_4e9ca901-5d3f-4d55-95df-6d6bdfacd12a.jpg/1920x1080.jpg"
+    "https://prod.pictures.autoscout24.net/listing-images/32dccae4-3921-4773-a293-1c9d7f3f7873_4e9ca901-5d3f-4d55-95df-6d6bdfacd12a.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/32dccae4-3921-4773-a293-1c9d7f3f7873_f4d34e77-5e47-4b95-adf5-0d60f957875c.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/32dccae4-3921-4773-a293-1c9d7f3f7873_78ce0503-bac3-4474-8f9b-32e0446f5d13.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/32dccae4-3921-4773-a293-1c9d7f3f7873_d92d64f3-f190-4ac2-8ea3-f48402069544.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/32dccae4-3921-4773-a293-1c9d7f3f7873_b097a7b3-2607-4c4b-a806-1e619715d612.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/32dccae4-3921-4773-a293-1c9d7f3f7873_0ba8a109-8150-4c15-aca3-3a529c872f21.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/32dccae4-3921-4773-a293-1c9d7f3f7873_7717758b-a478-43bd-bcc8-35ef18f3a451.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/32dccae4-3921-4773-a293-1c9d7f3f7873_62af8535-1ad3-45a6-bcd7-996769ea9b4f.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/32dccae4-3921-4773-a293-1c9d7f3f7873_073ea0bf-aa28-4875-a1c1-178cfd298f19.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/32dccae4-3921-4773-a293-1c9d7f3f7873_a181ff37-4680-4877-9e78-cbc23be1372c.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/32dccae4-3921-4773-a293-1c9d7f3f7873_d0b82655-ebdb-4c30-969b-8e8078c4ea8c.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/32dccae4-3921-4773-a293-1c9d7f3f7873_1fb1776d-eed9-4305-99fb-0e0fe55a0ab0.jpg/250x188.webp"
    ],
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-09T22:52:45+00:00",
-   "last_seen": "2026-09-09T22:52:45+00:00",
+   "last_seen": "2026-09-09T22:56:32+00:00",
    "status": "active",
    "price_history": [
     {
@@ -243,7 +310,7 @@
   {
    "id": "1e0e9810-9aaf-463b-8d51-184a51a59ca3",
    "url": "https://www.autotrader.ca/offers/bmw-m5-competition-carbon-roof-premium-package-gasoline-black-cat_ma13gr202609tr17957-1e0e9810-9aaf-463b-8d51-184a51a59ca3",
-   "title": "BMW M5",
+   "title": "BMW M5 Competition | Carbon roof | Premium package",
    "year": 2020,
    "make": "BMW",
    "model": "M5",
@@ -261,12 +328,23 @@
    "fuel": "Gasoline",
    "engine": "",
    "images": [
-    "https://prod.pictures.autoscout24.net/listing-images/1e0e9810-9aaf-463b-8d51-184a51a59ca3_120cc91a-96dd-4a08-8bad-d28086de6674.jpg/1920x1080.jpg"
+    "https://prod.pictures.autoscout24.net/listing-images/1e0e9810-9aaf-463b-8d51-184a51a59ca3_120cc91a-96dd-4a08-8bad-d28086de6674.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/1e0e9810-9aaf-463b-8d51-184a51a59ca3_c7610d3e-0e50-4e7c-8afa-e65265849052.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/1e0e9810-9aaf-463b-8d51-184a51a59ca3_24392755-6985-4572-8fd7-608d98c78286.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/1e0e9810-9aaf-463b-8d51-184a51a59ca3_f09ea33e-8771-4c2f-9e33-cde98e8d9b9d.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/1e0e9810-9aaf-463b-8d51-184a51a59ca3_952e08ab-e0ef-456b-9747-00d10a1b71e8.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/1e0e9810-9aaf-463b-8d51-184a51a59ca3_c7343373-0297-4677-bf70-1df3cd4344d8.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/1e0e9810-9aaf-463b-8d51-184a51a59ca3_9be7be08-2af2-4af1-a750-248253d331e7.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/1e0e9810-9aaf-463b-8d51-184a51a59ca3_40d50013-00f5-4634-aa8b-c53676113cd9.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/1e0e9810-9aaf-463b-8d51-184a51a59ca3_9587a281-fd52-4895-9056-2cca0aae775d.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/1e0e9810-9aaf-463b-8d51-184a51a59ca3_ae284f5a-062f-47e2-a435-fa0c341a5354.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/1e0e9810-9aaf-463b-8d51-184a51a59ca3_e2a8fc24-2300-4d8a-a779-5e35ebc7eccc.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/1e0e9810-9aaf-463b-8d51-184a51a59ca3_790ea86d-aa08-46e2-a2d6-551f90c282f0.jpg/250x188.webp"
    ],
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-09T22:52:45+00:00",
-   "last_seen": "2026-09-09T22:52:45+00:00",
+   "last_seen": "2026-09-09T22:56:32+00:00",
    "status": "active",
    "price_history": [
     {
@@ -280,7 +358,7 @@
   {
    "id": "0518b35e-d26d-45a1-b92b-5e32f2e992b5",
    "url": "https://www.autotrader.ca/offers/bmw-m5-sale-pending-premium-pack-m-sport-exhaust-ambient-gasoline-grey-cat_ma13gr202609tr17957-0518b35e-d26d-45a1-b92b-5e32f2e992b5",
-   "title": "BMW M5",
+   "title": "BMW M5 SALE PENDING/PREMIUM PACK/M-SPORT EXHAUST/AMBIENT",
    "year": 2019,
    "make": "BMW",
    "model": "M5",
@@ -298,12 +376,23 @@
    "fuel": "Gasoline",
    "engine": "",
    "images": [
-    "https://prod.pictures.autoscout24.net/listing-images/0518b35e-d26d-45a1-b92b-5e32f2e992b5_d055fb6b-7846-4b14-b297-43c2099e0b06.jpg/1920x1080.jpg"
+    "https://prod.pictures.autoscout24.net/listing-images/0518b35e-d26d-45a1-b92b-5e32f2e992b5_d055fb6b-7846-4b14-b297-43c2099e0b06.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/0518b35e-d26d-45a1-b92b-5e32f2e992b5_7f792515-6b51-4754-9d08-9d7d8beb2059.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/0518b35e-d26d-45a1-b92b-5e32f2e992b5_d224fc73-8d5a-4c55-8e58-5a57a4ed4096.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/0518b35e-d26d-45a1-b92b-5e32f2e992b5_6dc90f3a-e2d0-4ffd-a8bc-b13a0985eaba.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/0518b35e-d26d-45a1-b92b-5e32f2e992b5_a45e24ae-f62e-44b8-911d-3aaa65f7dfc4.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/0518b35e-d26d-45a1-b92b-5e32f2e992b5_2bb255d5-e977-4bc1-8855-a06bdac63e1e.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/0518b35e-d26d-45a1-b92b-5e32f2e992b5_03014b7e-6656-4117-b53e-ba7a82ed6690.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/0518b35e-d26d-45a1-b92b-5e32f2e992b5_7963b386-bdc0-42b0-8b4a-9d242b3f09fb.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/0518b35e-d26d-45a1-b92b-5e32f2e992b5_e14b4895-94c0-4d26-b12e-9867ebb16c44.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/0518b35e-d26d-45a1-b92b-5e32f2e992b5_7b2d087b-306f-4862-b580-f5eb8a30854a.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/0518b35e-d26d-45a1-b92b-5e32f2e992b5_cb02fbb9-376a-4b8d-bf05-599951064a28.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/0518b35e-d26d-45a1-b92b-5e32f2e992b5_c12c91bb-9b0a-4a1b-ba60-fe137e4577cc.jpg/250x188.webp"
    ],
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-09T22:52:45+00:00",
-   "last_seen": "2026-09-09T22:52:45+00:00",
+   "last_seen": "2026-09-09T22:56:32+00:00",
    "status": "active",
    "price_history": [
     {
@@ -351,7 +440,7 @@
    "search_id": "2021-2023-bmw-m5-310324",
    "search_name": "2021-2023 BMW M5",
    "first_seen": "2026-09-09T21:13:04+00:00",
-   "last_seen": "2026-09-09T22:52:05+00:00",
+   "last_seen": "2026-09-09T22:56:28+00:00",
    "status": "active",
    "price_history": [
     {
@@ -399,7 +488,7 @@
    "search_id": "2021-2023-bmw-m5-310324",
    "search_name": "2021-2023 BMW M5",
    "first_seen": "2026-09-09T21:13:04+00:00",
-   "last_seen": "2026-09-09T22:52:05+00:00",
+   "last_seen": "2026-09-09T22:56:28+00:00",
    "status": "active",
    "price_history": [
     {
@@ -447,7 +536,7 @@
    "search_id": "2021-2023-bmw-m5-310324",
    "search_name": "2021-2023 BMW M5",
    "first_seen": "2026-09-09T21:13:04+00:00",
-   "last_seen": "2026-09-09T22:52:05+00:00",
+   "last_seen": "2026-09-09T22:56:28+00:00",
    "status": "active",
    "price_history": [
     {
@@ -482,7 +571,7 @@
    "search_id": "2021-2023-bmw-m5-310324",
    "search_name": "2021-2023 BMW M5",
    "first_seen": "2026-09-09T21:13:04+00:00",
-   "last_seen": "2026-09-09T22:52:05+00:00",
+   "last_seen": "2026-09-09T22:56:28+00:00",
    "status": "active",
    "price_history": [
     {
@@ -525,7 +614,7 @@
    "search_id": "2021-2023-bmw-m5-310324",
    "search_name": "2021-2023 BMW M5",
    "first_seen": "2026-09-09T21:13:04+00:00",
-   "last_seen": "2026-09-09T22:52:05+00:00",
+   "last_seen": "2026-09-09T22:56:28+00:00",
    "status": "active",
    "price_history": [
     {
@@ -573,7 +662,7 @@
    "search_id": "2021-2023-bmw-m5-310324",
    "search_name": "2021-2023 BMW M5",
    "first_seen": "2026-09-09T21:13:04+00:00",
-   "last_seen": "2026-09-09T22:52:05+00:00",
+   "last_seen": "2026-09-09T22:56:28+00:00",
    "status": "active",
    "price_history": [
     {
@@ -621,7 +710,7 @@
    "search_id": "2021-2023-bmw-m5-310324",
    "search_name": "2021-2023 BMW M5",
    "first_seen": "2026-09-09T21:13:04+00:00",
-   "last_seen": "2026-09-09T22:52:05+00:00",
+   "last_seen": "2026-09-09T22:56:28+00:00",
    "status": "active",
    "price_history": [
     {
@@ -667,7 +756,7 @@
    "search_id": "2021-2023-bmw-m5-310324",
    "search_name": "2021-2023 BMW M5",
    "first_seen": "2026-09-09T21:13:04+00:00",
-   "last_seen": "2026-09-09T22:52:05+00:00",
+   "last_seen": "2026-09-09T22:56:28+00:00",
    "status": "active",
    "price_history": [
     {
@@ -715,7 +804,7 @@
    "search_id": "2021-2023-bmw-m5-310324",
    "search_name": "2021-2023 BMW M5",
    "first_seen": "2026-09-09T21:13:04+00:00",
-   "last_seen": "2026-09-09T22:52:05+00:00",
+   "last_seen": "2026-09-09T22:56:28+00:00",
    "status": "active",
    "price_history": [
     {
@@ -763,7 +852,7 @@
    "search_id": "2021-2023-bmw-m5-310324",
    "search_name": "2021-2023 BMW M5",
    "first_seen": "2026-09-09T21:13:04+00:00",
-   "last_seen": "2026-09-09T22:52:05+00:00",
+   "last_seen": "2026-09-09T22:56:28+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2962,7 +3051,7 @@
     ]
    },
    "health": {
-    "last_ok": "2026-09-09T22:51:51+00:00",
+    "last_ok": "2026-09-09T22:56:28+00:00",
     "last_error": null,
     "last_count": 19,
     "last_strategy": "embedded_json",
@@ -2979,28 +3068,28 @@
     "price_drop_min_abs": null
    },
    "shape": {
-    "bytes": "lots",
-    "listing_count": 19,
-    "markers": {
-     "data_listing_id": "none",
-     "initial_state": "none",
-     "json_ld": "few",
-     "legacy_links": "none",
-     "next_data": "few",
-     "offer_links": "many",
-     "vehicle_cdn": "lots"
-    },
-    "scores": {
-     "anchors": 0,
-     "embedded_json": 19,
-     "jsonld": 11,
-     "regex": 0
-    },
     "strategy": "embedded_json",
     "working": [
      "embedded_json",
      "jsonld"
-    ]
+    ],
+    "scores": {
+     "jsonld": 11,
+     "embedded_json": 19,
+     "anchors": 0,
+     "regex": 0
+    },
+    "listing_count": 19,
+    "markers": {
+     "json_ld": "few",
+     "next_data": "few",
+     "initial_state": "none",
+     "offer_links": "many",
+     "legacy_links": "none",
+     "data_listing_id": "none",
+     "vehicle_cdn": "lots"
+    },
+    "bytes": "lots"
    }
   },
   {
@@ -3032,7 +3121,7 @@
     ]
    },
    "health": {
-    "last_ok": "2026-09-09T22:52:10+00:00",
+    "last_ok": "2026-09-09T22:56:32+00:00",
     "last_error": null,
     "last_count": 20,
     "last_strategy": "jsonld",
@@ -3052,28 +3141,28 @@
     "price_drop_min_abs": null
    },
    "shape": {
-    "bytes": "lots",
-    "listing_count": 20,
-    "markers": {
-     "data_listing_id": "none",
-     "initial_state": "none",
-     "json_ld": "few",
-     "legacy_links": "none",
-     "next_data": "few",
-     "offer_links": "many",
-     "vehicle_cdn": "lots"
-    },
-    "scores": {
-     "anchors": 0,
-     "embedded_json": 20,
-     "jsonld": 20,
-     "regex": 0
-    },
     "strategy": "jsonld",
     "working": [
      "embedded_json",
      "jsonld"
-    ]
+    ],
+    "scores": {
+     "jsonld": 20,
+     "embedded_json": 20,
+     "anchors": 0,
+     "regex": 0
+    },
+    "listing_count": 20,
+    "markers": {
+     "json_ld": "few",
+     "next_data": "few",
+     "initial_state": "none",
+     "offer_links": "many",
+     "legacy_links": "none",
+     "data_listing_id": "none",
+     "vehicle_cdn": "lots"
+    },
+    "bytes": "lots"
    }
   }
  ],
@@ -3137,11 +3226,8 @@
     "GMAIL_APP_PASSWORD"
    ],
    "setting": "auto",
-   "missing": [
-    "GMAIL_USER",
-    "GMAIL_APP_PASSWORD"
-   ],
-   "active": false
+   "missing": [],
+   "active": true
   },
   "webhook": {
    "label": "Custom webhook",
@@ -3165,12 +3251,7 @@
     "TWILIO_TO"
    ],
    "setting": false,
-   "missing": [
-    "TWILIO_SID",
-    "TWILIO_TOKEN",
-    "TWILIO_FROM",
-    "TWILIO_TO"
-   ],
+   "missing": [],
    "active": false
   }
  },
@@ -3234,6 +3315,36 @@
   }
  },
  "runs": [
+  {
+   "at": "2026-09-09T22:56:32+00:00",
+   "ok": true,
+   "duration_s": 6.7,
+   "searches_run": 2,
+   "searches_failed": 0,
+   "listings_seen": 39,
+   "new": 0,
+   "price_drops": 0,
+   "price_rises": 0,
+   "removed": 0,
+   "filtered_out": 20,
+   "requests_made": 4,
+   "budget_exhausted": false,
+   "empty_parses": [],
+   "diagnostics": [],
+   "shape_drift": [],
+   "disabled_channels": [],
+   "first_run": false,
+   "validation_ok": true,
+   "notified": [],
+   "errors": [],
+   "warnings": [],
+   "strategies": {
+    "2021-2023-bmw-m5-310324": "embedded_json",
+    "bmw-m5-bargains-any-year-f2f097": "jsonld"
+   },
+   "quiet": false,
+   "dry_run": false
+  },
   {
    "at": "2026-09-09T22:52:46+00:00",
    "budget_exhausted": false,
@@ -3446,49 +3557,34 @@
   }
  },
  "last_run": {
-  "at": "2026-09-09T22:52:46+00:00",
-  "budget_exhausted": false,
-  "diagnostics": [
-   "diagnostics/bmw-m5-bargains-any-year-f2f097.md"
-  ],
-  "disabled_channels": [],
-  "dry_run": false,
-  "duration_s": 59.2,
-  "empty_parses": [],
-  "errors": [],
-  "filtered_out": 12,
-  "first_run": false,
-  "listings_seen": 39,
-  "new": 8,
-  "notified": [
-   "ntfy: sent - 8 change(s)",
-   "email: FAILED - (535, b'5.7.8 Username and Password not accepted. For more information, go to\\n5.7.8  https://support.google.com/mail/?p=BadCredentials 5a478bee46e88-3339af25062sm73555209eec.16 - gsmtp')"
-  ],
+  "at": "2026-09-09T22:56:32+00:00",
   "ok": true,
+  "duration_s": 6.7,
+  "searches_run": 2,
+  "searches_failed": 0,
+  "listings_seen": 39,
+  "new": 0,
   "price_drops": 0,
   "price_rises": 0,
-  "quiet": false,
   "removed": 0,
-  "requests_made": 30,
-  "searches_failed": 0,
-  "searches_run": 2,
-  "shape_drift": [
-   {
-    "reasons": [
-     "first time this search has been fingerprinted"
-    ],
-    "search": "BMW M5 bargains (any year)",
-    "serious": false
-   }
-  ],
+  "filtered_out": 20,
+  "requests_made": 4,
+  "budget_exhausted": false,
+  "empty_parses": [],
+  "diagnostics": [],
+  "shape_drift": [],
+  "disabled_channels": [],
+  "first_run": false,
+  "validation_ok": true,
+  "notified": [],
+  "errors": [],
+  "warnings": [],
   "strategies": {
    "2021-2023-bmw-m5-310324": "embedded_json",
    "bmw-m5-bargains-any-year-f2f097": "jsonld"
   },
-  "validation_ok": true,
-  "warnings": [
-   "notification failed: email: FAILED - (535, b'5.7.8 Username and Password not accepted. For more information, go to\\n5.7.8  https://support.google.com/mail/?p=BadCredentials 5a478bee46e88-3339af25062sm73555209eec.16 - gsmtp')"
-  ]
+  "quiet": false,
+  "dry_run": false
  },
  "archive": {
   "folders": 77,
