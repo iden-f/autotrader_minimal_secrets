@@ -221,6 +221,11 @@ class State:
         entry["first_seen"] = existing.get("first_seen") or now
         entry["last_seen"] = now
         entry["status"] = "active"
+        # Seeing a car resets the "how many runs has it been gone" counter, so
+        # a car that reappears cannot be carried across the removal threshold
+        # by misses it accrued before.
+        entry["misses"] = 0
+        entry.pop("removed_at", None)
         entry["notified"] = True if was_imported else existing.get("notified", False)
         history = list(existing.get("price_history") or [])
 

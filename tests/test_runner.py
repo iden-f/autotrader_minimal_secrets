@@ -10,78 +10,9 @@ from autotrader.notifiers import Notifier, Result
 from autotrader.runner import run
 from autotrader.state import Change, State
 
+from .helpers import Capture, FakeFetcher
+
 SEARCH = "https://www.autotrader.ca/cars/bmw/m5/?rcp=15&srt=35&prx=-2&loc=M5V"
-
-
-class FakeFetcher:
-    """Serves the search page, and a detail page for any listing we know."""
-
-    def __init__(self, search_html, details=None, fail=None):
-        self.search_html = search_html
-        self.details = details or {}
-        self.fail = fail
-        self.urls = []
-
-    def get(self, url, referer=None, allow_block=False):
-        self.urls.append(url)
-        if self.fail:
-            raise self.fail
-        for listing_id, html in self.details.items():
-            if f"_{listing_id}_" in url:
-                return Response(url=url, status=200, text=html, elapsed_ms=1)
-        return Response(url=url, status=200, text=self.search_html, elapsed_ms=1)
-
-    def get_bytes(self, *a, **k):
-        return None
-
-    def close(self):
-        pass
-
-
-class Capture(Notifier):
-    name = "capture"
-
-    def __init__(self):
-        super().__init__({}, {}, {})
-        self.digests = []
-        self.alerts = []
-
-    def _send(self, changes, run):
-        self.digests.append(list(changes))
-        return Result("capture", True)
-
-    def _send_text(self, subject, body):
-        self.alerts.append((subject, body))
-        return Result("capture", True)
-
-
-@pytest.fixture
-def bench(tmp_path, monkeypatch, fixture_html, archive_html):
-    """A working directory with a config, a fake site and a captured channel."""
-    monkeypatch.chdir(tmp_path)
-    cfg = Config.defaults(tmp_path / "config.json")
-    cfg.add_search(SEARCH, "BMW M5")
-    cfg.set("scraping.delay_ms", 0)
-    cfg.set("scraping.retries", 0)
-    cfg.set("archive.mode", "off")
-    cfg.save()
-
-    sink = Capture()
-    real_dispatch, real_alert = notifiers.dispatch, notifiers.alert
-    monkeypatch.setattr(runner_mod.notifiers, "dispatch",
-                        lambda c, ch, r=None, e=None, n=None: real_dispatch(c, ch, r, e, [sink]))
-    monkeypatch.setattr(runner_mod.notifiers, "alert",
-                        lambda c, s, b, e=None, n=None: real_alert(c, s, b, e, [sink]))
-
-    details = {i: archive_html(i) for i in ("13166607", "68819631", "13221555")}
-
-    def go(search_html=None, fail=None, config=None):
-        return run(config or cfg, State.load(tmp_path / "state.json"),
-                   fetcher=FakeFetcher(search_html or fixture_html("search_cards"),
-                                       details, fail))
-
-    return type("Bench", (), {"cfg": cfg, "sink": sink, "run": staticmethod(go),
-                              "path": tmp_path, "cards": fixture_html("search_cards")})
 
 
 def test_a_first_run_finds_and_announces_every_car(bench):

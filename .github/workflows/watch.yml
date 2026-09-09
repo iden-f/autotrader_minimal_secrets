@@ -1,3 +1,10 @@
+# NOTE ON THE FILENAME
+# This lives at watch.yml, not the old run_bot.yml, on purpose. GitHub keys a
+# workflow by its file path and remembers that run_bot.yml was disabled on
+# 2026-01-08 - renaming the `name:` would not have cleared that, and the bot
+# would have stayed silently switched off after merging. A new path registers
+# as a new workflow, enabled by default.
+
 name: Check AutoTrader
 
 on:

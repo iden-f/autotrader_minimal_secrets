@@ -44,10 +44,17 @@ def _warn(text: str) -> str:
 
 
 def cmd_run(args: argparse.Namespace) -> int:
+    from .lock import AlreadyRunning, run_lock
     from .runner import run as run_once
     cfg = Config.load(args.config)
     state = State.load(args.state)
-    report = run_once(cfg, state, dry_run=args.dry_run, notify=not args.no_notify)
+    try:
+        with run_lock(enabled=not args.no_lock and not args.dry_run):
+            report = run_once(cfg, state, dry_run=args.dry_run,
+                              notify=not args.no_notify)
+    except AlreadyRunning as exc:
+        print(_warn(str(exc)))
+        return 0        # not an error: the other run is doing the work
     print(report.summary())
     for warning in report.warnings:
         print(_warn(warning))
@@ -128,10 +135,39 @@ def cmd_doctor(args: argparse.Namespace) -> int:
     cfg = Config.load(args.config)
     state = State.load(args.state)
     problems = 0
+    warnings = 0
 
-    print(f"{BOLD}Searches{RESET}")
+    # ---- config file -------------------------------------------------
+    print(f"{BOLD}Config{RESET}")
+    path = Path(args.config)
+    if path.exists():
+        print(_ok(f"{path} ({path.stat().st_size} bytes)"))
+    else:
+        print(_warn(f"{path} does not exist yet - defaults are being used"))
+        warnings += 1
+    for key, want in (("scraping.max_pages", int), ("scraping.delay_ms", int),
+                      ("archive.mode", str), ("notifications.timezone", str)):
+        value = cfg.get(key)
+        if not isinstance(value, want):
+            print(_bad(f"{key} should be {want.__name__}, found {value!r}"))
+            problems += 1
+    mode = cfg.get("archive.mode")
+    if mode not in ("off", "metadata", "full"):
+        print(_bad(f"archive.mode must be off/metadata/full, found {mode!r}"))
+        problems += 1
+    tz = str(cfg.get("notifications.timezone") or "")
+    try:
+        from zoneinfo import ZoneInfo
+        ZoneInfo(tz)
+    except Exception:  # noqa: BLE001
+        print(_warn(f"unknown time zone {tz!r} - quiet hours will use UTC"))
+        warnings += 1
+
+    # ---- searches ----------------------------------------------------
+    print(f"\n{BOLD}Searches{RESET}")
     if not cfg.active_searches:
-        print(_bad("no searches configured - run: python -m autotrader add <url>"))
+        print(_bad("no searches configured"))
+        print(f'   {DIM}python -m autotrader add "<paste your autotrader.ca link>"{RESET}')
         problems += 1
     for search in cfg.active_searches:
         summary = describe_search(search.url)
@@ -140,12 +176,22 @@ def cmd_doctor(args: argparse.Namespace) -> int:
         else:
             print(_bad(f"{search.name}: {'; '.join(summary.problems)}"))
             problems += 1
+        for problem in (summary.problems if summary.valid else []):
+            print(_warn(f"   {problem}"))
+            warnings += 1
+    disabled = [s for s in cfg.searches if not s.enabled]
+    if disabled:
+        print(f"   {DIM}{len(disabled)} search(es) paused: "
+              f"{', '.join(s.name for s in disabled)}{RESET}")
 
+    # ---- notification channels --------------------------------------
     print(f"\n{BOLD}Notifications{RESET}")
     status = cfg.channel_status()
-    if not any(s["active"] for s in status.values()):
-        print(_bad("no channel is configured - you will not be told about anything"))
-        print(f"   {DIM}The free ones: Telegram, Discord, ntfy, Slack, email.{RESET}")
+    active = [n for n, i in status.items() if i["active"]]
+    if not active:
+        print(_bad("no channel is configured - you will never be told anything"))
+        print(f"   {DIM}Free options: Telegram, Discord, ntfy, Slack, email.{RESET}")
+        print(f"   {DIM}See SETUP.md for the exact steps.{RESET}")
         problems += 1
     for name, info in status.items():
         cost = "" if info["free"] else f" {YELLOW}(costs money){RESET}"
@@ -156,41 +202,84 @@ def cmd_doctor(args: argparse.Namespace) -> int:
         else:
             print(_warn(f"{info['label']}: missing {', '.join(info['missing'])}"))
 
-    print(f"\n{BOLD}State{RESET}")
+    if active and not args.offline:
+        print(f"\n{BOLD}Channel reachability{RESET} {DIM}(no messages are sent){RESET}")
+        for result in notifiers.verify_all(cfg):
+            if result.ok and result.skipped:
+                print(_warn(f"{result.channel}: {result.detail}"))
+            elif result.ok:
+                print(_ok(f"{result.channel}: {result.detail}"))
+            else:
+                print(_bad(f"{result.channel}: {result.detail}"))
+                problems += 1
+
+    # ---- stored data -------------------------------------------------
+    print(f"\n{BOLD}Stored data{RESET}")
     stats = state.stats()
-    print(_ok(f"{stats['total']} listing(s) tracked, {stats['active']} active, "
+    print(_ok(f"{stats['total']} listing(s) tracked, {stats['active']} live, "
               f"{stats['gone']} gone"))
     if stats["median_price"]:
         print(f"   {DIM}prices ${stats['min_price']:,} - ${stats['max_price']:,} "
               f"(median ${stats['median_price']:,}){RESET}")
+    if Path("state.corrupt.json").exists():
+        print(_warn("state.corrupt.json exists - a previous state file was unreadable"))
+        warnings += 1
+    held = len(state.pending_changes())
+    if held:
+        print(_warn(f"{held} alert(s) waiting to be delivered"))
     last = state.last_run
     if last:
         mark = _ok if last.get("ok") else _bad
-        print(mark(f"last run {last.get('at')}: {last.get('new', 0)} new, "
-                   f"{last.get('searches_failed', 0)} failed"))
+        print(mark(f"last run {last.get('at')}: {last.get('listings_seen', 0)} seen, "
+                   f"{last.get('new', 0)} new, {last.get('searches_failed', 0)} failed"))
         for error in (last.get("errors") or [])[:3]:
             print(f"   {RED}{error}{RESET}")
+    else:
+        print(_warn("no run recorded yet - try: python -m autotrader run --dry-run"))
 
+    # ---- disk --------------------------------------------------------
     print(f"\n{BOLD}Archive{RESET}")
     report = size_report()
     print(f"   {report['folders']} folder(s), {report['bytes'] / 1048576:.1f} MB "
-          f"({report['html_bytes'] / 1048576:.1f} MB HTML)")
+          f"({report['html_bytes'] / 1048576:.1f} MB saved pages)")
     if report["html_bytes"] > 20 * 1048576:
-        print(_warn("archived HTML is large; consider archive.mode = metadata "
-                    "and: python -m autotrader prune"))
+        print(_warn("saved pages are large; set archive.mode to 'metadata' and run: "
+                    "python -m autotrader prune"))
+        warnings += 1
+    free = _free_disk_mb()
+    if free is not None:
+        line = f"   {free:,} MB free on this disk"
+        print(_bad(line) if free < 50 else f"{line}")
+        if free < 50:
+            problems += 1
 
+    # ---- live -------------------------------------------------------
     if args.live:
-        print(f"\n{BOLD}Live check{RESET} {DIM}(fetches autotrader.ca){RESET}")
-        problems += _live_check(cfg)
+        problems += _live_check(cfg, sample=not args.no_sample)
 
     print()
-    print(_ok("everything looks usable") if not problems
-          else _bad(f"{problems} problem(s) above need attention"))
+    if problems:
+        print(_bad(f"{problems} problem(s) need attention"))
+    elif warnings:
+        print(_warn(f"usable, with {warnings} thing(s) worth a look"))
+    else:
+        print(_ok("everything checks out"))
+    if not args.live:
+        print(f"   {DIM}Add --live to fetch autotrader.ca and test the parser.{RESET}")
     return 1 if problems else 0
 
 
-def _live_check(cfg: Config) -> int:
-    """Fetch each search for real and report what the parser managed to read."""
+def _free_disk_mb() -> int | None:
+    try:
+        import shutil as _shutil
+        return _shutil.disk_usage(".").free // 1048576
+    except OSError:
+        return None
+
+
+def _live_check(cfg: Config, sample: bool = True) -> int:
+    """Fetch each search for real and show exactly what the parser made of it."""
+    print(f"\n{BOLD}Live check{RESET} {DIM}(fetching autotrader.ca){RESET}")
     scraping = cfg.get("scraping", {}) or {}
     fetcher = Fetcher(timeout=int(scraping.get("timeout_seconds", 30)),
                       retries=int(scraping.get("retries", 3)),
@@ -200,23 +289,62 @@ def _live_check(cfg: Config) -> int:
     try:
         for search in cfg.active_searches:
             url = page_url(search.url, 1, int(scraping.get("results_per_page", 50)))
+            print(f"\n  {BOLD}{search.name}{RESET}")
+            print(f"  {DIM}{url}{RESET}")
             try:
                 response = fetcher.get(url)
             except Exception as exc:  # noqa: BLE001
-                print(_bad(f"{search.name}: {exc}"))
+                print(_bad(f"  could not fetch: {exc}"))
                 problems += 1
                 continue
+
+            size_kb = len(response.text) // 1024
+            print(f"  HTTP {response.status} - {size_kb} KB in {response.elapsed_ms} ms")
             result = parse_search_page(response.text, url)
-            if result.listings:
-                print(_ok(f"{search.name}: {len(result.listings)} listing(s) "
-                          f"via '{result.strategy}'  {DIM}{result.candidates}{RESET}"))
-                sample = result.listings[0]
-                print(f"   {DIM}e.g. {sample.display_title} - {sample.price_text} "
-                      f"- {sample.mileage_text}{RESET}")
-            else:
-                print(_bad(f"{search.name}: page loaded ({len(response.text) // 1024} KB) "
-                           f"but no listings were found. Strategies: {result.candidates}"))
+
+            print(f"  {BOLD}Strategy results{RESET}")
+            for name, count in result.candidates.items():
+                won = " <-- used" if name == result.strategy else ""
+                mark = GREEN if count else DIM
+                print(f"    {mark}{name:<16}{RESET} {count:>3} listing(s){BOLD}{won}{RESET}")
+
+            if not result.listings:
+                print(_bad("  the page loaded but NO listings were parsed."))
+                print(f"     {DIM}Either the search genuinely has no results, or every"
+                      f" parser strategy has fallen behind the site.{RESET}")
+                print(f"     {DIM}A real run treats this as a failure and alerts you.{RESET}")
                 problems += 1
+                continue
+
+            print(_ok(f"  {len(result.listings)} listing(s) via '{result.strategy}'"))
+            if not sample:
+                continue
+
+            print(f"  {BOLD}Sample parse{RESET} {DIM}(eyeball these against the site){RESET}")
+            for listing in result.listings[:3]:
+                print(f"    {BOLD}{listing.display_title}{RESET}")
+                print(f"      id         {listing.id}")
+                source = (f"   {DIM}(from the {listing.price_source} page){RESET}"
+                          if listing.price is not None and listing.price_source else "")
+                print(f"      price      {listing.price_text}{source}")
+                print(f"      odometer   {listing.mileage_text}")
+                print(f"      where      {listing.location or '?'}"
+                      f"{', ' + listing.province if listing.province else ''}")
+                print(f"      photos     {len(listing.images)}")
+                print(f"      url        {DIM}{listing.url}{RESET}")
+
+            missing_price = sum(1 for l in result.listings if l.price is None)
+            missing_km = sum(1 for l in result.listings if l.mileage_km is None)
+            if missing_price:
+                print(f"    {DIM}{missing_price}/{len(result.listings)} have no price "
+                      f"(normal for 'call for price' listings){RESET}")
+            if missing_km > len(result.listings) / 2:
+                print(_warn(f"    {missing_km}/{len(result.listings)} have no odometer "
+                            f"- the parser may be missing it"))
+
+            print(f"  {DIM}requests so far: {fetcher.stats['requests']}, "
+                  f"retries: {fetcher.stats['retries']}, "
+                  f"blocked: {fetcher.stats['blocked']}{RESET}")
     finally:
         fetcher.close()
     return problems
@@ -353,6 +481,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--dry-run", action="store_true",
                    help="report what would happen, change nothing, send nothing")
     p.add_argument("--no-notify", action="store_true", help="update state but stay silent")
+    p.add_argument("--no-lock", action="store_true",
+                   help="skip the single-run lock (not recommended)")
     p.set_defaults(func=cmd_run)
 
     p = sub.add_parser("add", help="watch a pasted AutoTrader search link")
@@ -374,7 +504,12 @@ def build_parser() -> argparse.ArgumentParser:
     p.set_defaults(func=cmd_enable)
 
     p = sub.add_parser("doctor", help="check the whole setup and explain problems")
-    p.add_argument("--live", action="store_true", help="also fetch autotrader.ca for real")
+    p.add_argument("--live", action="store_true",
+                   help="also fetch autotrader.ca and show what the parser made of it")
+    p.add_argument("--offline", action="store_true",
+                   help="skip the channel reachability checks")
+    p.add_argument("--no-sample", action="store_true",
+                   help="with --live, skip the sample listing dump")
     p.set_defaults(func=cmd_doctor)
 
     p = sub.add_parser("test-notify", help="send a sample alert to every channel")

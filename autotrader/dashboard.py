@@ -13,6 +13,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+import re
+
 from .archive import size_report
 from .config import CHANNEL_SECRETS, Config
 from .state import State
@@ -98,6 +100,47 @@ def build_payload(cfg: Config, state: State, env: dict[str, str] | None = None
     }
 
 
+# Keys whose *value* would be a credential. Matching on the key name alone is
+# not enough and matching on the whole document is far too eager: data.json
+# legitimately contains the strings "TELEGRAM_BOT_TOKEN" (as the name of a
+# secret to set) and "...bot<TOKEN>/getUpdates" (as help text).
+_SECRET_KEY_RE = re.compile(
+    r"(token|password|secret|api[_-]?key|credential|auth)", re.I)
+
+# Shapes of real credentials, in case one arrives under an innocent key.
+_SECRET_VALUE_RES = (
+    re.compile(r"\b\d{8,}:[A-Za-z0-9_-]{30,}\b"),                 # Telegram bot token
+    re.compile(r"https://discord(?:app)?\.com/api/webhooks/\d+/"),  # Discord webhook
+    re.compile(r"https://hooks\.slack\.com/services/T[A-Z0-9]+/"),  # Slack webhook
+    re.compile(r"\bSK[0-9a-f]{32}\b"),                             # Twilio key
+    re.compile(r"\bAC[0-9a-f]{32}\b"),                             # Twilio account SID
+)
+
+
+def find_secrets(node: Any, path: str = "") -> list[str]:
+    """Locate anything credential-shaped in a payload bound for a public page.
+
+    Returns human-readable locations, empty when the payload is clean.
+    """
+    found: list[str] = []
+    if isinstance(node, dict):
+        for key, value in node.items():
+            where = f"{path}.{key}" if path else str(key)
+            if (_SECRET_KEY_RE.search(str(key)) and isinstance(value, str)
+                    and value.strip()):
+                found.append(f"{where} holds a non-empty value")
+            found.extend(find_secrets(value, where))
+    elif isinstance(node, list):
+        for index, value in enumerate(node):
+            found.extend(find_secrets(value, f"{path}[{index}]"))
+    elif isinstance(node, str):
+        for pattern in _SECRET_VALUE_RES:
+            if pattern.search(node):
+                found.append(f"{path} looks like a credential")
+                break
+    return found
+
+
 def _safe_config(cfg: Config) -> dict[str, Any]:
     """The editable settings, minus anything that could hold a secret."""
     data = json.loads(json.dumps(cfg.data))
@@ -115,6 +158,14 @@ def write(cfg: Config, state: State, env: dict[str, str] | None = None,
         return None
     path.parent.mkdir(parents=True, exist_ok=True)
     payload = build_payload(cfg, state, env)
+    # This file is published to a public URL. Nothing that looks like a
+    # credential may leave here, whatever ended up in config.json.
+    leaks = find_secrets(payload)
+    if leaks:
+        raise ValueError(
+            "refusing to write the dashboard: credential-shaped data at "
+            + "; ".join(leaks[:5])
+            + ". Move it to an environment variable or GitHub secret.")
     tmp = path.with_suffix(".tmp")
     tmp.write_text(json.dumps(payload, indent=1, ensure_ascii=False), encoding="utf-8")
     tmp.replace(path)

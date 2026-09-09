@@ -66,6 +66,10 @@ class BlockedError(FetchError):
     """The site served an anti-bot interstitial instead of the page."""
 
 
+class BudgetExhausted(FetchError):
+    """The run has spent its allowance of HTTP requests."""
+
+
 @dataclass
 class Response:
     url: str
@@ -103,16 +107,40 @@ class Fetcher:
         retries: int = 3,
         delay_ms: int = 1200,
         user_agent: str = "auto",
+        budget: int = 0,
         session: requests.Session | None = None,
     ) -> None:
         self.timeout = max(5, int(timeout))
         self.retries = max(0, int(retries))
         self.delay_ms = max(0, int(delay_ms))
         self.user_agent = DEFAULT_USER_AGENT if user_agent in ("", "auto", None) else user_agent
+        # A hard ceiling on how many requests one run may make, so a bad config
+        # (many searches x many pages x detail lookups) cannot turn into a
+        # thousand-request crawl of somebody else's website.
+        self.budget = max(0, int(budget))
         self.session = session or requests.Session()
         self.session.headers.update({**BASE_HEADERS, "User-Agent": self.user_agent})
         self._last_request_at = 0.0
-        self.stats = {"requests": 0, "retries": 0, "failures": 0, "blocked": 0}
+        self.spent = 0
+        self.stats = {"requests": 0, "retries": 0, "failures": 0, "blocked": 0,
+                      "budget": self.budget, "spent": 0}
+
+    @property
+    def budget_left(self) -> int:
+        return max(0, self.budget - self.spent) if self.budget else 1_000_000
+
+    def _spend(self) -> None:
+        """Count a request against the budget, refusing once it runs out.
+
+        Retries count too: three attempts at one URL are three requests as far
+        as the site is concerned.
+        """
+        if self.budget and self.spent >= self.budget:
+            raise BudgetExhausted(
+                f"this run has used its allowance of {self.budget} requests. "
+                "Raise scraping.request_budget, or lower max_pages/enrich_limit.")
+        self.spent += 1
+        self.stats["spent"] = self.spent
 
     # ------------------------------------------------------------------
 
@@ -141,6 +169,7 @@ class Fetcher:
                 log.info("retry %d/%d for %s in %.1fs", attempt, self.retries, url, backoff)
                 self.stats["retries"] += 1
                 time.sleep(backoff)
+            self._spend()
             self._pace()
             started = time.monotonic()
             try:
@@ -180,6 +209,7 @@ class Fetcher:
     def get_bytes(self, url: str, *, referer: str | None = None) -> bytes | None:
         """Fetch a binary asset.  Returns None instead of raising."""
         try:
+            self._spend()
             self._pace()
             headers = {"Accept": "image/avif,image/webp,image/*,*/*;q=0.8",
                        "Sec-Fetch-Dest": "image", "Sec-Fetch-Mode": "no-cors"}
@@ -190,6 +220,8 @@ class Fetcher:
             self.stats["requests"] += 1
             if raw.ok and raw.content:
                 return raw.content
+        except BudgetExhausted:
+            log.info("skipping asset %s: request budget spent", url)
         except requests.RequestException as exc:
             log.debug("asset fetch failed for %s: %s", url, exc)
         return None

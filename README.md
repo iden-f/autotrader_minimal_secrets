@@ -68,10 +68,16 @@ it checks every 30 minutes. To run it right away: Actions → **Check AutoTrader
 → *Run workflow*.
 
 > **If it goes quiet for months, check the Actions tab.** GitHub disables
-> scheduled workflows on a repository with no activity for 60 days. This bot
-> commits its results on every run that finds something, which normally keeps
-> it alive — but if a run has been failing for weeks, nothing gets committed and
-> the schedule can be switched off. That is exactly what happened to v1.
+> scheduled workflows on a repository with no activity for 60 days, and a
+> workflow can also be switched off by hand — v1's was, on 2026-01-08, after
+> weeks of failures. That state is remembered against the workflow's *file
+> path*, which is why the bot now lives at `.github/workflows/watch.yml`
+> rather than the old `run_bot.yml`: a new path comes back enabled.
+>
+> You now also get told when it breaks, after three failed runs in a row.
+
+**Full click-by-click setup — Telegram, secrets, the schedule, Pages — is in
+[SETUP.md](SETUP.md).**
 
 ## The dashboard
 
@@ -103,8 +109,15 @@ python -m autotrader prune --dry-run               # what archives would go
 python -m autotrader migrate                       # import v1 data
 ```
 
-`doctor` is the one to reach for when something looks wrong — it checks your
-searches, your channels and your saved data, and says what is missing.
+`doctor` is the one to reach for when something looks wrong. It checks your
+config file, your search links, which channels are configured **and whether
+their credentials actually work** (without sending anything), your stored data
+and your free disk, then says exactly what to fix.
+
+`doctor --live` fetches autotrader.ca for real and prints which of the four
+parser strategies won, how many listings each found, and a sample of what was
+parsed — so you can compare it against the site by eye. Run this first on any
+new install.
 
 ## Settings
 
@@ -114,7 +127,8 @@ Secrets never go in it.
 | Setting | Default | What it does |
 |---|---|---|
 | `scraping.max_pages` | 3 | Result pages per search. It stops early once a page adds nothing. |
-| `scraping.delay_ms` | 1200 | Pause between requests. Raise it if you ever get blocked. |
+| `scraping.delay_ms` | 1200 | Pause between requests, jittered. Raise it if you ever get blocked. |
+| `scraping.request_budget` | 250 | Hard ceiling on HTTP requests per run, photos included. Stops a misconfigured crawl. |
 | `scraping.enrich_details` | `true` | Read each new car's own page for the exact price, odometer and photos. |
 | `notifications.price_drop_min_pct` / `_abs` | 1% / $250 | A drop must clear **both** to be worth a message. |
 | `notifications.quiet_hours` | off | Hold alerts overnight. They arrive in the next run afterwards — nothing is lost. |
@@ -159,7 +173,9 @@ Kept here because these are the failure modes worth not repeating.
 | Price drops | Not detected at all. | Tracked per car, confirmed against the listing page before alerting. |
 | Photos | Saved every `<img src>`, which was 400 manufacturer logos and no cars. | Real photo URLs from schema.org data. |
 | Repository size | 9.6 MB of raw HTML for 50 cars, growing forever. | Metadata by default, with a retention policy. |
-| When it broke | Nothing. It failed for a month unnoticed. | Warns you after 3 failed runs in a row. |
+| When it broke | Nothing. It failed for a month unnoticed. | Warns you after 3 failed runs in a row, or as soon as a page loads but parses nothing. |
+| Request volume | Unbounded: every listing cost 16 extra requests. | Per-run budget, capped detail lookups, jittered pacing. |
+| Two runs at once | Interleaved writes to the same file. | A single-run lock, plus a workflow concurrency group. |
 | Identifying itself | `User-Agent: AutoTraderBot/1.0`. | An ordinary browser UA, paced requests, retries with backoff. |
 | Searches | One, buried in a repository secret. | As many as you like, pasted in. |
 
@@ -170,8 +186,25 @@ pip install -r requirements.txt pytest
 python -m pytest -q
 ```
 
-The tests run against real listing pages captured in `archives/`, so the
-parser is checked against what AutoTrader actually served — not a mock.
+240 tests. They run against the real listing pages captured in `archives/`, so
+the parser is checked against what AutoTrader actually served — not a mock.
+
+The suites worth knowing about:
+
+| File | Covers |
+|---|---|
+| `test_parser_hardening.py` | Zero results, one result, pagination, call-for-price, a broken primary strategy, markup nothing understands, hostile input. Every case asserts graceful degradation. |
+| `test_failure_modes.py` | Corrupt and truncated state, a full disk, a rate-limited channel, an interrupt mid-run, clock skew across quiet hours, duplicate ids, a listing that vanishes and returns. |
+| `test_budget.py` | The request budget is a hard stop, retries are billed, pacing is jittered. |
+| `test_doctor.py` | Every problem `doctor` reports, and that it never sends a message. |
+
+### A note on what is and is not verified against the live site
+
+**Listing detail pages** are validated against 50 real captured pages.
+**Search-results pages** could not be fetched from the machine this was built
+on, so their markup is inferred. That is why there are four independent parse
+strategies, why `doctor --live` exists, and why a page that returns HTTP 200
+but parses nothing is treated as a failure rather than an empty search.
 
 ## Note
 

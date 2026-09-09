@@ -22,8 +22,17 @@ from .urls import canonical_listing_url, listing_id_from_url, location_from_url
 
 log = logging.getLogger(__name__)
 
-PRICE_RE = re.compile(r"\$\s*([\d][\d,\s]{2,})(?:\.\d{2})?")
-KM_RE = re.compile(r"([\d][\d,\s]{1,})\s*km\b", re.I)
+# A number is 1-3 digits then comma-separated groups of exactly three. The
+# lookbehind stops a model designation running into the figure beside it:
+# without it "M5 1,200 km" parsed as 51,200 km and "X5 500 km" as 5,500 km.
+#
+# Space is deliberately NOT accepted as a thousands separator. autotrader.ca
+# writes "$132,500"; allowing "132 500" made "X5 500" ambiguous, and guessing
+# wrong is worse than not guessing - card figures are provisional anyway, and
+# the listing page's schema.org data corrects them.
+_NUMBER = r"(?<![\d.,])(\d{1,3}(?:,\d{3})+|\d+)"
+PRICE_RE = re.compile(r"\$\s*" + _NUMBER + r"(?:\.\d{2})?")
+KM_RE = re.compile(_NUMBER + r"\s*km\b", re.I)
 YEAR_RE = re.compile(r"\b(19[7-9]\d|20[0-5]\d)\b")
 LISTING_HREF_RE = re.compile(r"""["'(]((?:https?://[^"'()\s]*)?/a/[^"'()\s]*?/\d+_\d{5,}_[^"'()\s]*?/)""")
 
@@ -43,6 +52,29 @@ _JSON_KEYS = {
     "url": ("url", "link", "detailUrl", "vdpUrl", "href"),
     "id": ("id", "listingId", "adId", "vehicleId"),
 }
+
+
+# Phrases AutoTrader shows when a search legitimately matches nothing. Only
+# consulted once zero listings were parsed, so an ad containing "0 results"
+# cannot mislead us.
+NO_RESULTS_MARKERS = (
+    "0 results", "no results", "returned 0", "did not match", "no matches",
+    "no vehicles", "no listings", "aucun r", "0 r\u00e9sultat",
+    "try broadening", "try widening", "widen your search", "broaden your search",
+    "sorry, we couldn't find", "we could not find any",
+)
+
+
+def looks_like_no_results(html: str) -> bool:
+    """True if the page says, in so many words, that the search matched nothing.
+
+    This is what separates "your filters are too narrow" from "the parser has
+    fallen behind the site" - both of which otherwise look like zero listings.
+    """
+    text = re.sub(r"<(script|style)[^>]*>.*?</\1>", " ", (html or "")[:200000],
+                  flags=re.S | re.I)
+    text = re.sub(r"<[^>]+>", " ", text).lower()
+    return any(marker in text for marker in NO_RESULTS_MARKERS)
 
 
 class ParseResult:

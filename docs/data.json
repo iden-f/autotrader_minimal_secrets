@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-09-09T17:22:44+00:00",
+ "generated_at": "2026-09-09T20:24:42+00:00",
  "version": 2,
  "stats": {
   "total": 50,
@@ -2407,6 +2407,7 @@
    "delay_ms": 1200,
    "enrich_details": true,
    "enrich_limit": 25,
+   "request_budget": 250,
    "user_agent": "auto"
   },
   "archive": {

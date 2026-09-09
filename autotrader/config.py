@@ -120,6 +120,9 @@ DEFAULTS: dict[str, Any] = {
         "delay_ms": 1200,
         "enrich_details": True,
         "enrich_limit": 25,
+        # A ceiling on all HTTP requests in one run (search pages, detail pages
+        # and photos), so a misconfigured crawl cannot hammer the site.
+        "request_budget": 250,
         "user_agent": "auto",
     },
     "archive": {

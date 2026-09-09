@@ -12,7 +12,9 @@ _YEAR_RE = re.compile(r"\b(19[7-9]\d|20[0-5]\d)\b")
 @dataclass
 class Listing:
     id: str
-    url: str
+    # Defaulted so a state entry that lost a field - hand-edited, or written by
+    # an interrupted upgrade - still loads instead of raising.
+    url: str = ""
     title: str = ""
     year: int | None = None
     make: str = ""

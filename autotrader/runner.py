@@ -18,9 +18,9 @@ from . import archive as archive_mod
 from . import filters, notifiers
 from .config import Config
 from .enrich import enrich
-from .http import BlockedError, FetchError, Fetcher
+from .http import BlockedError, BudgetExhausted, FetchError, Fetcher
 from .listing import Listing
-from .parser import parse_search_page
+from .parser import looks_like_no_results, parse_search_page
 from .state import Change, State
 from .urls import page_url
 
@@ -32,6 +32,9 @@ class RunReport:
     started_at: float = field(default_factory=time.time)
     searches_run: int = 0
     searches_failed: int = 0
+    requests_made: int = 0
+    budget_exhausted: bool = False
+    empty_parses: list[str] = field(default_factory=list)
     listings_seen: int = 0
     new: int = 0
     price_drops: int = 0
@@ -60,6 +63,9 @@ class RunReport:
             "listings_seen": self.listings_seen, "new": self.new,
             "price_drops": self.price_drops, "price_rises": self.price_rises,
             "removed": self.removed, "filtered_out": self.filtered_out,
+            "requests_made": self.requests_made,
+            "budget_exhausted": self.budget_exhausted,
+            "empty_parses": self.empty_parses,
             "notified": self.notified, "errors": self.errors[:10],
             "warnings": self.warnings[:10], "strategies": self.strategies,
             "quiet": self.quiet, "dry_run": self.dry_run,
@@ -68,11 +74,12 @@ class RunReport:
     def summary(self) -> str:
         return (f"{self.searches_run} search(es), {self.listings_seen} listing(s), "
                 f"{self.new} new, {self.price_drops} price drop(s), "
-                f"{self.removed} removed, {self.searches_failed} failed "
-                f"in {self.duration_s}s")
+                f"{self.removed} removed, {self.searches_failed} failed, "
+                f"{self.requests_made} request(s) in {self.duration_s}s")
 
 
-def scrape_search(search, cfg: Config, fetcher: Fetcher) -> tuple[list[Listing], str]:
+def scrape_search(search, cfg: Config, fetcher: Fetcher
+                  ) -> tuple[list[Listing], str, bool]:
     """Fetch and parse every page of one search.  Raises on a hard failure."""
     scraping = cfg.get("scraping", {}) or {}
     max_pages = max(1, int(search.max_pages or scraping.get("max_pages", 3) or 1))
@@ -80,6 +87,7 @@ def scrape_search(search, cfg: Config, fetcher: Fetcher) -> tuple[list[Listing],
 
     found: dict[str, Listing] = {}
     strategy = "none"
+    said_no_results = False
     referer = "https://www.autotrader.ca/"
 
     for page in range(1, max_pages + 1):
@@ -89,6 +97,7 @@ def scrape_search(search, cfg: Config, fetcher: Fetcher) -> tuple[list[Listing],
         result = parse_search_page(response.text, url)
         if page == 1:
             strategy = result.strategy
+            said_no_results = looks_like_no_results(response.text)
             if not result.listings:
                 # An empty first page is either a genuinely empty search or a
                 # parser that has fallen behind the site.  Both need saying.
@@ -107,7 +116,7 @@ def scrape_search(search, cfg: Config, fetcher: Fetcher) -> tuple[list[Listing],
         if fresh == 0:
             break
 
-    return list(found.values()), strategy
+    return list(found.values()), strategy, said_no_results
 
 
 def _price_disagrees(listing: Listing, state: State) -> bool:
@@ -134,11 +143,17 @@ def enrich_listings(listings: list[Listing], cfg: Config, fetcher: Fetcher,
     scraping = cfg.get("scraping", {}) or {}
     if not scraping.get("enrich_details", True):
         return
-    budget = int(scraping.get("enrich_limit", 25) or 25)
-    for listing in listings[:budget]:
+    cap = int(scraping.get("enrich_limit", 25) or 25)
+    # Leave enough budget for the remaining searches' result pages.
+    room = max(0, getattr(fetcher, "budget_left", cap) - 5)
+    for listing in listings[:min(cap, room)]:
         try:
             response = fetcher.get(listing.url, referer=listing.url)
             enrich(listing, response.text)
+        except BudgetExhausted:
+            report.warnings.append("stopped looking up listing details: "
+                                   "request budget spent")
+            break
         except (FetchError, BlockedError) as exc:
             report.warnings.append(f"could not enrich {listing.id}: {exc}")
         except Exception as exc:  # noqa: BLE001 - enrichment is best-effort
@@ -166,10 +181,22 @@ def run(cfg: Config | None = None, state: State | None = None, *,
         retries=int(scraping.get("retries", 3) or 0),
         delay_ms=int(scraping.get("delay_ms", 1200) or 0),
         user_agent=str(scraping.get("user_agent", "auto")),
+        budget=int(scraping.get("request_budget", 250) or 0),
     )
 
     changes: list[Change] = []
     blocked_searches: list[str] = []
+
+    def queue(change: Change) -> None:
+        """Record a change as owed to the user, then remember to send it.
+
+        Writing the intent to state straight away means an interrupt between
+        here and the notification (an archive failure, a killed CI job) costs
+        nothing: the next run finds it still pending and delivers it.
+        """
+        changes.append(change)
+        if not dry_run:
+            state.defer([change])
 
     try:
         searches = cfg.active_searches
@@ -181,8 +208,14 @@ def run(cfg: Config | None = None, state: State | None = None, *,
 
         for search in searches:
             try:
-                listings, strategy = scrape_search(search, cfg, fetcher)
+                listings, strategy, said_no_results = scrape_search(search, cfg, fetcher)
                 report.strategies[search.id] = strategy
+            except BudgetExhausted as exc:
+                # Not a failure: we deliberately stopped. Leave the remaining
+                # searches for the next run rather than marking them broken.
+                report.warnings.append(str(exc))
+                report.budget_exhausted = True
+                break
             except BlockedError as exc:
                 report.searches_failed += 1
                 report.errors.append(f"{search.name}: {exc}")
@@ -205,10 +238,21 @@ def run(cfg: Config | None = None, state: State | None = None, *,
             report.listings_seen += len(listings)
             state.record_search_ok(search.id, len(listings), strategy)
 
-            if not listings:
+            if not listings and said_no_results:
+                # The site itself says the search matched nothing. That is a
+                # narrow search, not a broken parser.
                 report.warnings.append(
-                    f"{search.name}: the page loaded but no listings were found "
-                    f"(parser strategy: {strategy}).")
+                    f"{search.name}: AutoTrader reports no results for this search.")
+            elif not listings:
+                # A 200 with listings we could not read, and no "no results"
+                # message: every strategy has fallen behind the site. Failing
+                # loudly here is the whole point - v1 died quietly.
+                report.errors.append(
+                    f"{search.name}: the page loaded ({strategy}) but no listings "
+                    f"could be read, and the site did not say the search was empty. "
+                    f"Run: python -m autotrader doctor --live")
+                report.empty_parses.append(search.name)
+                state.record_search_error(search.id, "HTTP 200 but zero listings parsed")
 
             # Enrich cars we have not recorded before - that is where the data
             # matters - plus any whose price no longer matches what we stored,
@@ -234,7 +278,7 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                         continue          # imported from v1: known, stay quiet
                     report.new += 1
                     if notify_on.get("new", True):
-                        changes.append(change)
+                        queue(change)
                     archive_mod.archive_listing(listing, archive_conf, fetcher)
                 elif change.kind == Change.PRICE_DROP:
                     if filters.is_significant_drop(
@@ -244,11 +288,11 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                     ):
                         report.price_drops += 1
                         if notify_on.get("price_drop", True):
-                            changes.append(change)
+                            queue(change)
                 elif change.kind == Change.PRICE_RISE:
                     report.price_rises += 1
                     if notify_on.get("price_rise", False):
-                        changes.append(change)
+                        queue(change)
 
             # Cars that were filtered out still count as "seen", so they do not
             # look like removals on the next pass.
@@ -259,7 +303,7 @@ def run(cfg: Config | None = None, state: State | None = None, *,
             for change in state.mark_missing(search.id, seen_ids):
                 report.removed += 1
                 if notify_on.get("removed", False):
-                    changes.append(change)
+                    queue(change)
 
         # ---- notify -------------------------------------------------
         # Anything an earlier run detected but could not deliver (quiet hours,
@@ -303,6 +347,7 @@ def run(cfg: Config | None = None, state: State | None = None, *,
             state.prune()
 
     finally:
+        report.requests_made = getattr(fetcher, "spent", 0)
         fetcher.close()
         if not dry_run:
             # This is the whole point: state is written even if something above
@@ -343,6 +388,11 @@ def _health_check(cfg: Config, state: State, report: RunReport,
     if blocked:
         body += ("\n\nautotrader.ca served an anti-bot page. Try increasing "
                  "scraping.delay_ms or running the bot less often.")
+    if report.empty_parses:
+        body += ("\n\nThe pages loaded but nothing could be read from them, which "
+                 "usually means AutoTrader changed its markup. Run "
+                 "'python -m autotrader doctor --live' to see which parser "
+                 "strategies still work.")
     body += "\n\nNothing is lost - it will resume as soon as the pages load again."
     results = notifiers.alert(cfg, "AutoTrader watcher needs attention", body, env)
     report.warnings.append("sent a health alert: " + ", ".join(str(r) for r in results))

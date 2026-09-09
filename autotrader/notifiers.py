@@ -70,6 +70,21 @@ class Notifier:
     def _send_text(self, subject: str, body: str) -> Result:
         raise NotImplementedError
 
+    def verify(self) -> Result:
+        """Check the channel is reachable and the credentials work.
+
+        Must not deliver a message - `doctor` runs this, and nobody wants a
+        notification every time they check their setup.
+        """
+        try:
+            return self._verify()
+        except Exception as exc:  # noqa: BLE001
+            return Result(self.name, False, str(exc)[:300])
+
+    def _verify(self) -> Result:
+        return Result(self.name, True, "configured (cannot be checked without sending)",
+                      skipped=True)
+
     @property
     def limit(self) -> int:
         return int(self.settings.get("max_listings_per_message", 12) or 12)
@@ -128,6 +143,19 @@ class TelegramNotifier(Notifier):
                                   "text": f"{subject}\n\n{body}"[:4000]})
         return Result(self.name, True, "text")
 
+    def _verify(self) -> Result:
+        me = self._api("getMe", {}).get("result", {})
+        chat_id = self.env["TELEGRAM_CHAT_ID"]
+        try:
+            chat = self._api("getChat", {"chat_id": chat_id}).get("result", {})
+        except RuntimeError as exc:
+            return Result(self.name, False,
+                          f"bot @{me.get('username', '?')} works, but chat id {chat_id} "
+                          f"is wrong ({exc}). Message your bot once, then open "
+                          f"https://api.telegram.org/bot<TOKEN>/getUpdates to read the id.")
+        who = chat.get("title") or chat.get("username") or chat.get("first_name") or chat_id
+        return Result(self.name, True, f"bot @{me.get('username', '?')} will message {who}")
+
 
 class DiscordNotifier(Notifier):
     """Free.  Rich embeds with thumbnails; only needs a webhook URL."""
@@ -153,6 +181,16 @@ class DiscordNotifier(Notifier):
         self._post({"content": f"**{subject}**\n{body}"[:1900],
                     "allowed_mentions": {"parse": []}})
         return Result(self.name, True, "text")
+
+    def _verify(self) -> Result:
+        response = requests.get(self.env["DISCORD_WEBHOOK_URL"], timeout=TIMEOUT)
+        if response.status_code == 404:
+            raise RuntimeError("that webhook no longer exists - create a new one")
+        if not response.ok:
+            raise RuntimeError(f"HTTP {response.status_code}")
+        hook = response.json()
+        return Result(self.name, True,
+                      f"posts to #{hook.get('name', '?')} as \"{hook.get('name', '?')}\"")
 
 
 class NtfyNotifier(Notifier):
@@ -199,6 +237,20 @@ class NtfyNotifier(Notifier):
     def _send_text(self, subject: str, body: str) -> Result:
         self._post(subject, body, tags="warning", priority="high")
         return Result(self.name, True, "text")
+
+    def _verify(self) -> Result:
+        url = self._topic_url()
+        headers = {}
+        token = (self.env.get("NTFY_TOKEN") or "").strip()
+        if token:
+            headers["Authorization"] = f"Bearer {token}"
+        response = requests.get(f"{url}/json?poll=1", headers=headers, timeout=TIMEOUT)
+        if not response.ok:
+            raise RuntimeError(f"HTTP {response.status_code} from {url}")
+        topic = str(self.config.get("topic") or "")
+        warn = ("  NOTE: anyone who guesses this topic can read your alerts - "
+                "use a long random one." if len(topic) < 12 else "")
+        return Result(self.name, True, f"topic {topic} is reachable.{warn}")
 
 
 class SlackNotifier(Notifier):
@@ -262,6 +314,21 @@ class EmailNotifier(Notifier):
         self._deliver(subject, body, None)
         return Result(self.name, True, "text")
 
+    def _verify(self) -> Result:
+        user = self.env["GMAIL_USER"]
+        password = self.env["GMAIL_APP_PASSWORD"].replace(" ", "")
+        try:
+            with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=TIMEOUT,
+                                  context=ssl.create_default_context()) as smtp:
+                smtp.login(user, password)
+        except smtplib.SMTPAuthenticationError as exc:
+            raise RuntimeError(
+                "Gmail rejected those credentials. GMAIL_APP_PASSWORD must be a "
+                "16-character App Password (myaccount.google.com/apppasswords), "
+                f"not your normal password. [{exc.smtp_code}]") from exc
+        to = str(self.config.get("to") or "").strip() or user
+        return Result(self.name, True, f"signed in as {user}, will send to {to}")
+
 
 class WebhookNotifier(Notifier):
     """POST the run as JSON anywhere - Home Assistant, n8n, your own script."""
@@ -284,6 +351,16 @@ class WebhookNotifier(Notifier):
             return Result(self.name, False, "no webhook url configured", skipped=True)
         requests.post(url, json={"headline": subject, "message": body}, timeout=TIMEOUT)
         return Result(self.name, True, "text")
+
+    def _verify(self) -> Result:
+        url = str(self.config.get("url") or "").strip()
+        if not url:
+            raise RuntimeError("no webhook url configured")
+        response = requests.head(url, timeout=TIMEOUT, allow_redirects=True)
+        # Many endpoints only accept POST; reaching them at all is the point.
+        if response.status_code >= 500:
+            raise RuntimeError(f"HTTP {response.status_code}")
+        return Result(self.name, True, f"{url} answered HTTP {response.status_code}")
 
 
 class TwilioNotifier(Notifier):
@@ -309,6 +386,19 @@ class TwilioNotifier(Notifier):
     def _send_text(self, subject: str, body: str) -> Result:
         self._post(f"{subject}\n{body}")
         return Result(self.name, True, "text")
+
+    def _verify(self) -> Result:
+        sid = self.env["TWILIO_SID"]
+        response = requests.get(
+            f"https://api.twilio.com/2010-04-01/Accounts/{sid}.json",
+            auth=(sid, self.env["TWILIO_TOKEN"]), timeout=TIMEOUT)
+        if response.status_code == 401:
+            raise RuntimeError("Twilio rejected the SID or auth token")
+        if not response.ok:
+            raise RuntimeError(f"HTTP {response.status_code}")
+        return Result(self.name, True,
+                      f"account {response.json().get('friendly_name', sid)} "
+                      f"(each message is billed)")
 
 
 REGISTRY: dict[str, type[Notifier]] = {
@@ -347,14 +437,28 @@ def in_quiet_hours(settings: dict[str, Any], now: datetime | None = None) -> boo
     except Exception:  # noqa: BLE001 - a bad tz must not silence notifications
         tz = None
     now = now or (datetime.now(tz) if tz else datetime.now())
-    try:
-        start_h, start_m = (int(x) for x in str(quiet.get("start", "23:00")).split(":"))
-        end_h, end_m = (int(x) for x in str(quiet.get("end", "07:00")).split(":"))
-    except (ValueError, TypeError):
+
+    def parse(value: Any) -> int | None:
+        """HH:MM to minutes past midnight, or None if it is not a real time."""
+        try:
+            hours, _, mins = str(value).partition(":")
+            hour, minute = int(hours), int(mins)
+        except (ValueError, TypeError, AttributeError):
+            return None
+        if not (0 <= hour <= 23 and 0 <= minute <= 59):
+            return None
+        return hour * 60 + minute
+
+    # A half-written or nonsensical window must never silence alerts: being
+    # notified when you did not want it beats missing the car you were watching
+    # for. Both ends have to be there and be real times.
+    start = parse(quiet.get("start"))
+    end = parse(quiet.get("end"))
+    if start is None or end is None:
+        log.warning("ignoring quiet_hours: start=%r end=%r is not a valid window",
+                    quiet.get("start"), quiet.get("end"))
         return False
     minutes = now.hour * 60 + now.minute
-    start = start_h * 60 + start_m
-    end = end_h * 60 + end_m
     if start == end:
         return False
     if start < end:
@@ -374,6 +478,13 @@ def dispatch(config, changes: list[Change], run: dict[str, Any] | None = None,
         return [Result("none", False,
                        "no notification channel is configured - see README", skipped=True)]
     return [channel.send(changes, run) for channel in channels]
+
+
+def verify_all(config, env: dict[str, str] | None = None,
+               notifiers: list[Notifier] | None = None) -> list[Result]:
+    """Check every active channel without sending anything."""
+    channels = notifiers if notifiers is not None else build(config, env)
+    return [channel.verify() for channel in channels]
 
 
 def alert(config, subject: str, body: str, env: dict[str, str] | None = None,
