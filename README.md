@@ -27,6 +27,25 @@ email — all free and unlimited.
 - **A dashboard** with every car, its price history, and the health of each
   search.
 
+## It already works
+
+There is nothing to configure. The bot sets itself up on its first run: it
+generates a private [ntfy](https://ntfy.sh) topic — no account, no token — and
+sends everything there.
+
+**Your alerts go to <https://ntfy.sh/autotrader-2q592ak9gnx7sqrere5r>**
+
+Open that in a browser, or install the ntfy app and subscribe to the topic
+`autotrader-2q592ak9gnx7sqrere5r`. Full instructions are in [NOTIFY.md](NOTIFY.md).
+
+> ntfy topics are destinations, not passwords: anyone who knows this one can
+> read your alerts. The name is random so nobody will guess it, but it is
+> stored in this public repository. The alerts contain only public AutoTrader
+> listings. To use a channel with real authentication, add a Telegram, Discord,
+> Slack or email secret and it takes over automatically — see [SETUP.md](SETUP.md).
+
+Everything below is optional.
+
 ## Setup
 
 ### 1. Fork this repository
@@ -36,7 +55,11 @@ Use the **Fork** button. Make it private if you like
 
 ### 2. Choose how you want to be told
 
-All of these are free except SMS. Pick one; add more later.
+**You do not have to do this.** ntfy is already set up. Add any of these only
+if you want a channel with authentication, or one you already live in. Adding
+one does not switch ntfy off — turn it off in Settings if you want.
+
+All of these are free except SMS.
 
 | | What you need | Where to get it |
 |---|---|---|
@@ -104,7 +127,9 @@ python -m autotrader doctor                        # is anything misconfigured?
 python -m autotrader doctor --live                 # ...and does the site load?
 python -m autotrader test-notify                   # send yourself a sample
 python -m autotrader ui                            # dashboard and settings
-python -m autotrader setup                         # first-run wizard
+python -m autotrader setup                         # get from nothing to working
+python -m autotrader setup --non-interactive       # ...without prompting (what CI runs)
+python -m autotrader setup --new-topic             # roll a fresh ntfy topic
 python -m autotrader prune --dry-run               # what archives would go
 python -m autotrader migrate                       # import v1 data
 ```
@@ -174,6 +199,8 @@ Kept here because these are the failure modes worth not repeating.
 | Photos | Saved every `<img src>`, which was 400 manufacturer logos and no cars. | Real photo URLs from schema.org data. |
 | Repository size | 9.6 MB of raw HTML for 50 cars, growing forever. | Metadata by default, with a retention policy. |
 | When it broke | Nothing. It failed for a month unnoticed. | Warns you after 3 failed runs in a row, or as soon as a page loads but parses nothing. |
+| Getting started | Seven secrets before the first alert. | Configures itself; needs no token at all. |
+| Trusting the parser | Never checked. | Grades its own first run and refuses to record anything that looks wrong. |
 | Request volume | Unbounded: every listing cost 16 extra requests. | Per-run budget, capped detail lookups, jittered pacing. |
 | Two runs at once | Interleaved writes to the same file. | A single-run lock, plus a workflow concurrency group. |
 | Identifying itself | `User-Agent: AutoTraderBot/1.0`. | An ordinary browser UA, paced requests, retries with backoff. |

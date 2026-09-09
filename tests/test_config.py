@@ -64,20 +64,14 @@ def test_a_broken_config_file_says_so(tmp_path):
         Config.load(path)
 
 
-def test_the_old_search_url_secret_still_works(tmp_path, monkeypatch):
-    """Anyone upgrading from v1 keeps working without touching anything."""
+def test_loading_config_never_reads_the_environment(tmp_path, monkeypatch):
+    """Two sources of truth is how a stale secret quietly resurrects a search.
+
+    The v1 SEARCH_URL secret is adopted once, by provision.adopt_legacy_search,
+    and never read again.
+    """
     monkeypatch.setenv("SEARCH_URL", "https://www.autotrader.ca/cars/bmw/m5/?rcp=15")
-    cfg = Config.load(tmp_path / "c.json")
-    assert len(cfg.active_searches) == 1
-    assert "SEARCH_URL" in cfg.searches[0].notes
-
-
-def test_the_legacy_secret_does_not_duplicate_a_configured_search(tmp_path, monkeypatch):
-    url = "https://www.autotrader.ca/cars/bmw/m5/?rcp=15"
-    path = tmp_path / "c.json"
-    cfg = Config.defaults(path); cfg.add_search(url, "Mine"); cfg.save()
-    monkeypatch.setenv("SEARCH_URL", url)
-    assert len(Config.load(path).searches) == 1
+    assert Config.load(tmp_path / "c.json").searches == []
 
 
 def test_disabled_searches_are_not_run(tmp_path):

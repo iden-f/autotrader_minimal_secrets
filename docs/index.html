@@ -404,6 +404,7 @@ tr:last-child td{border-bottom:0}
         <h2>Recent runs</h2>
         <div class="tablewrap"><table id="runtable"></table></div>
       </div>
+      <div class="panel" id="notifypanel"></div>
       <div class="panel">
         <h2>Storage</h2>
         <div id="storage"></div>
@@ -640,6 +641,7 @@ function renderStatusbar(){
   if (r) { cls = r.ok && !fails.length ? "ok" : "warn";
            label = r.ok && !fails.length ? "Healthy" : "Needs attention"; }
   const on = Object.entries(DATA.channels||{}).filter(([,c])=>c.active).map(([,c])=>c.label);
+  const n = DATA.notify || {};
   $("#statusbar").innerHTML = `
     <span class="item"><span class="dot ${cls}"></span><b>${esc(label)}</b></span>
     <span class="item">Last run <b>${esc(r ? timeOf(r.at) : "—")}</b></span>
@@ -649,6 +651,9 @@ function renderStatusbar(){
     <span class="spacer"></span>
     <span class="item">${on.length
       ? "Alerts via <b>" + on.map(esc).join(", ") + "</b>"
+        + (n.ntfy_url && on.some(x => /ntfy/i.test(x))
+           ? ` &middot; <a href="${esc(n.ntfy_url)}" target="_blank" rel="noopener">open your feed</a>`
+           : "")
       : '<span class="pill need">No alert channel set up</span>'}</span>`;
 }
 
@@ -988,6 +993,35 @@ function renderStatus(){
       <td style="color:var(--muted);font-size:12px">${esc((x.errors||[])[0] || (x.warnings||[])[0] || "")}</td>
     </tr>`).join("")}</tbody>` :
     '<tbody><tr><td style="color:var(--muted)">No runs recorded yet.</td></tr></tbody>';
+
+  const n = DATA.notify || {};
+  const panel = $("#notifypanel");
+  if (n.ntfy_url) {
+    panel.innerHTML = `
+      <h2>Where your alerts go</h2>
+      <p class="hint">No account, no token. Install the
+        <a href="https://ntfy.sh" target="_blank" rel="noopener">ntfy</a> app,
+        tap <b>+</b>, and subscribe to this topic.</p>
+      <div class="toolbar">
+        <input class="field grow num" id="topic" readonly value="${esc(n.ntfy_topic)}">
+        <button class="btn ghost" id="copytopic">Copy topic</button>
+        <a class="btn" href="${esc(n.ntfy_url)}" target="_blank" rel="noopener">Open in browser</a>
+      </div>
+      <div class="banner warn" style="margin-top:12px">
+        Anyone who knows this topic can read your alerts — the name is random so
+        nobody will guess it, but it is stored in your repository. The alerts only
+        contain public AutoTrader listings. For a channel with real authentication,
+        add a Telegram, Discord, Slack or email secret and it takes over.
+      </div>`;
+    const copy = $("#copytopic");
+    if (copy) copy.onclick = async () => {
+      try { await navigator.clipboard.writeText(n.ntfy_topic); toast("Topic copied"); }
+      catch { $("#topic").select(); toast("Select and copy the topic"); }
+    };
+  } else {
+    panel.innerHTML = `<h2>Where your alerts go</h2>
+      <p class="hint">Sent via <b>${(n.active||[]).map(esc).join(", ") || "nothing yet"}</b>.</p>`;
+  }
 
   const a = DATA.archive || {};
   $("#storage").innerHTML = `

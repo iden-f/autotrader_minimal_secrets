@@ -1,5 +1,12 @@
 {
- "generated_at": "2026-09-09T20:24:42+00:00",
+ "generated_at": "2026-09-09T20:41:12+00:00",
+ "notify": {
+  "ntfy_topic": "autotrader-2q592ak9gnx7sqrere5r",
+  "ntfy_url": "https://ntfy.sh/autotrader-2q592ak9gnx7sqrere5r",
+  "active": [
+   "ntfy"
+  ]
+ },
  "version": 2,
  "stats": {
   "total": 50,
@@ -2204,11 +2211,9 @@
    "free": true,
    "help": "Install the ntfy app, subscribe to a topic nobody can guess, and put that topic name in Settings. No account needed.",
    "required": [],
-   "setting": false,
-   "missing": [
-    "topic (set it in Settings)"
-   ],
-   "active": false
+   "setting": true,
+   "missing": [],
+   "active": true
   },
   "slack": {
    "label": "Slack",
@@ -2338,6 +2343,7 @@
  },
  "config": {
   "version": 2,
+  "legacy_search_url_adopted": false,
   "searches": [],
   "filters": {
    "min_price": null,
@@ -2377,9 +2383,9 @@
      "enabled": "auto"
     },
     "ntfy": {
-     "enabled": false,
+     "enabled": true,
      "server": "https://ntfy.sh",
-     "topic": "",
+     "topic": "autotrader-2q592ak9gnx7sqrere5r",
      "priority": "default"
     },
     "slack": {

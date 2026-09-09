@@ -12,10 +12,11 @@ import logging
 import os
 import time
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
 from . import archive as archive_mod
-from . import filters, notifiers
+from . import filters, notifiers, provision, validate
 from .config import Config
 from .enrich import enrich
 from .http import BlockedError, BudgetExhausted, FetchError, Fetcher
@@ -35,6 +36,10 @@ class RunReport:
     requests_made: int = 0
     budget_exhausted: bool = False
     empty_parses: list[str] = field(default_factory=list)
+    first_run: bool = False
+    validation_ok: bool = True
+    validation_report: str = ""
+    provisioned: dict[str, Any] = field(default_factory=dict)
     listings_seen: int = 0
     new: int = 0
     price_drops: int = 0
@@ -66,6 +71,8 @@ class RunReport:
             "requests_made": self.requests_made,
             "budget_exhausted": self.budget_exhausted,
             "empty_parses": self.empty_parses,
+            "first_run": self.first_run,
+            "validation_ok": self.validation_ok,
             "notified": self.notified, "errors": self.errors[:10],
             "warnings": self.warnings[:10], "strategies": self.strategies,
             "quiet": self.quiet, "dry_run": self.dry_run,
@@ -79,7 +86,7 @@ class RunReport:
 
 
 def scrape_search(search, cfg: Config, fetcher: Fetcher
-                  ) -> tuple[list[Listing], str, bool]:
+                  ) -> tuple[list[Listing], str, bool, dict[str, int]]:
     """Fetch and parse every page of one search.  Raises on a hard failure."""
     scraping = cfg.get("scraping", {}) or {}
     max_pages = max(1, int(search.max_pages or scraping.get("max_pages", 3) or 1))
@@ -87,6 +94,7 @@ def scrape_search(search, cfg: Config, fetcher: Fetcher
 
     found: dict[str, Listing] = {}
     strategy = "none"
+    candidates: dict[str, int] = {}
     said_no_results = False
     referer = "https://www.autotrader.ca/"
 
@@ -97,6 +105,7 @@ def scrape_search(search, cfg: Config, fetcher: Fetcher
         result = parse_search_page(response.text, url)
         if page == 1:
             strategy = result.strategy
+            candidates = dict(result.candidates)
             said_no_results = looks_like_no_results(response.text)
             if not result.listings:
                 # An empty first page is either a genuinely empty search or a
@@ -116,7 +125,7 @@ def scrape_search(search, cfg: Config, fetcher: Fetcher
         if fresh == 0:
             break
 
-    return list(found.values()), strategy, said_no_results
+    return list(found.values()), strategy, said_no_results, candidates
 
 
 def _price_disagrees(listing: Listing, state: State) -> bool:
@@ -169,6 +178,22 @@ def run(cfg: Config | None = None, state: State | None = None, *,
     env = env if env is not None else dict(os.environ)
     report = RunReport(dry_run=dry_run)
 
+    # Make the bot reachable and adopt any v1 secret before doing anything
+    # else, so a fresh install works without being configured first.
+    if not dry_run:
+        try:
+            report.provisioned = provision.bootstrap(cfg, env)
+            for step in report.provisioned.get("steps", []):
+                if step.get("changed"):
+                    report.warnings.append(f"setup: {step['reason']}")
+        except Exception as exc:  # noqa: BLE001 - never block a run on setup
+            log.warning("automatic setup failed: %s", exc)
+            report.warnings.append(f"automatic setup failed: {exc}")
+
+    # "First run" means no run has ever succeeded, so the parser has never been
+    # shown to work against the live site.
+    report.first_run = not any(r.get("ok") for r in (state.data.get("runs") or []))
+
     settings = cfg.get("notifications", {}) or {}
     notify_on = settings.get("notify_on", {}) or {}
     filter_conf = cfg.get("filters", {}) or {}
@@ -186,6 +211,7 @@ def run(cfg: Config | None = None, state: State | None = None, *,
 
     changes: list[Change] = []
     blocked_searches: list[str] = []
+    assessments: list[validate.Assessment] = []
 
     def queue(change: Change) -> None:
         """Record a change as owed to the user, then remember to send it.
@@ -208,7 +234,8 @@ def run(cfg: Config | None = None, state: State | None = None, *,
 
         for search in searches:
             try:
-                listings, strategy, said_no_results = scrape_search(search, cfg, fetcher)
+                listings, strategy, said_no_results, candidates = scrape_search(
+                    search, cfg, fetcher)
                 report.strategies[search.id] = strategy
             except BudgetExhausted as exc:
                 # Not a failure: we deliberately stopped. Leave the remaining
@@ -238,6 +265,11 @@ def run(cfg: Config | None = None, state: State | None = None, *,
             report.listings_seen += len(listings)
             state.record_search_ok(search.id, len(listings), strategy)
 
+            assessments.append(validate.assess(
+                listings, strategy, search.name,
+                said_no_results=said_no_results,
+                candidates=candidates))
+
             if not listings and said_no_results:
                 # The site itself says the search matched nothing. That is a
                 # narrow search, not a broken parser.
@@ -263,6 +295,17 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                         and _price_disagrees(l, state)]
             unknown = [l for l in listings if not state.known(l.id)]
             enrich_listings(disputed + unknown, cfg, fetcher, report)
+
+            if report.first_run and not assessments[-1].trustworthy:
+                # The parser has never been shown to work against the live
+                # site, and this parse looks wrong. Recording it would fill
+                # state with debris and archive garbage, and every one of those
+                # bad rows would later have to be unpicked by hand. Stop here
+                # instead - nothing is written, so the next run simply retries.
+                report.errors.append(
+                    f"{search.name}: first-run parse check failed - "
+                    + "; ".join(assessments[-1].concerns))
+                continue
 
             kept, dropped = filters.apply(listings, filter_conf)
             report.filtered_out += len(dropped)
@@ -335,6 +378,21 @@ def run(cfg: Config | None = None, state: State | None = None, *,
         elif changes and dry_run:
             report.notified = ["dry run: nothing sent"]
 
+        # ---- first-run self-check ------------------------------------
+        if report.first_run and assessments:
+            report.validation_ok = all(a.trustworthy for a in assessments)
+            report.validation_report = validate.report_markdown(
+                assessments, ok=report.validation_ok)
+            _publish_validation(report, assessments)
+            if notify and not dry_run:
+                subject = ("AutoTrader watcher is working"
+                           if report.validation_ok
+                           else "AutoTrader watcher: the first check looks wrong")
+                results = notifiers.alert(
+                    cfg, subject, validate.report_text(assessments, ok=report.validation_ok), env)
+                report.warnings.append("sent the first-run check: "
+                                       + ", ".join(str(r) for r in results))
+
         # ---- health -------------------------------------------------
         _health_check(cfg, state, report, env, blocked_searches,
                       int(health_conf.get("alert_after_failures", 3) or 0), notify and not dry_run)
@@ -360,6 +418,25 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                 report.errors.append(f"could not save state: {exc}")
 
     return report
+
+
+def _publish_validation(report: RunReport, assessments: list[validate.Assessment]) -> None:
+    """Leave the first-run check where CI and the user will both find it."""
+    try:
+        Path("validation-report.md").write_text(report.validation_report, encoding="utf-8")
+    except OSError as exc:
+        log.warning("could not write validation-report.md: %s", exc)
+
+    # GitHub renders this at the top of the run page.
+    summary = os.getenv("GITHUB_STEP_SUMMARY")
+    if summary:
+        try:
+            with open(summary, "a", encoding="utf-8") as handle:
+                handle.write(report.validation_report + "\n")
+        except OSError as exc:
+            log.warning("could not write the job summary: %s", exc)
+
+    print("\n" + validate.report_text(assessments, ok=report.validation_ok) + "\n")
 
 
 def _health_check(cfg: Config, state: State, report: RunReport,

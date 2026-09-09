@@ -1,17 +1,25 @@
 # Setup
 
-Click paths, in order. Fifteen minutes end to end, less if you only want
-Telegram.
+**You can skip all of this.** The bot configures itself on its first run and
+sends alerts to <https://ntfy.sh/autotrader-2q592ak9gnx7sqrere5r> — no account, no token, nothing to sign up for. See
+[NOTIFY.md](NOTIFY.md).
+
+What follows is for when you want something else: a channel with real
+authentication, a different search, or the dashboard on the web.
 
 Throughout, `YOUR-REPO` means `github.com/iden-f/autotrader_minimal_secrets`
 (or your fork).
 
 ---
 
-## 1. Telegram (free, instant, ~4 minutes)
+## 1. Telegram instead of ntfy (optional, ~4 minutes)
 
-The best default. Free, unlimited, arrives on your phone in seconds, and shows
-photos and links properly.
+ntfy already works and needs nothing. Telegram is worth the four minutes if you
+want alerts only you can read: an ntfy topic is readable by anyone who knows
+its name, and yours is committed to a public repository.
+
+Adding the two secrets below is all it takes — Telegram takes over on the next
+run, and you can turn ntfy off in the dashboard's Settings tab.
 
 ### 1a. Create the bot
 
@@ -95,11 +103,16 @@ Anything you add switches itself on. You can have several at once.
 
 ---
 
-## 2. Move the search out of the repository secret
+## 2. The old SEARCH_URL secret
 
-The old bot kept one search URL in a secret called `SEARCH_URL`. That still
-works — it is imported automatically — but it means one search, invisible, and
-editable only by whoever can see repository settings.
+**Already handled.** The first run copies that secret into `config.json` and
+sets a flag; after that the secret is never read again, so leaving it in place
+cannot cause a surprise later. The imported search carries a note saying so.
+
+You can delete it whenever you like: **Settings** → **Secrets and variables** →
+**Actions** → `SEARCH_URL` → trash icon. Nothing depends on it.
+
+The rest of this section is only useful if you want to change the search.
 
 ### 2a. Find out what your current `SEARCH_URL` is
 
@@ -133,13 +146,9 @@ Or in the dashboard: **Searches** tab → paste → **Watch this search**.
 
 ### 2c. Delete the old secret
 
-Once the search shows up in `config.json`:
-
-**Settings** → **Secrets and variables** → **Actions** → find `SEARCH_URL` →
-trash icon → **Delete secret**.
-
-*Leaving it set is harmless* — it is only imported when the same URL is not
-already in `config.json`. But deleting it removes a source of confusion.
+**Settings** → **Secrets and variables** → **Actions** → `SEARCH_URL` → trash
+icon → **Delete secret**. Optional: the bot stopped reading it after the first
+run.
 
 ---
 
@@ -223,7 +232,21 @@ file in GitHub's web editor.
 
 ---
 
-## 5. Verify the whole thing
+## 5. The bot checks itself
+
+On its first real run against the live site, the bot grades its own parsing and
+tells you the verdict — over your alert channel, in the Actions run summary,
+and as a `validation-report.md` artifact on the run. It reports which strategy
+won, how many listings it read, and a sample to compare against the site.
+
+If the parse looks wrong — only the regex fallback worked, almost nothing has a
+price, prices outside any plausible range — **it records nothing at all** and
+fails the run loudly, rather than archiving garbage you would later have to
+unpick. The next run simply tries again.
+
+That check runs until one run succeeds. After that it stays quiet.
+
+## 6. Verify it yourself
 
 ```bash
 python -m autotrader doctor

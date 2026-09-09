@@ -44,6 +44,21 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      # Idempotent: on a fresh install this adopts the old SEARCH_URL secret
+      # and sets up a private ntfy topic so the bot can reach you without any
+      # token at all. On every run after that it prints the state and exits.
+      - name: First-run setup
+        env:
+          SEARCH_URL: ${{ secrets.SEARCH_URL }}
+        run: |
+          python -m autotrader setup --non-interactive --no-colour | tee setup.log
+          {
+            echo "## Setup"
+            echo '```'
+            cat setup.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Check for new listings
         id: bot
         env:
@@ -74,7 +89,7 @@ jobs:
         run: |
           git config user.name  "autotrader-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A state.json docs/data.json archives config.json 2>/dev/null || true
+          git add -A state.json docs/data.json archives config.json NOTIFY.md 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "nothing changed"
             exit 0
@@ -91,18 +106,30 @@ jobs:
           echo "could not push after 5 attempts"
           exit 1
 
-      - name: Upload log
+      - name: Upload logs and the first-run parse check
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: run-log-${{ github.run_number }}
-          path: run.log
-          retention-days: 7
+          name: run-${{ github.run_number }}
+          path: |
+            run.log
+            setup.log
+            validation-report.md
+          retention-days: 30
           if-no-files-found: ignore
+
+      # The first real run against the live site is the first time anyone finds
+      # out whether the search-results parser works. It writes its verdict here.
+      - name: Show the first-run parse check
+        if: always() && hashFiles('validation-report.md') != ''
+        run: cat validation-report.md >> "$GITHUB_STEP_SUMMARY"
 
       - name: Report failure
         if: steps.bot.outcome == 'failure'
         run: |
           echo "::error::The bot reported a problem. Results were still saved."
-          tail -30 run.log || true
+          if [ -f validation-report.md ] && grep -q "looks wrong" validation-report.md; then
+            echo "::error::The first-run parse check failed - nothing was recorded."
+          fi
+          tail -40 run.log || true
           exit 1

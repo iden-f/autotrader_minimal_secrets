@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "legacy_search_url_adopted": false,
   "searches": [],
   "filters": {
     "min_price": null,
@@ -16,19 +17,49 @@
     "digest": true,
     "max_listings_per_message": 12,
     "timezone": "America/Toronto",
-    "quiet_hours": {"enabled": false, "start": "23:00", "end": "07:00"},
-    "notify_on": {"new": true, "price_drop": true, "price_rise": false,
-                  "removed": false, "errors": true},
+    "quiet_hours": {
+      "enabled": false,
+      "start": "23:00",
+      "end": "07:00"
+    },
+    "notify_on": {
+      "new": true,
+      "price_drop": true,
+      "price_rise": false,
+      "removed": false,
+      "errors": true
+    },
     "price_drop_min_pct": 1.0,
     "price_drop_min_abs": 250,
     "channels": {
-      "telegram": {"enabled": "auto", "photos": true},
-      "discord": {"enabled": "auto"},
-      "ntfy": {"enabled": false, "server": "https://ntfy.sh", "topic": "", "priority": "default"},
-      "slack": {"enabled": "auto"},
-      "email": {"enabled": "auto", "to": "", "html": true},
-      "webhook": {"enabled": false, "url": ""},
-      "twilio": {"enabled": false}
+      "telegram": {
+        "enabled": "auto",
+        "photos": true
+      },
+      "discord": {
+        "enabled": "auto"
+      },
+      "ntfy": {
+        "enabled": true,
+        "server": "https://ntfy.sh",
+        "topic": "autotrader-2q592ak9gnx7sqrere5r",
+        "priority": "default"
+      },
+      "slack": {
+        "enabled": "auto"
+      },
+      "email": {
+        "enabled": "auto",
+        "to": "",
+        "html": true
+      },
+      "webhook": {
+        "enabled": false,
+        "url": ""
+      },
+      "twilio": {
+        "enabled": false
+      }
     }
   },
   "scraping": {
@@ -42,7 +73,18 @@
     "request_budget": 250,
     "user_agent": "auto"
   },
-  "archive": {"mode": "metadata", "images": 0, "keep_last": 400, "keep_days": 730},
-  "health": {"alert_after_failures": 3, "heartbeat_hours": 0},
-  "dashboard": {"enabled": true, "max_listings": 500}
+  "archive": {
+    "mode": "metadata",
+    "images": 0,
+    "keep_last": 400,
+    "keep_days": 730
+  },
+  "health": {
+    "alert_after_failures": 3,
+    "heartbeat_hours": 0
+  },
+  "dashboard": {
+    "enabled": true,
+    "max_listings": 500
+  }
 }

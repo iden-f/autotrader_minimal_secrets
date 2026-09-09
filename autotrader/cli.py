@@ -422,44 +422,80 @@ def cmd_migrate(args: argparse.Namespace) -> int:
 
 
 def cmd_setup(args: argparse.Namespace) -> int:
-    """A short interactive first-run wizard."""
+    """Get from nothing to working, with or without a human present."""
+    from . import provision
+
     cfg = Config.load(args.config)
-    print(f"{BOLD}AutoTrader watcher setup{RESET}\n")
-    print("1. Open autotrader.ca, run the search you want to watch, then copy")
-    print("   the address bar.\n")
-    while True:
-        url = input("Paste your search link (blank to stop): ").strip()
-        if not url:
-            break
-        try:
-            search = cfg.add_search(url)
-        except ConfigError as exc:
-            print(_bad(str(exc)))
-            continue
-        summary = describe_search(search.url)
-        print(_ok(f'watching "{search.name}" - {" | ".join(summary.describe()) or "no filters"}'))
-        name = input(f'   Name it [{search.name}]: ').strip()
-        if name:
-            for raw in cfg.data["searches"]:
-                if raw["id"] == search.id:
-                    raw["name"] = name
 
-    print(f"\n2. Notifications. The free options:\n")
-    for name, spec in CHANNEL_SECRETS.items():
-        if spec["free"]:
-            print(f"   {BOLD}{spec['label']}{RESET}: {spec['help']}")
-    print(f"\n   Set the secrets as environment variables (or GitHub repository")
-    print(f"   secrets). Then check them with: python -m autotrader doctor\n")
-
-    topic = input("ntfy topic (optional, easiest phone push - just make one up): ").strip()
-    if topic:
+    if args.new_topic:
+        topic = provision.generate_topic()
         cfg.set("notifications.channels.ntfy.topic", topic)
         cfg.set("notifications.channels.ntfy.enabled", True)
-        print(_ok(f"subscribe to '{topic}' in the ntfy app to get alerts"))
+        cfg.save()
+        provision.write_notify_file(cfg)
+        print(_ok(f"new ntfy topic: {topic}"))
+        print(f"   subscribe at {BOLD}{provision.subscribe_url(cfg)}{RESET}")
+        return 0
 
-    cfg.save()
-    print(f"\n{_ok(f'saved {cfg.path}')}")
-    print(f"   Try it: python -m autotrader run --dry-run")
+    interactive = not args.non_interactive and sys.stdin.isatty()
+
+    if interactive:
+        print(f"{BOLD}AutoTrader watcher setup{RESET}\n")
+        print("Open autotrader.ca, run the search you want to watch, then copy the")
+        print("address bar and paste it here.\n")
+        while True:
+            try:
+                url = input("Search link (blank when done): ").strip()
+            except EOFError:
+                break
+            if not url:
+                break
+            try:
+                search = cfg.add_search(url)
+            except ConfigError as exc:
+                print(_bad(str(exc)))
+                continue
+            summary = describe_search(search.url)
+            print(_ok(f'watching "{search.name}" - '
+                      f'{" | ".join(summary.describe()) or "no filters"}'))
+            name = input(f"   Name it [{search.name}]: ").strip()
+            if name:
+                for raw in cfg.data["searches"]:
+                    if raw["id"] == search.id:
+                        raw["name"] = name
+        cfg.save()
+
+    for url in (args.add or []):
+        try:
+            search = cfg.add_search(url)
+            print(_ok(f'watching "{search.name}"'))
+        except ConfigError as exc:
+            print(_warn(str(exc)))
+    if args.add:
+        cfg.save()
+
+    # Everything below is what the workflow runs unattended: adopt the old
+    # secret, make sure something can reach the user, write the instructions.
+    result = provision.bootstrap(cfg, dict(os.environ))
+    for step in result["steps"]:
+        mark = _ok if step.get("changed") else _warn
+        print(mark(f"{step['step']}: {step['reason']}"))
+
+    if result["subscribe_url"]:
+        print()
+        print(f"{BOLD}Your alerts go here:{RESET}")
+        print(f"   {BOLD}{result['subscribe_url']}{RESET}")
+        print(f"   {DIM}Open it in a browser, or install the ntfy app and subscribe")
+        print(f"   to the topic '{result['subscribe_url'].rsplit('/', 1)[-1]}'.")
+        print(f"   Written to NOTIFY.md as well.{RESET}")
+
+    print()
+    if not cfg.active_searches:
+        print(_warn("no searches yet - add one with:"))
+        print(f'   {DIM}python -m autotrader add "<paste an autotrader.ca link>"{RESET}')
+    else:
+        print(_ok(f"{len(cfg.active_searches)} search(es) being watched"))
+    print(f"   {DIM}Check everything with: python -m autotrader doctor{RESET}")
     return 0
 
 
@@ -534,7 +570,13 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--dry-run", action="store_true")
     p.set_defaults(func=cmd_migrate)
 
-    p = sub.add_parser("setup", help="interactive first-run wizard")
+    p = sub.add_parser("setup", help="get from nothing to working")
+    p.add_argument("--non-interactive", action="store_true",
+                   help="never prompt; take sane defaults (what CI runs)")
+    p.add_argument("--add", action="append", metavar="URL",
+                   help="also watch this search link (repeatable)")
+    p.add_argument("--new-topic", action="store_true",
+                   help="generate a fresh ntfy topic and stop")
     p.set_defaults(func=cmd_setup)
 
     return parser

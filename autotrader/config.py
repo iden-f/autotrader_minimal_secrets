@@ -76,6 +76,9 @@ CHANNEL_SECRETS: dict[str, dict[str, Any]] = {
 
 DEFAULTS: dict[str, Any] = {
     "version": 2,
+    # Set once the v1 SEARCH_URL secret has been copied in; after that the
+    # secret is never read again.
+    "legacy_search_url_adopted": False,
     "searches": [],
     "filters": {
         "min_price": None,
@@ -227,24 +230,19 @@ class Config:
         return cfg
 
     def apply_env_overrides(self) -> None:
-        """Let SEARCH_URL keep working for anyone upgrading from v1.
+        """Deliberately does nothing to the search list.
 
-        The old bot took a single search URL from a repository secret.  If that
-        secret is still set and it is not already in config.json, adopt it so
-        the upgrade is seamless.
+        v1 read its search from a `SEARCH_URL` repository secret. Reading that
+        on every run would leave two sources of truth forever: an invisible
+        secret and a visible config file, disagreeing silently.
+
+        It is instead adopted exactly once, by `provision.adopt_legacy_search`,
+        which copies it into config.json and sets `legacy_search_url_adopted`.
+        From then on the secret is inert and may be deleted. Nothing here reads
+        the environment, so a stale secret cannot resurrect a search the user
+        removed on purpose.
         """
-        legacy = normalise_search_url(os.getenv("SEARCH_URL", ""))
-        if not legacy:
-            return
-        if any(s.get("url") == legacy for s in self.data.get("searches", [])):
-            return
-        self.data.setdefault("searches", []).append({
-            "id": "legacy-search-url",
-            "name": describe_search(legacy).title(),
-            "url": legacy,
-            "enabled": True,
-            "notes": "Imported from the SEARCH_URL repository secret.",
-        })
+        return
 
     def normalise(self) -> None:
         seen: set[str] = set()

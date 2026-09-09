@@ -105,6 +105,22 @@ def test_repeated_failures_raise_a_health_alert(bench):
 
 
 def test_a_single_healthy_run_raises_no_alarm(bench):
+    """A first run does report that it checked itself, but never as a problem."""
+    bench.run()
+    problems = [subject for subject, _ in bench.sink.alerts
+                if "needs attention" in subject.lower() or "looks wrong" in subject.lower()]
+    assert problems == []
+
+
+def test_the_first_run_confirms_the_parser_works(bench):
+    bench.run()
+    subjects = [subject for subject, _ in bench.sink.alerts]
+    assert any("is working" in s for s in subjects), subjects
+
+
+def test_later_runs_do_not_repeat_the_first_run_check(bench):
+    bench.run()
+    bench.sink.alerts.clear()
     bench.run()
     assert bench.sink.alerts == []
 
@@ -223,3 +239,99 @@ def test_a_changed_card_price_does_trigger_a_re_check(bench):
     fetcher = FakeFetcher(bench.cards.replace("$98,995", "$91,000"), {})
     run(bench.cfg, State.load(bench.path / "state.json"), fetcher=fetcher)
     assert [u for u in fetcher.urls if "_13166607_" in u]
+
+
+class TestFirstRunSelfCheck:
+    def test_a_first_run_that_parses_garbage_records_nothing(self, bench, fixture_html):
+        """Better an empty state and a loud complaint than archived debris."""
+        report = bench.run(search_html=fixture_html("search_unreadable"))
+        assert report.first_run
+        assert not report.validation_ok
+        assert not report.ok
+        state = json.loads((bench.path / "state.json").read_text())
+        assert state["listings"] == {}, "nothing may be recorded from a bad parse"
+
+    def test_a_bad_first_run_says_so_loudly(self, bench, fixture_html):
+        bench.run(search_html=fixture_html("search_unreadable"))
+        subjects = [subject for subject, _ in bench.sink.alerts]
+        assert any("looks wrong" in s for s in subjects), subjects
+
+    def test_a_bad_first_run_leaves_a_report(self, bench, fixture_html):
+        bench.run(search_html=fixture_html("search_unreadable"))
+        report = (bench.path / "validation-report.md").read_text()
+        assert "Something looks wrong" in report
+        assert "Nothing was recorded" in report
+
+    def test_a_good_first_run_records_normally(self, bench):
+        report = bench.run()
+        assert report.first_run and report.validation_ok and report.ok
+        state = json.loads((bench.path / "state.json").read_text())
+        assert len(state["listings"]) == 3
+
+    def test_a_good_first_run_leaves_a_report_with_a_sample(self, bench):
+        bench.run()
+        report = (bench.path / "validation-report.md").read_text()
+        assert "Looks right" in report
+        assert "2021 BMW M5 Competition Sedan" in report
+        assert "$98,995" in report
+
+    def test_the_check_only_happens_until_a_run_succeeds(self, bench, fixture_html):
+        bad = bench.run(search_html=fixture_html("search_unreadable"))
+        assert bad.first_run, "a failed run does not count as having proved anything"
+        good = bench.run()
+        assert good.first_run and good.validation_ok
+        later = bench.run()
+        assert not later.first_run
+
+    def test_a_recovered_parse_records_what_it_skipped_before(self, bench, fixture_html):
+        bench.run(search_html=fixture_html("search_unreadable"))
+        bench.sink.digests.clear()
+        bench.run()
+        delivered = {c.listing.id for batch in bench.sink.digests for c in batch}
+        assert len(delivered) == 3
+
+    def test_a_degraded_parse_is_allowed_once_the_parser_has_proved_itself(
+            self, bench, fixture_html):
+        """The gate guards the unproven first run, not every wobble afterwards."""
+        bench.run()
+        report = bench.run(search_html=fixture_html("search_broken_primary"))
+        assert not report.first_run
+        assert report.searches_run == 1
+
+
+class TestSelfConfiguration:
+    def test_a_bare_install_makes_itself_reachable(self, tmp_path, monkeypatch,
+                                                   fixture_html, archive_html):
+        monkeypatch.chdir(tmp_path)
+        cfg = Config.defaults(tmp_path / "config.json")
+        cfg.add_search(SEARCH, "BMW M5")
+        cfg.set("scraping.delay_ms", 0)
+        cfg.save()
+        assert cfg.active_channels({}) == []
+
+        report = run(cfg, State.load(tmp_path / "state.json"),
+                     fetcher=FakeFetcher(fixture_html("search_cards")), env={})
+        assert report.provisioned["channels"] == ["ntfy"]
+        assert report.provisioned["subscribe_url"].startswith("https://ntfy.sh/")
+        assert (tmp_path / "NOTIFY.md").exists()
+
+    def test_setup_is_reported_so_the_user_can_see_it_happened(self, tmp_path, monkeypatch,
+                                                               fixture_html):
+        monkeypatch.chdir(tmp_path)
+        cfg = Config.defaults(tmp_path / "config.json")
+        cfg.add_search(SEARCH, "BMW M5")
+        cfg.set("scraping.delay_ms", 0)
+        cfg.save()
+        report = run(cfg, State.load(tmp_path / "state.json"),
+                     fetcher=FakeFetcher(fixture_html("search_cards")), env={})
+        assert any("ntfy" in w for w in report.warnings)
+
+    def test_a_dry_run_configures_nothing(self, tmp_path, monkeypatch, fixture_html):
+        monkeypatch.chdir(tmp_path)
+        cfg = Config.defaults(tmp_path / "config.json")
+        cfg.add_search(SEARCH, "BMW M5")
+        cfg.set("scraping.delay_ms", 0)
+        cfg.save()
+        run(cfg, State.load(tmp_path / "state.json"),
+            fetcher=FakeFetcher(fixture_html("search_cards")), env={}, dry_run=True)
+        assert not (tmp_path / "NOTIFY.md").exists()

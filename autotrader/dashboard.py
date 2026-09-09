@@ -83,8 +83,29 @@ def build_payload(cfg: Config, state: State, env: dict[str, str] | None = None
             "missing": status["missing"], "active": status["active"],
         }
 
+    channels = {}
+    for name, status in cfg.channel_status(env).items():
+        channels[name] = {
+            "label": status["label"], "free": status["free"], "help": status["help"],
+            "required": status["required"], "setting": status["setting"],
+            # Only whether a secret is present, never its value.
+            "missing": status["missing"], "active": status["active"],
+        }
+
+    ntfy = cfg.get("notifications.channels.ntfy", {}) or {}
+    topic = str(ntfy.get("topic") or "").strip()
+    server = str(ntfy.get("server") or "https://ntfy.sh").rstrip("/")
+
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        # Where alerts actually go, so the dashboard can show it. An ntfy topic
+        # is a destination, not a credential - anyone with the link can
+        # subscribe, which NOTIFY.md says plainly.
+        "notify": {
+            "ntfy_topic": topic,
+            "ntfy_url": f"{server}/{topic}" if topic else "",
+            "active": [n for n, c in channels.items() if c["active"]],
+        },
         "version": 2,
         "stats": state.stats(),
         "listings": listings,
