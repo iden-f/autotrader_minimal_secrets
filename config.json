@@ -76,9 +76,10 @@
         "enabled": "auto"
       },
       "email": {
-        "enabled": "auto",
+        "enabled": false,
         "to": "",
-        "html": true
+        "html": true,
+        "disabled_reason": "Switched off after Gmail rejected these credentials on every attempt across five live runs: 535 5.7.8 Username and Password not accepted. Set enabled back to true once GMAIL_APP_PASSWORD is a current 16-character App Password."
       },
       "webhook": {
         "enabled": false,
