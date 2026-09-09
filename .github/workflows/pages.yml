@@ -1,8 +1,12 @@
 name: Publish dashboard
 
-# Publishes docs/ to GitHub Pages. The data file is rebuilt from the committed
-# state during the build, so the published page always matches what the bot
-# actually knows rather than whatever data.json happened to be committed.
+# Publishes docs/ to the gh-pages branch, which GitHub Pages serves.
+#
+# WHY NOT actions/deploy-pages: that route needs the Pages *site* to exist
+# first, and creating one requires admin rights that the workflow's
+# GITHUB_TOKEN does not have ("Resource not accessible by integration"). A
+# gh-pages branch needs nothing beyond contents: write, and GitHub serves it
+# automatically on a public repository.
 
 on:
   push:
@@ -15,11 +19,8 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
-# Never cancel a half-finished deployment, but only run one at a time.
 concurrency:
   group: pages
   cancel-in-progress: false
@@ -27,9 +28,6 @@ concurrency:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
 
@@ -51,14 +49,14 @@ jobs:
           print(f"searches: {len(data['searches'])}")
           print(f"generated: {data['generated_at']}")
           # A published page with no listings is usually a broken build, not an
-          # empty garage - say so loudly in the log rather than shipping it
-          # quietly. It is not fatal: a brand new install genuinely has none.
+          # empty garage - say so loudly rather than shipping it quietly. Not
+          # fatal: a brand new install genuinely has none.
           if not data["listings"]:
               print("::warning::the dashboard has no listings in it")
           # Credentials must never reach a public page. Matching key names or
           # raw substrings gives false positives - data.json legitimately says
           # "TELEGRAM_BOT_TOKEN" as the name of a secret to set - so this looks
-          # at values.
+          # at values and at known credential shapes.
           from autotrader.dashboard import find_secrets
           leaks = find_secrets(data)
           if leaks:
@@ -67,17 +65,29 @@ jobs:
           print("no credentials in the payload")
           PY
 
-      - uses: actions/configure-pages@v5
-        with:
-          # Sets the Pages source to "GitHub Actions" on first run, so nobody
-          # has to find the setting by hand.
-          enablement: true
+      - name: Publish to gh-pages
+        run: |
+          set -euo pipefail
+          site="$(mktemp -d)"
+          cp -r docs/. "$site/"
+          # Stop Jekyll from swallowing files it does not recognise.
+          touch "$site/.nojekyll"
 
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: docs
+          git config user.name  "autotrader-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - id: deploy
-        uses: actions/deploy-pages@v4
+          # A single-commit branch: the dashboard is a build artifact, and
+          # keeping its history would bloat the repository for no benefit.
+          git checkout --orphan gh-pages-tmp
+          git rm -rf --cached . >/dev/null 2>&1 || true
+          find . -maxdepth 1 -mindepth 1 -not -name '.git' -exec rm -rf {} +
+          cp -r "$site/." .
+          git add -A
+          git commit -m "Publish dashboard from ${GITHUB_SHA::7}"
+          git push --force origin gh-pages-tmp:gh-pages
 
-      - run: echo "Dashboard published to ${{ steps.deploy.outputs.page_url }}"
+          echo "### Dashboard published" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "<https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/>" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "If that 404s, set **Settings → Pages → Source: Deploy from a branch → gh-pages → / (root)** once." >> "$GITHUB_STEP_SUMMARY"
