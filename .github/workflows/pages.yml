@@ -18,6 +18,12 @@ on:
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 
+  # Called by the watcher after a run that changed something. The bot commits
+  # its results with [skip ci] so it cannot re-trigger itself, but that also
+  # suppresses this workflow's own push trigger - without this the dashboard
+  # would never update after a run.
+  workflow_call:
+
 permissions:
   contents: write
 

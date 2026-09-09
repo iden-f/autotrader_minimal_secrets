@@ -143,3 +143,11 @@ jobs:
           fi
           tail -40 run.log || true
           exit 1
+
+  # Refresh the published dashboard with whatever the run just found.
+  publish:
+    needs: check
+    if: ${{ always() && !inputs.dry_run }}
+    permissions:
+      contents: write
+    uses: ./.github/workflows/pages.yml
