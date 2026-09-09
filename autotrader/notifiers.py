@@ -1,0 +1,383 @@
+"""Notification channels, free ones first.
+
+Every channel follows the same contract: ``send`` returns a Result and never
+raises.  A channel that is down must not be able to fail a run - that was one
+of the ways v1 lost state (an unwrapped Twilio call in the middle of the loop).
+"""
+
+from __future__ import annotations
+
+import logging
+import os
+import smtplib
+import ssl
+from dataclasses import dataclass
+from datetime import datetime
+from email.message import EmailMessage
+from email.utils import formataddr, formatdate
+from typing import Any
+
+import requests
+
+from . import render
+from .state import Change
+
+log = logging.getLogger(__name__)
+
+TIMEOUT = 25
+
+
+@dataclass
+class Result:
+    channel: str
+    ok: bool
+    detail: str = ""
+    skipped: bool = False
+
+    def __str__(self) -> str:
+        mark = "skipped" if self.skipped else ("sent" if self.ok else "FAILED")
+        return f"{self.channel}: {mark}{' - ' + self.detail if self.detail else ''}"
+
+
+class Notifier:
+    """Base class.  Subclasses implement ``_send``."""
+
+    name = "base"
+
+    def __init__(self, config: dict[str, Any], env: dict[str, str],
+                 settings: dict[str, Any]) -> None:
+        self.config = config or {}
+        self.env = env
+        self.settings = settings or {}
+
+    def send(self, changes: list[Change], run: dict[str, Any] | None = None) -> Result:
+        try:
+            return self._send(changes, run or {})
+        except Exception as exc:  # noqa: BLE001 - a channel may never break a run
+            log.warning("%s notification failed: %s", self.name, exc)
+            return Result(self.name, False, str(exc)[:300])
+
+    def _send(self, changes: list[Change], run: dict[str, Any]) -> Result:
+        raise NotImplementedError
+
+    # Plain-text alert used for health warnings on channels without formatting.
+    def send_text(self, subject: str, body: str) -> Result:
+        try:
+            return self._send_text(subject, body)
+        except Exception as exc:  # noqa: BLE001
+            return Result(self.name, False, str(exc)[:300])
+
+    def _send_text(self, subject: str, body: str) -> Result:
+        raise NotImplementedError
+
+    @property
+    def limit(self) -> int:
+        return int(self.settings.get("max_listings_per_message", 12) or 12)
+
+
+class TelegramNotifier(Notifier):
+    """Free, instant, unlimited, rich formatting.  The best default."""
+
+    name = "telegram"
+
+    def _api(self, method: str, payload: dict[str, Any]) -> dict[str, Any]:
+        token = self.env["TELEGRAM_BOT_TOKEN"]
+        response = requests.post(f"https://api.telegram.org/bot{token}/{method}",
+                                 json=payload, timeout=TIMEOUT)
+        body = {}
+        try:
+            body = response.json()
+        except ValueError:
+            pass
+        if not response.ok or not body.get("ok", False):
+            raise RuntimeError(body.get("description") or f"HTTP {response.status_code}")
+        return body
+
+    def _send(self, changes: list[Change], run: dict[str, Any]) -> Result:
+        chat_id = self.env["TELEGRAM_CHAT_ID"]
+        text = render.as_telegram_html(changes, limit=self.limit)
+        # Telegram rejects messages over 4096 characters outright.
+        if len(text) > 4000:
+            text = text[:3900].rsplit("\n", 1)[0] + "\n\n<i>...trimmed.</i>"
+
+        photos = [c.listing.thumbnail for c in changes[:10] if c.listing.thumbnail]
+        if self.config.get("photos", True) and len(photos) >= 2:
+            # A media group gives a nice photo grid; the caption rides on the
+            # first item.  If it fails (a CDN URL Telegram cannot fetch), fall
+            # through to the plain message rather than losing the alert.
+            try:
+                media = [{"type": "photo", "media": url} for url in photos]
+                media[0]["caption"] = text[:1000]
+                media[0]["parse_mode"] = "HTML"
+                self._api("sendMediaGroup", {"chat_id": chat_id, "media": media})
+                if len(text) > 1000:
+                    self._api("sendMessage", {
+                        "chat_id": chat_id, "text": text, "parse_mode": "HTML",
+                        "disable_web_page_preview": True})
+                return Result(self.name, True, f"{len(changes)} change(s) with photos")
+            except Exception as exc:  # noqa: BLE001
+                log.info("telegram photo group failed (%s); sending text", exc)
+
+        self._api("sendMessage", {"chat_id": chat_id, "text": text,
+                                  "parse_mode": "HTML",
+                                  "disable_web_page_preview": len(changes) > 1})
+        return Result(self.name, True, f"{len(changes)} change(s)")
+
+    def _send_text(self, subject: str, body: str) -> Result:
+        self._api("sendMessage", {"chat_id": self.env["TELEGRAM_CHAT_ID"],
+                                  "text": f"{subject}\n\n{body}"[:4000]})
+        return Result(self.name, True, "text")
+
+
+class DiscordNotifier(Notifier):
+    """Free.  Rich embeds with thumbnails; only needs a webhook URL."""
+
+    name = "discord"
+
+    def _post(self, payload: dict[str, Any]) -> None:
+        url = self.env["DISCORD_WEBHOOK_URL"]
+        response = requests.post(url, json=payload, timeout=TIMEOUT)
+        if response.status_code not in (200, 204):
+            raise RuntimeError(f"HTTP {response.status_code}: {response.text[:200]}")
+
+    def _send(self, changes: list[Change], run: dict[str, Any]) -> Result:
+        embeds = render.as_discord_embeds(changes, limit=self.limit)
+        self._post({"content": render.headline(changes)[:1900],
+                    "embeds": embeds, "allowed_mentions": {"parse": []}})
+        if len(changes) > len(embeds):
+            self._post({"content": f"...and {len(changes) - len(embeds)} more.",
+                        "allowed_mentions": {"parse": []}})
+        return Result(self.name, True, f"{len(embeds)} embed(s)")
+
+    def _send_text(self, subject: str, body: str) -> Result:
+        self._post({"content": f"**{subject}**\n{body}"[:1900],
+                    "allowed_mentions": {"parse": []}})
+        return Result(self.name, True, "text")
+
+
+class NtfyNotifier(Notifier):
+    """Free push to your phone with no account at all - just a topic name.
+
+    Anyone who knows the topic can read it, so the topic should be long and
+    unguessable.
+    """
+
+    name = "ntfy"
+
+    def _topic_url(self) -> str:
+        server = str(self.config.get("server") or "https://ntfy.sh").rstrip("/")
+        topic = str(self.config.get("topic") or "").strip().strip("/")
+        if not topic:
+            raise RuntimeError("no ntfy topic configured")
+        return f"{server}/{topic}"
+
+    def _post(self, title: str, body: str, *, click: str = "",
+              tags: str = "car", priority: str = "") -> None:
+        headers = {"Title": title[:200].encode("utf-8", "replace").decode("latin-1", "replace"),
+                   "Tags": tags, "Markdown": "yes"}
+        if click:
+            headers["Click"] = click
+        priority = priority or str(self.config.get("priority") or "").strip()
+        if priority and priority != "default":
+            headers["Priority"] = priority
+        token = (self.env.get("NTFY_TOKEN") or "").strip()
+        if token:
+            headers["Authorization"] = f"Bearer {token}"
+        response = requests.post(self._topic_url(), data=body.encode("utf-8"),
+                                 headers=headers, timeout=TIMEOUT)
+        if not response.ok:
+            raise RuntimeError(f"HTTP {response.status_code}: {response.text[:200]}")
+
+    def _send(self, changes: list[Change], run: dict[str, Any]) -> Result:
+        first = changes[0].listing if changes else None
+        self._post(render.headline(changes),
+                   render.as_text(changes, limit=self.limit),
+                   click=first.url if first else "",
+                   tags="red_car" if any(c.kind == Change.PRICE_DROP for c in changes) else "car")
+        return Result(self.name, True, f"{len(changes)} change(s)")
+
+    def _send_text(self, subject: str, body: str) -> Result:
+        self._post(subject, body, tags="warning", priority="high")
+        return Result(self.name, True, "text")
+
+
+class SlackNotifier(Notifier):
+    """Free via an incoming webhook."""
+
+    name = "slack"
+
+    def _post(self, payload: dict[str, Any]) -> None:
+        response = requests.post(self.env["SLACK_WEBHOOK_URL"], json=payload, timeout=TIMEOUT)
+        if not response.ok:
+            raise RuntimeError(f"HTTP {response.status_code}: {response.text[:200]}")
+
+    def _send(self, changes: list[Change], run: dict[str, Any]) -> Result:
+        self._post({"text": render.headline(changes),
+                    "blocks": [{"type": "section",
+                                "text": {"type": "mrkdwn",
+                                         "text": render.as_markdown(changes, limit=self.limit)[:2900]}}]})
+        return Result(self.name, True, f"{len(changes)} change(s)")
+
+    def _send_text(self, subject: str, body: str) -> Result:
+        self._post({"text": f"*{subject}*\n{body}"[:2900]})
+        return Result(self.name, True, "text")
+
+
+class EmailNotifier(Notifier):
+    """Gmail SMTP.  Free, but rate-limited, so we always send one digest."""
+
+    name = "email"
+
+    def _deliver(self, subject: str, text: str, html: str | None) -> None:
+        user = self.env["GMAIL_USER"]
+        password = self.env["GMAIL_APP_PASSWORD"].replace(" ", "")
+        to = str(self.config.get("to") or "").strip() or user
+        recipients = [addr.strip() for addr in to.split(",") if addr.strip()]
+
+        message = EmailMessage()
+        message["Subject"] = subject
+        message["From"] = formataddr(("AutoTrader Watcher", user))
+        message["To"] = ", ".join(recipients)
+        message["Date"] = formatdate(localtime=True)
+        message.set_content(text)
+        if html and self.config.get("html", True):
+            message.add_alternative(html, subtype="html")
+
+        context = ssl.create_default_context()
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=TIMEOUT, context=context) as smtp:
+            smtp.login(user, password)
+            smtp.send_message(message, from_addr=user, to_addrs=recipients)
+
+    def _send(self, changes: list[Change], run: dict[str, Any]) -> Result:
+        limit = max(self.limit, 20)
+        self._deliver(
+            render.headline(changes),
+            render.as_text(changes, limit=limit),
+            render.as_email_html(changes, limit=limit,
+                                 dashboard_url=str(self.settings.get("dashboard_url") or "")),
+        )
+        return Result(self.name, True, f"{len(changes)} change(s)")
+
+    def _send_text(self, subject: str, body: str) -> Result:
+        self._deliver(subject, body, None)
+        return Result(self.name, True, "text")
+
+
+class WebhookNotifier(Notifier):
+    """POST the run as JSON anywhere - Home Assistant, n8n, your own script."""
+
+    name = "webhook"
+
+    def _send(self, changes: list[Change], run: dict[str, Any]) -> Result:
+        url = str(self.config.get("url") or "").strip()
+        if not url:
+            return Result(self.name, False, "no webhook url configured", skipped=True)
+        response = requests.post(url, json=render.as_json_payload(changes, run),
+                                 timeout=TIMEOUT)
+        if not response.ok:
+            raise RuntimeError(f"HTTP {response.status_code}")
+        return Result(self.name, True, f"{len(changes)} change(s)")
+
+    def _send_text(self, subject: str, body: str) -> Result:
+        url = str(self.config.get("url") or "").strip()
+        if not url:
+            return Result(self.name, False, "no webhook url configured", skipped=True)
+        requests.post(url, json={"headline": subject, "message": body}, timeout=TIMEOUT)
+        return Result(self.name, True, "text")
+
+
+class TwilioNotifier(Notifier):
+    """SMS.  Kept for continuity, but it costs money - Telegram and ntfy give
+    you the same phone alert for nothing."""
+
+    name = "twilio"
+
+    def _post(self, body: str) -> None:
+        sid = self.env["TWILIO_SID"]
+        response = requests.post(
+            f"https://api.twilio.com/2010-04-01/Accounts/{sid}/Messages.json",
+            data={"From": self.env["TWILIO_FROM"], "To": self.env["TWILIO_TO"],
+                  "Body": body[:render.MAX_SMS]},
+            auth=(sid, self.env["TWILIO_TOKEN"]), timeout=TIMEOUT)
+        if not response.ok:
+            raise RuntimeError(f"HTTP {response.status_code}: {response.text[:200]}")
+
+    def _send(self, changes: list[Change], run: dict[str, Any]) -> Result:
+        self._post(render.as_sms(changes))
+        return Result(self.name, True, f"{len(changes)} change(s)")
+
+    def _send_text(self, subject: str, body: str) -> Result:
+        self._post(f"{subject}\n{body}")
+        return Result(self.name, True, "text")
+
+
+REGISTRY: dict[str, type[Notifier]] = {
+    "telegram": TelegramNotifier,
+    "discord": DiscordNotifier,
+    "ntfy": NtfyNotifier,
+    "slack": SlackNotifier,
+    "email": EmailNotifier,
+    "webhook": WebhookNotifier,
+    "twilio": TwilioNotifier,
+}
+
+
+def build(config, env: dict[str, str] | None = None) -> list[Notifier]:
+    """Instantiate every channel that is switched on and fully configured."""
+    env = env if env is not None else dict(os.environ)
+    settings = config.get("notifications", {}) or {}
+    out: list[Notifier] = []
+    for name, status in config.channel_status(env).items():
+        if not status["active"]:
+            continue
+        cls = REGISTRY.get(name)
+        if cls:
+            out.append(cls(status["config"], env, settings))
+    return out
+
+
+def in_quiet_hours(settings: dict[str, Any], now: datetime | None = None) -> bool:
+    """True if the user asked not to be disturbed right now."""
+    quiet = (settings or {}).get("quiet_hours") or {}
+    if not quiet.get("enabled"):
+        return False
+    try:
+        from zoneinfo import ZoneInfo
+        tz = ZoneInfo(str(settings.get("timezone") or "UTC"))
+    except Exception:  # noqa: BLE001 - a bad tz must not silence notifications
+        tz = None
+    now = now or (datetime.now(tz) if tz else datetime.now())
+    try:
+        start_h, start_m = (int(x) for x in str(quiet.get("start", "23:00")).split(":"))
+        end_h, end_m = (int(x) for x in str(quiet.get("end", "07:00")).split(":"))
+    except (ValueError, TypeError):
+        return False
+    minutes = now.hour * 60 + now.minute
+    start = start_h * 60 + start_m
+    end = end_h * 60 + end_m
+    if start == end:
+        return False
+    if start < end:
+        return start <= minutes < end
+    return minutes >= start or minutes < end   # window crosses midnight
+
+
+def dispatch(config, changes: list[Change], run: dict[str, Any] | None = None,
+             env: dict[str, str] | None = None,
+             notifiers: list[Notifier] | None = None) -> list[Result]:
+    """Send one digest per active channel.  Always returns; never raises."""
+    if not changes:
+        return []
+    settings = config.get("notifications", {}) or {}
+    channels = notifiers if notifiers is not None else build(config, env)
+    if not channels:
+        return [Result("none", False,
+                       "no notification channel is configured - see README", skipped=True)]
+    return [channel.send(changes, run) for channel in channels]
+
+
+def alert(config, subject: str, body: str, env: dict[str, str] | None = None,
+          notifiers: list[Notifier] | None = None) -> list[Result]:
+    """Send a health warning (scraper blocked, search broken) to every channel."""
+    channels = notifiers if notifiers is not None else build(config, env)
+    return [channel.send_text(subject, body) for channel in channels]
