@@ -13,6 +13,16 @@ on:
     # drops them under load, so */15 does not actually run every 15 minutes -
     # the old workflow asked for 96 runs a day and got far fewer, unevenly.
     - cron: '*/30 * * * *'
+
+  # Check straight away when the watch list changes, instead of leaving someone
+  # who just added a search waiting half an hour to find out whether it works.
+  # The bot's own commits carry [skip ci], so this cannot loop.
+  push:
+    branches: [main]
+    paths:
+      - 'config.json'
+      - '.github/workflows/watch.yml'
+
   workflow_dispatch:
     inputs:
       dry_run:
