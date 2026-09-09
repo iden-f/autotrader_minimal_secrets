@@ -140,6 +140,10 @@ DEFAULTS: dict[str, Any] = {
     "health": {
         "alert_after_failures": 3,
         "heartbeat_hours": 0,
+        # A channel whose credentials are rejected is switched off after this
+        # many runs rather than failing identically forever.
+        "disable_channel_after": 2,
+        "watch_page_shape": True,
     },
     "dashboard": {"enabled": True, "max_listings": 500},
 }

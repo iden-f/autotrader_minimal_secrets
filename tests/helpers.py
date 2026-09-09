@@ -1,7 +1,25 @@
 """Test doubles shared by the runner and failure-mode suites."""
 
+from autotrader import notifiers as _notifiers
 from autotrader.http import Response
 from autotrader.notifiers import Notifier, Result
+
+# Captured at import, before any test patches them. Re-reading
+# notifiers.dispatch inside a test picks up whatever an outer fixture already
+# substituted, and calling that recurses or silently ignores your channels.
+ORIGINAL_DISPATCH = _notifiers.dispatch
+ORIGINAL_ALERT = _notifiers.alert
+
+
+def use_channels(monkeypatch, runner_module, channels, alert_channels=None):
+    """Point the runner's notification calls at specific test doubles."""
+    monkeypatch.setattr(
+        runner_module.notifiers, "dispatch",
+        lambda c, ch, r=None, e=None, n=None: ORIGINAL_DISPATCH(c, ch, r, e, channels))
+    monkeypatch.setattr(
+        runner_module.notifiers, "alert",
+        lambda c, s, b, e=None, n=None: ORIGINAL_ALERT(
+            c, s, b, e, alert_channels if alert_channels is not None else channels))
 
 
 class FakeFetcher:

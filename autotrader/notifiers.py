@@ -27,12 +27,36 @@ log = logging.getLogger(__name__)
 TIMEOUT = 25
 
 
+# Failures that will never fix themselves by being retried. A wrong password
+# is wrong on the thousandth attempt too, and retrying it every 30 minutes
+# just fills the log with the same red line forever.
+PERMANENT_FAILURE_MARKERS = (
+    "535", "5.7.8", "badcredentials", "username and password not accepted",
+    "invalid credentials", "authentication failed", "unauthorized",
+    "401", "403", "forbidden", "invalid token", "bot token is invalid",
+    "chat not found", "bot was blocked", "unknown webhook", "no_service",
+    "invalid_auth", "account_inactive", "webhook no longer exists",
+    "not accessible", "authenticate",
+)
+
+
+def is_permanent_failure(detail: str) -> bool:
+    """True when retrying this failure cannot possibly help."""
+    text = (detail or "").lower()
+    return any(marker in text for marker in PERMANENT_FAILURE_MARKERS)
+
+
 @dataclass
 class Result:
     channel: str
     ok: bool
     detail: str = ""
     skipped: bool = False
+
+    @property
+    def permanent(self) -> bool:
+        """A failure that will recur identically until someone fixes it."""
+        return not self.ok and not self.skipped and is_permanent_failure(self.detail)
 
     def __str__(self) -> str:
         mark = "skipped" if self.skipped else ("sent" if self.ok else "FAILED")

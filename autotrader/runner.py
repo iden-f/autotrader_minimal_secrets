@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Any
 
 from . import archive as archive_mod
-from . import diagnose, filters, notifiers, provision, validate
+from . import diagnose, filters, notifiers, provision, shape, validate
 from .config import Config
 from .enrich import enrich
 from .http import BlockedError, BudgetExhausted, FetchError, Fetcher
@@ -37,6 +37,9 @@ class RunReport:
     budget_exhausted: bool = False
     empty_parses: list[str] = field(default_factory=list)
     diagnostics: list[str] = field(default_factory=list)
+    shape_drift: list[dict[str, Any]] = field(default_factory=list)
+    disabled_channels: list[str] = field(default_factory=list)
+    channel_results: list[Any] = field(default_factory=list)
     first_run: bool = False
     validation_ok: bool = True
     validation_report: str = ""
@@ -73,6 +76,8 @@ class RunReport:
             "budget_exhausted": self.budget_exhausted,
             "empty_parses": self.empty_parses,
             "diagnostics": self.diagnostics,
+            "shape_drift": self.shape_drift,
+            "disabled_channels": self.disabled_channels,
             "first_run": self.first_run,
             "validation_ok": self.validation_ok,
             "notified": self.notified, "errors": self.errors[:10],
@@ -216,6 +221,7 @@ def run(cfg: Config | None = None, state: State | None = None, *,
     changes: list[Change] = []
     blocked_searches: list[str] = []
     assessments: list[validate.Assessment] = []
+    drifted: list[tuple[str, list[str], dict[str, Any]]] = []
 
     def queue(change: Change) -> None:
         """Record a change as owed to the user, then remember to send it.
@@ -273,6 +279,34 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                 listings, strategy, search.name,
                 said_no_results=said_no_results,
                 candidates=candidates))
+
+            if health_conf.get("watch_page_shape", True) and first_page is not None:
+                try:
+                    current = shape.fingerprint(first_page.text, strategy,
+                                                candidates, len(listings))
+                    reasons, serious = shape.compare(
+                        state.search_shape(search.id), current)
+                    state.record_shape(search.id, current)
+                    if reasons:
+                        # Always keep the evidence when the shape moves: by the
+                        # time the parser actually breaks, the page that broke
+                        # it is long gone.
+                        report.shape_drift.append(
+                            {"search": search.name, "reasons": reasons,
+                             "serious": serious})
+                        try:
+                            data = diagnose.capture(
+                                first_page.url, first_page.text,
+                                first_page.status, first_page.elapsed_ms,
+                                search.name)
+                            report.diagnostics.append(
+                                str(diagnose.write(data, search.id)))
+                        except Exception as exc:  # noqa: BLE001
+                            log.warning("could not capture the page: %s", exc)
+                    if serious:
+                        drifted.append((search.name, reasons, current))
+                except Exception as exc:  # noqa: BLE001 - never fatal
+                    log.warning("shape check failed for %s: %s", search.name, exc)
 
             if not listings and said_no_results:
                 # The site itself says the search matched nothing. That is a
@@ -392,6 +426,7 @@ def run(cfg: Config | None = None, state: State | None = None, *,
             else:
                 # Every channel failed. Hold on to them and try again next run.
                 state.defer(changes)
+            report.channel_results.extend(results)
             for result in results:
                 if not result.ok and not result.skipped:
                     report.warnings.append(f"notification failed: {result}")
@@ -415,12 +450,29 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                            else "AutoTrader watcher: the first check looks wrong")
                 results = notifiers.alert(
                     cfg, subject, validate.report_text(assessments, ok=report.validation_ok), env)
+                report.channel_results.extend(results)
                 report.warnings.append("sent the first-run check: "
                                        + ", ".join(str(r) for r in results))
+
+        # ---- shape drift ---------------------------------------------
+        if drifted and notify and not dry_run:
+            body = "\n\n".join(shape.describe(name, reasons, current)
+                                 for name, reasons, current in drifted)
+            results = notifiers.alert(
+                cfg, "AutoTrader changed how its pages are built", body, env)
+            report.channel_results.extend(results)
+            report.warnings.append("sent a page-shape warning: "
+                                   + ", ".join(str(r) for r in results))
 
         # ---- health -------------------------------------------------
         _health_check(cfg, state, report, env, blocked_searches,
                       int(health_conf.get("alert_after_failures", 3) or 0), notify and not dry_run)
+
+        # ---- retire channels that cannot work ------------------------
+        if notify and not dry_run:
+            _retire_dead_channels(
+                cfg, state, report, env,
+                int(health_conf.get("disable_channel_after", 2) or 0))
 
         # ---- housekeeping -------------------------------------------
         if not dry_run:
@@ -443,6 +495,71 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                 report.errors.append(f"could not save state: {exc}")
 
     return report
+
+
+def _retire_dead_channels(cfg: Config, state: State, report: RunReport,
+                          env: dict[str, str], threshold: int) -> None:
+    """Switch off a channel whose credentials are being rejected.
+
+    A wrong password is wrong every time, so retrying it every half hour just
+    prints the same red line forever and buries the failures that matter.
+
+    Judged once per run over every send attempted, not per message: a channel
+    that fails an alert is as broken as one that fails a digest, and a quiet
+    week should not keep a dead channel alive.
+    """
+    if not report.channel_results:
+        return
+
+    outcomes: dict[str, dict[str, Any]] = {}
+    for result in report.channel_results:
+        if result.skipped:
+            continue
+        entry = outcomes.setdefault(result.channel, {"ok": False, "permanent": False,
+                                                     "detail": ""})
+        if result.ok:
+            entry["ok"] = True
+        else:
+            entry["detail"] = entry["detail"] or result.detail
+            if result.permanent:
+                entry["permanent"] = True
+
+    alive = sorted(name for name, o in outcomes.items() if o["ok"])
+
+    for channel, outcome in sorted(outcomes.items()):
+        strikes = state.record_channel(channel, outcome["ok"], outcome["detail"],
+                                       outcome["permanent"])
+        if outcome["ok"] or threshold <= 0 or strikes < threshold:
+            continue
+
+        cfg.set(f"notifications.channels.{channel}.enabled", False)
+        cfg.set(f"notifications.channels.{channel}.disabled_reason",
+                f"Switched off automatically after {strikes} runs: "
+                f"{outcome['detail'][:160]}")
+        state.mark_channel_disabled(channel)
+        report.disabled_channels.append(channel)
+        try:
+            cfg.save()
+        except OSError as exc:
+            log.warning("could not persist the disabled channel: %s", exc)
+
+        # Say so once, through whatever still works. Deliberately not recorded
+        # against the channels, or this notice would count as its own strike.
+        if alive:
+            notifiers.alert(
+                cfg,
+                f"Switched off {channel} notifications",
+                f"{channel} has been rejecting our credentials:\n\n"
+                f"  {outcome['detail'][:300]}\n\n"
+                f"It failed that way {strikes} runs in a row, so it is now off "
+                f"and will stop filling the log.\n\n"
+                f"Still delivering via: {', '.join(alive)}.\n\n"
+                f"To bring it back, fix the credentials and set "
+                f"notifications.channels.{channel}.enabled to true in "
+                f"config.json, or switch it on in the dashboard's Settings tab.",
+                env)
+        report.warnings.append(
+            f"switched off {channel} after {strikes} runs of credential failures")
 
 
 def _publish_validation(report: RunReport, assessments: list[validate.Assessment]) -> None:
@@ -497,4 +614,5 @@ def _health_check(cfg: Config, state: State, report: RunReport,
                  "strategies still work.")
     body += "\n\nNothing is lost - it will resume as soon as the pages load again."
     results = notifiers.alert(cfg, "AutoTrader watcher needs attention", body, env)
+    report.channel_results.extend(results)
     report.warnings.append("sent a health alert: " + ", ".join(str(r) for r in results))

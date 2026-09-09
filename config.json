@@ -89,7 +89,9 @@
   },
   "health": {
     "alert_after_failures": 3,
-    "heartbeat_hours": 0
+    "heartbeat_hours": 0,
+    "disable_channel_after": 2,
+    "watch_page_shape": true
   },
   "dashboard": {
     "enabled": true,

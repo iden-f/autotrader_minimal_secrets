@@ -46,7 +46,7 @@ from autotrader.notifiers import Notifier, Result  # noqa: E402
 from autotrader.runner import run  # noqa: E402
 from autotrader.state import State  # noqa: E402
 
-from .helpers import Capture, FakeFetcher  # noqa: E402
+from .helpers import Capture, FakeFetcher, use_channels  # noqa: E402
 
 SEARCH = "https://www.autotrader.ca/cars/bmw/m5/?rcp=15&srt=35&prx=-2&loc=M5V"
 
@@ -63,11 +63,7 @@ def bench(tmp_path, monkeypatch, fixture_html, archive_html):
     cfg.save()
 
     sink = Capture()
-    real_dispatch, real_alert = notifiers.dispatch, notifiers.alert
-    monkeypatch.setattr(runner_mod.notifiers, "dispatch",
-                        lambda c, ch, r=None, e=None, n=None: real_dispatch(c, ch, r, e, [sink]))
-    monkeypatch.setattr(runner_mod.notifiers, "alert",
-                        lambda c, s, b, e=None, n=None: real_alert(c, s, b, e, [sink]))
+    use_channels(monkeypatch, runner_mod, [sink])
 
     details = {i: archive_html(i) for i in ("13166607", "68819631", "13221555")}
 

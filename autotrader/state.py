@@ -341,6 +341,46 @@ class State:
         health["last_error_at"] = utcnow()
         return health["consecutive_failures"]
 
+    # ---------------- channel health ----------------
+
+    def channel_health(self, name: str) -> dict[str, Any]:
+        channels = self.data.setdefault("channels", {})
+        return channels.setdefault(name, {"consecutive_failures": 0,
+                                          "permanent_failures": 0,
+                                          "last_error": None, "last_ok": None,
+                                          "disabled_at": None})
+
+    def record_channel(self, name: str, ok: bool, detail: str = "",
+                       permanent: bool = False) -> int:
+        """Track a channel's outcome. Returns consecutive permanent failures."""
+        health = self.channel_health(name)
+        if ok:
+            health.update({"consecutive_failures": 0, "permanent_failures": 0,
+                           "last_ok": utcnow(), "last_error": None})
+            return 0
+        health["consecutive_failures"] = int(health.get("consecutive_failures", 0)) + 1
+        health["last_error"] = (detail or "")[:300]
+        health["last_error_at"] = utcnow()
+        if permanent:
+            health["permanent_failures"] = int(health.get("permanent_failures", 0)) + 1
+        else:
+            # A transient error does not count towards giving up on a channel.
+            health["permanent_failures"] = 0
+        return int(health["permanent_failures"])
+
+    def mark_channel_disabled(self, name: str) -> None:
+        health = self.channel_health(name)
+        health["disabled_at"] = utcnow()
+        health["permanent_failures"] = 0
+
+    # ---------------- page shape ----------------
+
+    def search_shape(self, search_id: str) -> dict[str, Any] | None:
+        return (self.data.get("searches", {}).get(search_id) or {}).get("shape")
+
+    def record_shape(self, search_id: str, shape: dict[str, Any]) -> None:
+        self.search_health(search_id)["shape"] = shape
+
     def record_run(self, summary: dict[str, Any]) -> None:
         summary = {"at": utcnow(), **summary}
         self.data["runs"] = ([summary] + self.data.get("runs", []))[:MAX_RUN_HISTORY]
