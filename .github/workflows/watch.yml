@@ -99,10 +99,17 @@ jobs:
       - name: Save results
         if: ${{ !inputs.dry_run }}
         run: |
+          set -u
           git config user.name  "autotrader-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A state.json docs/data.json archives config.json NOTIFY.md \
-                     diagnostics validation-report.md 2>/dev/null || true
+          # `git add -A a b c` stages NOTHING if any pathspec is missing, and
+          # `diagnostics/` only exists after a failed parse. That silently
+          # discarded a successful run's results, so add each path that is
+          # actually there.
+          for path in state.json docs/data.json archives config.json \
+                      NOTIFY.md diagnostics validation-report.md; do
+            if [ -e "$path" ]; then git add -A -- "$path"; fi
+          done
           if git diff --cached --quiet; then
             echo "nothing changed"
             exit 0
