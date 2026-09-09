@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-09-09T22:49:35+00:00",
+ "generated_at": "2026-09-09T22:51:33+00:00",
  "notify": {
   "ntfy_topic": "autotrader-2q592ak9gnx7sqrere5r",
   "ntfy_url": "https://ntfy.sh/autotrader-2q592ak9gnx7sqrere5r",
@@ -3084,6 +3084,56 @@
      "jsonld"
     ]
    }
+  },
+  {
+   "id": "bmw-m5-bargains-any-year-f2f097",
+   "name": "BMW M5 bargains (any year)",
+   "url": "https://www.autotrader.ca/cars/bmw/m5/?prx=-2&inMarket=advancedSearch",
+   "enabled": true,
+   "notes": "A wider net on the same car: any year, Canada-wide, with the price ceiling applied by the bot rather than by the search link. Remove it in the dashboard if you only want the 2021-2023 watch.",
+   "summary": {
+    "make": "BMW",
+    "model": "M5",
+    "year_min": null,
+    "year_max": null,
+    "price_min": null,
+    "price_max": null,
+    "mileage_max": null,
+    "location": null,
+    "radius_km": null,
+    "province": null,
+    "body": null,
+    "condition": null,
+    "keywords": null,
+    "per_page": null,
+    "valid": true,
+    "problems": [],
+    "title": "BMW M5",
+    "chips": [
+     "Canada-wide"
+    ]
+   },
+   "health": {
+    "last_ok": null,
+    "last_error": null,
+    "last_count": 0,
+    "last_strategy": null,
+    "consecutive_failures": 0
+   },
+   "active_count": 0,
+   "rules": {
+    "filters": {
+     "max_price": 100000,
+     "require_price": true,
+     "price_drop_min_abs": 1000
+    },
+    "notify_on": {
+     "removed": true
+    },
+    "price_drop_min_pct": null,
+    "price_drop_min_abs": null
+   },
+   "shape": null
   }
  ],
  "channels": {
@@ -3451,6 +3501,21 @@
     "url": "https://www.autotrader.ca/cars/bmw/m5/?rcp=25&rcs=0&srt=9&yRng=2021%2C2023&prx=-1&loc=V6N+3B5&hprc=False&wcp=False&inMarket=advancedSearch",
     "enabled": true,
     "notes": "Imported from the SEARCH_URL repository secret. That secret is no longer read - you can delete it."
+   },
+   {
+    "id": "bmw-m5-bargains-any-year-f2f097",
+    "name": "BMW M5 bargains (any year)",
+    "url": "https://www.autotrader.ca/cars/bmw/m5/?prx=-2&inMarket=advancedSearch",
+    "enabled": true,
+    "notes": "A wider net on the same car: any year, Canada-wide, with the price ceiling applied by the bot rather than by the search link. Remove it in the dashboard if you only want the 2021-2023 watch.",
+    "filters": {
+     "max_price": 100000,
+     "require_price": true,
+     "price_drop_min_abs": 1000
+    },
+    "notify_on": {
+     "removed": true
+    }
    }
   ],
   "filters": {
