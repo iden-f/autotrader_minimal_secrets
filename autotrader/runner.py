@@ -366,7 +366,12 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                     + "; ".join(assessments[-1].concerns))
                 continue
 
-            kept, dropped = filters.apply(listings, filter_conf)
+            # Each search may override the global filters and alert rules.
+            rules = cfg.rules_for(search)
+            search_filters = rules["filters"]
+            search_notify = rules["notify_on"]
+
+            kept, dropped = filters.apply(listings, search_filters)
             report.filtered_out += len(dropped)
 
             seen_ids = {l.id for l in listings}
@@ -379,21 +384,20 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                     if entry.get("notified"):
                         continue          # imported from v1: known, stay quiet
                     report.new += 1
-                    if notify_on.get("new", True):
+                    if search_notify.get("new", True):
                         queue(change)
                     archive_mod.archive_listing(listing, archive_conf, fetcher)
                 elif change.kind == Change.PRICE_DROP:
                     if filters.is_significant_drop(
                         change.old_price or 0, change.new_price or 0,
-                        float(settings.get("price_drop_min_pct", 1.0) or 0),
-                        int(settings.get("price_drop_min_abs", 0) or 0),
+                        rules["price_drop_min_pct"], rules["price_drop_min_abs"],
                     ):
                         report.price_drops += 1
-                        if notify_on.get("price_drop", True):
+                        if search_notify.get("price_drop", True):
                             queue(change)
                 elif change.kind == Change.PRICE_RISE:
                     report.price_rises += 1
-                    if notify_on.get("price_rise", False):
+                    if search_notify.get("price_rise", False):
                         queue(change)
 
             # Cars that were filtered out still count as "seen", so they do not
@@ -404,7 +408,7 @@ def run(cfg: Config | None = None, state: State | None = None, *,
 
             for change in state.mark_missing(search.id, seen_ids):
                 report.removed += 1
-                if notify_on.get("removed", False):
+                if search_notify.get("removed", False):
                     queue(change)
 
         # ---- notify -------------------------------------------------

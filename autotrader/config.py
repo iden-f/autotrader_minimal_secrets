@@ -13,7 +13,7 @@ import json
 import os
 import re
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -176,6 +176,13 @@ class Search:
     enabled: bool = True
     max_pages: int | None = None
     notes: str = ""
+    # Anything set here replaces the corresponding global setting for this
+    # search only. A cheap-runabout watch and a collector-car watch want
+    # different price bands and different tolerance for being pinged.
+    filters: dict[str, Any] = field(default_factory=dict)
+    notify_on: dict[str, Any] = field(default_factory=dict)
+    price_drop_min_pct: float | None = None
+    price_drop_min_abs: int | None = None
 
     @classmethod
     def from_dict(cls, raw: dict[str, Any], index: int = 0) -> "Search":
@@ -185,6 +192,8 @@ class Search:
             name = describe_search(url).title() if url else f"Search {index + 1}"
         sid = str(raw.get("id") or "").strip() or f"{_slug(name)}-{uuid.uuid4().hex[:6]}"
         max_pages = raw.get("max_pages")
+        drop_pct = raw.get("price_drop_min_pct")
+        drop_abs = raw.get("price_drop_min_abs")
         return cls(
             id=sid,
             name=name,
@@ -192,6 +201,10 @@ class Search:
             enabled=bool(raw.get("enabled", True)),
             max_pages=int(max_pages) if max_pages else None,
             notes=str(raw.get("notes") or ""),
+            filters=dict(raw.get("filters") or {}),
+            notify_on=dict(raw.get("notify_on") or {}),
+            price_drop_min_pct=float(drop_pct) if drop_pct is not None else None,
+            price_drop_min_abs=int(drop_abs) if drop_abs is not None else None,
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -202,6 +215,14 @@ class Search:
             out["max_pages"] = self.max_pages
         if self.notes:
             out["notes"] = self.notes
+        if self.filters:
+            out["filters"] = self.filters
+        if self.notify_on:
+            out["notify_on"] = self.notify_on
+        if self.price_drop_min_pct is not None:
+            out["price_drop_min_pct"] = self.price_drop_min_pct
+        if self.price_drop_min_abs is not None:
+            out["price_drop_min_abs"] = self.price_drop_min_abs
         return out
 
 
@@ -314,6 +335,26 @@ class Config:
         search = Search.from_dict({"name": name or summary.title(), "url": url})
         self.data.setdefault("searches", []).append(search.to_dict())
         return search
+
+    def rules_for(self, search: "Search") -> dict[str, Any]:
+        """The effective settings for one search: globals with its own on top."""
+        filters = dict(self.get("filters", {}) or {})
+        filters.update({k: v for k, v in (search.filters or {}).items()})
+
+        notify_on = dict(self.get("notifications.notify_on", {}) or {})
+        notify_on.update({k: bool(v) for k, v in (search.notify_on or {}).items()})
+
+        settings = self.get("notifications", {}) or {}
+        return {
+            "filters": filters,
+            "notify_on": notify_on,
+            "price_drop_min_pct": (search.price_drop_min_pct
+                                   if search.price_drop_min_pct is not None
+                                   else float(settings.get("price_drop_min_pct", 1.0) or 0)),
+            "price_drop_min_abs": (search.price_drop_min_abs
+                                   if search.price_drop_min_abs is not None
+                                   else int(settings.get("price_drop_min_abs", 0) or 0)),
+        }
 
     def remove_search(self, search_id: str) -> bool:
         before = len(self.data.get("searches", []))

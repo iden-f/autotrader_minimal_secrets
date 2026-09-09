@@ -25,7 +25,9 @@ DIAGNOSTIC_DIR = Path("diagnostics")
 
 HEAD_CHARS = 2500
 MAX_JSONLD = 40000
-MAX_NEXT_DATA = 6000
+# Big enough to hold several complete listing objects: 6 KB caught only
+# one, and half of it, which was not enough to rebuild the shape from.
+MAX_NEXT_DATA = 30000
 MAX_CONTEXTS = 25
 CONTEXT_WINDOW = 180
 

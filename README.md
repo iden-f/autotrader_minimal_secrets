@@ -126,6 +126,8 @@ something.
 pip install -r requirements.txt
 
 python -m autotrader add "<paste a search link>"   # watch a search
+python -m autotrader set filters.max_price 120000  # change a setting
+python -m autotrader set max_price 90000 --search "BMW M5"   # ...for one search
 python -m autotrader list                          # what is being watched
 python -m autotrader run                           # check once
 python -m autotrader run --dry-run                 # ...changing nothing
@@ -164,8 +166,40 @@ Secrets never go in it.
 | `notifications.price_drop_min_pct` / `_abs` | 1% / $250 | A drop must clear **both** to be worth a message. |
 | `notifications.quiet_hours` | off | Hold alerts overnight. They arrive in the next run afterwards — nothing is lost. |
 | `filters.*` | empty | Extra rules on top of the link: price, year, odometer, keywords, sellers. |
+| `health.disable_channel_after` | 2 | Runs of rejected credentials before a channel switches itself off. |
+| `health.watch_page_shape` | `true` | Warn when the site changes how its pages are built, before the parser breaks. |
 | `archive.mode` | `metadata` | `off`, `metadata`, or `full` (also stores the ~200 KB page). |
 | `health.alert_after_failures` | 3 | Failed runs in a row before it warns you. |
+
+## Per-search rules
+
+Each search can override any global filter or alert rule, so a runabout watch
+and a collector-car watch can live in the same config:
+
+```bash
+python -m autotrader set max_price 40000 --search "Civic"
+python -m autotrader set max_mileage_km 120000 --search "Civic"
+python -m autotrader set notify_on.removed true --search "911"
+python -m autotrader set price_drop_min_abs 2500 --search "911"
+```
+
+Anything not overridden falls through to the global settings. `list` shows
+which rules a search has of its own.
+
+## When the site changes
+
+autotrader.ca moved onto the AutoScout24 platform in 2026 and every parser
+strategy went to zero at once. The bot now fingerprints each results page -
+which strategy won, which others still work, which structural markers are
+present - and compares it with the previous run.
+
+A changed winner, the loss of the last fallback, a marker disappearing, or
+results collapsing by half raises a warning **and commits a capture of the
+page under `diagnostics/`** while listings are still flowing. That capture is
+the point: by the time a parser actually breaks, the page that broke it is
+long gone.
+
+Losing one strategy of three is a note, not an alarm.
 
 ## How it reads the site
 

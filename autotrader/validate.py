@@ -47,6 +47,7 @@ def _sample(listings: list[Listing], limit: int = 3) -> list[dict[str, Any]]:
             "price": listing.price_text,
             "price_source": listing.price_source or "none",
             "odometer": listing.mileage_text,
+            "year": listing.year,
             "where": ", ".join(x for x in (listing.location, listing.province) if x),
             "photos": len(listing.images),
             "url": listing.url,
@@ -92,6 +93,7 @@ def assess(listings: list[Listing], strategy: str, search_name: str = "",
     titled = sum(1 for l in listings
                  if l.display_title and not l.display_title.startswith("AutoTrader listing"))
     located = sum(1 for l in listings if l.location or l.province)
+    dated = sum(1 for l in listings if l.year)
 
     if total >= MIN_SAMPLE:
         # "Call for price" is common; almost none priced is not.
@@ -107,6 +109,15 @@ def assess(listings: list[Listing], strategy: str, search_name: str = "",
                 f"Only {with_km} of {total} listings have an odometer reading.")
         elif with_km / total < 0.6:
             result.notes.append(f"{total - with_km} of {total} have no odometer reading.")
+
+        # AutoTrader publishes the model year for every car it lists, so its
+        # absence is a parser problem rather than a gap in the data.
+        if dated == 0:
+            result.concerns.append(
+                f"None of the {total} listings has a model year. The site does "
+                f"publish one, so the parser is looking in the wrong place.")
+        elif dated / total < 0.5:
+            result.notes.append(f"{total - dated} of {total} have no model year.")
 
         if titled / total < 0.5:
             result.concerns.append(

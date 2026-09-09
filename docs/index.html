@@ -805,6 +805,28 @@ function renderPreview(){
   };
 }
 
+function ruleChips(rules){
+  if (!rules) return "";
+  const chips = [];
+  const label = {min_price:"from", max_price:"up to", min_year:"year from",
+                 max_year:"year to", max_mileage_km:"under"};
+  for (const [k, v] of Object.entries(rules.filters || {})) {
+    if (v === null || v === "" || (Array.isArray(v) && !v.length)) continue;
+    if (k === "max_price" || k === "min_price") chips.push(`${label[k]} $${Number(v).toLocaleString()}`);
+    else if (k === "max_mileage_km") chips.push(`under ${Number(v).toLocaleString()} km`);
+    else if (label[k]) chips.push(`${label[k]} ${v}`);
+    else chips.push(`${k}: ${Array.isArray(v) ? v.join(", ") : v}`);
+  }
+  for (const [k, v] of Object.entries(rules.notify_on || {}))
+    chips.push(`${k.replace(/_/g," ")}: ${v ? "on" : "off"}`);
+  if (rules.price_drop_min_abs != null)
+    chips.push(`drops of $${Number(rules.price_drop_min_abs).toLocaleString()}+`);
+  if (!chips.length) return "";
+  return `<div class="chipbar" style="margin-top:8px">
+    <span class="chip on">its own rules</span>
+    ${chips.map(c => `<span class="chip">${esc(c)}</span>`).join("")}</div>`;
+}
+
 function renderSearches(){
   const list = CONFIG.searches || [];
   $("#none-searches").classList.toggle("hidden", !!list.length);
@@ -830,6 +852,7 @@ function renderSearches(){
         <a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.url)}</a></div>
       ${health.last_error ? `<div class="banner warn" style="margin:10px 0 0">
         Last error: ${esc(health.last_error)}</div>` : ""}
+      ${ruleChips(info.rules)}
       ${health.last_strategy ? `<div style="margin-top:8px;font-size:12px;color:var(--faint)">
         Read using the <code>${esc(health.last_strategy)}</code> method
         ${health.last_ok ? "&middot; last worked " + esc(timeOf(health.last_ok)) : ""}</div>` : ""}
@@ -1021,6 +1044,16 @@ function renderStatus(){
   } else {
     panel.innerHTML = `<h2>Where your alerts go</h2>
       <p class="hint">Sent via <b>${(n.active||[]).map(esc).join(", ") || "nothing yet"}</b>.</p>`;
+  }
+
+  const ch = DATA.channel_health || {};
+  const troubled = Object.entries(ch).filter(([, h]) => h.last_error || h.disabled_at);
+  if (troubled.length) {
+    panel.innerHTML += `<div class="banner warn" style="margin-top:12px">
+      ${troubled.map(([name, h]) => h.disabled_at
+        ? `<b>${esc(name)}</b> was switched off automatically &mdash; ${esc(h.last_error || "credentials rejected")}`
+        : `<b>${esc(name)}</b> last failed with: ${esc(h.last_error)}`).join("<br>")}
+    </div>`;
   }
 
   const a = DATA.archive || {};

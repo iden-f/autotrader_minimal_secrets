@@ -309,6 +309,21 @@ python -m autotrader run --dry-run
 
 ---
 
+## If a channel stops working
+
+A channel whose credentials are rejected switches itself off after two runs
+rather than failing identically forever. You get told once, through a channel
+that still works, and `config.json` records why:
+
+```json
+"email": {"enabled": false, "disabled_reason": "Switched off automatically after 2 runs: (535, ...BadCredentials)"}
+```
+
+Fix the credential, then set `enabled` back to `true` in `config.json` or flip
+it on in the dashboard's Settings tab.
+
+Transient failures - rate limits, timeouts, 5xx - never count towards this.
+
 ## Troubleshooting
 
 | Symptom | Cause | Fix |
@@ -321,6 +336,8 @@ python -m autotrader run --dry-run
 | `this run has used its allowance of N requests` | Budget hit; not an error | Raise `scraping.request_budget`, or lower `max_pages` / `enrich_limit` |
 | Workflow never runs on its own | Disabled, or repo inactive 60 days | Actions → **Check AutoTrader** → **Enable workflow** |
 | Nothing at all for weeks | The bot may be dead | Actions tab, then `doctor --live` |
+| "changed how its pages are built" | The site moved something | Read the new capture in `diagnostics/` |
+| A channel switched itself off | Its credentials are rejected | Fix them, set `enabled: true` again |
 | `another run ... holds .autotrader.lock` | Two runs at once | Wait; or delete `.autotrader.lock` if no run is active |
 
 ## What is safe to commit

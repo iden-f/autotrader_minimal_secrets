@@ -38,13 +38,16 @@ LISTING_HREF_RE = re.compile(r"""["'(]((?:https?://[^"'()\s]*)?/a/[^"'()\s]*?/\d
 
 # JSON keys AutoTrader-ish payloads use for the same concepts.
 _JSON_KEYS = {
-    "price": ("price", "listingPrice", "askingPrice", "displayPrice", "priceValue"),
-    "mileage": ("odometer", "mileage", "kilometres", "kilometers", "odometerValue", "km"),
+    "price": ("price", "priceRaw", "listingPrice", "askingPrice", "displayPrice",
+              "priceValue"),
+    "mileage": ("odometer", "mileage", "mileageInKm", "kilometres", "kilometers",
+                "odometerValue", "km"),
     "title": ("title", "name", "displayName", "heading", "adTitle"),
-    "year": ("year", "modelYear", "vehicleYear"),
+    "year": ("year", "modelYear", "vehicleYear", "registrationYear"),
     "make": ("make", "makeName", "brand"),
     "model": ("model", "modelName"),
-    "trim": ("trim", "trimName", "series"),
+    "trim": ("trim", "modelVersionInput", "modelVersionCustom", "trimName",
+             "series", "variant"),
     "location": ("location", "city", "proximityCity", "sellerCity"),
     "province": ("province", "provinceCode", "region"),
     "seller": ("dealerName", "sellerName", "companyName", "dealer"),
@@ -94,8 +97,8 @@ class ParseResult:
 
 
 # Keys a nested price or measurement object hides its number under.
-_NUMERIC_KEYS = ("amount", "value", "price", "consumerPrice", "raw", "number",
-                 "displayValue", "amountInCents")
+_NUMERIC_KEYS = ("amount", "value", "price", "priceRaw", "consumerPrice", "raw",
+                 "number", "displayValue", "amountInCents")
 
 
 def _to_int(value: Any, _depth: int = 0) -> int | None:
@@ -136,6 +139,13 @@ def _to_int(value: Any, _depth: int = 0) -> int | None:
     return number if number > 0 else None
 
 
+def _year(value: int | None) -> int | None:
+    """Reject anything that is not plausibly a model year."""
+    if value is None:
+        return None
+    return value if 1900 <= value <= 2100 else None
+
+
 def _place_from(value: Any) -> tuple[str, str]:
     """City and province from whatever shape the payload uses.
 
@@ -164,6 +174,27 @@ def _titlecase_place(text: str) -> str:
     if text and text == text.upper():
         return "-".join(part.capitalize() for part in text.split("-"))
     return text
+
+
+# Child objects a listing keeps its facts inside. The 2026 platform nests
+# everything about the car under "vehicle" - including the model year, which is
+# published nowhere else on the page - and the asking price under "price".
+_NESTED_FACTS = ("vehicle", "item", "listing", "ad", "details", "specs",
+                 "vehicleDetails", "attributes")
+
+
+def _flatten(node: dict) -> dict:
+    """A view of a listing with its nested fact objects lifted to the top.
+
+    Child keys never shadow parent ones, so a top-level value still wins.
+    """
+    merged = dict(node)
+    for name in _NESTED_FACTS:
+        child = node.get(name)
+        if isinstance(child, dict):
+            for key, value in child.items():
+                merged.setdefault(key, value)
+    return merged
 
 
 def _first_key(node: dict, names: Iterable[str]) -> Any:
@@ -277,6 +308,8 @@ def _listing_from_json(node: dict, base_url: str) -> Listing | None:
     if not lid or not isinstance(url, str):
         return None
 
+    facts = _flatten(node)
+
     offers = node.get("offers")
     price = None
     currency = "CAD"
@@ -294,14 +327,14 @@ def _listing_from_json(node: dict, base_url: str) -> Listing | None:
                 city = str(address.get("addressLocality") or "")
                 region = str(address.get("addressRegion") or "")
     if price is None:
-        price = _to_int(_first_key(node, _JSON_KEYS["price"]))
+        price = _to_int(_first_key(facts, _JSON_KEYS["price"]))
 
-    odo = node.get("mileageFromOdometer")
+    odo = facts.get("mileageFromOdometer")
     mileage = _to_int(odo.get("value")) if isinstance(odo, dict) else _to_int(odo)
     if mileage is None:
-        mileage = _to_int(_first_key(node, _JSON_KEYS["mileage"]))
+        mileage = _to_int(_first_key(facts, _JSON_KEYS["mileage"]))
 
-    make = _first_key(node, _JSON_KEYS["make"])
+    make = _first_key(facts, _JSON_KEYS["make"])
     if isinstance(make, dict):
         make = make.get("name")
 
@@ -311,19 +344,21 @@ def _listing_from_json(node: dict, base_url: str) -> Listing | None:
     if mileage is not None and not (0 <= mileage <= 2_000_000):
         mileage = None
 
-    json_city, json_region = _place_from(_first_key(node, _JSON_KEYS["location"]))
+    json_city, json_region = _place_from(_first_key(facts, _JSON_KEYS["location"]))
     if not json_city:
-        json_city, json_region2 = _place_from(node.get("address"))
+        json_city, json_region2 = _place_from(facts.get("address"))
         json_region = json_region or json_region2
 
     return Listing(
         id=lid,
         url=canonical_listing_url(url),
-        title=_clean(_first_key(node, _JSON_KEYS["title"]) or ""),
-        year=_to_int(node.get("vehicleModelDate")) or _to_int(_first_key(node, _JSON_KEYS["year"])),
+        title=_clean(_first_key(facts, _JSON_KEYS["title"]) or ""),
+        year=_year(_to_int(facts.get("vehicleModelDate"))
+                   or _to_int(_first_key(facts, _JSON_KEYS["year"]))),
         make=_clean(make or ""),
-        model=_clean(_first_key(node, _JSON_KEYS["model"]) or ""),
-        trim=_clean(node.get("vehicleConfiguration") or _first_key(node, _JSON_KEYS["trim"]) or ""),
+        model=_clean(_first_key(facts, _JSON_KEYS["model"]) or ""),
+        trim=_clean(facts.get("vehicleConfiguration")
+                    or _first_key(facts, _JSON_KEYS["trim"]) or ""),
         price=price,
         price_source="search" if price is not None else "",
         card_price=price,
@@ -331,13 +366,15 @@ def _listing_from_json(node: dict, base_url: str) -> Listing | None:
         mileage_km=mileage,
         location=_titlecase_place(city) or json_city,
         province=_clean(region) or json_region
-                 or _place_from(_first_key(node, _JSON_KEYS["province"]))[0],
-        seller=_clean(seller_name) or _clean(str(_first_key(node, _JSON_KEYS["seller"]) or ""))[:80],
-        body=_clean(node.get("bodyType") or node.get("body") or ""),
-        color=_clean(node.get("color") or ""),
-        transmission=_clean(node.get("vehicleTransmission") or ""),
-        fuel=_clean(node.get("fuelType") or ""),
-        images=_images_from(_first_key(node, _JSON_KEYS["image"])),
+                 or _place_from(_first_key(facts, _JSON_KEYS["province"]))[0],
+        seller=_clean(seller_name)
+               or _clean(str(_first_key(facts, _JSON_KEYS["seller"]) or ""))[:80],
+        body=_clean(facts.get("bodyType") or facts.get("body") or ""),
+        color=_clean(facts.get("color") or ""),
+        transmission=_clean(facts.get("vehicleTransmission")
+                            or facts.get("transmission") or ""),
+        fuel=_clean(facts.get("fuelType") or facts.get("fuel") or ""),
+        images=_images_from(_first_key(facts, _JSON_KEYS["image"])),
     )
 
 

@@ -8,6 +8,7 @@ import logging
 import os
 import sys
 from pathlib import Path
+from typing import Any
 
 from . import dashboard, notifiers
 from .archive import prune as prune_archives
@@ -104,6 +105,16 @@ def cmd_list(args: argparse.Namespace) -> int:
                   else f"{health.get('last_count', 0)} listing(s) last run")
         print(f"{mark} {BOLD}{search.name}{RESET}  {DIM}[{search.id}]{RESET}")
         print(f"     {' | '.join(describe_search(search.url).describe()) or 'no filters'}")
+        own = []
+        for key, value in (search.filters or {}).items():
+            if value not in (None, [], ""):
+                own.append(f"{key}={value}")
+        for key, value in (search.notify_on or {}).items():
+            own.append(f"{key}={'on' if value else 'off'}")
+        if search.price_drop_min_abs is not None:
+            own.append(f"drops>=${search.price_drop_min_abs:,}")
+        if own:
+            print(f"     {YELLOW}own rules:{RESET} {', '.join(own)}")
         print(f"     {status}   {DIM}{search.url}{RESET}")
     return 0
 
@@ -128,6 +139,62 @@ def cmd_enable(args: argparse.Namespace) -> int:
             return 0
     print(_bad(f"no search with id {args.id}"))
     return 1
+
+
+def _coerce(text: str) -> Any:
+    """Turn a command-line value into the JSON type it obviously is."""
+    lowered = text.strip().lower()
+    if lowered in {"true", "yes", "on"}:
+        return True
+    if lowered in {"false", "no", "off"}:
+        return False
+    if lowered in {"none", "null", ""}:
+        return None
+    try:
+        return int(text)
+    except ValueError:
+        pass
+    try:
+        return float(text)
+    except ValueError:
+        pass
+    if "," in text:
+        return [part.strip() for part in text.split(",") if part.strip()]
+    return text
+
+
+def cmd_set(args: argparse.Namespace) -> int:
+    """Change one setting, globally or for a single search."""
+    cfg = Config.load(args.config)
+    value = _coerce(args.value)
+
+    if args.search:
+        matches = [s for s in cfg.searches
+                   if s.id == args.search or s.name.lower() == args.search.lower()]
+        if not matches:
+            print(_bad(f"no search called {args.search!r}"))
+            print(f"   {DIM}known: {', '.join(s.id for s in cfg.searches) or 'none'}{RESET}")
+            return 1
+        target = matches[0]
+        for raw in cfg.data["searches"]:
+            if raw["id"] != target.id:
+                continue
+            # Bare keys belong to that search's own filter block; dotted keys
+            # address its other settings directly.
+            if "." in args.key:
+                head, _, tail = args.key.partition(".")
+                raw.setdefault(head, {})[tail] = value
+            else:
+                raw.setdefault("filters", {})[args.key] = value
+        cfg.save()
+        print(_ok(f"{target.name}: {args.key} = {value!r}"))
+        return 0
+
+    before = cfg.get(args.key, "<unset>")
+    cfg.set(args.key, value)
+    cfg.save()
+    print(_ok(f"{args.key}: {before!r} -> {value!r}"))
+    return 0
 
 
 def cmd_doctor(args: argparse.Namespace) -> int:
@@ -529,6 +596,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("list", help="show watched searches")
     p.set_defaults(func=cmd_list)
+
+    p = sub.add_parser("set", help="change a setting, globally or per search")
+    p.add_argument("key", help="e.g. filters.max_price, or max_price with --search")
+    p.add_argument("value")
+    p.add_argument("--search", help="apply to this search only (id or name)")
+    p.set_defaults(func=cmd_set)
 
     p = sub.add_parser("remove", help="stop watching a search")
     p.add_argument("id")

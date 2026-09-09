@@ -72,6 +72,13 @@ def build_payload(cfg: Config, state: State, env: dict[str, str] | None = None
             "active_count": sum(1 for l in listings
                                 if l.get("search_id") == search.id
                                 and l.get("status") == "active"),
+            "rules": {
+                "filters": search.filters,
+                "notify_on": search.notify_on,
+                "price_drop_min_pct": search.price_drop_min_pct,
+                "price_drop_min_abs": search.price_drop_min_abs,
+            },
+            "shape": health.get("shape"),
         })
 
     channels = {}
@@ -115,6 +122,13 @@ def build_payload(cfg: Config, state: State, env: dict[str, str] | None = None
                                 "required": v["required"], "help": v["help"]}
                             for k, v in CHANNEL_SECRETS.items()},
         "runs": (state.data.get("runs") or [])[:30],
+        "channel_health": {
+            name: {"last_ok": h.get("last_ok"),
+                   "last_error": h.get("last_error"),
+                   "disabled_at": h.get("disabled_at"),
+                   "consecutive_failures": h.get("consecutive_failures", 0)}
+            for name, h in (state.data.get("channels") or {}).items()
+        },
         "last_run": state.last_run,
         "archive": size_report(),
         "config": _safe_config(cfg),

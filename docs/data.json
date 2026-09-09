@@ -1,11 +1,10 @@
 {
- "generated_at": "2026-09-09T22:42:48+00:00",
+ "generated_at": "2026-09-09T22:49:35+00:00",
  "notify": {
   "ntfy_topic": "autotrader-2q592ak9gnx7sqrere5r",
   "ntfy_url": "https://ntfy.sh/autotrader-2q592ak9gnx7sqrere5r",
   "active": [
-   "ntfy",
-   "email"
+   "ntfy"
   ]
  },
  "version": 2,
@@ -3054,7 +3053,37 @@
     "last_strategy": "embedded_json",
     "consecutive_failures": 0
    },
-   "active_count": 19
+   "active_count": 19,
+   "rules": {
+    "filters": {},
+    "notify_on": {},
+    "price_drop_min_pct": null,
+    "price_drop_min_abs": null
+   },
+   "shape": {
+    "bytes": "lots",
+    "listing_count": 19,
+    "markers": {
+     "data_listing_id": "none",
+     "initial_state": "none",
+     "json_ld": "few",
+     "legacy_links": "none",
+     "next_data": "few",
+     "offer_links": "many",
+     "vehicle_cdn": "lots"
+    },
+    "scores": {
+     "anchors": 0,
+     "embedded_json": 19,
+     "jsonld": 11,
+     "regex": 0
+    },
+    "strategy": "embedded_json",
+    "working": [
+     "embedded_json",
+     "jsonld"
+    ]
+   }
   }
  ],
  "channels": {
@@ -3117,8 +3146,11 @@
     "GMAIL_APP_PASSWORD"
    ],
    "setting": "auto",
-   "missing": [],
-   "active": true
+   "missing": [
+    "GMAIL_USER",
+    "GMAIL_APP_PASSWORD"
+   ],
+   "active": false
   },
   "webhook": {
    "label": "Custom webhook",
@@ -3142,7 +3174,12 @@
     "TWILIO_TO"
    ],
    "setting": false,
-   "missing": [],
+   "missing": [
+    "TWILIO_SID",
+    "TWILIO_TOKEN",
+    "TWILIO_FROM",
+    "TWILIO_TO"
+   ],
    "active": false
   }
  },
@@ -3208,42 +3245,42 @@
  "runs": [
   {
    "at": "2026-09-09T22:42:48+00:00",
-   "ok": true,
-   "duration_s": 3.4,
-   "searches_run": 1,
-   "searches_failed": 0,
-   "listings_seen": 19,
-   "new": 0,
-   "price_drops": 0,
-   "price_rises": 0,
-   "removed": 0,
-   "filtered_out": 0,
-   "requests_made": 2,
    "budget_exhausted": false,
-   "empty_parses": [],
    "diagnostics": [
     "diagnostics/2021-2023-bmw-m5-310324.md"
    ],
+   "disabled_channels": [],
+   "dry_run": false,
+   "duration_s": 3.4,
+   "empty_parses": [],
+   "errors": [],
+   "filtered_out": 0,
+   "first_run": false,
+   "listings_seen": 19,
+   "new": 0,
+   "notified": [],
+   "ok": true,
+   "price_drops": 0,
+   "price_rises": 0,
+   "quiet": false,
+   "removed": 0,
+   "requests_made": 2,
+   "searches_failed": 0,
+   "searches_run": 1,
    "shape_drift": [
     {
-     "search": "2021-2023 BMW M5",
      "reasons": [
       "first time this search has been fingerprinted"
      ],
+     "search": "2021-2023 BMW M5",
      "serious": false
     }
    ],
-   "disabled_channels": [],
-   "first_run": false,
-   "validation_ok": true,
-   "notified": [],
-   "errors": [],
-   "warnings": [],
    "strategies": {
     "2021-2023-bmw-m5-310324": "embedded_json"
    },
-   "quiet": false,
-   "dry_run": false
+   "validation_ok": true,
+   "warnings": []
   },
   {
    "at": "2026-09-09T21:13:07+00:00",
@@ -3358,44 +3395,45 @@
    ]
   }
  ],
+ "channel_health": {},
  "last_run": {
   "at": "2026-09-09T22:42:48+00:00",
-  "ok": true,
-  "duration_s": 3.4,
-  "searches_run": 1,
-  "searches_failed": 0,
-  "listings_seen": 19,
-  "new": 0,
-  "price_drops": 0,
-  "price_rises": 0,
-  "removed": 0,
-  "filtered_out": 0,
-  "requests_made": 2,
   "budget_exhausted": false,
-  "empty_parses": [],
   "diagnostics": [
    "diagnostics/2021-2023-bmw-m5-310324.md"
   ],
+  "disabled_channels": [],
+  "dry_run": false,
+  "duration_s": 3.4,
+  "empty_parses": [],
+  "errors": [],
+  "filtered_out": 0,
+  "first_run": false,
+  "listings_seen": 19,
+  "new": 0,
+  "notified": [],
+  "ok": true,
+  "price_drops": 0,
+  "price_rises": 0,
+  "quiet": false,
+  "removed": 0,
+  "requests_made": 2,
+  "searches_failed": 0,
+  "searches_run": 1,
   "shape_drift": [
    {
-    "search": "2021-2023 BMW M5",
     "reasons": [
      "first time this search has been fingerprinted"
     ],
+    "search": "2021-2023 BMW M5",
     "serious": false
    }
   ],
-  "disabled_channels": [],
-  "first_run": false,
-  "validation_ok": true,
-  "notified": [],
-  "errors": [],
-  "warnings": [],
   "strategies": {
    "2021-2023-bmw-m5-310324": "embedded_json"
   },
-  "quiet": false,
-  "dry_run": false
+  "validation_ok": true,
+  "warnings": []
  },
  "archive": {
   "folders": 69,

@@ -69,6 +69,11 @@ class Listing:
             if separator in trim:
                 trim = trim.split(separator)[0].strip()
                 break
+        # Dealers often repeat the model inside the trim, which reads as
+        # "BMW M5 M5 Competition" once the name is assembled.
+        for prefix in (self.model, self.make):
+            if prefix and trim.lower().startswith(prefix.lower() + " "):
+                trim = trim[len(prefix):].strip()
         return trim[:40].strip()
 
     @property
