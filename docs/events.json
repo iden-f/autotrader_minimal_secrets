@@ -1,5 +1,5 @@
 {
- "updated_at": "2026-09-10T08:12:51+00:00",
+ "updated_at": "2026-09-10T09:12:53+00:00",
  "first": {
   "price_drop": {
    "kind": "price_drop",
@@ -57,7 +57,7 @@
    "url": "https://www.autotrader.ca/offers/bmw-m5-competition-one-owner-two-sets-premium-pkg-adva-gasoline-black-cat_ma13gr202609tr17957-32dccae4-3921-4773-a293-1c9d7f3f7873",
    "before": "active",
    "after": "gone",
-   "delivered": "delivered (time reconstructed, 2026-09-10T08:12:04+00:00)",
+   "delivered": "delivered at 2026-09-10T08:12:04+00:00",
    "detail": "last seen 2026-09-10T02:59:59+00:00",
    "run": {
     "at": "2026-09-10T07:46:27+00:00",
@@ -79,7 +79,5 @@
   "relisted"
  ],
  "silence_reported": "",
- "new_kinds": [
-  "removed"
- ]
+ "new_kinds": []
 }
