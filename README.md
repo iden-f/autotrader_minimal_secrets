@@ -139,6 +139,8 @@ python -m autotrader setup                         # get from nothing to working
 python -m autotrader setup --non-interactive       # ...without prompting (what CI runs)
 python -m autotrader setup --new-topic             # roll a fresh ntfy topic
 python -m autotrader prune --dry-run               # what archives would go
+python -m autotrader prune --compact               # v1 folders -> metadata only
+python -m autotrader capture --raw                 # save the live page as it is now
 python -m autotrader migrate                       # import v1 data
 ```
 
@@ -160,12 +162,14 @@ Secrets never go in it.
 | Setting | Default | What it does |
 |---|---|---|
 | `scraping.max_pages` | 3 | Result pages per search. It stops early once a page adds nothing. |
+| `scraping.unpriced_rechecks` | 3 | Times a "call for price" car's own page is checked for a figure before believing there is none. |
 | `scraping.delay_ms` | 1200 | Pause between requests, jittered. Raise it if you ever get blocked. |
 | `scraping.request_budget` | 250 | Hard ceiling on HTTP requests per run, photos included. Stops a misconfigured crawl. |
 | `scraping.enrich_details` | `true` | Read each new car's own page for the exact price, odometer and photos. |
 | `notifications.price_drop_min_pct` / `_abs` | 1% / $250 | A drop must clear **both** to be worth a message. |
 | `notifications.quiet_hours` | off | Hold alerts overnight. They arrive in the next run afterwards — nothing is lost. |
 | `filters.*` | empty | Extra rules on top of the link: price, year, odometer, keywords, sellers. |
+| `filters.require_price` | `false` | Do not alert on "call for price" cars. They are still tracked and shown in their own bucket. |
 | `health.disable_channel_after` | 2 | Runs of rejected credentials before a channel switches itself off. |
 | `health.watch_page_shape` | `true` | Warn when the site changes how its pages are built, before the parser breaks. |
 | `archive.mode` | `metadata` | `off`, `metadata`, or `full` (also stores the ~200 KB page). |
@@ -209,11 +213,32 @@ each page is read four ways and the best result wins:
 1. **`jsonld`** — schema.org data. Most reliable; gives exact price, odometer,
    colour, drivetrain and the real photo URLs.
 2. **`embedded_json`** — the front-end state blob, for JavaScript-rendered pages.
-3. **`anchors`** — listing links plus their result card.
-4. **`regex`** — listing URLs pulled from the raw HTML, as a last resort.
+3. **`anchors`** — listing links plus their result card. On the current
+   platform this is the only one that sees both the model year and the seller:
+   the JSON-LD publishes no year, the front-end blob publishes no seller.
+4. **`regex`** — listing URLs pulled from the raw HTML, as a last resort. It
+   knows nothing about a car except that it exists, which is the point.
 
-Whichever won is shown on the dashboard's Status tab, so you can see the more
-reliable ones stop working before the bot stops finding cars.
+The Status tab shows all four with their scores, so you can see the reliable
+ones stop working before the bot stops finding cars. Two of four scoring is
+already a warning: it means the next change to the site could take it out.
+
+## When a car disappears
+
+A car has to be missing from two consecutive runs before it counts as removed,
+and even then only when its absence means something.
+
+Most searches return more results than the bot reads — 186 cars against the 60
+it samples — and autotrader.ca rotates which listings surface on which page.
+So a car vanishing from the sample is not evidence of a sale, and treating it
+as one produced fourteen "removed" alerts in a single run for cars still
+sitting on page one. When the whole result set was not read, the listing page
+is asked directly instead: gone, still listed, or — for a timeout — nothing
+at all, in which case it is asked again next run rather than guessed at.
+
+A run that read nothing, or a fraction of its usual count, does not spend the
+grace period either. The countdown is there to absorb a car falling off one
+page, not to absorb our own broken parse.
 
 ## Upgrading from v1
 
