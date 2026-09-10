@@ -77,11 +77,22 @@ jobs:
             if ! git diff --cached --quiet; then
               git commit -q -m "Soak cycle $i/$CYCLES [skip ci]"
               for attempt in 1 2 3 4 5; do
-                git pull --rebase --autostash -q origin main && \
-                  git push -q origin HEAD:main && break
+                # A conflict leaves the repository mid-rebase, and every later
+                # git command in the loop then fails against that. Clear it
+                # before trying again, or one bad cycle wedges the whole soak
+                # and it holds the concurrency group for hours doing nothing.
+                git rebase --abort 2>/dev/null || true
+                # state.json and docs/data.json are generated: whatever this
+                # cycle just wrote is the newer truth, so take it rather than
+                # asking a batch job to resolve a merge.
+                if git pull --rebase --autostash -q -X theirs origin main && \
+                   git push -q origin HEAD:main; then
+                  break
+                fi
                 echo "push attempt $attempt failed; retrying"
                 sleep $((attempt * 4))
               done
+              git rebase --abort 2>/dev/null || true
             else
               echo "cycle $i changed nothing"
             fi

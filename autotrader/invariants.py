@@ -139,6 +139,36 @@ def check(cfg, state, report=None, payload: dict[str, Any] | None = None,
             "not-both", "listings whose call-for-price flag disagrees with "
             "whether they have a price", mislabelled))
 
+    vanished = [lid for lid, e in listings.items()
+                if e.get("status") == "gone" and not e.get("removed_at")
+                and not e.get("imported_from") and not e.get("migrated_from")]
+    if vanished:
+        out.append(_violation(
+            "not-both", "listings marked gone with no record of when",
+            vanished))
+
+    # A stored price that disagrees with its own history means one of the two
+    # was written without the other, which is how a phantom price drop starts.
+    contradicted = []
+    for lid, e in listings.items():
+        history = e.get("price_history") or []
+        if e.get("price") is None or not history:
+            continue
+        if history[-1].get("price") != e.get("price"):
+            contradicted.append(lid)
+    if contradicted:
+        out.append(_violation(
+            "not-both", "listings whose stored price is not the last entry in "
+            "their own price history", contradicted))
+
+    backwards = [lid for lid, e in listings.items()
+                 if e.get("first_seen") and e.get("last_seen")
+                 and str(e["last_seen"]) < str(e["first_seen"])]
+    if backwards:
+        out.append(_violation(
+            "not-both", "listings last seen before they were first seen",
+            backwards))
+
     stuck = [lid for lid, e in active.items()
              if int(e.get("misses", 0) or 0) > GRACE_RUNS]
     if stuck:

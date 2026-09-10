@@ -437,3 +437,39 @@ class TestTheDashboardShowsWhoWasNotToldAbout:
             "unpriced": False,
         }
         assert invariants.check(bench.cfg, state, report, None, seen) == []
+
+
+class TestQuietCorruption:
+    """Shapes that mean something wrote half a change and stopped."""
+
+    def test_gone_with_no_removal_time_is_caught(self, bench):
+        bench.run()
+        state = bench.state()
+        entry = next(iter(state.listings.values()))
+        entry["status"] = "gone"
+        entry.pop("removed_at", None)
+        assert "not-both" in rules(invariants.check(bench.cfg, state))
+
+    def test_a_price_that_contradicts_its_own_history_is_caught(self, bench):
+        """How a phantom price drop starts: two fields written apart."""
+        bench.run()
+        state = bench.state()
+        entry = next(e for e in state.listings.values()
+                     if e.get("price") and e.get("price_history"))
+        entry["price"] = (entry["price"] or 0) + 5000
+        assert "not-both" in rules(invariants.check(bench.cfg, state))
+
+    def test_a_car_last_seen_before_it_was_first_seen_is_caught(self, bench):
+        bench.run()
+        state = bench.state()
+        entry = next(iter(state.listings.values()))
+        entry["last_seen"] = "2020-01-01T00:00:00+00:00"
+        assert "not-both" in rules(invariants.check(bench.cfg, state))
+
+    def test_a_real_run_satisfies_all_of_them(self, bench):
+        bench.cfg.set("filters.max_price", 90000)
+        bench.cfg.save()
+        for _ in range(3):
+            report = bench.run()
+        assert report.ok and not report.invariants
+        assert invariants.check(bench.cfg, bench.state(), report) == []
