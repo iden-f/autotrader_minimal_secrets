@@ -307,6 +307,7 @@ def run(cfg: Config | None = None, state: State | None = None, *,
     owned: set[str] = set()
     seen_anywhere: set[str] = set()
     removal_plan: list[tuple[Any, bool, bool, dict[str, Any]]] = []
+    rejected: dict[str, tuple[Listing, str]] = {}
     blocked_searches: list[str] = []
     assessments: list[validate.Assessment] = []
     drifted: list[tuple[str, list[str], dict[str, Any]]] = []
@@ -584,11 +585,13 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                     if tell_me_about_unpriced and search_notify.get("relisted", False):
                         queue(change)
 
-            # Cars that were filtered out still count as "seen", so they do not
-            # look like removals on the next pass.
+            # Held until every search has been read. Recording a rejection now
+            # would mark the car seen-and-silenced, and a later search that
+            # wants it would then find it already known - so a car the narrow
+            # watch turned down and the broad one wanted would be stored and
+            # never announced.
             for listing, why in dropped:
-                state.record(listing, filtered=True, filter_reason=why)
-                state.mark_notified([listing.id])
+                rejected.setdefault(listing.id, (listing, why))
 
             # A car is only "gone" if we actually looked and did not find it.
             # A page we could not read is not evidence of anything, and a page
@@ -611,9 +614,16 @@ def run(cfg: Config | None = None, state: State | None = None, *,
             removal_plan.append((search, trustworthy, result.complete,
                                  search_notify))
 
-        # Counted once the last search has had its say: a car one watch
-        # rejected may have been taken up by the next, and reporting it as
-        # hidden would be counting a decision that was overruled.
+        # Cars no search wanted. They still have to be recorded - a car you
+        # hid by filter is still on the site, and forgetting it makes the next
+        # run report it as removed - but quietly, and only now that every
+        # search has had its say.
+        for lid, (listing, why) in rejected.items():
+            if lid in owned:
+                continue
+            state.record(listing, filtered=True, filter_reason=why)
+            state.mark_notified([lid])
+
         report.filtered_out = sum(
             1 for lid in seen_anywhere
             if (state.listings.get(lid) or {}).get("filtered"))

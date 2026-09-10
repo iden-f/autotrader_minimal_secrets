@@ -914,3 +914,24 @@ class TestTwoSearchesThatOverlap:
         assert all("below minimum" in e["filter_reason"] for e in older)
         # Counted once, not once per search that turned it down.
         assert report.filtered_out == len(older)
+
+    def test_a_car_the_first_search_rejects_is_still_announced_by_the_second(
+            self, pair):
+        """The failure this guards against is silent, which is the worst kind.
+
+        Recording a rejection immediately marks the car seen-and-silenced. A
+        later search that wants it then finds it already known, produces no
+        "new listing" change, and the car is stored and never mentioned.
+        """
+        pair.cfg.data["searches"][0]["filters"] = {"min_year": 2023}
+        pair.cfg.data["searches"][1]["filters"] = {}
+        pair.cfg.save()
+
+        report = pair.run()
+        announced = [c.listing for batch in pair.sink.digests for c in batch]
+        older = [l for l in announced if (l.year or 9999) < 2023]
+
+        assert older, "cars the narrow watch turned down were never announced"
+        assert report.new == len(announced)
+        entries = self._entries(pair)
+        assert all(not entries[l.id]["filtered"] for l in older)
