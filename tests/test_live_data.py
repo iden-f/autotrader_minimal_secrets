@@ -883,3 +883,34 @@ class TestTwoSearchesThatOverlap:
                          fetcher=Sided(pair.html), env={})
         assert report.removed == 0
         assert self._entries(pair)[target]["status"] == "active"
+
+    def test_a_car_one_search_rejects_can_still_be_taken_up_by_the_next(self, pair):
+        """Ownership must not become a veto.
+
+        If claiming a car happened on sight rather than on acceptance, an
+        older M5 the broad watch would happily show would be hidden by a rule
+        belonging to a watch that does not want it.
+        """
+        pair.cfg.data["searches"][0]["filters"] = {"min_year": 2023}
+        pair.cfg.data["searches"][1]["filters"] = {}
+        pair.cfg.save()
+        pair.run()
+
+        older = [e for e in self._entries(pair).values()
+                 if (e.get("year") or 9999) < 2023]
+        assert older, "no older car in the payload to test with"
+        assert not any(e["filtered"] for e in older)
+        assert {e["search_name"] for e in older} == {"Broad"}
+
+    def test_a_car_no_search_wants_stays_hidden_with_the_last_reason(self, pair):
+        pair.cfg.data["searches"][0]["filters"] = {"min_year": 2023}
+        pair.cfg.data["searches"][1]["filters"] = {"min_year": 2023}
+        pair.cfg.save()
+        report = pair.run()
+
+        older = [e for e in self._entries(pair).values()
+                 if (e.get("year") or 9999) < 2023]
+        assert older and all(e["filtered"] for e in older)
+        assert all("below minimum" in e["filter_reason"] for e in older)
+        # Counted once, not once per search that turned it down.
+        assert report.filtered_out == len(older)

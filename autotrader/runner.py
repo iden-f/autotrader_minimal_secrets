@@ -504,11 +504,15 @@ def run(cfg: Config | None = None, state: State | None = None, *,
             # reported nothing at all because every one of its cars had been
             # reassigned.
             mine = [l for l in listings if l.id not in owned]
-            owned.update(l.id for l in mine)
             seen_anywhere.update(l.id for l in listings)
 
             kept, unpriced, dropped = filters.apply(mine, search_filters)
-            report.filtered_out += len(dropped)
+            # Only a car this search actually wants is claimed. One it rejected
+            # is still offered to the searches after it, so a 2019 M5 that the
+            # 2021-2023 watch will not have can still be found by the any-year
+            # one - "kept if any search wants it", not "judged by the first".
+            owned.update(l.id for l in kept)
+            owned.update(l.id for l in unpriced)
             report.unpriced += len(unpriced)
             for listing in kept:
                 change = state.record(listing, filtered=False)
@@ -606,6 +610,13 @@ def run(cfg: Config | None = None, state: State | None = None, *,
             # calling that a sale would be wrong.
             removal_plan.append((search, trustworthy, result.complete,
                                  search_notify))
+
+        # Counted once the last search has had its say: a car one watch
+        # rejected may have been taken up by the next, and reporting it as
+        # hidden would be counting a decision that was overruled.
+        report.filtered_out = sum(
+            1 for lid in seen_anywhere
+            if (state.listings.get(lid) or {}).get("filtered"))
 
         for search, trustworthy, complete, search_notify in removal_plan:
             if trustworthy:
