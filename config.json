@@ -18,7 +18,7 @@
       "name": "BMW M5 bargains (any year)",
       "url": "https://www.autotrader.ca/cars/bmw/m5/?prx=-2&inMarket=advancedSearch",
       "enabled": true,
-      "notes": "A wider net on the same car: any year, Canada-wide, with the price ceiling applied by the bot rather than by the search link. Remove it in the dashboard if you only want the 2021-2023 watch.",
+      "notes": "A wider net on the same car: any year, Canada-wide, with the price ceiling applied by the bot rather than by the search link. Remove it in the dashboard if you only want the 2021-2023 watch. Read to the end of the results rather than the first three pages: autotrader.ca rotates which listings surface, so sampling 60 of 186 gave a different 60 every run and made cars look like they had been sold.",
       "filters": {
         "max_price": 100000,
         "require_price": true,
@@ -91,7 +91,7 @@
     }
   },
   "scraping": {
-    "max_pages": 3,
+    "max_pages": 10,
     "results_per_page": 50,
     "timeout_seconds": 30,
     "retries": 3,

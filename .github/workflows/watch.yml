@@ -9,12 +9,13 @@ name: Check AutoTrader
 
 on:
   schedule:
-    # Hourly while the soak test runs. The soak holds this same concurrency
-    # group for hours at a time, and a scheduled run that arrives meanwhile is
-    # queued and then superseded - so asking for one every ten minutes buys
-    # nothing but a column of cancelled runs. The soak is the cadence for now;
-    # this goes back to '*/30 * * * *' when it finishes.
-    - cron: '5 * * * *'
+    # Every 30 minutes. GitHub queues scheduled jobs on a best-effort basis and
+    # drops them under load, so */15 does not actually run every 15 minutes -
+    # the old workflow asked for 96 runs a day and got far fewer, unevenly.
+    # (A soak test temporarily drops this to hourly, because the soak holds the
+    # same concurrency group for hours and anything more frequent would only
+    # queue up and be superseded.)
+    - cron: '*/30 * * * *'
 
   # Check straight away when the watch list changes, instead of leaving someone
   # who just added a search waiting half an hour to find out whether it works.
