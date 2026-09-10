@@ -11,6 +11,7 @@ the page, which is why its 400 "car photos" are all manufacturer logos.)
 
 from __future__ import annotations
 
+import html as htmllib
 import json
 import logging
 import re
@@ -20,7 +21,7 @@ from bs4 import BeautifulSoup
 
 from .listing import Listing
 from .parser import _clean, _titlecase_place, _to_int, _types_of
-from .urls import location_from_url
+from .urls import listing_id_from_url, location_from_url
 
 log = logging.getLogger(__name__)
 
@@ -58,6 +59,15 @@ def _walk(node: Any, depth: int = 0):
     elif isinstance(node, list):
         for value in node:
             yield from _walk(value, depth + 1)
+
+
+_CANONICAL_RE = re.compile(
+    r'<link[^>]+rel=["\']canonical["\'][^>]+href=["\']([^"\']+)', re.I)
+
+
+def _canonical_url(html: str) -> str:
+    match = _CANONICAL_RE.search(html or "")
+    return htmllib.unescape(match.group(1)).strip() if match else ""
 
 
 def _og_meta(html: str) -> dict[str, str]:
@@ -154,8 +164,37 @@ def detail_from_html(html: str, listing_id: str = "", url: str = "") -> Listing 
     return listing
 
 
+def page_identifies(html: str, listing_id: str) -> bool | None:
+    """Does this page say it is the car we asked for?
+
+    True, False, or None when the page does not name itself at all. A removed
+    listing is often answered with a redirect to something else rather than a
+    404, and writing that car's price onto this one would be a wrong price
+    that looks entirely real - and would fire a price-drop alert on the next
+    comparison. Better to decline than to guess.
+    """
+    if not listing_id:
+        return None
+    claimed = ""
+    for candidate in (_og_meta(html).get("og:url", ""),
+                      _canonical_url(html)):
+        if candidate:
+            claimed = candidate
+            break
+    if not claimed:
+        return None
+    found = listing_id_from_url(claimed)
+    return None if not found else found == listing_id
+
+
 def enrich(listing: Listing, html: str) -> Listing:
     """Merge detail-page facts into ``listing``, preferring the detail page."""
+    if page_identifies(html, listing.id) is False:
+        # Some other car's page. Leave this listing exactly as the search card
+        # described it rather than overwriting it with a stranger's facts.
+        log.warning("detail page for %s describes a different listing; "
+                    "not enriching", listing.id)
+        return listing
     detail = detail_from_html(html, listing.id, listing.url)
     if detail is None:
         return listing

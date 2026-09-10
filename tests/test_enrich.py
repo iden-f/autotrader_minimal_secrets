@@ -68,3 +68,68 @@ def test_enrichment_of_an_unusable_page_leaves_the_listing_alone():
     card = Listing(id="1", url="u", title="x", price=100, price_source="search")
     enrich(card, "<html><body>nothing useful</body></html>")
     assert card.price == 100 and card.price_source == "search"
+
+
+# ------------------------------------------------- the page has to be the car
+
+M5_ID = "aaaaaaaa-1111-2222-3333-444444444444"
+OTHER_ID = "bbbbbbbb-1111-2222-3333-444444444444"
+
+
+def _detail_page(listing_id, price):
+    return (
+        f'<html><head><link rel="canonical" '
+        f'href="https://www.autotrader.ca/offers/bmw-m5-{listing_id}">'
+        f'<script type="application/ld+json">'
+        f'{{"@context":"https://schema.org","@type":"Car","name":"BMW M5",'
+        f'"offers":{{"@type":"Offer","price":{price},"priceCurrency":"CAD"}}}}'
+        f'</script></head><body>for sale</body></html>')
+
+
+def test_a_page_for_another_car_is_refused():
+    """A removed listing is often answered with a redirect to something else.
+
+    Writing that car's price onto this one gives a wrong price that looks
+    entirely real, and fires a price-drop alert on the next comparison.
+    """
+    from autotrader.enrich import enrich
+
+    card = Listing(id=M5_ID, url=f"https://www.autotrader.ca/offers/bmw-m5-{M5_ID}",
+                   title="2021 BMW M5", price=120000, price_source="search")
+    enrich(card, _detail_page(OTHER_ID, 74000))
+
+    assert card.price == 120000, "another car's price was written onto this one"
+    assert card.enriched is False
+
+
+def test_the_right_page_still_enriches():
+    from autotrader.enrich import enrich
+
+    card = Listing(id=M5_ID, url=f"https://www.autotrader.ca/offers/bmw-m5-{M5_ID}",
+                   title="2021 BMW M5", price=120000, price_source="search")
+    enrich(card, _detail_page(M5_ID, 118500))
+
+    assert card.price == 118500 and card.enriched is True
+
+
+def test_a_page_that_does_not_name_itself_is_still_used():
+    """Most of the archived v1 pages carry no canonical link at all."""
+    from autotrader.enrich import enrich, page_identifies
+
+    page = ('<html><head><script type="application/ld+json">'
+            '{"@context":"https://schema.org","@type":"Car","name":"BMW M5",'
+            '"offers":{"@type":"Offer","price":99000,"priceCurrency":"CAD"}}'
+            '</script></head><body>x</body></html>')
+    assert page_identifies(page, M5_ID) is None
+
+    card = Listing(id=M5_ID, url="u", title="t", price=120000, price_source="search")
+    enrich(card, page)
+    assert card.price == 99000
+
+
+def test_real_archived_pages_still_identify_or_stay_silent(archive_html, archive_ids):
+    """The guard must not start refusing pages that have always worked."""
+    from autotrader.enrich import page_identifies
+
+    for listing_id in archive_ids:
+        assert page_identifies(archive_html(listing_id), listing_id) is not False
