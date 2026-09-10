@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-09-10T09:12:22+00:00",
+ "generated_at": "2026-09-10T13:27:08+00:00",
  "notify": {
   "ntfy_topic": "autotrader-2q592ak9gnx7sqrere5r",
   "ntfy_url": "https://ntfy.sh/autotrader-2q592ak9gnx7sqrere5r",
@@ -9,15 +9,99 @@
  },
  "version": 2,
  "stats": {
-  "total": 237,
-  "active": 63,
+  "total": 240,
+  "active": 65,
   "gone": 51,
-  "with_price": 61,
+  "with_price": 63,
   "min_price": 20000,
-  "max_price": 98995,
-  "median_price": 62000
+  "max_price": 99900,
+  "median_price": 62900
  },
  "listings": [
+  {
+   "id": "acab1a1a-9ae3-4aad-bc57-616e06178856",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-sedan-v8-manual-caramelint-noaccident-canadiancar-gasoline-black-cat_ma13gr202609va3044mt15082tr481809-acab1a1a-9ae3-4aad-bc57-616e06178856",
+   "title": "BMW 5 Series",
+   "year": 2000,
+   "make": "BMW",
+   "model": "5 Series",
+   "trim": "SEDAN V8 MANUAL|CARAMELINT|NOACCIDENT|CANADIANCAR",
+   "price": 97777,
+   "currency": "CAD",
+   "mileage_km": 60800,
+   "location": "Scarborough",
+   "province": "ON",
+   "seller": "Manhattan Motorcars Inc.",
+   "body": "Sedan",
+   "color": "Black",
+   "transmission": "Manual",
+   "drivetrain": "",
+   "fuel": "Gasoline",
+   "engine": "",
+   "images": [
+    "https://prod.pictures.autoscout24.net/listing-images/acab1a1a-9ae3-4aad-bc57-616e06178856_9264ba21-e461-4ebb-876e-5d5b6f9a603a.jpg/1920x1080.jpg"
+   ],
+   "search_id": "bmw-m5-bargains-any-year-f2f097",
+   "search_name": "BMW M5 bargains (any year)",
+   "first_seen": "2026-09-10T13:27:06+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
+   "status": "active",
+   "price_history": [
+    {
+     "at": "2026-09-10T13:27:06+00:00",
+     "price": 97777
+    }
+   ],
+   "price_source": "search",
+   "filtered": false,
+   "filter_reason": "",
+   "unpriced": false,
+   "enriched": true,
+   "notified_at": "2026-09-10T13:27:08+00:00",
+   "is_new": false
+  },
+  {
+   "id": "33b4b49d-e2ac-481d-b194-853e9dcc7171",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-m5-gasoline-silver-cat_ma13gr202609va3044mt15082tr481809-33b4b49d-e2ac-481d-b194-853e9dcc7171",
+   "title": "BMW 5 Series",
+   "year": 2002,
+   "make": "BMW",
+   "model": "5 Series",
+   "trim": "M5",
+   "price": 99900,
+   "currency": "CAD",
+   "mileage_km": 49800,
+   "location": "Vancouver",
+   "province": "BC",
+   "seller": "Rennsport Automobile",
+   "body": "Sedan",
+   "color": "Silver",
+   "transmission": "Manual",
+   "drivetrain": "",
+   "fuel": "Gasoline",
+   "engine": "",
+   "images": [
+    "https://prod.pictures.autoscout24.net/listing-images/33b4b49d-e2ac-481d-b194-853e9dcc7171_fee62dcd-d054-414b-b3e8-7116dcfd41d8.jpg/1920x1080.jpg"
+   ],
+   "search_id": "bmw-m5-bargains-any-year-f2f097",
+   "search_name": "BMW M5 bargains (any year)",
+   "first_seen": "2026-09-10T13:27:06+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
+   "status": "active",
+   "price_history": [
+    {
+     "at": "2026-09-10T13:27:06+00:00",
+     "price": 99900
+    }
+   ],
+   "price_source": "search",
+   "filtered": false,
+   "filter_reason": "",
+   "unpriced": false,
+   "enriched": true,
+   "notified_at": "2026-09-10T13:27:08+00:00",
+   "is_new": false
+  },
   {
    "id": "fb7f6428-8429-4119-a112-233ca2fc1369",
    "url": "https://www.autotrader.ca/offers/bmw-m5-4dr-sdn-rwd-m5-gasoline-cat_ma13gr202609-fb7f6428-8429-4119-a112-233ca2fc1369",
@@ -55,7 +139,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -105,7 +189,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -158,7 +242,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -211,7 +295,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -264,7 +348,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -313,7 +397,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -365,7 +449,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -418,7 +502,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [],
    "price_source": "",
@@ -431,7 +515,7 @@
   },
   {
    "id": "d503a238-25bf-4937-beb1-3d9e3883b154",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-sedan-gasoline-cat_ma13gr202609-d503a238-25bf-4937-beb1-3d9e3883b154",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-sedan-gasoline-cat_ma13gr202609va3044mt15083-d503a238-25bf-4937-beb1-3d9e3883b154",
    "title": "BMW M5 Sedan",
    "year": 2018,
    "make": "BMW",
@@ -466,7 +550,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -511,7 +595,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -564,7 +648,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -617,7 +701,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -662,7 +746,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -712,7 +796,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -765,7 +849,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -783,7 +867,7 @@
   },
   {
    "id": "9cfe2076-25d0-4e03-b0ca-e5ee3249b0f4",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-sedan-gasoline-black-cat_ma13gr202609-9cfe2076-25d0-4e03-b0ca-e5ee3249b0f4",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-sedan-gasoline-black-cat_ma13gr202609va3044mt15083-9cfe2076-25d0-4e03-b0ca-e5ee3249b0f4",
    "title": "BMW M5 Sedan",
    "year": 2019,
    "make": "BMW",
@@ -812,7 +896,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -863,7 +947,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -916,7 +1000,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -963,7 +1047,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1016,7 +1100,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1069,7 +1153,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1087,7 +1171,7 @@
   },
   {
    "id": "8020672f-eb12-4565-88c5-2b3fb7164c3c",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-m5-gasoline-cat_ma13gr202609-8020672f-eb12-4565-88c5-2b3fb7164c3c",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-m5-gasoline-cat_ma13gr202609va3044mt15083tr481809-8020672f-eb12-4565-88c5-2b3fb7164c3c",
    "title": "BMW M5 M5",
    "year": 2014,
    "make": "BMW",
@@ -1122,7 +1206,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1174,7 +1258,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1227,7 +1311,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1280,7 +1364,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1327,7 +1411,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1380,7 +1464,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1433,7 +1517,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1482,7 +1566,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1529,7 +1613,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1547,7 +1631,7 @@
   },
   {
    "id": "317b28d4-5362-4e3c-8929-6d1a637f0f6b",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-like-new-bmw-m5-sedan-gasoline-grey-cat_ma13gr202609-317b28d4-5362-4e3c-8929-6d1a637f0f6b",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-like-new-bmw-m5-sedan-gasoline-grey-cat_ma13gr202609va3044mt15083-317b28d4-5362-4e3c-8929-6d1a637f0f6b",
    "title": "BMW M5 LIKE NEW BMW M5 Sedan",
    "year": 2018,
    "make": "BMW",
@@ -1582,7 +1666,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1629,7 +1713,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1672,7 +1756,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1690,12 +1774,12 @@
   },
   {
    "id": "29860b23-aa4e-481a-98a9-8b4e7020791f",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-gasoline-black-cat_ma13gr202609-29860b23-aa4e-481a-98a9-8b4e7020791f",
-   "title": "2026 BMW M5",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-gasoline-black-cat_ma13gr202609va2324mt15084-29860b23-aa4e-481a-98a9-8b4e7020791f",
+   "title": "2026 BMW M5 Touring",
    "year": 2026,
    "make": "BMW",
    "model": "M5",
-   "trim": "",
+   "trim": "Touring",
    "price": null,
    "currency": "CAD",
    "mileage_km": 90,
@@ -1725,7 +1809,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [],
    "price_source": "",
@@ -1771,7 +1855,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1821,7 +1905,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1874,7 +1958,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1927,7 +2011,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:06:06+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1980,7 +2064,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:06:06+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1998,7 +2082,7 @@
   },
   {
    "id": "dc98e0d2-e5ef-454e-8313-308eb4389ada",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-m5-sedan-gasoline-blue-cat_ma13gr202609-dc98e0d2-e5ef-454e-8313-308eb4389ada",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-m5-sedan-gasoline-blue-cat_ma13gr202609va3044mt15083tr481809-dc98e0d2-e5ef-454e-8313-308eb4389ada",
    "title": "BMW M5 M5 Sedan",
    "year": 2015,
    "make": "BMW",
@@ -2033,7 +2117,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T00:42:08+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2076,7 +2160,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T00:42:08+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2129,7 +2213,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T00:42:08+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2182,7 +2266,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T00:42:08+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2235,7 +2319,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T00:42:08+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2277,7 +2361,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T00:42:08+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2295,7 +2379,7 @@
   },
   {
    "id": "5b75a3c1-ef4b-4a57-877b-e536739f02cf",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-hea-edition-massage-seats-bowers-wilkins-diamond-gasoline-black-cat_ma13gr202609-5b75a3c1-ef4b-4a57-877b-e536739f02cf",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-hea-edition-massage-seats-bowers-wilkins-diamond-gasoline-black-cat_ma13gr202609va3044mt15083-5b75a3c1-ef4b-4a57-877b-e536739f02cf",
    "title": "BMW M5 HEA edition Massage seats Bowers & Wilkins Diamond",
    "year": 2018,
    "make": "BMW",
@@ -2330,7 +2414,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T00:42:08+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2348,7 +2432,7 @@
   },
   {
    "id": "302d3539-e684-458a-ba76-bc57f1e138c3",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-managers-retail-blowout-m5-sedan-m-sport-exhaust-gasoline-grey-cat_ma13gr202609-302d3539-e684-458a-ba76-bc57f1e138c3",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-managers-retail-blowout-m5-sedan-m-sport-exhaust-gasoline-grey-cat_ma13gr202609va3044mt15083-302d3539-e684-458a-ba76-bc57f1e138c3",
    "title": "BMW M5 MANAGERS RETAIL BLOWOUT-M5 *SEDAN*-M Sport Exhaust",
    "year": 2018,
    "make": "BMW",
@@ -2383,7 +2467,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T00:42:08+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2436,7 +2520,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T00:42:08+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2454,7 +2538,7 @@
   },
   {
    "id": "0d995e07-1ec8-47ef-aef7-0cbb117e04d1",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-premuimpkg-advdrassist-massageseats-gasoline-silver-cat_ma13gr202609tr17957-0d995e07-1ec8-47ef-aef7-0cbb117e04d1",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-premuimpkg-advdrassist-massageseats-gasoline-silver-cat_ma13gr202609va3044mt15083tr17957-0d995e07-1ec8-47ef-aef7-0cbb117e04d1",
    "title": "BMW M5 PremuimPkg/AdvDrAssist/MassageSeats/",
    "year": 2019,
    "make": "BMW",
@@ -2489,7 +2573,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T00:42:08+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2507,7 +2591,7 @@
   },
   {
    "id": "d5ab509e-9f04-4b9b-830a-3e4733d615ae",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-competition-gasoline-red-cat_ma13gr202609tr17957-d5ab509e-9f04-4b9b-830a-3e4733d615ae",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-competition-gasoline-red-cat_ma13gr202609va3044mt15083tr17957-d5ab509e-9f04-4b9b-830a-3e4733d615ae",
    "title": "BMW M5 Competition",
    "year": 2019,
    "make": "BMW",
@@ -2542,7 +2626,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-09T22:52:45+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2560,7 +2644,7 @@
   },
   {
    "id": "c3c3ed26-b898-4107-aaa3-c665ed5ea184",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-no-accidents-super-low-km-brown-interior-new-tires-gasoline-grey-cat_ma13gr202609-c3c3ed26-b898-4107-aaa3-c665ed5ea184",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-no-accidents-super-low-km-brown-interior-new-tires-gasoline-grey-cat_ma13gr202609va3044mt15083-c3c3ed26-b898-4107-aaa3-c665ed5ea184",
    "title": "BMW M5 NO ACCIDENTS|SUPER LOW KM|BROWN INTERIOR|NEW TIRES",
    "year": 2019,
    "make": "BMW",
@@ -2595,7 +2679,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-09T22:52:45+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2613,7 +2697,7 @@
   },
   {
    "id": "a072e39a-ded6-4fa8-b257-51dd7e9974b2",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-competition-gasoline-blue-cat_ma13gr202609tr17957-a072e39a-ded6-4fa8-b257-51dd7e9974b2",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-competition-gasoline-blue-cat_ma13gr202609va3044mt15083tr17957-a072e39a-ded6-4fa8-b257-51dd7e9974b2",
    "title": "BMW M5 Competition",
    "year": 2020,
    "make": "BMW",
@@ -2648,7 +2732,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-09T22:52:45+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2701,7 +2785,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-09T22:52:45+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2719,7 +2803,7 @@
   },
   {
    "id": "8d8621e3-0661-421e-8126-144151b883bd",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-bowers-wilkins-carbon-roof-acc-lka-gasoline-grey-cat_ma13gr202609-8d8621e3-0661-421e-8126-144151b883bd",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-bowers-wilkins-carbon-roof-acc-lka-gasoline-grey-cat_ma13gr202609va3044mt15083-8d8621e3-0661-421e-8126-144151b883bd",
    "title": "BMW M5 BOWERS & WILKINS|CARBON ROOF|ACC|LKA|",
    "year": 2018,
    "make": "BMW",
@@ -2754,7 +2838,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-09T22:52:45+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2860,7 +2944,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-09T22:52:45+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2878,7 +2962,7 @@
   },
   {
    "id": "0518b35e-d26d-45a1-b92b-5e32f2e992b5",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-sale-pending-premium-pack-m-sport-exhaust-ambient-gasoline-grey-cat_ma13gr202609tr17957-0518b35e-d26d-45a1-b92b-5e32f2e992b5",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-sale-pending-premium-pack-m-sport-exhaust-ambient-gasoline-grey-cat_ma13gr202609va3044mt15083tr17957-0518b35e-d26d-45a1-b92b-5e32f2e992b5",
    "title": "BMW M5 SALE PENDING/PREMIUM PACK/M-SPORT EXHAUST/AMBIENT",
    "year": 2019,
    "make": "BMW",
@@ -2913,7 +2997,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-09T22:52:45+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2931,7 +3015,7 @@
   },
   {
    "id": "f05e1f57-d2ca-4293-b77f-e0592976e000",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-competition-gasoline-white-cat_ma13gr202609tr17957-f05e1f57-d2ca-4293-b77f-e0592976e000",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-competition-gasoline-white-cat_ma13gr202609va3044mt15083tr17957-f05e1f57-d2ca-4293-b77f-e0592976e000",
    "title": "BMW M5 Competition",
    "year": 2021,
    "make": "BMW",
@@ -2966,7 +3050,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-09T21:13:04+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2984,7 +3068,7 @@
   },
   {
    "id": "a55b546d-1b3a-4aaf-9958-3b886ac37f99",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-ultimate-package-bc-local-clean-gasoline-blue-cat_ma13gr202609-a55b546d-1b3a-4aaf-9958-3b886ac37f99",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-ultimate-package-bc-local-clean-gasoline-blue-cat_ma13gr202609va3044mt15083tr481809-a55b546d-1b3a-4aaf-9958-3b886ac37f99",
    "title": "BMW M5 Ultimate Package | BC Local | Clean",
    "year": 2014,
    "make": "BMW",
@@ -3019,7 +3103,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-09T21:13:04+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3072,7 +3156,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-09T21:13:04+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3090,7 +3174,7 @@
   },
   {
    "id": "4f548e17-401f-49de-9a78-fbd238920fe2",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-sedan-bowers-wilkins-frozen-optics-package-gasoline-white-cat_ma13gr202609-4f548e17-401f-49de-9a78-fbd238920fe2",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-sedan-bowers-wilkins-frozen-optics-package-gasoline-white-cat_ma13gr202609va3044mt15083-4f548e17-401f-49de-9a78-fbd238920fe2",
    "title": "BMW M5 Sedan | Bowers & Wilkins | Frozen Optics Package",
    "year": 2018,
    "make": "BMW",
@@ -3125,7 +3209,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-09T21:13:04+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3143,7 +3227,7 @@
   },
   {
    "id": "392b2244-0617-4963-b7c1-95c72d6946cf",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-competition-gasoline-cat_ma13gr202609-392b2244-0617-4963-b7c1-95c72d6946cf",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-competition-gasoline-cat_ma13gr202609va3044mt15083tr481809-392b2244-0617-4963-b7c1-95c72d6946cf",
    "title": "BMW M5 Competition",
    "year": 2014,
    "make": "BMW",
@@ -3178,7 +3262,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-09T21:13:04+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3231,7 +3315,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-09T21:13:04+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3284,7 +3368,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-09T21:13:04+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -5608,6 +5692,45 @@
    "is_new": false
   },
   {
+   "id": "f703031b-b98b-427c-8c45-b3f337f75c4c",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-competition-gr-sup-gasoline-blue-cat_ma13gr202609va3044mt15083tr17957-f703031b-b98b-427c-8c45-b3f337f75c4c",
+   "title": "BMW M5",
+   "year": 2023,
+   "make": "BMW",
+   "model": "M5",
+   "trim": "Competition | Gr. Sup |",
+   "price": 127948,
+   "currency": "CAD",
+   "mileage_km": 13185,
+   "location": "Laval",
+   "province": "QC",
+   "seller": "BMW Laval",
+   "body": "Sedan",
+   "color": "Blue",
+   "transmission": "Automatic",
+   "drivetrain": "",
+   "fuel": "Gasoline",
+   "engine": "",
+   "search_id": "2021-2023-bmw-m5-310324",
+   "search_name": "2021-2023 BMW M5",
+   "first_seen": "2026-09-10T13:27:06+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
+   "status": "active",
+   "price_history": [
+    {
+     "at": "2026-09-10T13:27:06+00:00",
+     "price": 127948
+    }
+   ],
+   "price_source": "search",
+   "filtered": true,
+   "filter_reason": "Laval, QC is 3,677 km from V6N 3B5, beyond the 250 km you asked for",
+   "unpriced": false,
+   "enriched": true,
+   "quiet_reason": "hidden by your rules: Laval, QC is 3,677 km from V6N 3B5, beyond the 250 km you asked for",
+   "is_new": false
+  },
+  {
    "id": "fef00bd3-6148-4e36-9ce6-75fc42f6c35f",
    "url": "https://www.autotrader.ca/offers/bmw-m5-touring-gas-electric-hybrid-cat_ma13gr202609-fef00bd3-6148-4e36-9ce6-75fc42f6c35f",
    "title": "BMW M5 Touring",
@@ -5630,7 +5753,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -5648,7 +5771,7 @@
   },
   {
    "id": "fc08b53b-f57e-461d-b37b-23c9c9375889",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-gas-electric-hybrid-black-cat_ma13gr202609ge10767va2324-fc08b53b-f57e-461d-b37b-23c9c9375889",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-gas-electric-hybrid-black-cat_ma13gr202609ge10767va2324mt15084-fc08b53b-f57e-461d-b37b-23c9c9375889",
    "title": "BMW M5",
    "year": 2027,
    "make": "BMW",
@@ -5669,7 +5792,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -5687,7 +5810,7 @@
   },
   {
    "id": "fbd2d600-a284-4c38-829d-1a795fc39fdf",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-electric-grey-cat_ma13gr202609ge10767va2324-fbd2d600-a284-4c38-829d-1a795fc39fdf",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-electric-grey-cat_ma13gr202609ge10767va2324mt15084-fbd2d600-a284-4c38-829d-1a795fc39fdf",
    "title": "BMW M5 Touring",
    "year": 2027,
    "make": "BMW",
@@ -5708,7 +5831,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -5726,7 +5849,7 @@
   },
   {
    "id": "f0f7326a-545d-4b67-9f5e-af532649a81a",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-gasoline-green-cat_ma13gr202609ge10767va3044-f0f7326a-545d-4b67-9f5e-af532649a81a",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-gasoline-green-cat_ma13gr202609ge10767va3044mt15084-f0f7326a-545d-4b67-9f5e-af532649a81a",
    "title": "BMW M5",
    "year": 2027,
    "make": "BMW",
@@ -5747,7 +5870,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -5786,7 +5909,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -5804,7 +5927,7 @@
   },
   {
    "id": "e3d7cf1d-644d-4648-9440-80b3e8ac316f",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-electric-grey-cat_ma13gr202609ge10767va2324-e3d7cf1d-644d-4648-9440-80b3e8ac316f",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-electric-grey-cat_ma13gr202609ge10767va2324mt15084-e3d7cf1d-644d-4648-9440-80b3e8ac316f",
    "title": "BMW M5 TOURING",
    "year": 2027,
    "make": "BMW",
@@ -5825,7 +5948,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -5864,7 +5987,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -5882,7 +6005,7 @@
   },
   {
    "id": "e182590a-ecf5-4df6-ab39-b1a928651975",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-electric-grey-cat_ma13gr202609ge10767va3044-e182590a-ecf5-4df6-ab39-b1a928651975",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-electric-grey-cat_ma13gr202609ge10767va3044mt15084-e182590a-ecf5-4df6-ab39-b1a928651975",
    "title": "BMW M5",
    "year": 2027,
    "make": "BMW",
@@ -5903,7 +6026,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -5942,7 +6065,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -5981,7 +6104,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -6020,7 +6143,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -6038,7 +6161,7 @@
   },
   {
    "id": "d2073641-5638-4416-84fe-54bfd31e0ee9",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-electric-grey-cat_ma13gr202609ge10767va2324-d2073641-5638-4416-84fe-54bfd31e0ee9",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-electric-grey-cat_ma13gr202609ge10767va2324mt15084-d2073641-5638-4416-84fe-54bfd31e0ee9",
    "title": "BMW M5 TOURING",
    "year": 2027,
    "make": "BMW",
@@ -6059,7 +6182,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -6098,7 +6221,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -6137,7 +6260,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -6155,7 +6278,7 @@
   },
   {
    "id": "c1d50f5c-30d6-4766-aa19-45ae7d287e2d",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-base-gasoline-black-cat_ma13gr202609ge10767va2324-c1d50f5c-30d6-4766-aa19-45ae7d287e2d",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-base-gasoline-black-cat_ma13gr202609ge10767va2324mt15084-c1d50f5c-30d6-4766-aa19-45ae7d287e2d",
    "title": "BMW M5 BASE",
    "year": 2027,
    "make": "BMW",
@@ -6176,7 +6299,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -6194,7 +6317,7 @@
   },
   {
    "id": "c1d19dad-533a-4def-a95c-33222a5fd7f3",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-gas-electric-hybrid-white-cat_ma13gr202609ge10767va3044-c1d19dad-533a-4def-a95c-33222a5fd7f3",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-gas-electric-hybrid-white-cat_ma13gr202609ge10767va3044mt15084-c1d19dad-533a-4def-a95c-33222a5fd7f3",
    "title": "BMW M5",
    "year": 2027,
    "make": "BMW",
@@ -6215,7 +6338,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -6233,7 +6356,7 @@
   },
   {
    "id": "c0d4635a-f22c-4da5-81d8-8bae2bdf69e5",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-base-gasoline-gold-cat_ma13gr202609ge10767va2324-c0d4635a-f22c-4da5-81d8-8bae2bdf69e5",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-base-gasoline-gold-cat_ma13gr202609ge10767va2324mt15084-c0d4635a-f22c-4da5-81d8-8bae2bdf69e5",
    "title": "BMW M5 BASE",
    "year": 2027,
    "make": "BMW",
@@ -6254,7 +6377,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -6293,7 +6416,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -6332,7 +6455,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -6371,7 +6494,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -6389,7 +6512,7 @@
   },
   {
    "id": "ac4c1386-85ee-40d7-bcd8-ca3ba22683b7",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-gas-electric-hybrid-black-cat_ma13gr202609ge10767va3044-ac4c1386-85ee-40d7-bcd8-ca3ba22683b7",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-gas-electric-hybrid-black-cat_ma13gr202609ge10767va3044mt15084-ac4c1386-85ee-40d7-bcd8-ca3ba22683b7",
    "title": "BMW M5",
    "year": 2027,
    "make": "BMW",
@@ -6410,7 +6533,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -6449,7 +6572,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -6467,7 +6590,7 @@
   },
   {
    "id": "9e2a2641-0530-45c7-a4a5-3d5c2dcf877f",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-electric-grey-cat_ma13gr202609ge10767va2324-9e2a2641-0530-45c7-a4a5-3d5c2dcf877f",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-electric-grey-cat_ma13gr202609ge10767va2324mt15084-9e2a2641-0530-45c7-a4a5-3d5c2dcf877f",
    "title": "BMW M5 TOURING",
    "year": 2027,
    "make": "BMW",
@@ -6488,7 +6611,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -6527,7 +6650,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -6545,7 +6668,7 @@
   },
   {
    "id": "9bfbea69-42c6-4f6e-87e1-a685a0956c16",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-groupe-d-aide-a-la-conduite-avancee-fr-gas-electric-hybrid-black-cat_ma13gr202609ge10767va2324-9bfbea69-42c6-4f6e-87e1-a685a0956c16",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-groupe-d-aide-a-la-conduite-avancee-fr-gas-electric-hybrid-black-cat_ma13gr202609ge10767va2324mt15084-9bfbea69-42c6-4f6e-87e1-a685a0956c16",
    "title": "BMW M5 Touring | Groupe d'aide à la conduite avancée | Fr",
    "year": 2027,
    "make": "BMW",
@@ -6566,7 +6689,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -6584,7 +6707,7 @@
   },
   {
    "id": "9a3ae7d4-ca42-4dff-a49b-ba4da72cc08c",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-gas-electric-hybrid-grey-cat_ma13gr202609ge10767va2324-9a3ae7d4-ca42-4dff-a49b-ba4da72cc08c",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-gas-electric-hybrid-grey-cat_ma13gr202609ge10767va2324mt15084-9a3ae7d4-ca42-4dff-a49b-ba4da72cc08c",
    "title": "BMW M5",
    "year": 2027,
    "make": "BMW",
@@ -6605,7 +6728,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -6623,7 +6746,7 @@
   },
   {
    "id": "9831f3a7-9dea-4c81-a3ef-0bcb7bae0857",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-m5-uncoming-i-m-carbon-exterior-package-i-advanced-electric-grey-cat_ma13gr202609ge10767va3044-9831f3a7-9dea-4c81-a3ef-0bcb7bae0857",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-m5-uncoming-i-m-carbon-exterior-package-i-advanced-electric-grey-cat_ma13gr202609ge10767va3044mt15084-9831f3a7-9dea-4c81-a3ef-0bcb7bae0857",
    "title": "BMW M5 M5 UNCOMING I M Carbon Exterior Package I Advanced",
    "year": 2027,
    "make": "BMW",
@@ -6644,7 +6767,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -6722,7 +6845,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -6761,7 +6884,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -6800,7 +6923,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -6818,7 +6941,7 @@
   },
   {
    "id": "8aaf3ba9-b9de-4a1c-9d45-551f95079ddc",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-base-gasoline-green-cat_ma13gr202609ge10767va2324-8aaf3ba9-b9de-4a1c-9d45-551f95079ddc",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-base-gasoline-green-cat_ma13gr202609ge10767va2324mt15084-8aaf3ba9-b9de-4a1c-9d45-551f95079ddc",
    "title": "BMW M5 BASE",
    "year": 2027,
    "make": "BMW",
@@ -6839,7 +6962,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -6857,7 +6980,7 @@
   },
   {
    "id": "82b76b13-c7cc-413c-a0be-3ce713b9f72e",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-electric-black-cat_ma13gr202609ge10767va2324-82b76b13-c7cc-413c-a0be-3ce713b9f72e",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-electric-black-cat_ma13gr202609ge10767va2324mt15084-82b76b13-c7cc-413c-a0be-3ce713b9f72e",
    "title": "BMW M5 Touring",
    "year": 2027,
    "make": "BMW",
@@ -6878,7 +7001,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -6917,7 +7040,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -6935,7 +7058,7 @@
   },
   {
    "id": "7a6e600a-1dd3-425d-819f-64b836f1acd9",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-sedan-electric-black-cat_ma13gr202609ge10767va3044-7a6e600a-1dd3-425d-819f-64b836f1acd9",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-sedan-electric-black-cat_ma13gr202609ge10767va3044mt15084-7a6e600a-1dd3-425d-819f-64b836f1acd9",
    "title": "BMW M5 Sedan",
    "year": 2027,
    "make": "BMW",
@@ -6956,7 +7079,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -6974,7 +7097,7 @@
   },
   {
    "id": "785481fc-ccdc-4dcb-a2a4-0ed37fffdaae",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-advanced-driver-assistance-package-red-m-electric-blue-cat_ma13gr202609ge10767va2324-785481fc-ccdc-4dcb-a2a4-0ed37fffdaae",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-advanced-driver-assistance-package-red-m-electric-blue-cat_ma13gr202609ge10767va2324mt15084-785481fc-ccdc-4dcb-a2a4-0ed37fffdaae",
    "title": "BMW M5 Touring Advanced Driver Assistance Package | Red M",
    "year": 2027,
    "make": "BMW",
@@ -6995,7 +7118,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -7034,7 +7157,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -7052,7 +7175,7 @@
   },
   {
    "id": "744d68ad-2593-4c0d-aea0-32b1413234f2",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-gasoline-black-cat_ma13gr202609ge10767va2324-744d68ad-2593-4c0d-aea0-32b1413234f2",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-gasoline-black-cat_ma13gr202609ge10767va2324mt15084-744d68ad-2593-4c0d-aea0-32b1413234f2",
    "title": "BMW M5",
    "year": 2027,
    "make": "BMW",
@@ -7073,7 +7196,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -7091,7 +7214,7 @@
   },
   {
    "id": "71167451-091c-488a-b288-c81c8a531395",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-717-horse-power-gasoline-grey-cat_ma13gr202609-71167451-091c-488a-b288-c81c8a531395",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-717-horse-power-gasoline-grey-cat_ma13gr202609va2324mt15084-71167451-091c-488a-b288-c81c8a531395",
    "title": "BMW M5 717 Horse Power!!!",
    "year": 2026,
    "make": "BMW",
@@ -7112,7 +7235,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -7130,20 +7253,20 @@
   },
   {
    "id": "6dfc15a0-a665-4c42-8f90-bc74f90f8974",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-electric-grey-cat_ma13gr202609ge10767va2324-6dfc15a0-a665-4c42-8f90-bc74f90f8974",
-   "title": "BMW M5 Touring",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-electric-grey-cat_ma13gr202609ge10767va2324mt15084-6dfc15a0-a665-4c42-8f90-bc74f90f8974",
+   "title": "BMW M5",
    "year": 2027,
    "make": "BMW",
    "model": "M5",
    "trim": "Touring",
-   "price": 177204,
+   "price": 169135,
    "currency": "CAD",
    "mileage_km": 90,
    "location": "Barrie",
    "province": "ON",
    "seller": "Georgian BMW",
-   "body": "",
-   "color": "",
+   "body": "Wagon",
+   "color": "Grey",
    "transmission": "Automatic",
    "drivetrain": "",
    "fuel": "Electric",
@@ -7151,21 +7274,26 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
      "at": "2026-09-10T01:48:53+00:00",
      "price": 177204
+    },
+    {
+     "at": "2026-09-10T13:27:06+00:00",
+     "price": 169135
     }
    ],
    "price_source": "search",
    "filtered": true,
-   "filter_reason": "price $177,204 above maximum $100,000",
+   "filter_reason": "price $169,135 above maximum $100,000",
    "unpriced": false,
-   "enriched": false,
-   "quiet_reason": "hidden by your rules: price $177,204 above maximum $100,000",
-   "is_new": false
+   "enriched": true,
+   "quiet_reason": "hidden by your rules: price $169,135 above maximum $100,000",
+   "is_new": false,
+   "price_change": -8069
   },
   {
    "id": "6b010063-e271-4c0b-a640-abd20150d25a",
@@ -7190,7 +7318,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -7208,7 +7336,7 @@
   },
   {
    "id": "664b1f49-e37e-4d17-aca4-a0fd401d4a17",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-gas-electric-hybrid-cat_ma13gr202609ge10767va2324-664b1f49-e37e-4d17-aca4-a0fd401d4a17",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-gas-electric-hybrid-cat_ma13gr202609ge10767va2324mt15084-664b1f49-e37e-4d17-aca4-a0fd401d4a17",
    "title": "BMW M5",
    "year": 2027,
    "make": "BMW",
@@ -7229,7 +7357,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -7268,7 +7396,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -7286,7 +7414,7 @@
   },
   {
    "id": "59906fab-3f40-40de-becd-d203c36decea",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-electric-black-cat_ma13gr202609ge10767va2324-59906fab-3f40-40de-becd-d203c36decea",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-electric-black-cat_ma13gr202609ge10767va2324mt15084-59906fab-3f40-40de-becd-d203c36decea",
    "title": "BMW M5 Touring",
    "year": 2027,
    "make": "BMW",
@@ -7307,7 +7435,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -7346,7 +7474,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -7364,7 +7492,7 @@
   },
   {
    "id": "5080b707-a974-4832-af66-6d08cb662e80",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-gas-electric-hybrid-black-cat_ma13gr202609ge10767va2324-5080b707-a974-4832-af66-6d08cb662e80",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-gas-electric-hybrid-black-cat_ma13gr202609ge10767va2324mt15084-5080b707-a974-4832-af66-6d08cb662e80",
    "title": "BMW M5",
    "year": 2027,
    "make": "BMW",
@@ -7385,7 +7513,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -7403,7 +7531,7 @@
   },
   {
    "id": "4eaec544-9730-4f4d-b8f9-8752388e835e",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-gas-electric-hybrid-grey-cat_ma13gr202609ge10767va3044-4eaec544-9730-4f4d-b8f9-8752388e835e",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-gas-electric-hybrid-grey-cat_ma13gr202609ge10767va3044mt15084-4eaec544-9730-4f4d-b8f9-8752388e835e",
    "title": "BMW M5",
    "year": 2027,
    "make": "BMW",
@@ -7424,7 +7552,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -7442,7 +7570,7 @@
   },
   {
    "id": "4919c402-60db-4acd-b15b-1e09bc55c0a5",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-electric-black-cat_ma13gr202609ge10767va2324-4919c402-60db-4acd-b15b-1e09bc55c0a5",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-electric-black-cat_ma13gr202609ge10767va2324mt15084-4919c402-60db-4acd-b15b-1e09bc55c0a5",
    "title": "BMW M5 Touring",
    "year": 2027,
    "make": "BMW",
@@ -7463,7 +7591,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -7502,7 +7630,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -7520,7 +7648,7 @@
   },
   {
    "id": "405031b3-00ba-486f-9a81-6acc58a91dda",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-gas-electric-hybrid-black-cat_ma13gr202609ge10767va3044-405031b3-00ba-486f-9a81-6acc58a91dda",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-gas-electric-hybrid-black-cat_ma13gr202609ge10767va3044mt15084-405031b3-00ba-486f-9a81-6acc58a91dda",
    "title": "BMW M5",
    "year": 2027,
    "make": "BMW",
@@ -7541,7 +7669,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -7559,7 +7687,7 @@
   },
   {
    "id": "404a5bf7-162a-45e1-84bc-0a872cfaa016",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-gasoline-grey-cat_ma13gr202609ge10767va2324-404a5bf7-162a-45e1-84bc-0a872cfaa016",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-gasoline-grey-cat_ma13gr202609ge10767va2324mt15084-404a5bf7-162a-45e1-84bc-0a872cfaa016",
    "title": "BMW M5 Touring",
    "year": 2027,
    "make": "BMW",
@@ -7580,7 +7708,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -7598,7 +7726,7 @@
   },
   {
    "id": "2dd56e99-3981-446f-a7b9-5cc563a17dc0",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-base-electric-green-cat_ma13gr202609-2dd56e99-3981-446f-a7b9-5cc563a17dc0",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-base-electric-gold-cat_ma13gr202609va2324mt15084-2dd56e99-3981-446f-a7b9-5cc563a17dc0",
    "title": "BMW M5 Base",
    "year": 2026,
    "make": "BMW",
@@ -7606,7 +7734,7 @@
    "trim": "Base",
    "price": 146495,
    "currency": "CAD",
-   "mileage_km": 9688,
+   "mileage_km": 10080,
    "location": "Sarnia",
    "province": "ON",
    "seller": "BMW Sarnia",
@@ -7619,7 +7747,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -7637,7 +7765,7 @@
   },
   {
    "id": "2cc91877-0aee-4660-bdff-57b9fdfa3bcc",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-electric-blue-cat_ma13gr202609ge10767va2324-2cc91877-0aee-4660-bdff-57b9fdfa3bcc",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-electric-blue-cat_ma13gr202609ge10767va2324mt15084-2cc91877-0aee-4660-bdff-57b9fdfa3bcc",
    "title": "BMW M5 Touring",
    "year": 2027,
    "make": "BMW",
@@ -7658,7 +7786,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -7676,12 +7804,12 @@
   },
   {
    "id": "2b1eae67-de8f-41e8-bdde-21e475f1b3b4",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-electric-white-cat_ma13gr202609-2b1eae67-de8f-41e8-bdde-21e475f1b3b4",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-electric-white-cat_ma13gr202609va3044mt15084-2b1eae67-de8f-41e8-bdde-21e475f1b3b4",
    "title": "BMW M5",
    "year": 2026,
    "make": "BMW",
    "model": "M5",
-   "trim": "",
+   "trim": "Sedan",
    "price": 150637,
    "currency": "CAD",
    "mileage_km": 90,
@@ -7697,7 +7825,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -7715,7 +7843,7 @@
   },
   {
    "id": "2a2bfd66-f66e-4661-9ce2-b92c4e758c5e",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-base-gasoline-blue-cat_ma13gr202609-2a2bfd66-f66e-4661-9ce2-b92c4e758c5e",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-base-gasoline-blue-cat_ma13gr202609va2324mt15084-2a2bfd66-f66e-4661-9ce2-b92c4e758c5e",
    "title": "BMW M5 BASE",
    "year": 2026,
    "make": "BMW",
@@ -7736,7 +7864,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -7754,7 +7882,7 @@
   },
   {
    "id": "2609ec24-bb06-47ff-9f84-de64600a4951",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-sedan-electric-grey-cat_ma13gr202609-2609ec24-bb06-47ff-9f84-de64600a4951",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-sedan-electric-grey-cat_ma13gr202609va3044mt15084-2609ec24-bb06-47ff-9f84-de64600a4951",
    "title": "BMW M5 Sedan",
    "year": 2026,
    "make": "BMW",
@@ -7775,7 +7903,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -7814,7 +7942,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -7832,7 +7960,7 @@
   },
   {
    "id": "23244d6c-0db0-4fe5-860b-c2fe73182589",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-gasoline-grey-cat_ma13gr202609ge10767va3044-23244d6c-0db0-4fe5-860b-c2fe73182589",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-gasoline-grey-cat_ma13gr202609ge10767va3044mt15084-23244d6c-0db0-4fe5-860b-c2fe73182589",
    "title": "BMW M5",
    "year": 2027,
    "make": "BMW",
@@ -7853,7 +7981,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -7871,7 +7999,7 @@
   },
   {
    "id": "20d4dacb-62a1-4b5e-a8e6-b9b8842c2cc3",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-sedan-gasoline-blue-cat_ma13gr202609ge10767va3044-20d4dacb-62a1-4b5e-a8e6-b9b8842c2cc3",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-sedan-gasoline-blue-cat_ma13gr202609ge10767va3044mt15084-20d4dacb-62a1-4b5e-a8e6-b9b8842c2cc3",
    "title": "BMW M5 Sedan",
    "year": 2027,
    "make": "BMW",
@@ -7892,7 +8020,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -7931,7 +8059,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -7949,7 +8077,7 @@
   },
   {
    "id": "1fae7a5b-b440-4c92-8215-61000023d96d",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-aide-a-la-conduite-avance-freins-m-com-gas-electric-hybrid-black-cat_ma13gr202609ge10767va2324-1fae7a5b-b440-4c92-8215-61000023d96d",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-aide-a-la-conduite-avance-freins-m-com-gas-electric-hybrid-black-cat_ma13gr202609ge10767va2324mt15084-1fae7a5b-b440-4c92-8215-61000023d96d",
    "title": "BMW M5 Touring | Aide à la conduite avancé | Freins M Com",
    "year": 2027,
    "make": "BMW",
@@ -7970,7 +8098,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -8028,7 +8156,7 @@
   {
    "id": "1a317161-c010-4a1b-b573-5e43f94a59bd",
    "url": "https://www.autotrader.ca/offers/bmw-m5-touring-gasoline-black-cat_ma13gr202609va2324mt15084-1a317161-c010-4a1b-b573-5e43f94a59bd",
-   "title": "BMW M5",
+   "title": "BMW M5 Touring",
    "year": 2026,
    "make": "BMW",
    "model": "M5",
@@ -8048,7 +8176,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -8071,7 +8199,7 @@
   },
   {
    "id": "1575ad67-248e-4db5-8494-8da9f29fb251",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-other-electric-grey-cat_ma13gr202609ge10767va2324-1575ad67-248e-4db5-8494-8da9f29fb251",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-other-electric-grey-cat_ma13gr202609ge10767va2324mt15084-1575ad67-248e-4db5-8494-8da9f29fb251",
    "title": "BMW M5 Other",
    "year": 2027,
    "make": "BMW",
@@ -8092,7 +8220,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -8110,8 +8238,8 @@
   },
   {
    "id": "10197526-115f-4960-9b8d-b0a508a9f814",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-sedan-gasoline-blue-cat_ma13gr202609ge10767va3044-10197526-115f-4960-9b8d-b0a508a9f814",
-   "title": "BMW M5 Sedan",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-base-gasoline-blue-cat_ma13gr202609ge10767va3044mt15084-10197526-115f-4960-9b8d-b0a508a9f814",
+   "title": "BMW M5 BASE",
    "year": 2027,
    "make": "BMW",
    "model": "M5",
@@ -8131,7 +8259,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -8170,7 +8298,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -8209,7 +8337,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -8248,7 +8376,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:48:53+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -8287,7 +8415,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:06:06+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -8326,7 +8454,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:06:06+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -8344,7 +8472,7 @@
   },
   {
    "id": "3a118d74-eb3a-493a-bbf3-9fead7015df3",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-electric-blue-cat_ma13gr202609ge10767va2324-3a118d74-eb3a-493a-bbf3-9fead7015df3",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-electric-blue-cat_ma13gr202609ge10767va2324mt15084-3a118d74-eb3a-493a-bbf3-9fead7015df3",
    "title": "BMW M5 Touring",
    "year": 2027,
    "make": "BMW",
@@ -8365,7 +8493,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:06:06+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -8383,7 +8511,7 @@
   },
   {
    "id": "351e4608-5072-4324-a1ba-2c4109b55133",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-gasoline-white-cat_ma13gr202609-351e4608-5072-4324-a1ba-2c4109b55133",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-gasoline-white-cat_ma13gr202609va2324mt15084-351e4608-5072-4324-a1ba-2c4109b55133",
    "title": "BMW M5 Touring",
    "year": 2026,
    "make": "BMW",
@@ -8404,7 +8532,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:06:06+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -8443,7 +8571,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:06:06+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -8461,13 +8589,13 @@
   },
   {
    "id": "1a0d74f5-b85f-4793-a742-e4ffaef5869a",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-base-gas-electric-hybrid-white-cat_ma13gr202609-1a0d74f5-b85f-4793-a742-e4ffaef5869a",
-   "title": "BMW M5 Base",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-base-gas-electric-hybrid-white-cat_ma13gr202609va3044mt15084-1a0d74f5-b85f-4793-a742-e4ffaef5869a",
+   "title": "BMW M5",
    "year": 2026,
    "make": "BMW",
    "model": "M5",
    "trim": "Base",
-   "price": 152939,
+   "price": 148939,
    "currency": "CAD",
    "mileage_km": 3500,
    "location": "Barrie",
@@ -8482,25 +8610,30 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T01:06:06+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
      "at": "2026-09-10T01:06:06+00:00",
      "price": 152939
+    },
+    {
+     "at": "2026-09-10T13:27:06+00:00",
+     "price": 148939
     }
    ],
    "price_source": "search",
    "filtered": true,
-   "filter_reason": "price $152,939 above maximum $100,000",
+   "filter_reason": "price $148,939 above maximum $100,000",
    "unpriced": false,
    "enriched": true,
-   "quiet_reason": "hidden by your rules: price $152,939 above maximum $100,000",
-   "is_new": false
+   "quiet_reason": "hidden by your rules: price $148,939 above maximum $100,000",
+   "is_new": false,
+   "price_change": -4000
   },
   {
    "id": "fcd517b3-cc95-4342-9a5c-ba1d8c6a4595",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-gas-electric-hybrid-blue-cat_ma13gr202609ge10767va2324-fcd517b3-cc95-4342-9a5c-ba1d8c6a4595",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-gas-electric-hybrid-blue-cat_ma13gr202609ge10767va2324mt15084-fcd517b3-cc95-4342-9a5c-ba1d8c6a4595",
    "title": "BMW M5",
    "year": 2027,
    "make": "BMW",
@@ -8521,7 +8654,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T00:42:08+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -8560,7 +8693,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T00:42:08+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -8578,7 +8711,7 @@
   },
   {
    "id": "f1b1cd3e-3266-4d0b-990c-d7657cac5d33",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-electric-black-cat_ma13gr202609-f1b1cd3e-3266-4d0b-990c-d7657cac5d33",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-electric-black-cat_ma13gr202609va2324mt15084-f1b1cd3e-3266-4d0b-990c-d7657cac5d33",
    "title": "BMW M5 Touring",
    "year": 2025,
    "make": "BMW",
@@ -8599,7 +8732,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T00:42:08+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -8617,7 +8750,7 @@
   },
   {
    "id": "f03bb4a6-439a-4e35-9a59-a85ebb9344df",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-advanced-driver-assistance-side-sunshades-gas-electric-hybrid-black-cat_ma13gr202609ge10767va2324-f03bb4a6-439a-4e35-9a59-a85ebb9344df",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-advanced-driver-assistance-side-sunshades-gas-electric-hybrid-black-cat_ma13gr202609ge10767va2324mt15084-f03bb4a6-439a-4e35-9a59-a85ebb9344df",
    "title": "BMW M5 Touring Advanced Driver Assistance, Side Sunshades",
    "year": 2027,
    "make": "BMW",
@@ -8638,7 +8771,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T00:42:08+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -8677,7 +8810,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T00:42:08+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -8695,7 +8828,7 @@
   },
   {
    "id": "d0c9c72a-4602-44b9-8d28-d6b9f778ed1d",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-sedan-gas-electric-hybrid-grey-cat_ma13gr202609-d0c9c72a-4602-44b9-8d28-d6b9f778ed1d",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-sedan-gas-electric-hybrid-grey-cat_ma13gr202609va3044mt15084-d0c9c72a-4602-44b9-8d28-d6b9f778ed1d",
    "title": "BMW M5 Sedan",
    "year": 2026,
    "make": "BMW",
@@ -8716,7 +8849,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T00:42:08+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -8755,7 +8888,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T00:42:08+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -8773,7 +8906,7 @@
   },
   {
    "id": "b7f615cd-cce2-4416-b2b0-e696d828d819",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-electric-cat_ma13gr202609ge10767va2324-b7f615cd-cce2-4416-b2b0-e696d828d819",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-electric-cat_ma13gr202609ge10767va2324mt15084-b7f615cd-cce2-4416-b2b0-e696d828d819",
    "title": "BMW M5 Touring",
    "year": 2027,
    "make": "BMW",
@@ -8794,7 +8927,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T00:42:08+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -8833,7 +8966,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T00:42:08+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -8872,7 +9005,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T00:42:08+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -8911,7 +9044,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T00:42:08+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -8950,7 +9083,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T00:42:08+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -8989,7 +9122,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T00:42:08+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -9007,7 +9140,7 @@
   },
   {
    "id": "7e7edac7-9800-497f-bf15-bff3fd4046e3",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-gasoline-white-cat_ma13gr202609ge10767va2324-7e7edac7-9800-497f-bf15-bff3fd4046e3",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-gasoline-white-cat_ma13gr202609ge10767va2324mt15084-7e7edac7-9800-497f-bf15-bff3fd4046e3",
    "title": "BMW M5 Touring",
    "year": 2027,
    "make": "BMW",
@@ -9028,7 +9161,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T00:42:08+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -9067,7 +9200,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T00:42:08+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -9085,7 +9218,7 @@
   },
   {
    "id": "75bf4b0c-f7ea-4a7e-abee-94235ebeb759",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-advdrvasst-20-21-alloys-interiorprotpkg-frozengrey-gas-electric-hybrid-grey-cat_ma13gr202609ge10767va2324-75bf4b0c-f7ea-4a7e-abee-94235ebeb759",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-advdrvasst-20-21-alloys-interiorprotpkg-frozengrey-gas-electric-hybrid-grey-cat_ma13gr202609ge10767va2324mt15084-75bf4b0c-f7ea-4a7e-abee-94235ebeb759",
    "title": "BMW M5 AdvDrvAsst-20/21\"Alloys-InteriorProtPkg-FrozenGrey",
    "year": 2027,
    "make": "BMW",
@@ -9106,7 +9239,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T00:42:08+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -9124,7 +9257,7 @@
   },
   {
    "id": "6e18ff92-8484-4f2c-a949-3b0d72be836d",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-gas-electric-hybrid-black-cat_ma13gr202609ge10767va2324-6e18ff92-8484-4f2c-a949-3b0d72be836d",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-gas-electric-hybrid-black-cat_ma13gr202609ge10767va2324mt15084-6e18ff92-8484-4f2c-a949-3b0d72be836d",
    "title": "BMW M5 Touring",
    "year": 2027,
    "make": "BMW",
@@ -9145,7 +9278,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T00:42:08+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -9163,7 +9296,7 @@
   },
   {
    "id": "6d48c03a-11f3-414a-ad5e-6b9af91c0325",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-sedan-white-cat_ma13gr202609ge10767va3044-6d48c03a-11f3-414a-ad5e-6b9af91c0325",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-sedan-white-cat_ma13gr202609ge10767va3044mt15084-6d48c03a-11f3-414a-ad5e-6b9af91c0325",
    "title": "BMW M5 Sedan",
    "year": 2027,
    "make": "BMW",
@@ -9184,7 +9317,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T00:42:08+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -9202,7 +9335,7 @@
   },
   {
    "id": "5bfbe886-a5ec-4ff0-ada5-358e2e968572",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-m5-mcarbonext-advdrvast-21-alloys-carbonfibretrm-electric-black-cat_ma13gr202609-5bfbe886-a5ec-4ff0-ada5-358e2e968572",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-m5-mcarbonext-advdrvast-21-alloys-carbonfibretrm-electric-black-cat_ma13gr202609va3044mt15084-5bfbe886-a5ec-4ff0-ada5-358e2e968572",
    "title": "BMW M5 M5-MCarbonExt-AdvDrvAst-21\"Alloys-CarbonFibreTrm",
    "year": 2026,
    "make": "BMW",
@@ -9223,7 +9356,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T00:42:08+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -9262,7 +9395,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T00:42:08+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -9301,7 +9434,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T00:42:08+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -9324,7 +9457,7 @@
   },
   {
    "id": "30e2687e-9c30-4528-984e-6259c7994866",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-m5-competition-full-hybride-717h-p-gas-electric-hybrid-grey-cat_ma13gr202609-30e2687e-9c30-4528-984e-6259c7994866",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-m5-competition-full-hybride-717h-p-gas-electric-hybrid-grey-cat_ma13gr202609va3044mt15084-30e2687e-9c30-4528-984e-6259c7994866",
    "title": "BMW M5 M5 COMPETITION, FULL,HYBRIDE 717H.P",
    "year": 2026,
    "make": "BMW",
@@ -9345,7 +9478,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T00:42:08+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -9384,7 +9517,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T00:42:08+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -9423,7 +9556,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T00:42:08+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -9462,7 +9595,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T00:42:08+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -9501,7 +9634,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T00:42:08+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -9540,7 +9673,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-10T00:42:08+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -9579,7 +9712,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-09T22:52:45+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -9597,7 +9730,7 @@
   },
   {
    "id": "d0e3ba9d-83e4-4484-82af-317aec0aab4b",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-gas-electric-hybrid-white-cat_ma13gr202609ge10767va2324-d0e3ba9d-83e4-4484-82af-317aec0aab4b",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-gas-electric-hybrid-white-cat_ma13gr202609ge10767va2324mt15084-d0e3ba9d-83e4-4484-82af-317aec0aab4b",
    "title": "BMW M5",
    "year": 2027,
    "make": "BMW",
@@ -9618,7 +9751,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-09T22:52:45+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -9636,7 +9769,7 @@
   },
   {
    "id": "c75b6440-b6f5-4524-bc2d-10901dbf2f00",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-carbon-ceramic-brake-sooqoo-carbon-electric-black-cat_ma13gr202609-c75b6440-b6f5-4524-bc2d-10901dbf2f00",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-carbon-ceramic-brake-sooqoo-carbon-electric-black-cat_ma13gr202609va2324mt15084-c75b6440-b6f5-4524-bc2d-10901dbf2f00",
    "title": "BMW M5 Touring | Carbon Ceramic Brake | SOOQOO Carbon |",
    "year": 2025,
    "make": "BMW",
@@ -9657,7 +9790,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-09T22:52:45+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -9696,7 +9829,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-09T22:52:45+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -9714,7 +9847,7 @@
   },
   {
    "id": "9b202e41-4d14-41fe-9bad-e19278a892b4",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-sedan-no-accidents-low-kms-717-hp-twin-turbo-4-gas-electric-hybrid-red-cat_ma13gr202609-9b202e41-4d14-41fe-9bad-e19278a892b4",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-sedan-no-accidents-low-kms-717-hp-twin-turbo-4-gas-electric-hybrid-red-cat_ma13gr202609va3044mt15084-9b202e41-4d14-41fe-9bad-e19278a892b4",
    "title": "BMW M5 Sedan No Accidents | Low KMS | 717 HP Twin Turbo 4",
    "year": 2025,
    "make": "BMW",
@@ -9735,7 +9868,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-09T22:52:45+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -9753,7 +9886,7 @@
   },
   {
    "id": "9905aa11-5a8b-4589-a205-afe701a25df5",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-base-gas-electric-hybrid-grey-cat_ma13gr202609-9905aa11-5a8b-4589-a205-afe701a25df5",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-base-gas-electric-hybrid-grey-cat_ma13gr202609va2324mt15084-9905aa11-5a8b-4589-a205-afe701a25df5",
    "title": "BMW M5 Base",
    "year": 2026,
    "make": "BMW",
@@ -9774,7 +9907,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-09T22:52:45+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -9813,7 +9946,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-09T22:52:45+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -9831,7 +9964,7 @@
   },
   {
    "id": "3531231e-66e4-4366-a993-ad997d897ad3",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-m-drivers-pack-advancced-drive-assist-gasoline-black-cat_ma13gr202609-3531231e-66e4-4366-a993-ad997d897ad3",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-m-drivers-pack-advancced-drive-assist-gasoline-black-cat_ma13gr202609va2324mt15084-3531231e-66e4-4366-a993-ad997d897ad3",
    "title": "BMW M5 Touring|M Driver's Pack|Advancced Drive Assist",
    "year": 2025,
    "make": "BMW",
@@ -9852,7 +9985,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-09T22:52:45+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -9870,7 +10003,7 @@
   },
   {
    "id": "1ff47262-4469-4323-8fb5-3d8d956df7db",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-sedan-gas-electric-hybrid-cat_ma13gr202609-1ff47262-4469-4323-8fb5-3d8d956df7db",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-sedan-gas-electric-hybrid-cat_ma13gr202609va3044mt15084-1ff47262-4469-4323-8fb5-3d8d956df7db",
    "title": "BMW M5 Sedan",
    "year": 2026,
    "make": "BMW",
@@ -9891,7 +10024,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-09T22:52:45+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -9910,7 +10043,7 @@
   {
    "id": "152c3a71-4e95-4991-95a4-a2802e0e1319",
    "url": "https://www.autotrader.ca/offers/bmw-m5-competition-m5-comp-w-no-accidents-and-low-kms-gasoline-black-cat_ma13gr202609tr17957-152c3a71-4e95-4991-95a4-a2802e0e1319",
-   "title": "BMW M5 Competition M5 Comp w/no accidents and low kms!",
+   "title": "AutoTrader listing 152c3a71-4e95-4991-95a4-a2802e0e1319",
    "year": 2020,
    "make": "BMW",
    "model": "M5",
@@ -9927,10 +10060,10 @@
    "drivetrain": "",
    "fuel": "Gasoline",
    "engine": "",
-   "search_id": "bmw-m5-bargains-any-year-f2f097",
-   "search_name": "BMW M5 bargains (any year)",
+   "search_id": "2021-2023-bmw-m5-310324",
+   "search_name": "2021-2023 BMW M5",
    "first_seen": "2026-09-09T22:52:45+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -9940,10 +10073,10 @@
    ],
    "price_source": "search",
    "filtered": true,
-   "filter_reason": "price $104,999 above maximum $100,000",
+   "filter_reason": "year 2020 below minimum 2021",
    "unpriced": false,
    "enriched": true,
-   "quiet_reason": "hidden by your rules: price $104,999 above maximum $100,000",
+   "quiet_reason": "hidden by your rules: year 2020 below minimum 2021",
    "is_new": false
   },
   {
@@ -9969,7 +10102,7 @@
    "search_id": "2021-2023-bmw-m5-310324",
    "search_name": "2021-2023 BMW M5",
    "first_seen": "2026-09-09T21:13:04+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -10009,7 +10142,7 @@
    "search_id": "2021-2023-bmw-m5-310324",
    "search_name": "2021-2023 BMW M5",
    "first_seen": "2026-09-09T21:13:04+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -10049,7 +10182,7 @@
    "search_id": "bmw-m5-bargains-any-year-f2f097",
    "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-09T21:13:04+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -10088,7 +10221,7 @@
    "search_id": "2021-2023-bmw-m5-310324",
    "search_name": "2021-2023 BMW M5",
    "first_seen": "2026-09-09T21:13:04+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -10128,7 +10261,7 @@
    "search_id": "2021-2023-bmw-m5-310324",
    "search_name": "2021-2023 BMW M5",
    "first_seen": "2026-09-09T21:13:04+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -10168,7 +10301,7 @@
    "search_id": "2021-2023-bmw-m5-310324",
    "search_name": "2021-2023 BMW M5",
    "first_seen": "2026-09-09T21:13:04+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -10187,8 +10320,8 @@
   },
   {
    "id": "a5f73b97-2d46-4fbf-9c1b-28b061887307",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-advanced-driver-assist-no-accidents-electric-black-cat_ma13gr202609-a5f73b97-2d46-4fbf-9c1b-28b061887307",
-   "title": "AutoTrader listing a5f73b97-2d46-4fbf-9c1b-28b061887307",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-advanced-driver-assist-no-accidents-electric-black-cat_ma13gr202609va2324mt15084-a5f73b97-2d46-4fbf-9c1b-28b061887307",
+   "title": "BMW M5 Touring - Advanced Driver Assist, No Accidents",
    "year": 2025,
    "make": "BMW",
    "model": "M5",
@@ -10205,10 +10338,10 @@
    "drivetrain": "",
    "fuel": "Electric",
    "engine": "",
-   "search_id": "2021-2023-bmw-m5-310324",
-   "search_name": "2021-2023 BMW M5",
+   "search_id": "bmw-m5-bargains-any-year-f2f097",
+   "search_name": "BMW M5 bargains (any year)",
    "first_seen": "2026-09-09T21:13:04+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -10218,10 +10351,10 @@
    ],
    "price_source": "search",
    "filtered": true,
-   "filter_reason": "year 2025 above maximum 2023",
+   "filter_reason": "price $144,900 above maximum $100,000",
    "unpriced": false,
    "enriched": true,
-   "quiet_reason": "hidden by your rules: year 2025 above maximum 2023",
+   "quiet_reason": "hidden by your rules: price $144,900 above maximum $100,000",
    "is_new": false
   },
   {
@@ -10247,7 +10380,7 @@
    "search_id": "2021-2023-bmw-m5-310324",
    "search_name": "2021-2023 BMW M5",
    "first_seen": "2026-09-09T21:13:04+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -10265,7 +10398,7 @@
   },
   {
    "id": "727d36cb-6045-44ea-bb97-7e3c022e2674",
-   "url": "https://www.autotrader.ca/offers/bmw-m5-competition-ultimate-package-m-drivers-pkg-fu-gasoline-grey-cat_ma13gr202609tr17957-727d36cb-6045-44ea-bb97-7e3c022e2674",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-competition-ultimate-package-m-drivers-pkg-fu-gasoline-grey-cat_ma13gr202609va3044mt15083tr17957-727d36cb-6045-44ea-bb97-7e3c022e2674",
    "title": "BMW M5 Competition, Ultimate Package!! M Drivers Pkg!! Fu",
    "year": 2023,
    "make": "BMW",
@@ -10286,7 +10419,7 @@
    "search_id": "2021-2023-bmw-m5-310324",
    "search_name": "2021-2023 BMW M5",
    "first_seen": "2026-09-09T21:13:04+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -10326,7 +10459,7 @@
    "search_id": "2021-2023-bmw-m5-310324",
    "search_name": "2021-2023 BMW M5",
    "first_seen": "2026-09-09T21:13:04+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -10365,7 +10498,7 @@
    "search_id": "2021-2023-bmw-m5-310324",
    "search_name": "2021-2023 BMW M5",
    "first_seen": "2026-09-09T21:13:04+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -10405,7 +10538,7 @@
    "search_id": "2021-2023-bmw-m5-310324",
    "search_name": "2021-2023 BMW M5",
    "first_seen": "2026-09-09T21:13:04+00:00",
-   "last_seen": "2026-09-10T09:12:22+00:00",
+   "last_seen": "2026-09-10T13:27:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -10452,20 +10585,20 @@
     ]
    },
    "health": {
-    "last_ok": "2026-09-10T09:11:56+00:00",
+    "last_ok": "2026-09-10T13:26:32+00:00",
     "last_error": null,
     "last_count": 18,
     "last_strategy": "embedded_json",
     "consecutive_failures": 0,
-    "shut_out": "11 too far away, 7 outside the year range"
+    "shut_out": "12 too far away, 6 outside the year range"
    },
    "active_count": 0,
    "counts": {
     "active": 0,
-    "filtered": 11,
+    "filtered": 12,
     "unpriced": 0,
     "gone": 0,
-    "total": 11
+    "total": 12
    },
    "rules": {
     "filters": {
@@ -10497,9 +10630,9 @@
      "regex"
     ],
     "scores": {
-     "jsonld": 11,
+     "jsonld": 12,
      "embedded_json": 18,
-     "anchors": 11,
+     "anchors": 12,
      "regex": 18
     },
     "listing_count": 18,
@@ -10544,20 +10677,20 @@
     ]
    },
    "health": {
-    "last_ok": "2026-09-10T09:12:21+00:00",
+    "last_ok": "2026-09-10T13:26:58+00:00",
     "last_error": null,
-    "last_count": 185,
+    "last_count": 187,
     "last_strategy": "jsonld",
     "consecutive_failures": 0,
     "shut_out": null
    },
-   "active_count": 63,
+   "active_count": 65,
    "counts": {
-    "active": 63,
+    "active": 65,
     "filtered": 112,
     "unpriced": 2,
     "gone": 1,
-    "total": 176
+    "total": 178
    },
    "rules": {
     "filters": {
@@ -10586,7 +10719,7 @@
      "anchors": 20,
      "regex": 20
     },
-    "listing_count": 185,
+    "listing_count": 187,
     "markers": {
      "json_ld": "few",
      "next_data": "few",
@@ -10750,13 +10883,13 @@
  },
  "runs": [
   {
-   "at": "2026-09-10T09:12:22+00:00",
+   "at": "2026-09-10T13:27:08+00:00",
    "ok": true,
-   "duration_s": 29.3,
+   "duration_s": 38.2,
    "searches_run": 2,
    "searches_failed": 0,
-   "listings_seen": 203,
-   "new": 0,
+   "listings_seen": 205,
+   "new": 2,
    "price_drops": 0,
    "price_rises": 0,
    "removed": 0,
@@ -10770,11 +10903,11 @@
     "2021-2023 BMW M5"
    ],
    "hidden_events": {
-    "price_drop": 1
+    "price_drop": 2
    },
    "skipped": false,
-   "missed_by": 0,
-   "requests_made": 13,
+   "missed_by": 254,
+   "requests_made": 19,
    "budget_exhausted": false,
    "empty_parses": [],
    "diagnostics": [],
@@ -10782,10 +10915,13 @@
    "disabled_channels": [],
    "first_run": false,
    "validation_ok": true,
-   "notified": [],
+   "notified": [
+    "ntfy: sent - 2 change(s)"
+   ],
    "errors": [],
    "warnings": [
-    "2021-2023 BMW M5: read 18 listing(s) and none passed your rules for it (11 too far away, 7 outside the year range). It is working - it just has nothing to show you."
+    "the last successful check was 4.2 hour(s) ago, not 30 minute(s) - the schedule dropped 7 run(s). Catching up now.",
+    "2021-2023 BMW M5: read 18 listing(s) and none passed your rules for it (12 too far away, 6 outside the year range). It is working - it just has nothing to show you."
    ],
    "strategies": {
     "2021-2023-bmw-m5-310324": "embedded_json",
@@ -10793,6 +10929,51 @@
    },
    "quiet": false,
    "dry_run": false
+  },
+  {
+   "at": "2026-09-10T09:12:22+00:00",
+   "baselines": [],
+   "budget_exhausted": false,
+   "diagnostics": [],
+   "disabled_channels": [],
+   "dry_run": false,
+   "duration_s": 29.3,
+   "empty_parses": [],
+   "errors": [],
+   "filtered_out": 122,
+   "first_run": false,
+   "hidden_events": {
+    "price_drop": 1
+   },
+   "invariants": [],
+   "listings_seen": 203,
+   "missed_by": 0,
+   "new": 0,
+   "notified": [],
+   "ok": true,
+   "price_drops": 0,
+   "price_rises": 0,
+   "priced": 0,
+   "quiet": false,
+   "relisted": 0,
+   "removed": 0,
+   "requests_made": 13,
+   "searches_failed": 0,
+   "searches_run": 2,
+   "shape_drift": [],
+   "shut_out": [
+    "2021-2023 BMW M5"
+   ],
+   "skipped": false,
+   "strategies": {
+    "2021-2023-bmw-m5-310324": "embedded_json",
+    "bmw-m5-bargains-any-year-f2f097": "jsonld"
+   },
+   "unpriced": 2,
+   "validation_ok": true,
+   "warnings": [
+    "2021-2023 BMW M5: read 18 listing(s) and none passed your rules for it (11 too far away, 7 outside the year range). It is working - it just has nothing to show you."
+   ]
   },
   {
    "at": "2026-09-10T08:12:04+00:00",
@@ -11728,20 +11909,20 @@
    "consecutive_failures": 1
   },
   "ntfy": {
-   "last_ok": "2026-09-10T08:12:04+00:00",
+   "last_ok": "2026-09-10T13:27:08+00:00",
    "last_error": null,
    "disabled_at": null,
    "consecutive_failures": 0
   }
  },
  "last_run": {
-  "at": "2026-09-10T09:12:22+00:00",
+  "at": "2026-09-10T13:27:08+00:00",
   "ok": true,
-  "duration_s": 29.3,
+  "duration_s": 38.2,
   "searches_run": 2,
   "searches_failed": 0,
-  "listings_seen": 203,
-  "new": 0,
+  "listings_seen": 205,
+  "new": 2,
   "price_drops": 0,
   "price_rises": 0,
   "removed": 0,
@@ -11755,11 +11936,11 @@
    "2021-2023 BMW M5"
   ],
   "hidden_events": {
-   "price_drop": 1
+   "price_drop": 2
   },
   "skipped": false,
-  "missed_by": 0,
-  "requests_made": 13,
+  "missed_by": 254,
+  "requests_made": 19,
   "budget_exhausted": false,
   "empty_parses": [],
   "diagnostics": [],
@@ -11767,10 +11948,13 @@
   "disabled_channels": [],
   "first_run": false,
   "validation_ok": true,
-  "notified": [],
+  "notified": [
+   "ntfy: sent - 2 change(s)"
+  ],
   "errors": [],
   "warnings": [
-   "2021-2023 BMW M5: read 18 listing(s) and none passed your rules for it (11 too far away, 7 outside the year range). It is working - it just has nothing to show you."
+   "the last successful check was 4.2 hour(s) ago, not 30 minute(s) - the schedule dropped 7 run(s). Catching up now.",
+   "2021-2023 BMW M5: read 18 listing(s) and none passed your rules for it (12 too far away, 6 outside the year range). It is working - it just has nothing to show you."
   ],
   "strategies": {
    "2021-2023-bmw-m5-310324": "embedded_json",
@@ -11781,16 +11965,16 @@
  },
  "health": {
   "counts": {
-   "active": 63,
-   "filtered": 123,
+   "active": 65,
+   "filtered": 124,
    "unpriced": 2,
    "gone": 51,
-   "total": 237
+   "total": 240
   },
   "accounted": {
-   "delivered": 71,
+   "delivered": 73,
    "queued": 0,
-   "quiet": 116,
+   "quiet": 117,
    "unexplained": 0
   },
   "strategies": {
@@ -11798,9 +11982,9 @@
     "name": "2021-2023 BMW M5",
     "winner": "embedded_json",
     "scores": {
-     "jsonld": 11,
+     "jsonld": 12,
      "embedded_json": 18,
-     "anchors": 11,
+     "anchors": 12,
      "regex": 18
     },
     "working": [
@@ -11860,10 +12044,10 @@
    }
   },
   "drift": [],
-  "ok_streak": 25,
-  "runs_kept": 27,
+  "ok_streak": 26,
+  "runs_kept": 28,
   "budget": {
-   "used": 13,
+   "used": 19,
    "limit": 250,
    "exhausted": false
   },
@@ -11871,8 +12055,8 @@
   "diagnostics": []
  },
  "archive": {
-  "folders": 126,
-  "bytes": 211835,
+  "folders": 128,
+  "bytes": 213945,
   "html_bytes": 0,
   "image_bytes": 0
  },
