@@ -11,6 +11,7 @@ the repository they get committed to.
 
 from __future__ import annotations
 
+import gzip
 import html as htmllib
 import json
 import re
@@ -29,18 +30,25 @@ MAX_JSONLD = 40000
 # one, and half of it, which was not enough to rebuild the shape from.
 MAX_NEXT_DATA = 30000
 MAX_CONTEXTS = 25
+# A gzipped results page is ~70 KB; cap it so a pathological response
+# cannot commit megabytes into the repository.
+MAX_RAW_BYTES = 400_000
 CONTEXT_WINDOW = 180
 
 # Things whose presence or absence says something about how the page is built.
 MARKERS = {
     "listing path /a/": r"/a/",
     "listing id pattern": r"\d+_\d{5,}_",
+    "offer path /offers/": r"/offers?/",
+    "offer uuid": r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+    "offer anchor tag": r"(?i)<a\b[^>]*href=[\"'][^\"']*/offers?/",
     "json-ld blocks": r"application/ld\+json",
     "__NEXT_DATA__": r"__NEXT_DATA__",
     "window.__INITIAL_STATE__": r"__INITIAL_STATE__",
     "data-listing-id": r"data-listing-id",
     "srp / results container": r"(?i)search-?results|srp-|result-item|listing-item",
     "vehicle image CDN": r"vehicleimages",
+    "autoscout image CDN": r"pictures\.autoscout24",
     "price markup": r"(?i)price-amount|\bprice\b",
     "noscript block": r"<noscript",
     "meta refresh": r"(?i)http-equiv=[\"']?refresh",
@@ -80,7 +88,7 @@ def capture(url: str, response_text: str, status: int, elapsed_ms: int,
     # The context around anything resembling a listing link is what a broken
     # anchor strategy most needs.
     contexts: list[str] = []
-    for hit in re.finditer(r"/a/[^\"'\s<>]{0,120}", text):
+    for hit in re.finditer(r"/(?:a|offers?)/[^\"'\s<>]{0,140}", text):
         start = max(0, hit.start() - CONTEXT_WINDOW)
         end = min(len(text), hit.end() + CONTEXT_WINDOW)
         contexts.append(re.sub(r"\s+", " ", text[start:end]))
@@ -227,6 +235,30 @@ def to_markdown(data: dict[str, Any]) -> str:
     lines.append(data["head"])
     lines.append("```")
     return "\n".join(lines)
+
+
+def write_raw(text: str, slug: str, root: Path = DIAGNOSTIC_DIR,
+              limit: int = MAX_RAW_BYTES) -> Path | None:
+    """Save the page itself, gzipped, next to the summary.
+
+    The summary is deliberately small, but it is a description of the page
+    rather than the page: it was enough to prove the anchor strategies had
+    stopped scoring and not enough to rewrite them against. A gzipped capture
+    of a 740 KB results page is about 70 KB, which is a fair price for being
+    able to rebuild a parser from evidence instead of guesswork.
+    """
+    blob = (text or "").encode("utf-8", "replace")
+    if not blob:
+        return None
+    root.mkdir(parents=True, exist_ok=True)
+    path = root / f"{slug}.page.html.gz"
+    packed = gzip.compress(blob, 9)
+    if len(packed) > limit:
+        # Keep the head, which is where the structure lives, over a truncated
+        # tail nobody can parse.
+        packed = gzip.compress(blob[:limit * 12], 9)[:limit]
+    path.write_bytes(packed)
+    return path
 
 
 def write(data: dict[str, Any], slug: str, root: Path = DIAGNOSTIC_DIR) -> Path:

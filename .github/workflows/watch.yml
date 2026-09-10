@@ -9,10 +9,13 @@ name: Check AutoTrader
 
 on:
   schedule:
-    # Every 30 minutes. GitHub queues scheduled jobs on a best-effort basis and
-    # drops them under load, so */15 does not actually run every 15 minutes -
-    # the old workflow asked for 96 runs a day and got far fewer, unevenly.
-    - cron: '*/30 * * * *'
+    # Every 10 minutes for the duration of the soak test, so behaviour that
+    # only shows up over time (a real price drop, a car pulled from sale, the
+    # two-run grace period before a removal is called) gets a chance to happen
+    # while someone is watching. GitHub queues scheduled jobs on a best-effort
+    # basis and drops them under load, so this is an upper bound, not a
+    # promise. Back to '*/30 * * * *' once the soak is done.
+    - cron: '*/10 * * * *'
 
   # Check straight away when the watch list changes, instead of leaving someone
   # who just added a search waiting half an hour to find out whether it works.
@@ -70,6 +73,24 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
+      # One-shot: committing a .capture-raw marker asks the next run to save
+      # the live search page itself, gzipped, so a parser strategy can be
+      # rewritten against real markup instead of a guess at it. The marker
+      # deletes itself so this cannot become a standing cost.
+      - name: Capture the live page on request
+        if: hashFiles('.capture-raw') != ''
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          python -m autotrader --no-colour capture --raw | tee capture.log
+          rm -f .capture-raw
+          {
+            echo "## Raw page capture"
+            echo '```'
+            cat capture.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Check for new listings
         id: bot
         env:
@@ -107,7 +128,7 @@ jobs:
           # discarded a successful run's results, so add each path that is
           # actually there.
           for path in state.json docs/data.json archives config.json \
-                      NOTIFY.md diagnostics validation-report.md; do
+                      NOTIFY.md diagnostics validation-report.md .capture-raw; do
             if [ -e "$path" ]; then git add -A -- "$path"; fi
           done
           if git diff --cached --quiet; then

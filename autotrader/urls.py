@@ -160,8 +160,18 @@ def normalise_search_url(url: str) -> str:
 def page_url(url: str, page: int, per_page: int | None = None) -> str:
     """Return ``url`` for a 1-indexed results page.
 
-    autotrader.ca paginates with ``rcs`` (the zero-based index of the first
-    result) and ``rcp`` (results per page), so page N starts at (N-1)*rcp.
+    Two schemes are written at once because the site changed under us and both
+    are cheap to carry:
+
+    * the original autotrader.ca paginated with ``rcs`` (the zero-based index
+      of the first result) and ``rcp`` (results per page);
+    * the AutoScout24 platform it moved to in 2026 paginates with ``page``,
+      fixes the page size at 20, and ignores ``rcs`` entirely.
+
+    Sending only ``rcs`` meant every page after the first came back identical
+    to page 1, the scraper saw nothing new and stopped - so a 186-result search
+    was only ever read 20 cars deep. The unrecognised parameter is ignored by
+    whichever platform is actually serving, so writing both is safe.
     """
     parts = urlparse(url)
     query = dict(parse_qsl(parts.query, keep_blank_values=True))
@@ -170,6 +180,10 @@ def page_url(url: str, page: int, per_page: int | None = None) -> str:
     rcp = _as_int(query.get("rcp")) or per_page or 100
     query["rcp"] = str(rcp)
     query["rcs"] = str(max(0, (page - 1) * rcp))
+    if page > 1:
+        query["page"] = str(page)
+    else:
+        query.pop("page", None)
     return urlunparse((parts.scheme or "https", parts.netloc, parts.path, "",
                        urlencode(query), ""))
 

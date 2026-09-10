@@ -482,6 +482,57 @@ def cmd_prune(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_capture(args: argparse.Namespace) -> int:
+    """Save what the live site is serving right now, on purpose.
+
+    The bot captures a page by itself when a parse goes wrong, but a strategy
+    that quietly scores zero while another one carries the run is not "wrong"
+    enough to trigger that. This is how you get the evidence deliberately.
+    """
+    from . import diagnose
+    from .http import Fetcher
+    from .urls import page_url
+
+    cfg = Config.load(args.config)
+    searches = [s for s in cfg.active_searches
+                if not args.search or args.search in (s.id, s.name)]
+    if not searches:
+        print(_bad("no matching enabled search"))
+        return 2
+
+    scraping = cfg.get("scraping", {}) or {}
+    fetcher = Fetcher(
+        timeout=int(scraping.get("timeout_seconds", 30) or 30),
+        retries=int(scraping.get("retries", 3) or 0),
+        delay_ms=int(scraping.get("delay_ms", 1200) or 0),
+        user_agent=str(scraping.get("user_agent", "auto")),
+        budget=int(scraping.get("request_budget", 250) or 0),
+    )
+
+    failed = 0
+    for search in searches:
+        url = page_url(search.url, args.page,
+                       int(scraping.get("results_per_page", 50) or 50))
+        try:
+            response = fetcher.get(url)
+        except Exception as exc:  # noqa: BLE001 - report, do not traceback
+            print(_bad(f"{search.name}: {exc}"))
+            failed += 1
+            continue
+        data = diagnose.capture(response.url, response.text, response.status,
+                                response.elapsed_ms, search.name)
+        slug = search.id if args.page == 1 else f"{search.id}-p{args.page}"
+        written = diagnose.write(data, slug)
+        print(_ok(f"{search.name}: {data['listings_found']} listing(s), "
+                  f"strategy {data['strategy_used']}, scores {data['strategy_scores']}"))
+        print(f"   {DIM}{written}{RESET}")
+        if args.raw:
+            raw = diagnose.write_raw(response.text, slug)
+            if raw:
+                print(f"   {DIM}{raw} ({raw.stat().st_size:,} bytes gzipped){RESET}")
+    return 1 if failed else 0
+
+
 def cmd_migrate(args: argparse.Namespace) -> int:
     from .migrate import migrate
     return migrate(config_path=Path(args.config), state_path=Path(args.state),
@@ -638,6 +689,13 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--keep-days", type=int)
     p.add_argument("--dry-run", action="store_true")
     p.set_defaults(func=cmd_prune)
+
+    p = sub.add_parser("capture", help="save what the live search page looks like now")
+    p.add_argument("--search", help="only this search id or name")
+    p.add_argument("--page", type=int, default=1)
+    p.add_argument("--raw", action="store_true",
+                   help="also save the page itself, gzipped, for fixture work")
+    p.set_defaults(func=cmd_capture)
 
     p = sub.add_parser("migrate", help="import v1 data (seen_listings.json + archives)")
     p.add_argument("--dry-run", action="store_true")

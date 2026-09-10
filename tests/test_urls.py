@@ -111,3 +111,23 @@ def test_hyphenated_place_names_keep_their_hyphen():
 def test_a_search_url_has_no_listing_location():
     from autotrader.urls import location_from_url
     assert location_from_url("https://www.autotrader.ca/cars/bmw/m5/") == ("", "")
+
+
+def test_page_url_carries_both_pagination_schemes():
+    """The 2026 platform paginates with ``page``; the old one with ``rcs``."""
+    first = page_url("https://www.autotrader.ca/cars/bmw/m5/?prx=-2", 1, 50)
+    assert "page=" not in first
+    assert "rcs=0" in first
+
+    second = page_url("https://www.autotrader.ca/cars/bmw/m5/?prx=-2", 2, 50)
+    assert "page=2" in second
+    assert "rcs=50" in second
+    # The original query is preserved either way.
+    assert "prx=-2" in second
+
+
+def test_page_url_replaces_a_page_number_already_in_the_link():
+    """A link pasted from page 3 must not pin every request to page 3."""
+    pasted = "https://www.autotrader.ca/cars/bmw/m5/?page=3"
+    assert "page=" not in page_url(pasted, 1)
+    assert "page=2" in page_url(pasted, 2)

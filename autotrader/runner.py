@@ -301,6 +301,13 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                                 search.name)
                             report.diagnostics.append(
                                 str(diagnose.write(data, search.id)))
+                            if serious:
+                                # A description of the page is enough to see
+                                # that something moved; only the page itself is
+                                # enough to rewrite a strategy against.
+                                raw = diagnose.write_raw(first_page.text, search.id)
+                                if raw:
+                                    report.diagnostics.append(str(raw))
                         except Exception as exc:  # noqa: BLE001
                             log.warning("could not capture the page: %s", exc)
                     if serious:
@@ -325,6 +332,9 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                             first_page.elapsed_ms, search.name)
                         written = diagnose.write(data, search.id)
                         report.diagnostics.append(str(written))
+                        raw = diagnose.write_raw(first_page.text, search.id)
+                        if raw:
+                            report.diagnostics.append(str(raw))
                         log.warning("wrote a page capture to %s", written)
                     except Exception as exc:  # noqa: BLE001 - never fatal
                         log.warning("could not capture the page: %s", exc)
@@ -354,6 +364,9 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                             first_page.url, first_page.text, first_page.status,
                             first_page.elapsed_ms, search.name)
                         report.diagnostics.append(str(diagnose.write(data, search.id)))
+                        raw = diagnose.write_raw(first_page.text, search.id)
+                        if raw:
+                            report.diagnostics.append(str(raw))
                     except Exception as exc:  # noqa: BLE001
                         log.warning("could not capture the page: %s", exc)
                 # The parser has never been shown to work against the live
