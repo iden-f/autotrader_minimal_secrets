@@ -1,0 +1,58 @@
+{
+ "updated_at": "2026-09-10T07:50:39+00:00",
+ "first": {
+  "price_drop": {
+   "kind": "price_drop",
+   "at": "2026-09-10T01:48:53+00:00",
+   "listing_id": "32dc5029-f764-4c3e-95fe-da915a01ffdf",
+   "title": "BMW M5 M Carbon Exterior | Advance Driver Assist",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-m-carbon-exterior-advance-driver-assist-electric-grey-cat_ma13gr202609-32dc5029-f764-4c3e-95fe-da915a01ffdf",
+   "before": 139798,
+   "after": 139399,
+   "delivered": "deliberately quiet: hidden by your rules: price $139,399 above maximum $100,000",
+   "detail": "$399 off ($139,798 to $139,399)",
+   "run": {
+    "at": "2026-09-10T01:48:53+00:00",
+    "ok": true,
+    "listings_seen": 206,
+    "new": 37,
+    "price_drops": 0,
+    "price_rises": 0,
+    "removed": 0,
+    "relisted": 0,
+    "priced": 0,
+    "requests_made": 37,
+    "notified": [
+     "ntfy: sent - 35 change(s)"
+    ]
+   }
+  },
+  "priced": {
+   "kind": "priced",
+   "at": "2026-09-09T22:52:05+00:00",
+   "listing_id": "339aa830-e262-4886-9ab1-15319df7e984",
+   "title": "AutoTrader listing 339aa830-e262-4886-9ab1-15319df7e984",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-touring-m-performance-carbon-fibre-body-kit-gas-electric-hybrid-grey-cat_ma13gr202609-339aa830-e262-4886-9ab1-15319df7e984",
+   "before": null,
+   "after": 175895,
+   "delivered": "deliberately quiet: hidden by your rules: year 2026 above maximum 2023",
+   "detail": "listed with no price on 2026-09-09, then asked $175,895",
+   "run": {
+    "at": "2026-09-09T22:42:48+00:00",
+    "ok": true,
+    "listings_seen": 19,
+    "new": 0,
+    "price_drops": 0,
+    "price_rises": 0,
+    "removed": 0,
+    "requests_made": 2,
+    "notified": []
+   }
+  }
+ },
+ "waiting": [
+  "price_rise",
+  "removed",
+  "relisted"
+ ]
+}

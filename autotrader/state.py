@@ -316,6 +316,7 @@ class State:
                 # not a price drop - there is nothing to compare against - but
                 # it is the moment the car becomes judgeable, which is the
                 # whole reason for tracking it while it had no price.
+                entry["priced_at"] = now
                 change = Change(Change.PRICED, merged, new_price=listing.price)
         else:
             entry.pop("price_disputed", None)

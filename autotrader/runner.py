@@ -62,6 +62,8 @@ class RunReport:
     invariants: list[str] = field(default_factory=list)
     # Searches that read the site fine and kept nothing after your rules.
     shut_out: list[str] = field(default_factory=list)
+    # Changes on cars your rules hide: real, deliberately unannounced, counted.
+    hidden_events: dict[str, int] = field(default_factory=dict)
     notified: list[str] = field(default_factory=list)
     errors: list[str] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
@@ -87,6 +89,7 @@ class RunReport:
             "unpriced": self.unpriced, "priced": self.priced,
             "relisted": self.relisted, "baselines": self.baselines,
             "invariants": self.invariants, "shut_out": self.shut_out,
+            "hidden_events": self.hidden_events,
             "requests_made": self.requests_made,
             "budget_exhausted": self.budget_exhausted,
             "empty_parses": self.empty_parses,
@@ -116,6 +119,8 @@ class RunReport:
                 bits.append(f"{count} {label}")
         if self.baselines:
             bits.append(f"{len(self.baselines)} baselined")
+        for kind, count in sorted(self.hidden_events.items()):
+            bits.append(f"{count} {kind.replace('_', ' ')} on hidden car(s)")
         if len(bits) == 2:
             bits.append("nothing changed")
         return (", ".join(bits)
@@ -765,7 +770,14 @@ def run(cfg: Config | None = None, state: State | None = None, *,
         for lid, (listing, why) in rejected.items():
             if lid in owned:
                 continue
-            state.record(listing, filtered=True, filter_reason=why)
+            change = state.record(listing, filtered=True, filter_reason=why)
+            # A price that moved on a car your rules hide is still a fact about
+            # the market. Not alerting on it is right; reporting "0 price
+            # drops" when one demonstrably happened is not - the first real
+            # drop this bot ever saw was on a hidden car and went uncounted.
+            if change is not None and change.kind != Change.NEW:
+                report.hidden_events[change.kind] = (
+                    report.hidden_events.get(change.kind, 0) + 1)
             silence(lid, f"{HIDDEN_REASON_PREFIX}{why}")
 
         report.filtered_out = sum(

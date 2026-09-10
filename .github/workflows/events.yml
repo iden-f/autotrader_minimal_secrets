@@ -1,0 +1,105 @@
+# A standing record of the first time each kind of market event really happens.
+#
+# Deliberately outside the run path. It never scrapes, never notifies and never
+# writes the bot's state - it reads what the watcher has already stored and
+# appends to a ledger. Nothing here can hold up, wedge or slow down a check,
+# which is the whole reason it is a separate job rather than a few lines in the
+# runner.
+#
+# It runs after every watcher run, and hourly as well in case a watcher run is
+# dropped - GitHub's schedule is best-effort and this is the cheapest job in
+# the repository.
+
+name: Record market events
+
+on:
+  workflow_run:
+    workflows: ['Check AutoTrader']
+    types: [completed]
+  schedule:
+    - cron: '37 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: autotrader-events
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    # It reads a JSON file and writes two more. Anything longer than this is
+    # not slow, it is stuck.
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - run: pip install -r requirements.txt
+
+      - name: Look for anything that happened for the first time
+        id: look
+        run: |
+          set -o pipefail
+          python -m autotrader --no-colour events | tee events.log
+          {
+            echo "## Market events"
+            echo '```'
+            cat events.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, pathlib
+          record = json.loads(pathlib.Path("docs/events.json").read_text())
+          fresh = record.get("new_kinds") or []
+          print(f"fresh={','.join(fresh)}")
+          print(f"seen={len(record.get('first', {}))}")
+          PY
+
+      - name: Write it down
+        run: |
+          set -u
+          git config user.name  "autotrader-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for path in EVENTS.md docs/events.json; do
+            if [ -e "$path" ] || [ -n "$(git ls-files -- "$path")" ]; then
+              git add -A -- "$path"
+            fi
+          done
+          if git diff --cached --quiet; then
+            echo "nothing new"
+            exit 0
+          fi
+          git commit -q -m "Record market events [skip ci]"
+          for attempt in 1 2 3; do
+            # Abort a failed rebase before retrying: leaving the repository
+            # mid-rebase makes every later git command fail against it.
+            git rebase --abort 2>/dev/null || true
+            if git pull --rebase --autostash -q -X theirs origin main && \
+               git push -q origin HEAD:main; then
+              exit 0
+            fi
+            sleep $((attempt * 5))
+          done
+          git rebase --abort 2>/dev/null || true
+          echo "::warning::could not push the event ledger; it will be rewritten next run"
+
+      - name: Say so when something happens for the first time
+        if: steps.look.outputs.fresh != ''
+        run: |
+          echo "::notice::First-ever market event recorded: ${{ steps.look.outputs.fresh }}"
+          {
+            echo ""
+            echo "### First-ever: ${{ steps.look.outputs.fresh }}"
+            echo ""
+            sed -n '/^## /,$p' EVENTS.md | head -60
+          } >> "$GITHUB_STEP_SUMMARY"

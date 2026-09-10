@@ -627,6 +627,34 @@ def cmd_soak_note(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_events(args: argparse.Namespace) -> int:
+    """Record the first time each kind of market event really happened.
+
+    Read-only: it looks at what the watcher already stored and writes a
+    ledger. It never scrapes and never notifies, which is what keeps it
+    incapable of holding up or wedging a check.
+    """
+    from . import events
+
+    state = State.load(args.state)
+    record = events.update(state)
+    first, waiting = record.get("first", {}), record.get("waiting", [])
+
+    for kind, label in events.KINDS.items():
+        seen = first.get(kind)
+        if seen:
+            fresh = " (new)" if kind in record.get("new_kinds", []) else ""
+            print(_ok(f"{label}{fresh}: {str(seen['at'])[:19]} - "
+                      f"{seen.get('detail') or ''}"))
+            print(f"   {DIM}{seen.get('title', '')[:70]}{RESET}")
+            print(f"   {DIM}{seen.get('delivered', '')}{RESET}")
+        else:
+            print(f"-- {label}: still waiting")
+    print(f"\n   {DIM}{len(first)} of {len(events.KINDS)} seen; "
+          f"ledger written to {events.LEDGER_PATH}{RESET}")
+    return 0
+
+
 def cmd_migrate(args: argparse.Namespace) -> int:
     from .migrate import migrate
     return migrate(config_path=Path(args.config), state_path=Path(args.state),
@@ -799,6 +827,9 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("cycle")
     p.add_argument("total")
     p.set_defaults(func=cmd_soak_note)
+
+    p = sub.add_parser("events", help="record the first real market event of each kind")
+    p.set_defaults(func=cmd_events)
 
     p = sub.add_parser("migrate", help="import v1 data (seen_listings.json + archives)")
     p.add_argument("--dry-run", action="store_true")
