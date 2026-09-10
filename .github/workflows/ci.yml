@@ -10,6 +10,9 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    # A job with no ceiling can hold its concurrency group for GitHub's
+    # default six hours. Nothing here should ever take a fraction of that.
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:

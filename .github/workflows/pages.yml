@@ -35,6 +35,9 @@ concurrency:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    # A job with no ceiling can hold its concurrency group for GitHub's
+    # default six hours. Nothing here should ever take a fraction of that.
+    timeout-minutes: 10
     steps:
       # Check out the branch tip, not the commit that triggered this run. When
       # the watcher calls this workflow, it has just committed the results of

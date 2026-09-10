@@ -29,10 +29,33 @@ permissions:
   contents: write
 
 jobs:
+  # Removing the marker is a push to the same path, so without this the act of
+  # finishing a soak would start another one. This has to be its own job:
+  # hashFiles() is only available to a step, and a job-level `if` that calls it
+  # does not fail at run time - it stops the whole file compiling, so the
+  # workflow is invalid and nothing here can start at all. That is how it sat
+  # for five hours: every push produced an instant, jobless failure, and
+  # committing soak.json would have done nothing.
+  marker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      present: ${{ steps.look.outputs.present }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: look
+        run: |
+          if [ -f soak.json ]; then
+            echo "present=yes" >> "$GITHUB_OUTPUT"
+            echo "soak.json is here, so a soak was asked for."
+          else
+            echo "present=no" >> "$GITHUB_OUTPUT"
+            echo "No soak.json - this push removed the marker. Nothing to do."
+          fi
+
   soak:
-    # Removing the marker is a push to the same path, so without this the act
-    # of finishing a soak would start another one.
-    if: hashFiles('soak.json') != ''
+    needs: marker
+    if: needs.marker.outputs.present == 'yes'
     runs-on: ubuntu-latest
     # A backstop behind the loop's own deadline, not the thing relied on: 350
     # minutes of a job nobody can cancel is how the first soak came to hold a

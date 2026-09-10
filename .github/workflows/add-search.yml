@@ -24,6 +24,9 @@ concurrency:
 jobs:
   add:
     runs-on: ubuntu-latest
+    # A job with no ceiling can hold its concurrency group for GitHub's
+    # default six hours. Nothing here should ever take a fraction of that.
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
