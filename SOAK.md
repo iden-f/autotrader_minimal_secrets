@@ -10,3 +10,7 @@ One line per cycle, written by the bot as it ran against the live site.
 | 4/24 | 2026-09-10T01:19:53 | 79 | 0 | 0 | 0 | 0 | 0 | 0 | 48 | 5 | 9.1 | embedded_json, jsonld | clean |
 | 5/24 | 2026-09-10T01:26:53 | 79 | 0 | 0 | 0 | 0 | 0 | 0 | 47 | 5 | 9.2 | embedded_json, jsonld | clean |
 | 6/24 | 2026-09-10T01:34:13 | 79 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 47 | 17 | 30.3 | embedded_json, jsonld | clean |
+
+| # | at (UTC) | seen | new | drop | rise | priced | gone | back | unpriced | filtered | reqs | s | strategies | notes |
+|--:|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|---|---|
+| 7/24 | 2026-09-10T01:40:54 | 79 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 49 | 5 | 10.9 | embedded_json, jsonld | clean |
