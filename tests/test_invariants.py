@@ -259,3 +259,115 @@ class TestBackfillingOlderState:
         once = json.dumps(state.data, sort_keys=True)
         state.upgrade()
         assert json.dumps(state.data, sort_keys=True) == once
+
+
+class TestAScopeChangeIsABaseline:
+    """Widening a search does not discover cars; it stops ignoring them.
+
+    Reading ten pages instead of three brought in 120 cars that had been in
+    scope the whole time, and every one of them arrived labelled as a new
+    listing. The cars were real, the label was not.
+    """
+
+    def _shrink(self, html, keep):
+        import re
+        payload = json.loads(re.search(r'id="__NEXT_DATA__"[^>]*>(.*?)</script>',
+                                       html, re.S).group(1))
+        results = payload["props"]["pageProps"]["searchResults"]
+        results["listings"] = results["listings"][:keep]
+        return re.sub(r'(id="__NEXT_DATA__"[^>]*>).*?(</script>)',
+                      lambda m: m.group(1) + json.dumps(payload) + m.group(2),
+                      html, count=1, flags=re.S)
+
+    def test_a_first_run_still_announces_what_it_finds(self, bench):
+        """Nothing was in scope before, so these really are new to you."""
+        report = bench.run()
+        assert report.new > 0
+        assert not report.baselines
+        assert [c for batch in bench.sink.digests for c in batch]
+
+    def test_relaxing_a_filter_records_rather_than_announces(self, bench):
+        bench.cfg.set("filters.max_price", 80000)
+        bench.cfg.save()
+        bench.run()
+        bench.sink.digests.clear()
+
+        bench.cfg.set("filters.max_price", 200000)
+        bench.cfg.save()
+        report = bench.run()
+
+        assert report.new > 0, "the newly admitted cars were not noticed at all"
+        assert report.baselines == ["BMW M5"]
+        assert not [c for batch in bench.sink.digests for c in batch], \
+            "cars that were always in scope were announced as discoveries"
+
+    def test_and_says_so_rather_than_going_quiet_for_no_reason(self, bench):
+        bench.cfg.set("filters.max_price", 80000)
+        bench.cfg.save()
+        bench.run()
+
+        bench.cfg.set("filters.max_price", 200000)
+        bench.cfg.save()
+        report = bench.run()
+        assert any("what this search covers has changed" in w
+                   for w in report.warnings)
+
+    def test_reading_deeper_is_a_scope_change(self, bench):
+        """The exact case: three pages to ten."""
+        bench.cfg.set("scraping.max_pages", 3)
+        bench.cfg.save()
+        bench.run()
+        bench.sink.digests.clear()
+
+        bench.cfg.set("scraping.max_pages", 10)
+        bench.cfg.save()
+        assert bench.run().baselines == ["BMW M5"]
+
+    def test_editing_the_link_is_a_scope_change(self, bench):
+        bench.run()
+        bench.cfg.data["searches"][0]["url"] = f"{BASE}?rcp=25&prx=-2"
+        bench.cfg.save()
+        assert bench.run().baselines == ["BMW M5"]
+
+    def test_an_unchanged_search_is_not_a_baseline(self, bench):
+        bench.run()
+        assert bench.run().baselines == []
+        assert bench.run().baselines == []
+
+    def test_a_baseline_car_carries_its_reason_not_a_hole(self, bench):
+        bench.cfg.set("filters.max_price", 80000)
+        bench.cfg.save()
+        bench.run()
+        bench.cfg.set("filters.max_price", 200000)
+        bench.cfg.save()
+        report = bench.run()
+
+        assert not report.invariants
+        fresh = [e for e in bench.state().listings.values()
+                 if "starting point" in (e.get("quiet_reason") or "")]
+        assert fresh, "baselined cars have no record of why they were quiet"
+
+    def test_the_next_run_announces_normally_again(self, bench):
+        """A baseline is one run, not a mute switch."""
+        bench.cfg.set("scraping.max_pages", 3)
+        bench.cfg.save()
+        smaller = self._shrink(bench.html, 10)
+        bench.run(smaller)
+
+        bench.cfg.set("scraping.max_pages", 10)
+        bench.cfg.save()
+        bench.run(smaller)                      # the baseline
+        bench.sink.digests.clear()
+
+        report = bench.run(bench.html)          # nine more cars appear
+        assert report.new == 9
+        assert [c for batch in bench.sink.digests for c in batch]
+
+    def test_a_baseline_does_not_call_anything_removed(self, bench):
+        """Narrowing a search must not announce the excluded cars as sold."""
+        bench.run()
+        bench.cfg.set("filters.max_price", 80000)
+        bench.cfg.save()
+        for _ in range(3):
+            report = bench.run()
+        assert report.removed == 0

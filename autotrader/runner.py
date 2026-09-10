@@ -108,6 +108,10 @@ class RunReport:
 # Below this a search is too small for "half of last time" to mean anything.
 MIN_COUNT_FOR_COLLAPSE = 6
 
+# How a suppression records "your own rules hid this one", so a car that stops
+# being hidden can be recognised and told about rather than changing quietly.
+HIDDEN_REASON_PREFIX = "hidden by your rules: "
+
 
 def scope_of(search, cfg: Config) -> str:
     """A fingerprint of what a search is actually asking for.
@@ -570,12 +574,21 @@ def run(cfg: Config | None = None, state: State | None = None, *,
             owned.update(l.id for l in unpriced)
             report.unpriced += len(unpriced)
             for listing in kept:
+                # A car your rules used to hide and now admit is new to your
+                # watch, even though the bot has been storing it all along.
+                # Without this it changes state in silence and is never
+                # mentioned - and keeps "hidden by your rules" as its reason
+                # for being quiet, which is no longer true.
+                was_hidden = str((state.listings.get(listing.id) or {}).get(
+                    "quiet_reason") or "").startswith(HIDDEN_REASON_PREFIX)
                 change = state.record(listing, filtered=False)
+                if change is None and was_hidden:
+                    change = Change(Change.NEW, listing)
                 if change is None:
                     continue
                 if change.kind == Change.NEW:
                     entry = state.listings.get(listing.id, {})
-                    if entry.get("notified"):
+                    if entry.get("notified") and not was_hidden:
                         continue          # imported from v1: known, stay quiet
                     report.new += 1
                     if baseline:
@@ -687,7 +700,7 @@ def run(cfg: Config | None = None, state: State | None = None, *,
             if lid in owned:
                 continue
             state.record(listing, filtered=True, filter_reason=why)
-            silence(lid, f"hidden by your rules: {why}")
+            silence(lid, f"{HIDDEN_REASON_PREFIX}{why}")
 
         report.filtered_out = sum(
             1 for lid in seen_anywhere

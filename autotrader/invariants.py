@@ -106,6 +106,14 @@ def check(cfg, state, report=None, payload: dict[str, Any] | None = None
             "hidden-has-a-reason", "listings hidden by a rule that does not "
             "say which rule", unexplained))
 
+    stale = [lid for lid, e in listings.items()
+             if not e.get("filtered")
+             and str(e.get("quiet_reason") or "").startswith("hidden by your rules")]
+    if stale:
+        out.append(_violation(
+            "hidden-has-a-reason", "listings that are not hidden but still say "
+            "a rule is why they were kept quiet", stale))
+
     # ---- states that cannot both be true ---------------------------
     resurrected = [lid for lid, e in listings.items()
                    if e.get("status") == "active" and e.get("removed_at")]
