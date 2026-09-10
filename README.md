@@ -171,6 +171,11 @@ Secrets never go in it.
 | `filters.*` | empty | Extra rules on top of the link: price, year, odometer, keywords, sellers. |
 | `filters.require_price` | `false` | Do not alert on "call for price" cars. They are still tracked and shown in their own bucket. |
 | `health.disable_channel_after` | 2 | Runs of rejected credentials before a channel switches itself off. |
+| `health.expected_interval_minutes` | 30 | What the schedule asks for. Used to spot a doubled or dropped run. |
+| `health.min_interval_minutes` | 8 | Two scheduled checks closer than this tell you the same thing twice. |
+| `health.silent_after_hours` | 3 | No successful check for this long and the alarm goes up. |
+| `filters.near` / `filters.max_distance_km` | unset | Where you are, and how far you would drive. Enforced by the bot; the site ignores the link's own version. |
+| `filters.provinces` | unset | A region allowlist, if a radius is the wrong shape for it. |
 | `health.watch_page_shape` | `true` | Warn when the site changes how its pages are built, before the parser breaks. |
 | `archive.mode` | `metadata` | `off`, `metadata`, or `full` (also stores the ~200 KB page). |
 | `health.alert_after_failures` | 3 | Failed runs in a row before it warns you. |
@@ -301,6 +306,57 @@ cars really are new to you.
 The reverse holds too: relaxing a filter admits cars the bot has been storing
 all along, and those are announced, because they are new to your watch even
 though they are not new to the bot.
+
+## Where the car is
+
+The 2026 platform ignores the `prx`/`loc` parameters a pasted link carries, so
+a search that says "near V6N 3B5" happily returns cars in Ontario, Alberta and
+Quebec. Nothing fails; the constraint is simply dropped.
+
+Set `near` and `max_distance_km` on a search and the bot enforces it from the
+city and province it already reads off each listing:
+
+```bash
+python -m autotrader set near "V6N 3B5" --search "2021-2023 BMW M5"
+python -m autotrader set max_distance_km 250 --search "2021-2023 BMW M5"
+python -m autotrader set provinces '["BC"]' --search "Civic"   # or just a region
+```
+
+A car it cannot place is **never** excluded — the place table is the thing most
+likely to be incomplete, and hiding a match because a town is missing from it
+would be the worst failure this bot can have. A town it has never heard of is
+still excluded when nothing in its province could possibly be in range, which
+is honest rather than lucky. The dashboard says what is being enforced, because
+a distance the bot applies itself appears nowhere in the link.
+
+## When the schedule lets you down
+
+GitHub fires cron late, early, twice, or not at all. Measured here: a gap of
+4 hours 46 minutes on a schedule asking for one run every thirty, and, the same
+evening, two runs five minutes apart.
+
+- A **second scheduled run** minutes after a successful one stands down without
+  spending a request. Only a schedule is deduplicated — a run you asked for
+  always happens, and `--force` overrides it either way.
+- A **missed window** is measured and said out loud: "the last successful check
+  was 4.8 hours ago, not 30 minutes; the schedule dropped 9 runs."
+- **Silence is watched by something else.** A watcher cannot report its own
+  absence — the run that would tell you is the run that is not happening — so a
+  separate hourly job reads the state file and raises the alarm when no check
+  has succeeded for three hours. Once per silence, not once an hour.
+
+## The first time each thing really happens
+
+`EVENTS.md` is a ledger of the first genuine price drop, price rise, removal,
+relisting, and call-for-price car naming a figure — with the before and after
+and what was delivered about each. It is written by a job that only reads what
+the watcher has already stored: it never scrapes, never notifies and never
+writes state, so nothing in it can hold up a check.
+
+It exists because the run counters could not see two events that had already
+happened: a change on a car your rules hide goes through a path that records
+it but classifies nothing, so a real $399 price drop and a real call-for-price
+car naming $175,895 were both invisible in every number the bot printed.
 
 ## Upgrading from v1
 
