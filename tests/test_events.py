@@ -260,3 +260,31 @@ class TestASayingItWasAGuessWhenItWasNot:
         again = events.update(state, *paths)
         assert again["first"]["price_drop"]["delivered"].startswith("delivered at")
         assert "queued" not in paths[0].read_text(encoding="utf-8")
+
+    def test_upgrade_takes_the_mark_off_a_delivery_that_was_watched(self, tmp_path):
+        """The car it was found on is gone, so nothing else would clear it.
+
+        The reconstruction copies last_seen. A notified_at that is neither
+        last_seen nor first_seen was written by a run that watched itself
+        send - it is observed, and the flag has no business staying on it.
+        """
+        state = State(path=tmp_path / "s.json")
+        entry = car(state, price=100000)
+        entry["last_seen"] = "2026-09-10T02:59:59+00:00"
+        entry["notified"] = True
+        entry["notified_at"] = "2026-09-10T08:12:04+00:00"   # a real delivery
+        entry["notified_at_backfilled"] = True
+
+        state.upgrade()
+        assert "notified_at_backfilled" not in state.listings["1"]
+
+    def test_upgrade_leaves_a_genuinely_reconstructed_mark_alone(self, tmp_path):
+        state = State(path=tmp_path / "s.json")
+        entry = car(state, price=100000)
+        entry["last_seen"] = "2026-09-10T02:59:59+00:00"
+        entry["notified"] = True
+        entry["notified_at"] = "2026-09-10T02:59:59+00:00"   # copied from it
+        entry["notified_at_backfilled"] = True
+
+        state.upgrade()
+        assert state.listings["1"]["notified_at_backfilled"] is True

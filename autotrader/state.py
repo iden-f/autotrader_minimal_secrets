@@ -158,6 +158,21 @@ class State:
                 entry["notified_at"] = entry.get("last_seen") or entry.get("first_seen")
                 entry["notified_at_backfilled"] = True
                 filled["notified_at"] += 1
+
+        # And take the mark off anything that has since been delivered about
+        # for real. The reconstruction copies last_seen (or first_seen); a
+        # stamp that is neither was written by a run that watched itself send,
+        # so it is observed and saying otherwise understates what is known.
+        # The car this was found on is gone from the market, so no future
+        # delivery would ever have cleared it.
+        for entry in self.listings.values():
+            if not entry.get("notified_at_backfilled"):
+                continue
+            reconstructed = entry.get("last_seen") or entry.get("first_seen")
+            if entry.get("notified_at") and entry["notified_at"] != reconstructed:
+                entry.pop("notified_at_backfilled", None)
+                filled["notified_at_observed"] = \
+                    filled.get("notified_at_observed", 0) + 1
         return filled
 
     def import_legacy(self, legacy_path: Path = LEGACY_SEEN_PATH) -> int:
