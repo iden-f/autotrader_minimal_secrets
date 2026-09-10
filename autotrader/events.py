@@ -271,10 +271,10 @@ def update(state, ledger_path: Path = LEDGER_PATH,
         except (json.JSONDecodeError, OSError):
             previous = {}
     record = merge(scan(state), previous)
-    data_path.parent.mkdir(parents=True, exist_ok=True)
-    data_path.write_text(json.dumps(record, indent=1, ensure_ascii=False),
-                         encoding="utf-8")
-    ledger_path.write_text(render(record), encoding="utf-8")
+    # Written into the file, not just returned: the job that runs this reads
+    # the file back to decide whether anything happened for the first time,
+    # and a field that only exists in memory is a field it never sees.
     record["new_kinds"] = [k for k in record["first"]
                            if k not in (previous.get("first") or {})]
+    save(record, data_path, ledger_path)
     return record

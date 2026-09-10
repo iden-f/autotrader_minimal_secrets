@@ -70,7 +70,7 @@ jobs:
           import json, pathlib
           record = json.loads(pathlib.Path("docs/events.json").read_text())
           fresh = record.get("new_kinds") or []
-          print(f"fresh={','.join(fresh)}")
+          print("fresh=" + ",".join(fresh))
           print(f"seen={len(record.get('first', {}))}")
           PY
 

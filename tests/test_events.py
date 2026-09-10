@@ -178,3 +178,25 @@ class TestItCannotDisturbTheBot:
         record = events.update(state, *paths)
         assert record["first"] == {}
         assert json.loads(paths[1].read_text())["waiting"]
+
+
+class TestWhatTheJobReadsBack:
+    """The job decides whether to shout from the file, not from memory."""
+
+    def test_new_kinds_is_written_to_the_file(self, tmp_path, paths):
+        state = State(path=tmp_path / "s.json")
+        car(state, price=100000)
+        car(state, price=95000)
+        events.update(state, *paths)
+
+        written = json.loads(paths[1].read_text(encoding="utf-8"))
+        assert written["new_kinds"] == ["price_drop"]
+
+    def test_it_empties_once_the_event_is_old_news(self, tmp_path, paths):
+        state = State(path=tmp_path / "s.json")
+        car(state, price=100000)
+        car(state, price=95000)
+        events.update(state, *paths)
+        events.update(state, *paths)
+
+        assert json.loads(paths[1].read_text(encoding="utf-8"))["new_kinds"] == []

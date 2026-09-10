@@ -1,5 +1,5 @@
 {
- "updated_at": "2026-09-10T07:56:02+00:00",
+ "updated_at": "2026-09-10T08:04:40+00:00",
  "first": {
   "price_drop": {
    "kind": "price_drop",
@@ -55,5 +55,6 @@
   "removed",
   "relisted"
  ],
- "silence_reported": ""
+ "silence_reported": "",
+ "new_kinds": []
 }
