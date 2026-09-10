@@ -34,7 +34,10 @@ jobs:
     # of finishing a soak would start another one.
     if: hashFiles('soak.json') != ''
     runs-on: ubuntu-latest
-    timeout-minutes: 350
+    # A backstop behind the loop's own deadline, not the thing relied on: 350
+    # minutes of a job nobody can cancel is how the first soak came to hold a
+    # concurrency group for hours after it had stopped doing anything.
+    timeout-minutes: 200
     steps:
       - uses: actions/checkout@v4
 
@@ -62,9 +65,24 @@ jobs:
 
           CYCLES=$(python -c "import json;print(int(json.load(open('soak.json'))['cycles']))")
           GAP=$(python -c "import json;print(int(json.load(open('soak.json'))['interval_minutes'])*60)")
-          echo "soaking for $CYCLES cycles, ${GAP}s apart"
+
+          # A hard deadline, computed once. A loop that decides when to stop
+          # from inside itself is a loop that can decide not to - the first
+          # soak kept checking the site for hours after it had stopped being
+          # able to record anything, holding a runner the whole time.
+          BUDGET=$(( CYCLES * GAP + 600 ))
+          DEADLINE=$(( $(date -u +%s) + BUDGET ))
+          # And a dead man's switch. Cycles that cannot write anything down
+          # are not a soak, they are a scraper nobody asked for.
+          MUTE=0
+          MUTE_LIMIT=3
+          echo "soaking for $CYCLES cycles, ${GAP}s apart, deadline in $((BUDGET / 60))m"
 
           for i in $(seq 1 "$CYCLES"); do
+            if [ "$(date -u +%s)" -ge "$DEADLINE" ]; then
+              echo "::warning::deadline reached at cycle $i; stopping"
+              break
+            fi
             echo "::group::cycle $i/$CYCLES"
             START=$(date -u +%s)
             python -m autotrader --no-colour run 2>&1 | tee cycle.log || true
@@ -79,19 +97,21 @@ jobs:
                 git add -A -- "$path"
               fi
             done
+            PUSHED=0
             if ! git diff --cached --quiet; then
               git commit -q -m "Soak cycle $i/$CYCLES [skip ci]"
               for attempt in 1 2 3 4 5; do
                 # A conflict leaves the repository mid-rebase, and every later
                 # git command in the loop then fails against that. Clear it
-                # before trying again, or one bad cycle wedges the whole soak
-                # and it holds the concurrency group for hours doing nothing.
+                # before trying again, and again afterwards, so the loop never
+                # carries a half-finished rebase into the next cycle.
                 git rebase --abort 2>/dev/null || true
                 # state.json and docs/data.json are generated: whatever this
                 # cycle just wrote is the newer truth, so take it rather than
                 # asking a batch job to resolve a merge.
                 if git pull --rebase --autostash -q -X theirs origin main && \
                    git push -q origin HEAD:main; then
+                  PUSHED=1
                   break
                 fi
                 echo "push attempt $attempt failed; retrying"
@@ -100,8 +120,20 @@ jobs:
               git rebase --abort 2>/dev/null || true
             else
               echo "cycle $i changed nothing"
+              PUSHED=1
             fi
             echo "::endgroup::"
+
+            if [ "$PUSHED" -eq 1 ]; then
+              MUTE=0
+            else
+              MUTE=$((MUTE + 1))
+              echo "::warning::cycle $i recorded nothing ($MUTE in a row)"
+              if [ "$MUTE" -ge "$MUTE_LIMIT" ]; then
+                echo "::error::$MUTE cycles running have recorded nothing - stopping rather than scraping the site to no purpose"
+                break
+              fi
+            fi
 
             if [ "$i" -lt "$CYCLES" ]; then
               # Sleep the remainder of the interval, so a slow cycle does not
