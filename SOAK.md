@@ -1,0 +1,7 @@
+# Soak log
+
+One line per cycle, written by the bot as it ran against the live site.
+
+| # | at (UTC) | seen | new | drop | rise | priced | gone | unpriced | filtered | reqs | s | strategies | notes |
+|--:|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|---|---|
+| 1/24 | 2026-09-10T00:58:54 | 79 | 0 | 0 | 0 | 0 | 6 | 0 | 49 | 5 | 10.8 | embedded_json, jsonld | drift anchors, regex started working again<br>drift anchors, regex started working again |
