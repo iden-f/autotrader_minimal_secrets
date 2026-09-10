@@ -149,3 +149,88 @@ def test_the_watcher_is_still_scheduled():
     triggers = doc.get(True) or doc.get("on") or {}
     assert "schedule" in triggers, "the watcher has no schedule"
     assert triggers["schedule"], "the watcher's schedule is empty"
+
+
+def _triggers_on(doc: dict) -> list[str]:
+    """Names of the workflows whose completion starts this one."""
+    on = doc.get(True) or doc.get("on") or {}
+    if not isinstance(on, dict):
+        return []
+    ran = on.get("workflow_run") or {}
+    return [str(n) for n in (ran.get("workflows") or [])]
+
+
+GUARD = "github.event.workflow_run.event"
+
+
+def _job_guarded(name: str, jobs: dict, seen: frozenset = frozenset()) -> bool:
+    """Will this job stay put when the chain it did not ask for arrives?
+
+    Either it asks about the triggering run itself, or it waits on a job that
+    does and stands down when that job stands down. `always()` alone is not
+    enough: a job that runs even when its dependency was skipped still
+    completes the workflow, and completing is what starts the next one.
+    """
+    job = jobs.get(name) or {}
+    condition = str(job.get("if", ""))
+    if GUARD in condition:
+        return True
+    needs = job.get("needs") or []
+    if isinstance(needs, str):
+        needs = [needs]
+    return bool(needs) and all(
+        f"needs.{dep}.result != 'skipped'" in condition
+        and dep not in seen
+        and _job_guarded(dep, jobs, seen | {name})
+        for dep in needs)
+
+
+def _guarded(doc: dict) -> bool:
+    """Does every job here refuse a chained trigger it did not want?"""
+    jobs = doc.get("jobs") or {}
+    return bool(jobs) and all(_job_guarded(name, jobs) for name in jobs)
+
+
+def test_chained_workflows_cannot_bounce_forever():
+    """The watcher starts the ledger, and the ledger starts the watcher.
+
+    That arrangement exists because GitHub serves neither schedule reliably
+    and they are not dropped together - but on its own it is two workflows
+    taking turns for ever, a runner each, until somebody notices the bill.
+    One side of any such loop has to refuse a chain it did not want.
+    """
+    docs = {}
+    for path in WORKFLOWS:
+        doc = _load(path)
+        docs[str(doc.get("name") or path.stem)] = doc
+
+    starts: dict[str, set[str]] = {name: set() for name in docs}
+    for name, doc in docs.items():
+        for upstream in _triggers_on(doc):
+            if upstream in starts:
+                starts[upstream].add(name)
+
+    def cycle_from(start: str) -> list[str] | None:
+        stack = [(start, [start])]
+        while stack:
+            node, path = stack.pop()
+            for nxt in starts.get(node, ()):
+                if nxt == start:
+                    return path
+                if nxt not in path:
+                    stack.append((nxt, path + [nxt]))
+        return None
+
+    seen: set[frozenset[str]] = set()
+    for name in docs:
+        loop = cycle_from(name)
+        if not loop or frozenset(loop) in seen:
+            continue
+        seen.add(frozenset(loop))
+        assert any(_guarded(docs[n]) for n in loop), (
+            "workflow_run loop with nothing to break it: "
+            + " -> ".join(loop + [loop[0]])
+            + ". One of them must gate every job on "
+            "github.event.workflow_run.event, so only a run the scheduler "
+            "started can start the next one."
+        )

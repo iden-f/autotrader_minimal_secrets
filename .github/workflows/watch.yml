@@ -32,6 +32,17 @@ on:
       - 'config.json'
       - '.github/workflows/watch.yml'
 
+  # And on the ledger's schedule as well as this one. Both are drawn from the
+  # same best-effort pool, but they are not dropped together: this morning the
+  # watcher's cron was served none of its eight slots in four hours while the
+  # ledger's was served one - and that one run is what noticed the silence.
+  # Riding on it too turns two unreliable schedules into one less unreliable
+  # one, which is the only lever available here. The API cannot be asked to
+  # start a run: this token has no actions: write.
+  workflow_run:
+    workflows: ['Record market events']
+    types: [completed]
+
   workflow_dispatch:
     inputs:
       dry_run:
@@ -53,6 +64,12 @@ permissions:
 
 jobs:
   check:
+    # Only a ledger run that GitHub's scheduler started may start a check. The
+    # ledger also runs after every check, and letting that one start another
+    # check is two workflows taking turns forever with a runner each.
+    if: >-
+      github.event_name != 'workflow_run'
+      || github.event.workflow_run.event == 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -123,7 +140,8 @@ jobs:
           # for always happens. GitHub fires cron late, early, twice or not at
           # all, and two checks minutes apart cost requests to tell you the
           # same thing.
-          AUTOTRADER_SCHEDULED: ${{ github.event_name == 'schedule' && '1' || '' }}
+          AUTOTRADER_SCHEDULED: ${{ (github.event_name == 'schedule'
+            || github.event_name == 'workflow_run') && '1' || '' }}
         run: |
           set -o pipefail
           python -m autotrader --no-colour run ${{ inputs.dry_run && '--dry-run' || '' }} | tee run.log
@@ -211,7 +229,11 @@ jobs:
   # Refresh the published dashboard with whatever the run just found.
   publish:
     needs: check
-    if: ${{ always() && !inputs.dry_run }}
+    # always() runs this even when the check was skipped, which used to be
+    # harmless and is not any more: a run that publishes without checking
+    # still counts as this workflow completing, which starts the ledger,
+    # which starts this workflow. Nothing to publish when nothing ran.
+    if: ${{ always() && !inputs.dry_run && needs.check.result != 'skipped' }}
     permissions:
       contents: write
     uses: ./.github/workflows/pages.yml
