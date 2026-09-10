@@ -80,3 +80,46 @@ def bench(tmp_path, monkeypatch, fixture_html, archive_html):
 
     return type("Bench", (), {"cfg": cfg, "sink": sink, "run": staticmethod(go),
                               "path": tmp_path, "cards": fixture_html("search_cards")})
+
+
+# --- the suite must not write to the repository it is testing ---------------
+#
+# A test that forgets to chdir into tmp_path runs the real bot in the real
+# working tree. That happened: monkeypatch.undo() in one test reverted the
+# fixture's own chdir along with the patch it meant to remove, so the run
+# after it provisioned a fresh ntfy topic and rewrote NOTIFY.md here. Nothing
+# failed. It was one `git add -A` from redirecting live alerts to a topic
+# nobody is subscribed to, and the only reason it was caught is that a rebase
+# happened to conflict on the file.
+#
+# So the suite watches its own hands. These are the files the bot writes; if
+# running the tests changes any of them, the tests are not running where they
+# think they are.
+_REPO_FILES = ("NOTIFY.md", "config.json", "state.json", "docs/data.json",
+               "EVENTS.md", "docs/events.json", "SETUP.md")
+
+
+def _fingerprint() -> dict[str, str]:
+    import hashlib
+    out = {}
+    for name in _REPO_FILES:
+        path = ROOT / name
+        try:
+            out[name] = hashlib.sha256(path.read_bytes()).hexdigest()
+        except OSError:
+            out[name] = "absent"
+    return out
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _repo_is_left_alone():
+    before = _fingerprint()
+    yield
+    changed = [name for name, digest in _fingerprint().items()
+               if before.get(name) != digest]
+    assert not changed, (
+        "the test suite wrote to the repository it is testing: "
+        + ", ".join(changed)
+        + ". A test is running outside tmp_path - look for a missing "
+          "monkeypatch.chdir, or a monkeypatch.undo() that reverted one."
+    )

@@ -577,7 +577,7 @@ class TestAnOwedAlertSurvives:
 class TestAlertsMovingHouse:
     """A changed ntfy topic is silence that looks like "nothing happened"."""
 
-    def test_a_new_topic_is_announced_on_the_new_one(self, bench):
+    def test_a_new_topic_is_announced_on_both(self, bench):
         bench.cfg.set("notifications.channels.ntfy.topic", "autotrader-first")
         bench.cfg.save()
         bench.run()
@@ -591,6 +591,10 @@ class TestAlertsMovingHouse:
         told = " ".join(body for _, body in bench.sink.alerts)
         assert "autotrader-first" in told and "autotrader-second" in told
         assert any("resubscribe" in w for w in report.warnings)
+        # And at the old address, which is the only one anybody is subscribed
+        # to at this point. Saying it only at the new one is saying it to
+        # nobody.
+        assert "autotrader-first" in bench.sink.aimed_at
 
     def test_an_unchanged_topic_says_nothing(self, bench):
         bench.cfg.set("notifications.channels.ntfy.topic", "autotrader-steady")
@@ -663,11 +667,17 @@ class TestBeingToldAboutIt:
         bench.run()
         assert any("do not add up" in s for s, _ in bench.sink.alerts)
 
-    def test_clearing_up_is_noted(self, bench, monkeypatch):
+    def test_clearing_up_is_noted(self, bench):
         bench.run()
-        self._break(monkeypatch)
-        bench.run()
-        monkeypatch.undo()
+        # A nested patcher, not monkeypatch.undo(). undo() reverts *every*
+        # patch on the shared fixture - including the chdir into tmp_path -
+        # so the third run here executed in the real repository, provisioned
+        # itself a new ntfy topic and rewrote NOTIFY.md in the working tree.
+        # It was one `git add -A` away from redirecting live alerts to a
+        # topic nobody is subscribed to.
+        with pytest.MonkeyPatch.context() as broken:
+            self._break(broken)
+            bench.run()
         report = bench.run()
         assert any("cleared" in w for w in report.warnings)
         assert report.ok

@@ -976,8 +976,17 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                          f"to that one will simply go quiet - resubscribe.")
                 report.warnings.append(moved)
                 if notify:
-                    report.channel_results.extend(notifiers.alert(
-                        cfg, "AutoTrader watcher: your alerts moved", moved, env))
+                    subject = "AutoTrader watcher: your alerts moved"
+                    report.channel_results.extend(
+                        notifiers.alert(cfg, subject, moved, env))
+                    # And on the topic being left behind, because that is the
+                    # one the phone is subscribed to. Announcing a move only
+                    # at the new address tells an empty room: the person who
+                    # needs to hear it is, by definition, still listening to
+                    # the old one.
+                    report.channel_results.extend(
+                        notifiers.alert(cfg, subject, moved, env,
+                                        notifiers=_old_topic(cfg, previous, env)))
 
         # ---- health -------------------------------------------------
         _health_check(cfg, state, report, env, blocked_searches,
@@ -1141,6 +1150,24 @@ def _publish_validation(report: RunReport, assessments: list[validate.Assessment
             log.warning("could not write the job summary: %s", exc)
 
     print("\n" + validate.report_text(assessments, ok=report.validation_ok) + "\n")
+
+
+def _old_topic(cfg: Config, previous: str,
+               env: dict[str, str]) -> list[notifiers.Notifier]:
+    """A channel pointed at the topic the bot has just stopped using.
+
+    Built from the current ntfy settings with the old topic put back, so the
+    server, priority and auth are whatever they were - only the address
+    changes. Returns nothing when ntfy is not the channel that moved, which
+    is the only case this is for.
+    """
+    channel = dict(cfg.get("notifications.channels.ntfy") or {})
+    if not channel or not previous:
+        return []
+    channel["topic"] = previous
+    channel["enabled"] = True
+    return [notifiers.NtfyNotifier(channel, env,
+                                   cfg.get("notifications", {}) or {})]
 
 
 def _health_check(cfg: Config, state: State, report: RunReport,

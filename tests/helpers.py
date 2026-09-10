@@ -13,13 +13,26 @@ ORIGINAL_ALERT = _notifiers.alert
 
 def use_channels(monkeypatch, runner_module, channels, alert_channels=None):
     """Point the runner's notification calls at specific test doubles."""
+    targets = alert_channels if alert_channels is not None else channels
+
+    def alert(c, s, b, e=None, notifiers=None):
+        # A send aimed at particular channels - the runner does this to reach
+        # a topic it is about to stop using - is recorded rather than
+        # performed. The doubles still receive the message, so nothing here
+        # ever touches the real service, and the test can still see where the
+        # runner meant to send it.
+        if notifiers is not None:
+            for channel in notifiers:
+                where = str((channel.config or {}).get("topic") or channel.name)
+                for double in targets:
+                    if hasattr(double, "aimed_at"):
+                        double.aimed_at.append(where)
+        return ORIGINAL_ALERT(c, s, b, e, targets)
+
     monkeypatch.setattr(
         runner_module.notifiers, "dispatch",
         lambda c, ch, r=None, e=None, n=None: ORIGINAL_DISPATCH(c, ch, r, e, channels))
-    monkeypatch.setattr(
-        runner_module.notifiers, "alert",
-        lambda c, s, b, e=None, n=None: ORIGINAL_ALERT(
-            c, s, b, e, alert_channels if alert_channels is not None else channels))
+    monkeypatch.setattr(runner_module.notifiers, "alert", alert)
 
 
 class FakeFetcher:
@@ -68,6 +81,9 @@ class Capture(Notifier):
         super().__init__({}, {}, {})
         self.digests = []
         self.alerts = []
+        # Where the runner aimed a send that named its own channels, rather
+        # than letting the configured ones be picked.
+        self.aimed_at = []
 
     def _send(self, changes, run):
         self.digests.append(list(changes))
