@@ -65,9 +65,14 @@ jobs:
             python -m autotrader --no-colour run 2>&1 | tee cycle.log || true
             python -m autotrader --no-colour soak-note "$i" "$CYCLES" || true
 
+            # Existence is not the test: a path this cycle deleted is gone
+            # from disk, and guarding on that alone leaves the deletion
+            # unstaged and the file resurrected by the next checkout.
             for path in state.json docs/data.json archives config.json \
                         NOTIFY.md diagnostics validation-report.md SOAK.md; do
-              if [ -e "$path" ]; then git add -A -- "$path"; fi
+              if [ -e "$path" ] || [ -n "$(git ls-files -- "$path")" ]; then
+                git add -A -- "$path"
+              fi
             done
             if ! git diff --cached --quiet; then
               git commit -q -m "Soak cycle $i/$CYCLES [skip ci]"
@@ -96,7 +101,11 @@ jobs:
         run: |
           set -u
           rm -f soak.json
-          git add -A -- soak.json SOAK.md 2>/dev/null || true
+          for path in soak.json SOAK.md; do
+            if [ -e "$path" ] || [ -n "$(git ls-files -- "$path")" ]; then
+              git add -A -- "$path"
+            fi
+          done
           if ! git diff --cached --quiet; then
             git commit -q -m "Soak finished [skip ci]"
             for attempt in 1 2 3 4 5; do
