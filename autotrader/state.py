@@ -343,9 +343,14 @@ class State:
         entry = self.listings.get(listing_id)
         if entry is None:
             return
-        entry["notified"] = True
         entry["quiet_reason"] = reason[:200]
-        entry.pop("pending", None)
+        if entry.get("pending"):
+            # It is already owed an alert. Deciding to keep quiet about it from
+            # now on is not a licence to cancel a debt: a price drop detected
+            # while the car still qualified is real news, and dropping it here
+            # is exactly the silent loss this whole path exists to prevent.
+            return
+        entry["notified"] = True
 
     def mark_notified(self, listing_ids: Iterable[str]) -> None:
         for lid in listing_ids:
@@ -526,8 +531,8 @@ class State:
             cutoff = (datetime.now(timezone.utc)
                       - timedelta(days=keep_days)).isoformat()
             for lid, entry in list(self.listings.items()):
-                if entry.get("status") != "gone":
-                    continue
+                if entry.get("status") != "gone" or entry.get("pending"):
+                    continue          # never forget a car still owed an alert
                 if (entry.get("removed_at") or entry.get("last_seen") or "") < cutoff:
                     del self.listings[lid]
                     removed += 1
@@ -536,7 +541,8 @@ class State:
             # would make the next run rediscover and re-announce it, which is
             # the one thing state exists to prevent.
             ordered = sorted((kv for kv in self.listings.items()
-                              if kv[1].get("status") == "gone"),
+                              if kv[1].get("status") == "gone"
+                              and not kv[1].get("pending")),
                              key=lambda kv: kv[1].get("last_seen") or "")
             for lid, _ in ordered[: len(self.listings) - keep_max]:
                 del self.listings[lid]

@@ -531,3 +531,44 @@ class TestAQueueThatNeverDrains:
 
         bench.run()                       # channels are back
         assert invariants.check(bench.cfg, bench.state()) == []
+
+
+class TestAnOwedAlertSurvives:
+    """Deciding to keep quiet from now on is not a licence to cancel a debt."""
+
+    def test_hiding_a_car_does_not_cancel_an_alert_it_is_owed(self, tmp_path):
+        from autotrader.state import Change
+        from autotrader.listing import Listing
+
+        state = State(path=tmp_path / "s.json")
+        car = Listing(id="1", url="u", title="2021 BMW M5", price=90000,
+                      price_source="detail", search_id="s")
+        state.record(car)
+        state.defer([Change(Change.PRICE_DROP, car, old_price=99000, new_price=90000)])
+
+        state.silence("1", "hidden by your rules: price above maximum")
+
+        assert state.listings["1"]["pending"], "the owed alert was thrown away"
+        assert state.listings["1"]["notified"] is False
+        assert state.listings["1"]["quiet_reason"]
+        assert [c.kind for c in state.pending_changes()] == [Change.PRICE_DROP]
+
+    def test_a_car_with_nothing_owed_is_simply_silenced(self, tmp_path):
+        from autotrader.listing import Listing
+        state = State(path=tmp_path / "s.json")
+        state.record(Listing(id="1", url="u", title="t", price=9, search_id="s"))
+        state.silence("1", "hidden by your rules: too cheap")
+
+        assert state.listings["1"]["notified"] is True
+        assert not state.listings["1"].get("pending")
+
+    def test_pruning_never_forgets_a_car_still_owed_an_alert(self, tmp_path):
+        state = State(path=tmp_path / "s.json")
+        state.listings["owed"] = {
+            "id": "owed", "status": "gone", "removed_at": "2019-01-01T00:00:00+00:00",
+            "pending": {"kind": "removed", "since": "2019-01-01T00:00:00+00:00"}}
+        state.listings["done"] = {
+            "id": "done", "status": "gone", "removed_at": "2019-01-01T00:00:00+00:00"}
+
+        state.prune(keep_days=30)
+        assert "owed" in state.listings and "done" not in state.listings
