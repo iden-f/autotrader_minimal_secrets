@@ -12,6 +12,7 @@ import pytest
 
 from autotrader import notifiers, runner as runner_mod
 from autotrader.config import Config
+from autotrader.http import FetchError, Response
 from autotrader.parser import parse_search_page
 from autotrader.runner import run
 from autotrader.state import Change, State
@@ -537,3 +538,136 @@ class TestCallForPriceOnRealCars:
         looks = [u for u in fetched if target in u]
         # Once as an unknown car, then twice more on the recheck allowance.
         assert len(looks) == 3, looks
+
+
+def page_of(html, ids):
+    """The real payload cut down to a chosen set of listings."""
+    payload = json.loads(re.search(r'id="__NEXT_DATA__"[^>]*>(.*?)</script>',
+                                   html, re.S).group(1))
+    results = payload["props"]["pageProps"]["searchResults"]
+    keep = [l for l in results["listings"]
+            if re.search(r"([0-9a-f-]{36})$", l["url"]).group(1) in ids]
+    results["listings"] = keep
+    stripped = re.sub(r'(id="__NEXT_DATA__"[^>]*>).*?(</script>)',
+                      lambda m: m.group(1) + json.dumps(payload) + m.group(2),
+                      html, count=1, flags=re.S)
+    return re.sub(r'<script[^>]*application/ld\+json[^>]*>.*?</script>', "",
+                  stripped, flags=re.S)
+
+
+def all_ids(html):
+    payload = json.loads(re.search(r'id="__NEXT_DATA__"[^>]*>(.*?)</script>',
+                                   html, re.S).group(1))
+    return [re.search(r"([0-9a-f-]{36})$", l["url"]).group(1)
+            for l in payload["props"]["pageProps"]["searchResults"]["listings"]]
+
+
+class RotatingSite:
+    """A search bigger than the bot reads, whose pages shuffle between runs.
+
+    This is what autotrader.ca actually does: the results carry
+    ``tier_rotation=true``, so which dealers surface on which page changes
+    from request to request. Reading 60 of 186 results therefore gives a
+    different 60 each time - and the first live soak turned that into
+    fourteen "removed" alerts in a single run, for cars still on page one.
+    """
+
+    def __init__(self, html, ids, window, detail_status=200):
+        self.html, self.ids, self.window = html, ids, window
+        self.offset = 0
+        self.detail_status = detail_status
+        self.detail_hits: list[str] = []
+        self.stats = {"requests": 0, "spent": 0, "budget": 0}
+        self.spent = 0
+
+    @property
+    def budget_left(self):
+        return 1_000_000
+
+    def rotate(self):
+        self.offset = (self.offset + self.window) % len(self.ids)
+
+    def _slice(self, page):
+        start = (self.offset + (page - 1) * self.window) % len(self.ids)
+        picked = [self.ids[(start + n) % len(self.ids)] for n in range(self.window)]
+        return set(picked)
+
+    def get(self, url, referer=None, allow_block=False):
+        self.spent += 1
+        self.stats["requests"] = self.spent
+        if "/offers/" in url:
+            self.detail_hits.append(url)
+            if self.detail_status != 200:
+                raise FetchError(f"HTTP {self.detail_status} from {url}")
+            return Response(url=url, status=200, elapsed_ms=1, text=(
+                '<html><head><script type="application/ld+json">'
+                '{"@context":"https://schema.org","@type":"Car","name":"BMW M5",'
+                '"offers":{"@type":"Offer","price":90000,"priceCurrency":"CAD"}}'
+                '</script></head><body>still for sale</body></html>'))
+        page = int(re.search(r"[?&]page=(\d+)", url).group(1)) if "page=" in url else 1
+        return Response(url=url, status=200, elapsed_ms=1,
+                        text=page_of(self.html, self._slice(page)))
+
+    def get_bytes(self, *a, **k):
+        return None
+
+    def close(self):
+        pass
+
+
+class TestARotatingResultWindow:
+    def _watch(self, live, site):
+        return run(live.cfg, State.load(live.path / "state.json"),
+                   fetcher=site, env={})
+
+    def _site(self, live, **kw):
+        live.cfg.set("scraping.max_pages", 2)
+        live.cfg.set("scraping.results_per_page", 6)
+        live.cfg.save()
+        return RotatingSite(live.html, all_ids(live.html), window=6, **kw)
+
+    def test_a_car_that_only_left_the_sample_is_not_reported_as_sold(self, live):
+        site = self._site(live)
+        for _ in range(5):
+            site.rotate()
+            report = self._watch(live, site)
+        assert report.removed == 0, "a rotating window invented a removal"
+
+    def test_it_asks_the_listing_page_before_deciding(self, live):
+        site = self._site(live)
+        for _ in range(4):
+            site.rotate()
+            self._watch(live, site)
+        assert site.detail_hits, "nothing was verified; removals were guessed"
+
+    def test_a_car_whose_page_is_gone_is_reported(self, live):
+        """The check has to be able to say yes, or it is just a mute button."""
+        site = self._site(live, detail_status=404)
+        removed = 0
+        for _ in range(5):
+            site.rotate()
+            removed += self._watch(live, site).removed
+        assert removed > 0
+
+    def test_verification_is_capped_so_it_cannot_eat_a_run(self, live):
+        site = self._site(live)
+        for _ in range(3):
+            site.rotate()
+            before = len(site.detail_hits)
+            self._watch(live, site)
+            assert len(site.detail_hits) - before <= 12
+
+    def test_a_search_we_read_to_the_end_still_needs_no_verification(self, live):
+        """Nothing changes for a search small enough to read completely.
+
+        There the sample *is* the result set, so absence really is evidence
+        and a removal costs no extra request to establish.
+        """
+        live.run()
+        target = unpriced_ids(live.html)[0]
+        without = remove_car(live.html, target)
+
+        removed = sum(live.run(without).removed for _ in range(3))
+        assert removed == 1
+        state = json.loads((live.path / "state.json").read_text())
+        assert state["listings"][target]["status"] == "gone"

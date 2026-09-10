@@ -321,12 +321,21 @@ class State:
         return out
 
     def mark_missing(self, search_id: str, seen_ids: set[str],
-                     *, grace_runs: int = 2) -> list[Change]:
+                     *, grace_runs: int = 2, confirm=None) -> list[Change]:
         """Flag listings from ``search_id`` that stopped appearing.
 
         A car needs to be absent from several consecutive runs before it counts
         as gone, because a single page of results can drop a car for reasons
         that have nothing to do with it being sold.
+
+        Absence is only evidence when we looked at the whole result set. On a
+        search with more results than the bot reads - 186 cars against the 60
+        it samples - the site rotates which listings surface, so cars come and
+        go from the sample constantly. Left alone that produced fourteen
+        "removed" alerts in one run for cars that were still on the front page.
+        ``confirm`` is asked about each candidate in that situation and answers
+        True (really gone), False (still listed) or None (could not tell, so
+        ask again next run rather than guessing).
         """
         changes: list[Change] = []
         for lid, entry in self.listings.items():
@@ -337,11 +346,36 @@ class State:
                 continue
             misses = int(entry.get("misses", 0)) + 1
             entry["misses"] = misses
-            if misses >= grace_runs:
-                entry["status"] = "gone"
-                entry["removed_at"] = utcnow()
-                changes.append(Change(Change.REMOVED, Listing.from_dict(entry)))
+            if misses < grace_runs:
+                continue
+
+            verdict = confirm(entry) if confirm is not None else True
+            if verdict is False:
+                # It fell out of the sample, not off the market.
+                entry["misses"] = 0
+                entry["last_seen"] = utcnow()
+                continue
+            if verdict is None:
+                # Hold at the threshold: the next run asks again instead of
+                # announcing a sale we could not establish.
+                entry["misses"] = grace_runs
+                continue
+
+            entry["status"] = "gone"
+            entry["removed_at"] = utcnow()
+            changes.append(Change(Change.REMOVED, Listing.from_dict(entry)))
         return changes
+
+    def hold_missing(self, search_id: str) -> None:
+        """Freeze the removal countdown for a search we could not read.
+
+        record_search_ok is still what resets a car's miss counter when it is
+        actually seen; this only makes sure a run that read nothing does not
+        push every car in the search one step closer to being declared sold.
+        """
+        for entry in self.listings.values():
+            if entry.get("search_id") == search_id and entry.get("status") == "active":
+                entry.setdefault("misses", 0)
 
     # ---------------- run + search health ----------------
 
