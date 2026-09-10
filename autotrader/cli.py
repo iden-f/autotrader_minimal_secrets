@@ -304,6 +304,24 @@ def cmd_doctor(args: argparse.Namespace) -> int:
     else:
         print(_warn("no run recorded yet - try: python -m autotrader run --dry-run"))
 
+    # ---- does the bookkeeping hold together? --------------------------
+    print(f"\n{BOLD}Bookkeeping{RESET}")
+    from . import invariants
+    try:
+        payload = dashboard.build_payload(cfg, state, dict(os.environ))
+    except Exception:  # noqa: BLE001 - the check is more useful than the payload
+        payload = None
+    broken = invariants.check(cfg, state, None, payload)
+    if broken:
+        for violation in broken:
+            print(_bad(str(violation)))
+            problems += 1
+        written = invariants.write(broken, cfg, state)
+        if written:
+            print(f"   {DIM}details written to {written}{RESET}")
+    else:
+        print(_ok("every car is owned by one search and accounted for"))
+
     # ---- disk --------------------------------------------------------
     print(f"\n{BOLD}Archive{RESET}")
     report = size_report()

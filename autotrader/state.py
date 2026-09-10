@@ -113,7 +113,9 @@ class State:
             try:
                 raw = json.loads(path.read_text(encoding="utf-8") or "{}")
                 if isinstance(raw, dict) and raw.get("version"):
-                    return cls(raw, path)
+                    state = cls(raw, path)
+                    state.upgrade()
+                    return state
                 log.warning("%s has no version marker; starting fresh", path)
             except json.JSONDecodeError as exc:
                 # Never crash on a corrupt state file - that would re-notify
@@ -127,6 +129,36 @@ class State:
         state = cls(path=path)
         state.import_legacy()
         return state
+
+    def upgrade(self) -> dict[str, int]:
+        """Fill in bookkeeping that older entries were written without.
+
+        Idempotent, and deliberately conservative: it reconstructs records the
+        code used to keep only implicitly, and never invents a delivery for a
+        car that was genuinely never handled - those stay visible as
+        violations, because that is exactly the failure worth seeing.
+        """
+        filled = {"unpriced": 0, "quiet_reason": 0, "notified_at": 0}
+        for entry in self.listings.values():
+            if "unpriced" not in entry:
+                entry["unpriced"] = entry.get("price") is None
+                filled["unpriced"] += 1
+            if entry.get("notified_at") or entry.get("quiet_reason") or entry.get("pending"):
+                continue
+            if entry.get("imported_from") or entry.get("migrated_from"):
+                continue          # history, never a candidate for an alert
+            if entry.get("filtered"):
+                why = entry.get("filter_reason") or "one of your rules"
+                entry["quiet_reason"] = f"hidden by your rules: {why}"[:200]
+                filled["quiet_reason"] += 1
+            elif entry.get("notified"):
+                # It was handled - delivered or deliberately quiet - before the
+                # bot recorded which. Say when it was last seen and mark the
+                # timestamp as reconstructed rather than observed.
+                entry["notified_at"] = entry.get("last_seen") or entry.get("first_seen")
+                entry["notified_at_backfilled"] = True
+                filled["notified_at"] += 1
+        return filled
 
     def import_legacy(self, legacy_path: Path = LEGACY_SEEN_PATH) -> int:
         """Adopt v1's seen_listings.json so upgrading does not re-notify.
@@ -299,9 +331,27 @@ class State:
         self.listings[listing.id] = entry
         return change
 
+    def silence(self, listing_id: str, reason: str) -> None:
+        """Record that we deliberately said nothing about this car, and why.
+
+        The failure this exists to make impossible is a car that matters and
+        never gets mentioned. Every listing has to end up in exactly one of
+        three states - delivered, owed, or deliberately quiet with a reason -
+        so "we never told you" is always a decision someone can read back,
+        never an accident nobody noticed.
+        """
+        entry = self.listings.get(listing_id)
+        if entry is None:
+            return
+        entry["notified"] = True
+        entry["quiet_reason"] = reason[:200]
+        entry.pop("pending", None)
+
     def mark_notified(self, listing_ids: Iterable[str]) -> None:
         for lid in listing_ids:
             if lid in self.listings:
+                self.listings[lid]["notified_at"] = utcnow()
+                self.listings[lid].pop("quiet_reason", None)
                 self.listings[lid]["notified"] = True
                 self.listings[lid].pop("pending", None)
 

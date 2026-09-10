@@ -1,0 +1,261 @@
+"""The checks that would have caught every serious bug in this rebuild.
+
+Each one here corresponds to something that actually went wrong and raised
+nothing at the time: cars announced as sold that were still on the front page,
+a search reporting zero listings while working perfectly, a car stored and
+never mentioned because an earlier search had marked it seen.
+"""
+import json
+
+import pytest
+
+from autotrader import invariants, notifiers, runner as runner_mod
+from autotrader.config import Config
+from autotrader.listing import Listing
+from autotrader.runner import run
+from autotrader.state import State
+
+from .helpers import Capture, FakeFetcher, use_channels
+
+BASE = "https://www.autotrader.ca/cars/bmw/m5"
+
+
+@pytest.fixture
+def bench(tmp_path, monkeypatch, fixture_html):
+    monkeypatch.chdir(tmp_path)
+    cfg = Config.defaults(tmp_path / "config.json")
+    cfg.add_search(f"{BASE}?rcp=25", "BMW M5")
+    cfg.set("scraping.delay_ms", 0)
+    cfg.set("scraping.retries", 0)
+    cfg.set("scraping.enrich_details", False)
+    cfg.set("archive.mode", "off")
+    cfg.save()
+
+    sink = Capture()
+    use_channels(monkeypatch, runner_mod, [sink])
+    html = fixture_html("search_next_data")
+
+    def go(page=None, **kw):
+        return run(cfg, State.load(tmp_path / "state.json"),
+                   fetcher=FakeFetcher(page or html), env={}, **kw)
+
+    return type("Bench", (), {
+        "cfg": cfg, "sink": sink, "run": staticmethod(go), "path": tmp_path,
+        "html": html,
+        "state": staticmethod(lambda: State.load(tmp_path / "state.json")),
+    })
+
+
+def rules(violations):
+    return sorted({v.rule for v in violations})
+
+
+class TestAHealthyRunIsClean:
+    def test_a_normal_run_violates_nothing(self, bench):
+        report = bench.run()
+        assert report.ok and not report.invariants
+        assert invariants.check(bench.cfg, bench.state(), report) == []
+
+    def test_a_filtered_run_violates_nothing(self, bench):
+        bench.cfg.set("filters.max_price", 90000)
+        bench.cfg.save()
+        report = bench.run()
+        assert report.ok and not report.invariants
+
+    def test_a_run_that_hid_call_for_price_cars_violates_nothing(self, bench):
+        bench.cfg.set("filters.require_price", True)
+        bench.cfg.save()
+        report = bench.run()
+        assert report.ok and not report.invariants
+
+    def test_a_run_holding_alerts_violates_nothing(self, bench):
+        """A queued car is owed, not missing."""
+        report = bench.run(notify=False)
+        assert not report.invariants
+        assert any(e.get("pending") for e in bench.state().listings.values())
+
+
+class TestOwnership:
+    def test_a_car_with_no_owner_is_caught(self, bench):
+        bench.run()
+        state = bench.state()
+        next(iter(state.listings.values()))["search_id"] = ""
+        assert "one-owner" in rules(invariants.check(bench.cfg, state))
+
+    def test_a_car_owned_by_a_search_that_is_gone_is_caught(self, bench):
+        """The bug this mirrors: a watch reporting zero cars while working."""
+        bench.run()
+        state = bench.state()
+        next(iter(state.listings.values()))["search_id"] = "deleted-search"
+        assert "one-owner" in rules(invariants.check(bench.cfg, state))
+
+    def test_history_from_v1_needs_no_owner(self, bench):
+        bench.run()
+        state = bench.state()
+        state.listings["old"] = {"id": "old", "status": "gone",
+                                 "imported_from": "seen_listings.json"}
+        assert invariants.check(bench.cfg, state) == []
+
+
+class TestEveryCarIsAccountedFor:
+    def test_a_car_nobody_decided_about_is_caught(self, bench):
+        """The silent failure: stored, never mentioned, nothing looks wrong."""
+        bench.run()
+        state = bench.state()
+        entry = next(iter(state.listings.values()))
+        for key in ("notified_at", "quiet_reason", "pending"):
+            entry.pop(key, None)
+        entry["notified"] = False
+
+        broken = invariants.check(bench.cfg, state)
+        assert "accounted-for" in rules(broken)
+
+    def test_delivered_and_queued_at_once_is_caught(self, bench):
+        bench.run()
+        state = bench.state()
+        entry = next(iter(state.listings.values()))
+        entry["pending"] = {"kind": "new"}
+        entry["notified"] = True
+        assert "accounted-for" in rules(invariants.check(bench.cfg, state))
+
+    def test_a_hidden_car_carries_the_rule_that_hid_it(self, bench):
+        bench.cfg.set("filters.max_price", 90000)
+        bench.cfg.save()
+        bench.run()
+
+        hidden = [e for e in bench.state().listings.values() if e.get("filtered")]
+        assert hidden
+        for entry in hidden:
+            assert entry["filter_reason"]
+            assert entry["quiet_reason"].startswith("hidden by your rules")
+
+    def test_a_hidden_car_with_no_reason_is_caught(self, bench):
+        bench.cfg.set("filters.max_price", 90000)
+        bench.cfg.save()
+        bench.run()
+        state = bench.state()
+        hidden = next(e for e in state.listings.values() if e.get("filtered"))
+        hidden["filter_reason"] = ""
+        assert "hidden-has-a-reason" in rules(invariants.check(bench.cfg, state))
+
+
+class TestStatesThatCannotBothBeTrue:
+    def test_active_with_a_removal_time_is_caught(self, bench):
+        bench.run()
+        state = bench.state()
+        next(iter(state.listings.values()))["removed_at"] = "2026-01-01T00:00:00+00:00"
+        assert "not-both" in rules(invariants.check(bench.cfg, state))
+
+    def test_a_call_for_price_flag_that_lies_is_caught(self, bench):
+        bench.run()
+        state = bench.state()
+        entry = next(e for e in state.listings.values() if e.get("price"))
+        entry["unpriced"] = True
+        assert "not-both" in rules(invariants.check(bench.cfg, state))
+
+    def test_a_car_stuck_past_the_grace_period_is_caught(self, bench):
+        """Either it came back or it went; it cannot sit at four misses."""
+        bench.run()
+        state = bench.state()
+        next(iter(state.listings.values()))["misses"] = 4
+        assert "grace-bounded" in rules(invariants.check(bench.cfg, state))
+
+
+class TestTheNumbersAgree:
+    def test_a_hidden_count_that_disagrees_with_state_is_caught(self, bench):
+        bench.cfg.set("filters.max_price", 90000)
+        bench.cfg.save()
+        report = bench.run()
+        assert report.filtered_out > 0
+
+        report.filtered_out += 3
+        broken = invariants.check(bench.cfg, bench.state(), report)
+        assert "counts-reconcile" in rules(broken)
+
+    def test_a_dashboard_that_disagrees_with_itself_is_caught(self, bench):
+        from autotrader.dashboard import build_payload
+        bench.run()
+        state = bench.state()
+        payload = build_payload(bench.cfg, state, {})
+        payload["health"]["counts"]["active"] += 5
+
+        broken = invariants.check(bench.cfg, state, None, payload)
+        assert "counts-reconcile" in rules(broken)
+
+    def test_the_dashboard_and_state_agree_after_a_real_run(self, bench):
+        from autotrader.dashboard import build_payload
+        bench.cfg.set("filters.max_price", 90000)
+        bench.cfg.save()
+        report = bench.run()
+        state = bench.state()
+        assert invariants.check(bench.cfg, state, report,
+                                build_payload(bench.cfg, state, {})) == []
+
+
+class TestAViolationFailsTheRun:
+    def test_the_run_fails_and_says_which_rule(self, bench, monkeypatch):
+        bench.run()
+
+        def corrupt(cfg, state, report=None, payload=None):
+            return [invariants.Violation("one-owner", "invented", ["x"], 1)]
+
+        monkeypatch.setattr(runner_mod.invariants, "check", corrupt)
+        report = bench.run()
+
+        assert not report.ok
+        assert report.invariants and "one-owner" in report.invariants[0]
+        assert any("bookkeeping is inconsistent" in e for e in report.errors)
+
+    def test_the_evidence_is_written_out(self, bench, monkeypatch):
+        bench.run()
+        monkeypatch.setattr(
+            runner_mod.invariants, "check",
+            lambda cfg, state, report=None, payload=None: [
+                invariants.Violation("not-both", "invented", ["x"], 1)])
+        report = bench.run()
+
+        written = bench.path / "diagnostics" / "invariants.json"
+        assert written.exists()
+        assert str(written.relative_to(bench.path)) in " ".join(report.diagnostics)
+        saved = json.loads(written.read_text())
+        assert saved["violations"][0]["rule"] == "not-both"
+
+
+class TestBackfillingOlderState:
+    def test_bookkeeping_older_entries_never_had_is_reconstructed(self, tmp_path):
+        state = State(path=tmp_path / "s.json")
+        state.listings["a"] = {"id": "a", "status": "active", "notified": True,
+                               "price": 90000, "last_seen": "2026-01-01T00:00:00+00:00"}
+        state.listings["b"] = {"id": "b", "status": "active", "notified": True,
+                               "price": None, "filtered": True,
+                               "filter_reason": "price above maximum"}
+        state.save()
+
+        reloaded = State.load(tmp_path / "s.json")
+        a, b = reloaded.listings["a"], reloaded.listings["b"]
+        assert a["notified_at"] == "2026-01-01T00:00:00+00:00"
+        assert a["notified_at_backfilled"] is True
+        assert a["unpriced"] is False
+        assert b["quiet_reason"].startswith("hidden by your rules")
+        assert b["unpriced"] is True
+
+    def test_a_car_that_really_was_never_handled_still_shows_up(self, tmp_path):
+        """The backfill must not paper over the failure it exists to expose."""
+        state = State(path=tmp_path / "s.json")
+        state.listings["lost"] = {"id": "lost", "status": "active",
+                                  "notified": False, "price": 90000,
+                                  "search_id": "s"}
+        state.save()
+
+        reloaded = State.load(tmp_path / "s.json")
+        assert not reloaded.listings["lost"].get("notified_at")
+        assert not reloaded.listings["lost"].get("quiet_reason")
+
+    def test_upgrading_twice_changes_nothing(self, tmp_path):
+        state = State(path=tmp_path / "s.json")
+        state.listings["a"] = {"id": "a", "status": "active", "notified": True,
+                               "price": 1000, "last_seen": "2026-01-01T00:00:00+00:00"}
+        state.upgrade()
+        once = json.dumps(state.data, sort_keys=True)
+        state.upgrade()
+        assert json.dumps(state.data, sort_keys=True) == once

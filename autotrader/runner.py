@@ -8,6 +8,8 @@ single failure is "that search produced nothing this run" rather than
 
 from __future__ import annotations
 
+import hashlib
+import json
 import logging
 import os
 import time
@@ -16,14 +18,15 @@ from pathlib import Path
 from typing import Any
 
 from . import archive as archive_mod
-from . import diagnose, filters, notifiers, provision, shape, validate
+from . import dashboard, diagnose, filters, invariants, notifiers
+from . import provision, shape, validate
 from .config import Config
 from .enrich import detail_from_html, enrich
 from .http import BlockedError, BudgetExhausted, FetchError, Fetcher
 from .listing import Listing
 from .parser import looks_like_no_results, parse_search_page
 from .state import Change, State
-from .urls import page_url
+from .urls import normalise_search_url, page_url
 
 log = logging.getLogger(__name__)
 
@@ -54,6 +57,9 @@ class RunReport:
     unpriced: int = 0
     priced: int = 0
     relisted: int = 0
+    # Searches that established a starting point this run instead of alerting.
+    baselines: list[str] = field(default_factory=list)
+    invariants: list[str] = field(default_factory=list)
     notified: list[str] = field(default_factory=list)
     errors: list[str] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
@@ -77,7 +83,8 @@ class RunReport:
             "price_drops": self.price_drops, "price_rises": self.price_rises,
             "removed": self.removed, "filtered_out": self.filtered_out,
             "unpriced": self.unpriced, "priced": self.priced,
-            "relisted": self.relisted,
+            "relisted": self.relisted, "baselines": self.baselines,
+            "invariants": self.invariants,
             "requests_made": self.requests_made,
             "budget_exhausted": self.budget_exhausted,
             "empty_parses": self.empty_parses,
@@ -100,6 +107,28 @@ class RunReport:
 
 # Below this a search is too small for "half of last time" to mean anything.
 MIN_COUNT_FOR_COLLAPSE = 6
+
+
+def scope_of(search, cfg: Config) -> str:
+    """A fingerprint of what a search is actually asking for.
+
+    Everything that changes which cars a search returns: the link itself, the
+    rules layered on top of it, and how deep the bot reads. When this changes,
+    the cars that appear are not new listings - they were always in scope and
+    the bot simply was not looking at them. Widening one search from three
+    pages to ten turned 120 such cars into 120 "new listing" alerts.
+    """
+    scraping = cfg.get("scraping", {}) or {}
+    rules = cfg.rules_for(search)
+    parts = {
+        "url": normalise_search_url(search.url),
+        "filters": {k: v for k, v in sorted((rules["filters"] or {}).items())
+                    if v not in (None, "", [], {})},
+        "pages": int(search.max_pages or scraping.get("max_pages", 3) or 1),
+        "per_page": int(scraping.get("results_per_page", 50) or 50),
+    }
+    blob = json.dumps(parts, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(blob.encode("utf-8")).hexdigest()[:16]
 
 # Wording a listing page uses once the car is no longer for sale.
 # A cap, so a search whose window rotates heavily cannot spend a whole run's
@@ -312,6 +341,11 @@ def run(cfg: Config | None = None, state: State | None = None, *,
     assessments: list[validate.Assessment] = []
     drifted: list[tuple[str, list[str], dict[str, Any]]] = []
 
+    def silence(listing_id: str, reason: str) -> None:
+        """Say nothing about this car, on purpose, and write down why."""
+        if not dry_run:
+            state.silence(listing_id, reason)
+
     def queue(change: Change) -> None:
         """Record a change as owed to the user, then remember to send it.
 
@@ -497,6 +531,26 @@ def run(cfg: Config | None = None, state: State | None = None, *,
             search_filters = rules["filters"]
             search_notify = rules["notify_on"]
 
+            # A search whose scope just changed - a new link, a relaxed filter,
+            # more pages - is establishing what it watches, not discovering a
+            # hundred cars at once. Record everything, announce nothing, say so.
+            health = state.search_health(search.id)
+            scope = scope_of(search, cfg)
+            known_scope = health.get("scope")
+            # Only a *change* of scope is a baseline. A search running for the
+            # first time genuinely is showing you cars you have not seen, and
+            # they arrive as one digest either way. What is not a discovery is
+            # a car that was always in scope and simply out of reach - reading
+            # ten pages instead of three does not make 120 cars new.
+            baseline = bool(known_scope) and known_scope != scope
+            health["scope"] = scope
+            if baseline:
+                report.baselines.append(search.name)
+                report.warnings.append(
+                    f"{search.name}: what this search covers has changed, so "
+                    f"what it finds now is being recorded as a starting point "
+                    f"rather than announced as new.")
+
             # A car listed by two searches belongs to the first one that
             # returned it. Without that rule the last search to run overwrites
             # the car's owner and its rules: a Canada-wide watch with a
@@ -524,8 +578,14 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                     if entry.get("notified"):
                         continue          # imported from v1: known, stay quiet
                     report.new += 1
-                    if search_notify.get("new", True):
+                    if baseline:
+                        silence(listing.id, "recorded as a starting point when "
+                                            "this search's scope changed")
+                    elif search_notify.get("new", True):
                         queue(change)
+                    else:
+                        silence(listing.id,
+                                "new listings are switched off for this search")
                     archive_mod.archive_listing(listing, archive_conf, fetcher)
                 elif change.kind == Change.PRICE_DROP:
                     if filters.is_significant_drop(
@@ -533,19 +593,19 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                         rules["price_drop_min_pct"], rules["price_drop_min_abs"],
                     ):
                         report.price_drops += 1
-                        if search_notify.get("price_drop", True):
+                        if search_notify.get("price_drop", True) and not baseline:
                             queue(change)
                 elif change.kind == Change.PRICE_RISE:
                     report.price_rises += 1
-                    if search_notify.get("price_rise", False):
+                    if search_notify.get("price_rise", False) and not baseline:
                         queue(change)
                 elif change.kind == Change.PRICED:
                     report.priced += 1
-                    if search_notify.get("priced", True):
+                    if search_notify.get("priced", True) and not baseline:
                         queue(change)
                 elif change.kind == Change.RELISTED:
                     report.relisted += 1
-                    if search_notify.get("relisted", False):
+                    if search_notify.get("relisted", False) and not baseline:
                         queue(change)
 
             # "Call for price" cars are tracked and stay visible; they are not
@@ -566,12 +626,16 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                     if entry.get("notified"):
                         continue
                     report.new += 1
-                    if tell_me_about_unpriced and search_notify.get("new", True):
+                    if baseline:
+                        silence(listing.id, "recorded as a starting point when "
+                                            "this search's scope changed")
+                    elif tell_me_about_unpriced and search_notify.get("new", True):
                         queue(change)
                     else:
                         # Seen, recorded, deliberately quiet - so it cannot
                         # come back as "new" once a price appears on it.
-                        state.mark_notified([listing.id])
+                        silence(listing.id, "no price published, and this "
+                                            "search asks for a price")
                     archive_mod.archive_listing(listing, archive_conf, fetcher)
                 elif change.kind == Change.PRICED:
                     # A car that was call-for-price now has a figure. That is
@@ -582,7 +646,8 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                         queue(change)
                 elif change.kind == Change.RELISTED:
                     report.relisted += 1
-                    if tell_me_about_unpriced and search_notify.get("relisted", False):
+                    if (tell_me_about_unpriced and not baseline
+                            and search_notify.get("relisted", False)):
                         queue(change)
 
             # Held until every search has been read. Recording a rejection now
@@ -611,8 +676,8 @@ def run(cfg: Config | None = None, state: State | None = None, *,
             # Held until every search has been read: a car this search no
             # longer lists may well have been returned by another one, and
             # calling that a sale would be wrong.
-            removal_plan.append((search, trustworthy, result.complete,
-                                 search_notify))
+            removal_plan.append((search, trustworthy and not baseline,
+                                 result.complete, search_notify))
 
         # Cars no search wanted. They still have to be recorded - a car you
         # hid by filter is still on the site, and forgetting it makes the next
@@ -622,7 +687,7 @@ def run(cfg: Config | None = None, state: State | None = None, *,
             if lid in owned:
                 continue
             state.record(listing, filtered=True, filter_reason=why)
-            state.mark_notified([lid])
+            silence(lid, f"hidden by your rules: {why}")
 
         report.filtered_out = sum(
             1 for lid in seen_anywhere
@@ -739,6 +804,27 @@ def run(cfg: Config | None = None, state: State | None = None, *,
             _retire_dead_channels(
                 cfg, state, report, env,
                 int(health_conf.get("disable_channel_after", 2) or 0))
+
+        # ---- does the bookkeeping still make sense? ------------------
+        # Every serious bug in this rebuild has been silently wrong state
+        # rather than a crash, so the run asks itself the questions that would
+        # have caught them, and fails if the answer is no.
+        if not dry_run:
+            try:
+                payload = dashboard.build_payload(cfg, state, env)
+            except Exception as exc:  # noqa: BLE001 - never the reason a run fails
+                log.warning("could not build the dashboard payload: %s", exc)
+                payload = None
+            broken = invariants.check(cfg, state, report, payload)
+            if broken:
+                report.invariants = [str(v) for v in broken]
+                written = invariants.write(broken, cfg, state)
+                if written:
+                    report.diagnostics.append(str(written))
+                report.errors.append(
+                    f"the bot's own bookkeeping is inconsistent: "
+                    + "; ".join(report.invariants[:3])
+                    + (f" (+{len(broken) - 3} more)" if len(broken) > 3 else ""))
 
         # ---- housekeeping -------------------------------------------
         if not dry_run:
