@@ -862,10 +862,17 @@ function ruleChips(rules){
   const chips = [];
   const label = {min_price:"from", max_price:"up to", min_year:"year from",
                  max_year:"year to", max_mileage_km:"under"};
-  for (const [k, v] of Object.entries(rules.filters || {})) {
+  const f = rules.filters || {};
+  for (const [k, v] of Object.entries(f)) {
     if (v === null || v === "" || (Array.isArray(v) && !v.length)) continue;
     if (k === "max_price" || k === "min_price") chips.push(`${label[k]} $${Number(v).toLocaleString()}`);
     else if (k === "max_mileage_km") chips.push(`under ${Number(v).toLocaleString()} km`);
+    // The distance rule reads as one thing, not as two unrelated settings.
+    else if (k === "near") { if (!f.max_distance_km) chips.push(`near ${v}`); }
+    else if (k === "max_distance_km") chips.push(
+      f.near ? `within ${Number(v).toLocaleString()} km of ${f.near}`
+             : `within ${Number(v).toLocaleString()} km`);
+    else if (k === "provinces") chips.push(`in ${[].concat(v).join(", ")}`);
     else if (label[k]) chips.push(`${label[k]} ${v}`);
     else chips.push(`${k}: ${Array.isArray(v) ? v.join(", ") : v}`);
   }
@@ -902,6 +909,16 @@ function renderSearches(){
       </div>
       <div style="font:400 12px/1.5 var(--mono);color:var(--muted);word-break:break-all">
         <a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.url)}</a></div>
+      ${health.shut_out ? `<div class="banner warn" style="margin:10px 0 0">
+        This search is reading the site fine and keeping nothing:
+        ${esc(health.shut_out)}. Widen a rule below, or leave it - it will
+        speak up as soon as something matches.</div>` : ""}
+      ${info.area ? `<div class="banner" style="margin:10px 0 0">
+        <b>Area enforced by the bot:</b> ${esc(info.area.text)}${
+          info.area.resolved === false
+            ? ' &mdash; <span style="color:var(--signal)">that place could not be located, so nothing is being enforced</span>'
+            : ""}.
+        The link still asks the site for this and the site ignores it.</div>` : ""}
       ${health.last_error ? `<div class="banner warn" style="margin:10px 0 0">
         Last error: ${esc(health.last_error)}</div>` : ""}
       ${ruleChips(info.rules)}
@@ -1115,14 +1132,18 @@ function renderStatus(){
 
   const health = (DATA.searches||[]);
   $("#healthtable").innerHTML = health.length ? `
-    <thead><tr><th>Search</th><th>Last worked</th><th>Found</th><th>Read using</th><th>Problem</th></tr></thead>
+    <thead><tr><th>Search</th><th>Area</th><th>Last worked</th><th>Found</th><th>Read using</th><th>Problem</th></tr></thead>
     <tbody>${health.map(h => `<tr>
       <td><b>${esc(h.name)}</b></td>
+      <td>${h.area ? esc(h.area.text) : '<span style="color:var(--faint)">anywhere</span>'}</td>
       <td>${esc(timeOf(h.health?.last_ok))}</td>
       <td class="num">${h.health?.last_count ?? 0}</td>
       <td>${h.health?.last_strategy ? `<code>${esc(h.health.last_strategy)}</code>` : "—"}</td>
       <td>${h.health?.last_error
-        ? `<span style="color:var(--signal)">${esc(h.health.last_error)}</span>` : "none"}</td>
+        ? `<span style="color:var(--signal)">${esc(h.health.last_error)}</span>`
+        : h.health?.shut_out
+          ? `<span style="color:var(--muted)">nothing passed your rules &mdash; ${esc(h.health.shut_out)}</span>`
+          : "none"}</td>
     </tr>`).join("")}</tbody>` :
     '<tbody><tr><td style="color:var(--muted)">No searches configured yet.</td></tr></tbody>';
 

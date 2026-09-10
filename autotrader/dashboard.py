@@ -16,6 +16,7 @@ from typing import Any
 import re
 
 from .archive import size_report
+from . import geo
 from .config import CHANNEL_SECRETS, Config
 from .parser import STRATEGIES
 from .state import State
@@ -39,6 +40,31 @@ LISTING_FIELDS = (
     # them is that "we never told you" is always a decision you can read back.
     "notified_at", "quiet_reason",
 )
+
+
+def _area_of(filters: dict[str, Any]) -> dict[str, Any] | None:
+    """The distance rule, resolved, so the page can say what is enforced."""
+    near = str((filters or {}).get("near") or "").strip()
+    try:
+        radius = int((filters or {}).get("max_distance_km") or 0)
+    except (TypeError, ValueError):
+        radius = 0
+    provinces = [str(p).strip().upper()
+                 for p in ((filters or {}).get("provinces") or []) if str(p).strip()]
+    if not near and not radius and not provinces:
+        return None
+    out: dict[str, Any] = {"provinces": provinces}
+    if near and radius:
+        out.update(geo.summary(near, radius))
+    elif near:
+        out["reference"] = near
+        out["text"] = f"near {near}"
+    elif radius:
+        out["radius_km"] = radius
+        out["text"] = f"within {radius:,} km"
+    if provinces and "text" not in out:
+        out["text"] = "in " + ", ".join(provinces)
+    return out
 
 
 def build_payload(cfg: Config, state: State, env: dict[str, str] | None = None
@@ -102,6 +128,9 @@ def build_payload(cfg: Config, state: State, env: dict[str, str] | None = None
                 "last_count": health.get("last_count", 0),
                 "last_strategy": health.get("last_strategy"),
                 "consecutive_failures": health.get("consecutive_failures", 0),
+                # Reading the site fine and keeping nothing is not a failure,
+                # but it looks exactly like one from the outside.
+                "shut_out": health.get("shut_out"),
             },
             "active_count": counts_for(search.id)["active"],
             "counts": counts_for(search.id),
@@ -111,6 +140,10 @@ def build_payload(cfg: Config, state: State, env: dict[str, str] | None = None
                 "price_drop_min_pct": search.price_drop_min_pct,
                 "price_drop_min_abs": search.price_drop_min_abs,
             },
+            # Spelled out separately, because a distance rule the bot enforces
+            # itself is not visible anywhere in the search link - the link
+            # still says "near V6N 3B5" and the site still ignores it.
+            "area": _area_of(cfg.rules_for(search)["filters"]),
             "shape": health.get("shape"),
         })
 

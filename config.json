@@ -7,10 +7,12 @@
       "name": "2021-2023 BMW M5",
       "url": "https://www.autotrader.ca/cars/bmw/m5/?rcp=25&rcs=0&srt=9&yRng=2021%2C2023&prx=-1&loc=V6N+3B5&hprc=False&wcp=False&inMarket=advancedSearch",
       "enabled": true,
-      "notes": "Imported from the SEARCH_URL repository secret. The year range is also enforced here because the new AutoScout24 platform no longer honours the yRng parameter in the original link - a live run returned 2014 and 2027 cars for it.",
+      "notes": "Imported from the SEARCH_URL repository secret. The year range is also enforced here because the new AutoScout24 platform no longer honours the yRng parameter in the original link - a live run returned 2014 and 2027 cars for it. The link's own 'near V6N 3B5' is ignored by the new platform too - it was returning Ontario, Alberta and Quebec cars - so the distance is enforced here instead, at 250 km: the Lower Mainland, the Fraser Valley and Vancouver Island.",
       "filters": {
         "min_year": 2021,
-        "max_year": 2023
+        "max_year": 2023,
+        "near": "V6N 3B5",
+        "max_distance_km": 250
       }
     },
     {

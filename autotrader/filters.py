@@ -11,6 +11,7 @@ import logging
 from dataclasses import dataclass
 from typing import Any
 
+from . import geo
 from .listing import Listing
 
 log = logging.getLogger(__name__)
@@ -87,6 +88,32 @@ def check(listing: Listing, filters: dict[str, Any] | None) -> Verdict:
     max_km = _number(f.get("max_mileage_km"))
     if max_km and listing.mileage_km is not None and listing.mileage_km > max_km:
         return Verdict(False, f"{listing.mileage_km:,} km above maximum {max_km:,} km")
+
+    # Where the car is. The pasted link's own "near this postal code" is
+    # ignored by the current platform, so if you want it honoured the bot has
+    # to be the one honouring it.
+    near = str(f.get("near") or "").strip()
+    radius = _number(f.get("max_distance_km"))
+    if near and radius:
+        reference = geo.locate_reference(near)
+        if reference is None:
+            log.warning("cannot place %r, so distance is not being enforced", near)
+        else:
+            far, away = geo.too_far(listing.location, listing.province,
+                                    reference, radius)
+            if far:
+                where = ", ".join(p for p in (listing.location, listing.province) if p)
+                return Verdict(False, (
+                    f"{where or 'that location'} is {away:,} km from {near}, "
+                    f"beyond the {radius:,} km you asked for" if away else
+                    f"{where or 'that location'} is beyond the {radius:,} km "
+                    f"you asked for around {near}"))
+
+    provinces = [str(p).strip().upper() for p in _as_list(f.get("provinces"))
+                 if str(p).strip()]
+    if provinces and listing.province and listing.province.upper() not in provinces:
+        return Verdict(False, f"{listing.province} is not one of "
+                              f"{', '.join(provinces)}")
 
     text = _haystack(listing)
 

@@ -60,6 +60,8 @@ class RunReport:
     # Searches that established a starting point this run instead of alerting.
     baselines: list[str] = field(default_factory=list)
     invariants: list[str] = field(default_factory=list)
+    # Searches that read the site fine and kept nothing after your rules.
+    shut_out: list[str] = field(default_factory=list)
     notified: list[str] = field(default_factory=list)
     errors: list[str] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
@@ -84,7 +86,7 @@ class RunReport:
             "removed": self.removed, "filtered_out": self.filtered_out,
             "unpriced": self.unpriced, "priced": self.priced,
             "relisted": self.relisted, "baselines": self.baselines,
-            "invariants": self.invariants,
+            "invariants": self.invariants, "shut_out": self.shut_out,
             "requests_made": self.requests_made,
             "budget_exhausted": self.budget_exhausted,
             "empty_parses": self.empty_parses,
@@ -273,6 +275,28 @@ def scrape_search(search, cfg: Config, fetcher: Fetcher) -> "SearchResult":
 
     return SearchResult(list(found.values()), strategy, said_no_results,
                         candidates, first_page, complete)
+
+
+def _why_none_survived(dropped: list[tuple[Listing, str]]) -> str:
+    """Which rule turned everything away, in the order it hurt most."""
+    buckets: dict[str, int] = {}
+    for _, reason in dropped:
+        for phrase, label in (("beyond the", "too far away"),
+                              ("is not one of", "in the wrong province"),
+                              ("year", "outside the year range"),
+                              ("above maximum $", "over your price ceiling"),
+                              ("below minimum $", "under your price floor"),
+                              ("km above maximum", "over your odometer limit"),
+                              ("call for price", "no price published"),
+                              ("keyword", "a keyword rule"),
+                              ("seller", "an excluded seller")):
+            if phrase in reason:
+                buckets[label] = buckets.get(label, 0) + 1
+                break
+        else:
+            buckets["other rules"] = buckets.get("other rules", 0) + 1
+    ranked = sorted(buckets.items(), key=lambda kv: -kv[1])
+    return ", ".join(f"{n} {label}" for label, n in ranked) or "every one of them"
 
 
 def _price_disagrees(listing: Listing, state: State) -> bool:
@@ -598,6 +622,23 @@ def run(cfg: Config | None = None, state: State | None = None, *,
             owned.update(l.id for l in kept)
             owned.update(l.id for l in unpriced)
             report.unpriced += len(unpriced)
+
+            # A search that reads the site fine and then keeps nothing is not
+            # broken, but it looks exactly like broken from the outside - and
+            # a rule you set months ago quietly matching nothing is worth
+            # knowing about. Say what it read and what turned it all away.
+            if listings and not kept and not unpriced and not baseline:
+                why = _why_none_survived(dropped)
+                report.shut_out.append(search.name)
+                report.warnings.append(
+                    f"{search.name}: read {len(listings)} listing(s) and none "
+                    f"passed your rules for it ({why}). It is working - it just "
+                    f"has nothing to show you.")
+                state.search_health(search.id)["shut_out"] = why
+
+            if kept or unpriced:
+                state.search_health(search.id).pop("shut_out", None)
+
             for listing in kept:
                 # A car your rules used to hide and now admit is new to your
                 # watch, even though the bot has been storing it all along.
