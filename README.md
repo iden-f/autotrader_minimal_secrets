@@ -190,6 +190,19 @@ python -m autotrader set price_drop_min_abs 2500 --search "911"
 Anything not overridden falls through to the global settings. `list` shows
 which rules a search has of its own.
 
+What you can be told about, and whether it is on by default:
+
+| `notify_on.*` | Default | Meaning |
+|---|---|---|
+| `new` | on | A car you have not seen before. |
+| `price_drop` | on | Confirmed against the listing page, and it must clear both thresholds. |
+| `price_rise` | off | |
+| `priced` | on | A "call for price" car has published a figure. Not a price drop — there was nothing to compare against. |
+| `unpriced` | follows `require_price` | A new car with no figure on it. |
+| `removed` | off | Established against the listing page, not guessed from its absence. |
+| `relisted` | off | A car you were told had gone is back. |
+| `errors` | on | The bot itself is in trouble. |
+
 ## When the site changes
 
 autotrader.ca moved onto the AutoScout24 platform in 2026 and every parser
