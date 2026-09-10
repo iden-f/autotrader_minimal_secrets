@@ -200,3 +200,63 @@ class TestWhatTheJobReadsBack:
         events.update(state, *paths)
 
         assert json.loads(paths[1].read_text(encoding="utf-8"))["new_kinds"] == []
+
+
+class TestASayingItWasAGuessWhenItWasNot:
+    """A reconstructed timestamp must not outlive the reconstruction.
+
+    Live, on the first real removal this bot ever announced: the ledger said
+    "delivered (time reconstructed)". The alert had genuinely gone out, on
+    that run, and been recorded at the moment it did. What was reconstructed
+    was the *arrival* notification hours earlier, from before the bot stamped
+    delivery times - and the flag saying so stayed on the entry, so every
+    honest delivery afterwards was described as a guess.
+    """
+
+    def test_a_real_delivery_stops_the_ledger_calling_it_reconstructed(
+            self, tmp_path, paths):
+        state = State(path=tmp_path / "s.json")
+        entry = car(state, price=100000)
+        # As upgrade() leaves a car that was handled before delivery times
+        # were recorded.
+        entry["notified"] = True
+        entry["notified_at"] = entry["first_seen"]
+        entry["notified_at_backfilled"] = True
+
+        car(state, price=95000)          # a price drop, genuinely delivered
+        state.mark_notified(["1"])
+
+        assert "notified_at_backfilled" not in state.listings["1"]
+        record = events.update(state, *paths)
+        delivered = record["first"]["price_drop"]["delivered"]
+        assert delivered.startswith("delivered at")
+        assert "reconstructed" not in delivered
+
+    def test_a_car_nobody_has_delivered_about_keeps_the_flag(self, tmp_path):
+        state = State(path=tmp_path / "s.json")
+        entry = car(state, price=100000)
+        entry["notified"] = True
+        entry["notified_at"] = entry["first_seen"]
+        entry["notified_at_backfilled"] = True
+
+        state.mark_notified(["nobody"])   # a different car
+        assert state.listings["1"]["notified_at_backfilled"] is True
+
+    def test_the_ledger_corrects_a_delivery_line_it_already_wrote(
+            self, tmp_path, paths):
+        """What happened is settled. What was done about it can improve."""
+        state = State(path=tmp_path / "s.json")
+        car(state, price=100000)
+        car(state, price=95000)
+        # As a quiet-hours or channel-outage run leaves it: detected, owed,
+        # not yet sent.
+        state.listings["1"]["pending"] = {"kind": "price_drop",
+                                          "since": "2026-09-10T00:00:00+00:00"}
+        state.listings["1"].pop("notified_at", None)
+        first = events.update(state, *paths)
+        assert first["first"]["price_drop"]["delivered"] == "queued, not yet delivered"
+
+        state.mark_notified(["1"])
+        again = events.update(state, *paths)
+        assert again["first"]["price_drop"]["delivered"].startswith("delivered at")
+        assert "queued" not in paths[0].read_text(encoding="utf-8")

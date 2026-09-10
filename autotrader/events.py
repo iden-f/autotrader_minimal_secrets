@@ -146,8 +146,19 @@ def merge(found: dict[str, Event], previous: dict[str, Any]) -> dict[str, Any]:
     """Keep the first sighting of each kind, once recorded, forever."""
     out = dict(previous.get("first", {}) or {})
     for kind, event in found.items():
-        if kind not in out or event.at < out[kind].get("at", "9999"):
-            out[kind] = event.to_dict()
+        fresh = event.to_dict()
+        stored = out.get(kind)
+        if stored is None or fresh["at"] < stored.get("at", "9999"):
+            out[kind] = fresh
+        elif (stored.get("listing_id") == fresh["listing_id"]
+                and stored.get("at") == fresh["at"]):
+            # The same event, read again. When it happened is settled; what
+            # the bot did about it is not. A queued alert gets delivered, and
+            # a delivery whose time had to be reconstructed gets recorded
+            # properly the next time the car is announced. Freezing the first
+            # answer means the ledger goes on describing a real alert as a
+            # guess, or a sent one as still waiting.
+            stored["delivered"] = fresh["delivered"]
     return {"updated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             "first": out,
             "waiting": [k for k in KINDS if k not in out],

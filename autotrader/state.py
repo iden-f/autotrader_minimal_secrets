@@ -364,6 +364,12 @@ class State:
                 self.listings[lid].pop("quiet_reason", None)
                 self.listings[lid]["notified"] = True
                 self.listings[lid].pop("pending", None)
+                # This time was observed, not inferred. The flag is set when a
+                # delivery predates the bot recording them and the timestamp
+                # had to be reconstructed from last_seen; leaving it on a car
+                # the bot has since genuinely delivered about makes the ledger
+                # describe a real alert as a guess.
+                self.listings[lid].pop("notified_at_backfilled", None)
 
     def defer(self, changes: Iterable[Change]) -> None:
         """Remember an alert we could not send yet, so it is not lost.
