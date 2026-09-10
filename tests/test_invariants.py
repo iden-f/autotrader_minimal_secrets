@@ -196,7 +196,7 @@ class TestAViolationFailsTheRun:
     def test_the_run_fails_and_says_which_rule(self, bench, monkeypatch):
         bench.run()
 
-        def corrupt(cfg, state, report=None, payload=None):
+        def corrupt(cfg, state, report=None, payload=None, seen=None):
             return [invariants.Violation("one-owner", "invented", ["x"], 1)]
 
         monkeypatch.setattr(runner_mod.invariants, "check", corrupt)
@@ -210,7 +210,7 @@ class TestAViolationFailsTheRun:
         bench.run()
         monkeypatch.setattr(
             runner_mod.invariants, "check",
-            lambda cfg, state, report=None, payload=None: [
+            lambda cfg, state, report=None, payload=None, seen=None: [
                 invariants.Violation("not-both", "invented", ["x"], 1)])
         report = bench.run()
 
@@ -419,3 +419,21 @@ class TestTheDashboardShowsWhoWasNotToldAbout:
         payload["health"]["counts"]["active"] += 1
 
         assert "counts-reconcile" in rules(invariants.check(bench.cfg, state, None, payload))
+
+    def test_a_car_the_run_never_looked_at_is_not_a_discrepancy(self, bench):
+        """The check must not cry wolf over cars this run did not read."""
+        bench.cfg.set("filters.max_price", 90000)
+        bench.cfg.save()
+        report = bench.run()
+        state = bench.state()
+        seen = {lid for lid in state.listings}
+
+        # A hidden car from some other search that this run never touched.
+        state.listings["elsewhere"] = {
+            "id": "elsewhere", "status": "active", "filtered": True,
+            "filter_reason": "price above maximum", "notified": True,
+            "quiet_reason": "hidden by your rules: price above maximum",
+            "search_id": bench.cfg.searches[0].id, "price": 999999,
+            "unpriced": False,
+        }
+        assert invariants.check(bench.cfg, state, report, None, seen) == []

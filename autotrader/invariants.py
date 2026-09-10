@@ -52,9 +52,15 @@ def _violation(rule: str, detail: str, ids: list[str]) -> Violation:
     return Violation(rule, detail, list(ids)[:MAX_EXAMPLES * 4], len(ids))
 
 
-def check(cfg, state, report=None, payload: dict[str, Any] | None = None
-          ) -> list[Violation]:
-    """Everything that must hold once a run has finished writing state."""
+def check(cfg, state, report=None, payload: dict[str, Any] | None = None,
+          seen: set[str] | None = None) -> list[Violation]:
+    """Everything that must hold once a run has finished writing state.
+
+    ``seen`` is the set of listing ids this run actually read. Without it the
+    count checks would compare a run's decisions against every car in state,
+    including ones this run never looked at - which is a difference, not a
+    fault, and would have made the check cry wolf on its first live run.
+    """
     out: list[Violation] = []
     listings = state.listings
     configured = {s.id for s in cfg.searches}
@@ -141,17 +147,21 @@ def check(cfg, state, report=None, payload: dict[str, Any] | None = None
             f"{GRACE_RUNS} runs without being resolved either way", stuck))
 
     # ---- the numbers agree with each other -------------------------
-    hidden = sum(1 for e in active.values() if e.get("filtered"))
     if report is not None and getattr(report, "filtered_out", None) is not None:
-        # Only comparable on a run that read every search: a run that skipped
-        # one is not claiming to have counted its cars.
+        # Like against like: what this run decided to hide, against the cars
+        # this run actually looked at. A car it never read is not evidence of
+        # anything - and a run that failed a search is not claiming to have
+        # counted that search's cars at all.
+        pool = active if seen is None else {
+            lid: e for lid, e in active.items() if lid in seen}
+        hidden = sum(1 for e in pool.values() if e.get("filtered"))
         if (report.searches_run and report.searches_run == len(configured)
                 and not report.searches_failed and not report.empty_parses
                 and report.filtered_out != hidden):
             out.append(Violation(
                 "counts-reconcile",
                 f"the run reported {report.filtered_out} listing(s) hidden by "
-                f"your rules; state holds {hidden}"))
+                f"your rules; state holds {hidden} among the cars it read"))
 
     if payload is not None:
         counts = (payload.get("health") or {}).get("counts") or {}

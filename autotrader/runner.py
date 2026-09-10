@@ -843,7 +843,7 @@ def run(cfg: Config | None = None, state: State | None = None, *,
             except Exception as exc:  # noqa: BLE001 - never the reason a run fails
                 log.warning("could not build the dashboard payload: %s", exc)
                 payload = None
-            broken = invariants.check(cfg, state, report, payload)
+            broken = invariants.check(cfg, state, report, payload, seen_anywhere)
             if broken:
                 report.invariants = [str(v) for v in broken]
                 written = invariants.write(broken, cfg, state)
