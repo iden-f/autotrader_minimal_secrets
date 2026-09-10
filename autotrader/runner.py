@@ -50,6 +50,9 @@ class RunReport:
     price_rises: int = 0
     removed: int = 0
     filtered_out: int = 0
+    # Cars that passed every filter and simply have no figure on them.
+    unpriced: int = 0
+    priced: int = 0
     notified: list[str] = field(default_factory=list)
     errors: list[str] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
@@ -72,6 +75,7 @@ class RunReport:
             "listings_seen": self.listings_seen, "new": self.new,
             "price_drops": self.price_drops, "price_rises": self.price_rises,
             "removed": self.removed, "filtered_out": self.filtered_out,
+            "unpriced": self.unpriced, "priced": self.priced,
             "requests_made": self.requests_made,
             "budget_exhausted": self.budget_exhausted,
             "empty_parses": self.empty_parses,
@@ -353,7 +357,23 @@ def run(cfg: Config | None = None, state: State | None = None, *,
             disputed = [l for l in listings if state.known(l.id)
                         and _price_disagrees(l, state)]
             unknown = [l for l in listings if not state.known(l.id)]
-            enrich_listings(disputed + unknown, cfg, fetcher, report)
+            # A card that shows no price often sits above a listing page that
+            # does, and a dealer who withheld a figure last week may have
+            # published one since. Re-checking is worth a request - but only a
+            # few times, or a genuinely call-for-price car would be re-fetched
+            # once a run, forever, which is the churn the disputed-price rule
+            # above exists to avoid.
+            recheck_limit = int(scraping.get("unpriced_rechecks", 3) or 0)
+            still_unpriced = [
+                l for l in listings
+                if l.price is None and state.known(l.id)
+                and (state.listings.get(l.id) or {}).get("price") is None
+                and int((state.listings.get(l.id) or {}).get("price_checks", 0)) < recheck_limit
+            ]
+            for listing in still_unpriced:
+                entry = state.listings.get(listing.id) or {}
+                entry["price_checks"] = int(entry.get("price_checks", 0)) + 1
+            enrich_listings(disputed + unknown + still_unpriced, cfg, fetcher, report)
 
             if report.first_run and not assessments[-1].trustworthy:
                 # Keep the evidence: a parse that produced nonsense is as hard
@@ -384,8 +404,9 @@ def run(cfg: Config | None = None, state: State | None = None, *,
             search_filters = rules["filters"]
             search_notify = rules["notify_on"]
 
-            kept, dropped = filters.apply(listings, search_filters)
+            kept, unpriced, dropped = filters.apply(listings, search_filters)
             report.filtered_out += len(dropped)
+            report.unpriced += len(unpriced)
 
             seen_ids = {l.id for l in listings}
             for listing in kept:
@@ -412,6 +433,39 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                     report.price_rises += 1
                     if search_notify.get("price_rise", False):
                         queue(change)
+                elif change.kind == Change.PRICED:
+                    report.priced += 1
+                    if search_notify.get("priced", True):
+                        queue(change)
+
+            # "Call for price" cars are tracked and stay visible; they are not
+            # rejections, they are cars we cannot judge yet. require_price now
+            # decides whether they are worth an alert, not whether they exist.
+            # None means "not set": follow require_price, which is the switch
+            # people actually reach for. An explicit true or false wins.
+            want_unpriced = search_notify.get("unpriced")
+            tell_me_about_unpriced = (
+                not bool(search_filters.get("require_price"))
+                if want_unpriced is None else bool(want_unpriced))
+            for listing in unpriced:
+                change = state.record(listing)
+                if change is None:
+                    continue
+                if change.kind == Change.NEW:
+                    entry = state.listings.get(listing.id, {})
+                    if entry.get("notified"):
+                        continue
+                    report.new += 1
+                    if tell_me_about_unpriced and search_notify.get("new", True):
+                        queue(change)
+                    else:
+                        # Seen, recorded, deliberately quiet - so it cannot
+                        # come back as "new" once a price appears on it.
+                        state.mark_notified([listing.id])
+                    archive_mod.archive_listing(listing, archive_conf, fetcher)
+                elif change.kind == Change.PRICED and search_notify.get("priced", True):
+                    report.priced += 1
+                    queue(change)
 
             # Cars that were filtered out still count as "seen", so they do not
             # look like removals on the next pass.

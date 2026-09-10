@@ -34,6 +34,7 @@ def headline(changes: list[Change]) -> str:
     drops = sum(1 for c in changes if c.kind == Change.PRICE_DROP)
     rises = sum(1 for c in changes if c.kind == Change.PRICE_RISE)
     gone = sum(1 for c in changes if c.kind == Change.REMOVED)
+    priced = sum(1 for c in changes if c.kind == Change.PRICED)
     bits = []
     if new:
         bits.append(f"{new} new listing{'s' if new != 1 else ''}")
@@ -41,6 +42,8 @@ def headline(changes: list[Change]) -> str:
         bits.append(f"{drops} price drop{'s' if drops != 1 else ''}")
     if rises:
         bits.append(f"{rises} price increase{'s' if rises != 1 else ''}")
+    if priced:
+        bits.append(f"{priced} price published")
     if gone:
         bits.append(f"{gone} removed")
     return "AutoTrader: " + (", ".join(bits) if bits else "no changes")
@@ -51,6 +54,8 @@ def _change_prefix(change: Change) -> str:
         return f"PRICE DROP ${abs(change.delta or 0):,} off - "
     if change.kind == Change.PRICE_RISE:
         return f"Price up ${abs(change.delta or 0):,} - "
+    if change.kind == Change.PRICED:
+        return "Price now shown - "
     if change.kind == Change.REMOVED:
         return "Removed - "
     return ""
@@ -113,6 +118,8 @@ def as_telegram_html(changes: list[Change], *, limit: int = 12) -> str:
             prefix = f"↓ <b>${abs(change.delta or 0):,} off</b> "
         elif change.kind == Change.PRICE_RISE:
             prefix = f"↑ ${abs(change.delta or 0):,} more "
+        elif change.kind == Change.PRICED:
+            prefix = "💲 price published – "
         elif change.kind == Change.REMOVED:
             prefix = "✖ gone – "
         lines.append("")
@@ -148,6 +155,10 @@ def as_email_html(changes: list[Change], *, limit: int = 25,
         elif change.kind == Change.NEW:
             badge = ('<span style="display:inline-block;background:#1d4ed8;color:#ffffff;'
                      'font-size:12px;font-weight:700;padding:3px 8px;border-radius:99px;">NEW</span>')
+        elif change.kind == Change.PRICED:
+            badge = ('<span style="display:inline-block;background:#0f7b3f;color:#ffffff;'
+                     'font-size:12px;font-weight:700;padding:3px 8px;border-radius:99px;">'
+                     'PRICE SHOWN</span>')
         elif change.kind == Change.REMOVED:
             badge = ('<span style="display:inline-block;background:#6b7280;color:#ffffff;'
                      'font-size:12px;font-weight:700;padding:3px 8px;border-radius:99px;">REMOVED</span>')
@@ -212,7 +223,8 @@ def as_email_html(changes: list[Change], *, limit: int = 25,
 def as_discord_embeds(changes: list[Change], *, limit: int = 10) -> list[dict[str, Any]]:
     """Discord caps a message at 10 embeds."""
     colours = {Change.NEW: 0x1D4ED8, Change.PRICE_DROP: 0x0F7B3F,
-               Change.PRICE_RISE: 0x9A3412, Change.REMOVED: 0x6B7280}
+               Change.PRICE_RISE: 0x9A3412, Change.PRICED: 0x0F7B3F,
+               Change.REMOVED: 0x6B7280}
     embeds: list[dict[str, Any]] = []
     for change in changes[:min(limit, 10)]:
         listing = change.listing

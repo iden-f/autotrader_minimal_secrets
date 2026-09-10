@@ -42,6 +42,7 @@ class Change:
     NEW = "new"
     PRICE_DROP = "price_drop"
     PRICE_RISE = "price_rise"
+    PRICED = "priced"
     REMOVED = "removed"
 
     def __init__(self, kind: str, listing: Listing, *, old_price: int | None = None,
@@ -72,6 +73,9 @@ class Change:
             pct = self.delta_pct or 0.0
             return (f"Price {arrow} ${abs(delta):,} ({abs(pct):.1f}%) - "
                     f"${self.old_price:,} to ${self.new_price:,}")
+        if self.kind == Change.PRICED:
+            return (f"Price published - ${self.new_price:,}"
+                    if self.new_price else "Price published")
         if self.kind == Change.REMOVED:
             return "Listing removed"
         return self.kind
@@ -195,6 +199,10 @@ class State:
             entry.update({
                 "first_seen": now, "last_seen": now, "status": "active",
                 "notified": False, "filtered": filtered,
+                # A fact about the car, not about the filters: it is tracked
+                # either way, and this is what tells the dashboard and the
+                # "price published" alert apart from a price drop.
+                "unpriced": listing.price is None,
                 "price_history": ([{"at": now, "price": listing.price}]
                                   if listing.price is not None else []),
             })
@@ -227,6 +235,9 @@ class State:
         # by misses it accrued before.
         entry["misses"] = 0
         entry["filtered"] = filtered
+        was_unpriced = (existing.get("unpriced") if "unpriced" in existing
+                        else existing.get("price") is None)
+        entry["unpriced"] = listing.price is None
         entry.pop("removed_at", None)
         entry["notified"] = True if was_imported else existing.get("notified", False)
         history = list(existing.get("price_history") or [])
@@ -254,6 +265,12 @@ class State:
             if old_price is not None and not was_imported:
                 kind = Change.PRICE_DROP if listing.price < old_price else Change.PRICE_RISE
                 change = Change(kind, merged, old_price=old_price, new_price=listing.price)
+            elif was_unpriced and not was_imported:
+                # A "call for price" car has put a figure on itself. That is
+                # not a price drop - there is nothing to compare against - but
+                # it is the moment the car becomes judgeable, which is the
+                # whole reason for tracking it while it had no price.
+                change = Change(Change.PRICED, merged, new_price=listing.price)
         else:
             entry.pop("price_disputed", None)
             if not history and listing.price is not None:

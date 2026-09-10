@@ -52,9 +52,34 @@ def test_blank_filter_entries_are_ignored():
 
 
 def test_apply_splits_and_reports_reasons():
-    kept, dropped = apply([car(id="1"), car(id="2", price=200000)], {"max_price": 100000})
+    kept, unpriced, dropped = apply([car(id="1"), car(id="2", price=200000)],
+                                    {"max_price": 100000})
     assert [l.id for l in kept] == ["1"]
+    assert unpriced == []
     assert dropped[0][0].id == "2" and "above maximum" in dropped[0][1]
+
+
+def test_a_car_with_no_price_gets_its_own_bucket():
+    """require_price stops hiding cars and starts categorising them."""
+    kept, unpriced, dropped = apply(
+        [car(id="1"), car(id="2", price=None)], {"require_price": True})
+
+    assert [l.id for l in kept] == ["1"]
+    assert [l.id for l in unpriced] == ["2"]
+    assert dropped == []
+
+
+def test_a_car_excluded_for_another_reason_is_not_called_unpriced():
+    """The reason reported has to be the real one."""
+    verdict = check(car(price=None, title="2020 BMW M5 salvage"),
+                    {"require_price": True, "exclude_keywords": ["salvage"]})
+    assert not verdict.keep and not verdict.unpriced
+    assert "salvage" in verdict.reason
+
+
+def test_without_require_price_an_unpriced_car_is_simply_kept():
+    kept, unpriced, dropped = apply([car(price=None)], {"max_price": 100000})
+    assert len(kept) == 1 and not unpriced and not dropped
 
 
 def test_a_drop_must_clear_both_thresholds():

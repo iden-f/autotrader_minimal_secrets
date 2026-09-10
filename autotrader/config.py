@@ -100,6 +100,10 @@ DEFAULTS: dict[str, Any] = {
             "new": True,
             "price_drop": True,
             "price_rise": False,
+            # A "call for price" car is announced unless require_price says
+            # you would rather not hear about them; either way it is tracked.
+            "unpriced": None,
+            "priced": True,
             "removed": False,
             "errors": True,
         },
@@ -123,6 +127,9 @@ DEFAULTS: dict[str, Any] = {
         "delay_ms": 1200,
         "enrich_details": True,
         "enrich_limit": 25,
+        # How many times to look at a call-for-price car's own page before
+        # believing the dealer really is withholding the figure.
+        "unpriced_rechecks": 3,
         # A ceiling on all HTTP requests in one run (search pages, detail pages
         # and photos), so a misconfigured crawl cannot hammer the site.
         "request_budget": 250,

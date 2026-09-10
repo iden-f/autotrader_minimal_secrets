@@ -56,6 +56,27 @@ def drop_price(html, old, new):
                 .replace(f'"priceFormatted":"$ {old:,}"', f'"priceFormatted":"$ {new:,}"'))
 
 
+def publish_price(html, listing_id, price):
+    """Give one real call-for-price car a figure, as a dealer eventually does."""
+    payload = json.loads(re.search(r'id="__NEXT_DATA__"[^>]*>(.*?)</script>',
+                                   html, re.S).group(1))
+    listings = payload["props"]["pageProps"]["searchResults"]["listings"]
+    target = next(l for l in listings if listing_id in l["url"])
+    assert target["price"]["priceRaw"] is None, "that car already had a price"
+    target["price"] = {"priceFormatted": f"$ {price:,}", "priceRaw": price}
+    return re.sub(r'(id="__NEXT_DATA__"[^>]*>).*?(</script>)',
+                  lambda m: m.group(1) + json.dumps(payload, ensure_ascii=False) + m.group(2),
+                  html, count=1, flags=re.S)
+
+
+def unpriced_ids(html):
+    payload = json.loads(re.search(r'id="__NEXT_DATA__"[^>]*>(.*?)</script>',
+                                   html, re.S).group(1))
+    return [re.search(r"([0-9a-f-]{36})$", l["url"]).group(1)
+            for l in payload["props"]["pageProps"]["searchResults"]["listings"]
+            if l["price"]["priceRaw"] is None]
+
+
 def remove_car(html, listing_id):
     """Drop one listing object out of the payload."""
     data = json.loads(re.search(
@@ -300,13 +321,31 @@ class TestFiltersOnRealCars:
         assert announced
         assert all(l.mileage_km is None or l.mileage_km <= 50000 for l in announced)
 
-    def test_requiring_a_price_hides_call_for_price_cars(self, live):
+    def test_call_for_price_cars_are_tracked_but_not_announced(self, live):
+        """require_price used to make them vanish. Eight of these nineteen
+        real cars have no figure on them; they are worth knowing about."""
         live.cfg.set("filters.require_price", True)
         live.cfg.save()
         report = live.run()
-        assert report.filtered_out >= 1
+
+        assert report.unpriced >= 1
         announced = [c.listing for batch in live.sink.digests for c in batch]
-        assert all(l.price for l in announced)
+        assert all(l.price for l in announced), "an unpriced car was announced"
+
+        # Recorded, visible, and flagged - not filtered away.
+        entries = json.loads((live.path / "state.json").read_text())["listings"]
+        unpriced = [e for e in entries.values() if e.get("unpriced")]
+        assert len(unpriced) == report.unpriced
+        assert not any(e.get("filtered") for e in unpriced)
+
+    def test_an_unpriced_car_can_be_asked_for(self, live):
+        live.cfg.set("filters.require_price", True)
+        live.cfg.data["searches"][0]["notify_on"] = {"unpriced": True}
+        live.cfg.save()
+        live.run()
+
+        announced = [c.listing for batch in live.sink.digests for c in batch]
+        assert any(l.price is None for l in announced)
 
     def test_a_year_floor_uses_the_recovered_model_year(self, live):
         live.cfg.set("filters.min_year", 2023)
@@ -392,3 +431,98 @@ class TestForgettingRemovedSearches:
         live.run()
         state = State.load(live.path / "state.json")
         assert {s.id for s in live.cfg.searches} <= set(state.data["searches"])
+
+
+class TestCallForPriceOnRealCars:
+    """Eight of these nineteen real cars publish no figure at all.
+
+    Under the old rule, ``require_price`` deleted them from view: not filtered
+    into a bucket, not counted, simply absent. On a search whose whole point is
+    finding a bargain, the cars a dealer will not price in public are the last
+    ones you want silently dropped.
+    """
+
+    def test_the_real_payload_really_does_contain_unpriced_cars(self, live_html):
+        assert len(unpriced_ids(live_html)) == 8
+
+    def test_they_are_kept_without_require_price(self, live):
+        report = live.run()
+        assert report.unpriced == 0        # nothing to bucket: they are kept
+        entries = json.loads((live.path / "state.json").read_text())["listings"]
+        assert sum(1 for e in entries.values() if e.get("price") is None) == 8
+
+    def test_a_price_that_appears_later_is_announced(self, live):
+        live.cfg.set("filters.require_price", True)
+        live.cfg.save()
+        live.run()
+        live.sink.digests.clear()
+
+        target = unpriced_ids(live.html)[0]
+        live.run(publish_price(live.html, target, 96500))
+
+        announced = [c for batch in live.sink.digests for c in batch]
+        priced = [c for c in announced if c.kind == Change.PRICED]
+        assert len(priced) == 1
+        assert priced[0].listing.id == target
+        assert priced[0].new_price == 96500
+        assert "96,500" in priced[0].describe()
+
+    def test_a_published_price_is_not_reported_as_a_price_drop(self, live):
+        """There is nothing to compare against, so calling it a drop is a lie."""
+        live.run()
+        live.sink.digests.clear()
+        target = unpriced_ids(live.html)[0]
+        report = live.run(publish_price(live.html, target, 96500))
+
+        assert report.price_drops == 0 and report.price_rises == 0
+        assert report.priced == 1
+
+    def test_an_unpriced_car_is_never_re_announced_as_new(self, live):
+        """It was recorded quietly, so it must not resurface as a discovery."""
+        live.cfg.set("filters.require_price", True)
+        live.cfg.save()
+        live.run()
+        live.sink.digests.clear()
+
+        report = live.run()
+        assert report.new == 0
+        assert not [c for batch in live.sink.digests for c in batch]
+
+    def test_an_unpriced_car_is_not_reported_as_removed(self, live):
+        """It is still on the page; it just has no figure on it."""
+        live.cfg.set("filters.require_price", True)
+        live.cfg.data["searches"][0]["notify_on"] = {"removed": True}
+        live.cfg.save()
+        for _ in range(4):
+            report = live.run()
+        assert report.removed == 0
+
+    def test_the_detail_page_is_consulted_a_bounded_number_of_times(
+            self, live, monkeypatch):
+        """Worth a look; not worth a request every run forever."""
+        live.cfg.set("scraping.enrich_details", True)
+        live.cfg.set("scraping.unpriced_rechecks", 2)
+        live.cfg.save()
+
+        fetched: list[str] = []
+        target = unpriced_ids(live.html)[0]
+
+        def go():
+            fetcher = FakeFetcher(live.html)
+            original = fetcher.get
+
+            def spy(url, **kw):
+                if "/offers/" in url:
+                    fetched.append(url)
+                return original(url, **kw)
+
+            fetcher.get = spy
+            return run(live.cfg, State.load(live.path / "state.json"),
+                       fetcher=fetcher, env={})
+
+        for _ in range(5):
+            go()
+
+        looks = [u for u in fetched if target in u]
+        # Once as an unknown car, then twice more on the recheck allowance.
+        assert len(looks) == 3, looks

@@ -17,6 +17,11 @@ from .listing import Listing
 class Verdict:
     keep: bool
     reason: str = ""
+    # A car with no published figure is not the same as a car that failed a
+    # filter. "Call for price" is how dealers advertise the ones they expect
+    # to negotiate on, and hiding them - which is what require_price used to
+    # do - hides exactly the listings someone hunting a bargain wants to see.
+    unpriced: bool = False
 
 
 def _haystack(listing: Listing) -> str:
@@ -33,10 +38,7 @@ def check(listing: Listing, filters: dict[str, Any] | None) -> Verdict:
 
     min_price = f.get("min_price")
     max_price = f.get("max_price")
-    if listing.price is None:
-        if f.get("require_price"):
-            return Verdict(False, "no price listed")
-    else:
+    if listing.price is not None:
         if min_price and listing.price < int(min_price):
             return Verdict(False, f"price ${listing.price:,} below minimum ${int(min_price):,}")
         if max_price and listing.price > int(max_price):
@@ -68,19 +70,34 @@ def check(listing: Listing, filters: dict[str, Any] | None) -> Verdict:
         if seller and listing.seller and seller in listing.seller.lower():
             return Verdict(False, f"excluded seller: {listing.seller}")
 
+    # Last, so a car excluded for some other reason is reported for that
+    # reason rather than being filed under "call for price".
+    if listing.price is None and f.get("require_price"):
+        return Verdict(False, "call for price - no figure published", unpriced=True)
+
     return Verdict(True)
 
 
 def apply(listings: list[Listing], filters: dict[str, Any] | None
-          ) -> tuple[list[Listing], list[tuple[Listing, str]]]:
-    """Split listings into kept and rejected (with the reason for each)."""
+          ) -> tuple[list[Listing], list[Listing], list[tuple[Listing, str]]]:
+    """Split listings three ways: kept, call-for-price, and rejected.
+
+    The middle bucket is the point. A car that passes every filter you can
+    check and simply has no figure on it is not a rejection - it is a car you
+    cannot judge yet, and it stays tracked and visible instead of vanishing.
+    """
     kept: list[Listing] = []
+    unpriced: list[Listing] = []
     dropped: list[tuple[Listing, str]] = []
     for listing in listings:
         verdict = check(listing, filters)
-        (kept if verdict.keep else dropped).append(
-            listing if verdict.keep else (listing, verdict.reason))
-    return kept, dropped
+        if verdict.keep:
+            kept.append(listing)
+        elif verdict.unpriced:
+            unpriced.append(listing)
+        else:
+            dropped.append((listing, verdict.reason))
+    return kept, unpriced, dropped
 
 
 def is_significant_drop(old_price: int, new_price: int,
