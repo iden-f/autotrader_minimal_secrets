@@ -801,3 +801,85 @@ class TestARealCarComingBack:
         report = live.run()
         assert report.relisted == 1
         assert report.new == 0
+
+
+class TestTwoSearchesThatOverlap:
+    """Both of the real watches return the same cars.
+
+    A Canada-wide any-year watch is a superset of a 2021-2023 one, so every
+    car the narrow search finds is also found by the broad one. Whichever ran
+    last used to take ownership of the car - and with it, which search's rules
+    applied. The narrow watch reported zero cars while working perfectly, and
+    its cars were being filtered out by a price ceiling it does not have.
+    """
+
+    @pytest.fixture
+    def pair(self, tmp_path, monkeypatch, live_html):
+        monkeypatch.chdir(tmp_path)
+        cfg = Config.defaults(tmp_path / "config.json")
+        cfg.add_search(f"{BASE}?modelyearfrom=2021", "Narrow")
+        cfg.add_search(f"{BASE}?prx=-2", "Broad")
+        cfg.set("scraping.delay_ms", 0)
+        cfg.set("scraping.retries", 0)
+        cfg.set("scraping.enrich_details", False)
+        cfg.set("archive.mode", "off")
+        # The broad watch will not pay more than $80,000; the narrow one has
+        # no ceiling at all.
+        cfg.data["searches"][1]["filters"] = {"max_price": 80000}
+        cfg.save()
+
+        sink = Capture()
+        use_channels(monkeypatch, runner_mod, [sink])
+
+        def go(html=None):
+            return run(cfg, State.load(tmp_path / "state.json"),
+                       fetcher=FakeFetcher(html or live_html), env={})
+
+        return type("Pair", (), {"cfg": cfg, "sink": sink, "run": staticmethod(go),
+                                 "path": tmp_path, "html": live_html})
+
+    def _entries(self, pair):
+        return json.loads((pair.path / "state.json").read_text())["listings"]
+
+    def test_the_first_search_to_list_a_car_owns_it(self, pair):
+        pair.run()
+        owners = {e["search_name"] for e in self._entries(pair).values()}
+        assert owners == {"Narrow"}, owners
+
+    def test_a_car_one_search_wants_is_not_filtered_out_by_the_other(self, pair):
+        pair.run()
+        dear = [e for e in self._entries(pair).values()
+                if (e.get("price") or 0) > 80000]
+        assert dear, "no car expensive enough to test with"
+        assert not any(e["filtered"] for e in dear), \
+            "the broad watch's ceiling was applied to the narrow watch's cars"
+
+    def test_the_narrow_search_still_reports_its_own_cars(self, pair):
+        pair.run()
+        from autotrader.dashboard import build_payload
+        payload = build_payload(pair.cfg, State.load(pair.path / "state.json"), {})
+        counts = {s["name"]: s["counts"]["total"] for s in payload["searches"]}
+        assert counts["Narrow"] > 0
+
+    def test_a_car_the_other_search_still_lists_is_not_called_sold(self, pair):
+        """Absence from one search is not absence from the site."""
+        pair.run()
+        entries = self._entries(pair)
+        target = next(i for i, e in entries.items() if e["search_name"] == "Narrow")
+
+        # The narrow search stops matching it; the broad one still returns it.
+        narrowed = remove_car(pair.html, target)
+
+        def two_sided(url):
+            return narrowed if "modelyearfrom" in url else pair.html
+
+        class Sided(FakeFetcher):
+            def get(self, url, referer=None, allow_block=False):
+                self.search_html = two_sided(url)
+                return super().get(url, referer=referer, allow_block=allow_block)
+
+        for _ in range(4):
+            report = run(pair.cfg, State.load(pair.path / "state.json"),
+                         fetcher=Sided(pair.html), env={})
+        assert report.removed == 0
+        assert self._entries(pair)[target]["status"] == "active"

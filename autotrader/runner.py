@@ -301,6 +301,12 @@ def run(cfg: Config | None = None, state: State | None = None, *,
     )
 
     changes: list[Change] = []
+    # Ids this run has already assigned to a search, and ids seen by any
+    # search at all - the first decides who owns a car, the second decides
+    # whether it can possibly have gone.
+    owned: set[str] = set()
+    seen_anywhere: set[str] = set()
+    removal_plan: list[tuple[Any, bool, bool, dict[str, Any]]] = []
     blocked_searches: list[str] = []
     assessments: list[validate.Assessment] = []
     drifted: list[tuple[str, list[str], dict[str, Any]]] = []
@@ -490,11 +496,20 @@ def run(cfg: Config | None = None, state: State | None = None, *,
             search_filters = rules["filters"]
             search_notify = rules["notify_on"]
 
-            kept, unpriced, dropped = filters.apply(listings, search_filters)
+            # A car listed by two searches belongs to the first one that
+            # returned it. Without that rule the last search to run overwrites
+            # the car's owner and its rules: a Canada-wide watch with a
+            # $100,000 ceiling was quietly filtering out cars that a narrower
+            # 2021-2023 watch had already accepted, and the narrow search
+            # reported nothing at all because every one of its cars had been
+            # reassigned.
+            mine = [l for l in listings if l.id not in owned]
+            owned.update(l.id for l in mine)
+            seen_anywhere.update(l.id for l in listings)
+
+            kept, unpriced, dropped = filters.apply(mine, search_filters)
             report.filtered_out += len(dropped)
             report.unpriced += len(unpriced)
-
-            seen_ids = {l.id for l in listings}
             for listing in kept:
                 change = state.record(listing, filtered=False)
                 if change is None:
@@ -586,13 +601,20 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                     f"{search.name}: only {len(listings)} of the usual "
                     f"{usual_count} listings were read, so removals are not "
                     f"being called this run.")
+            # Held until every search has been read: a car this search no
+            # longer lists may well have been returned by another one, and
+            # calling that a sale would be wrong.
+            removal_plan.append((search, trustworthy, result.complete,
+                                 search_notify))
+
+        for search, trustworthy, complete, search_notify in removal_plan:
             if trustworthy:
                 # When the search has more results than we read, absence from
                 # our sample is not evidence: the site rotates which listings
                 # surface, and cars drop in and out of the window every run.
                 # Ask the listing page before calling a sale.
                 confirm = None
-                if not result.complete:
+                if not complete:
                     checked = [0]
 
                     def confirm(entry: dict[str, Any]) -> bool | None:
@@ -621,7 +643,7 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                         entry.pop("gone_evidence", None)
                         return True
 
-                for change in state.mark_missing(search.id, seen_ids,
+                for change in state.mark_missing(search.id, seen_anywhere,
                                                  confirm=confirm):
                     report.removed += 1
                     if search_notify.get("removed", False):
