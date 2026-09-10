@@ -405,3 +405,17 @@ class TestTheDashboardShowsWhoWasNotToldAbout:
 
         accounted = build_payload(bench.cfg, state, {})["health"]["accounted"]
         assert accounted["unexplained"] == 1
+
+    def test_a_hidden_car_counted_as_live_is_caught(self, bench):
+        from autotrader.dashboard import build_payload
+        bench.cfg.set("filters.max_price", 90000)
+        bench.cfg.save()
+        bench.run()
+        state = bench.state()
+        payload = build_payload(bench.cfg, state, {})
+
+        # Pretend a hidden car slipped into the live count.
+        payload["health"]["counts"]["filtered"] -= 1
+        payload["health"]["counts"]["active"] += 1
+
+        assert "counts-reconcile" in rules(invariants.check(bench.cfg, state, None, payload))

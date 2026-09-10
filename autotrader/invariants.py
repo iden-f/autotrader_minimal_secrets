@@ -163,6 +163,22 @@ def check(cfg, state, report=None, payload: dict[str, Any] | None = None
                 "counts-reconcile",
                 f"the dashboard says {counts.get('active')} live listing(s) "
                 f"but publishes {published}"))
+        # A car hidden by a rule is still on the site and still tracked, but it
+        # must never be counted or listed as one you are watching.
+        leaked = [l.get("id") for l in payload.get("listings", [])
+                  if l.get("filtered") and not l.get("filter_reason")]
+        if leaked:
+            out.append(_violation(
+                "not-both", "hidden listings published without the rule that "
+                "hid them", [str(i) for i in leaked]))
+        if counts.get("filtered") != sum(
+                1 for l in payload.get("listings", [])
+                if l.get("status") == "active" and l.get("filtered")):
+            out.append(Violation(
+                "counts-reconcile",
+                f"the dashboard says {counts.get('filtered')} hidden listing(s) "
+                f"but publishes a different number"))
+
         # The published file is capped, so it may legitimately hold fewer than
         # state does - never more.
         if published > shown:
