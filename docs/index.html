@@ -1124,14 +1124,18 @@ function renderStatus(){
   const runs = DATA.runs || [];
   $("#runtable").innerHTML = runs.length ? `
     <thead><tr><th>When</th><th>Result</th><th>Seen</th><th>New</th><th>Drops</th>
-      <th>Gone</th><th>Hidden</th><th>Reqs</th><th>Took</th><th>Notes</th></tr></thead>
+      <th title="A call-for-price car published a figure">Priced</th>
+      <th>Gone</th><th title="A car that had been written off is listed again">Back</th>
+      <th>Hidden</th><th>Reqs</th><th>Took</th><th>Notes</th></tr></thead>
     <tbody>${runs.slice(0,20).map(x => `<tr>
       <td>${esc(timeOf(x.at))}</td>
       <td>${x.ok ? '<span class="pill on">ok</span>' : '<span class="pill need">failed</span>'}</td>
       <td class="num">${x.listings_seen ?? 0}</td>
       <td class="num">${x.new ?? 0}</td>
       <td class="num">${x.price_drops ?? 0}</td>
+      <td class="num">${x.priced ?? 0}</td>
       <td class="num">${x.removed ?? 0}</td>
+      <td class="num">${x.relisted ?? 0}</td>
       <td class="num">${x.filtered_out ?? 0}</td>
       <td class="num">${x.requests_made ?? 0}</td>
       <td class="num">${x.duration_s ?? 0}s</td>
