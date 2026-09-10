@@ -10,12 +10,11 @@ name: Check AutoTrader
 on:
   schedule:
     # Every 30 minutes. GitHub queues scheduled jobs on a best-effort basis and
-    # drops them under load, so */15 does not actually run every 15 minutes -
-    # the old workflow asked for 96 runs a day and got far fewer, unevenly.
-    # (A soak test temporarily drops this to hourly, because the soak holds the
-    # same concurrency group for hours and anything more frequent would only
-    # queue up and be superseded.)
-    - cron: '*/10 * * * *'
+    # drops them under load - asking for one every ten minutes this evening
+    # produced none at all for twenty minutes at a stretch - so a shorter
+    # interval buys nothing but a less predictable one. The old workflow asked
+    # for 96 runs a day and got far fewer, unevenly.
+    - cron: '*/30 * * * *'
 
   # Check straight away when the watch list changes, instead of leaving someone
   # who just added a search waiting half an hour to find out whether it works.
