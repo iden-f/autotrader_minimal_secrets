@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -27,6 +27,9 @@ REPORT_PATH = Path("diagnostics/invariants.json")
 GRACE_RUNS = 2
 # Ids listed in the failure message. Enough to debug from, not a dump.
 MAX_EXAMPLES = 8
+# Quiet hours end and outages clear. Longer than this and the queue is not a
+# queue - it is a car nobody is ever going to hear about.
+STUCK_QUEUE_HOURS = 12
 
 
 @dataclass
@@ -103,6 +106,20 @@ def check(cfg, state, report=None, payload: dict[str, Any] | None = None,
         out.append(_violation(
             "accounted-for", "listings queued for delivery and marked "
             "delivered at the same time", contradictory))
+
+    # An alert owed for days is not "queued", it is lost with extra steps.
+    # Quiet hours end and outages clear; a queue that only grows means nothing
+    # is reaching you and the run should say so rather than counting it as
+    # handled.
+    cutoff = (datetime.now(timezone.utc)
+              - timedelta(hours=STUCK_QUEUE_HOURS)).isoformat(timespec="seconds")
+    stranded = [lid for lid, e in listings.items()
+                if isinstance(e.get("pending"), dict)
+                and str(e["pending"].get("since") or "") < cutoff]
+    if stranded:
+        out.append(_violation(
+            "accounted-for", f"alerts queued for more than "
+            f"{STUCK_QUEUE_HOURS} hours and still not delivered", stranded))
 
     # ---- hiding a car is a decision, so it has a reason -------------
     unexplained = [lid for lid, e in listings.items()

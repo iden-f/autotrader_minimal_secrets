@@ -501,3 +501,33 @@ class TestPruningOnlyForgetsHistory:
                                  "removed_at": "2019-01-01T00:00:00+00:00"}
         assert state.prune(keep_days=0, keep_max=0) == 0
         assert "old" in state.listings
+
+
+class TestAQueueThatNeverDrains:
+    """An alert owed for days is lost with extra steps."""
+
+    def test_a_freshly_queued_alert_is_fine(self, bench):
+        report = bench.run(notify=False)
+        assert not report.invariants
+        assert invariants.check(bench.cfg, bench.state(), report) == []
+
+    def test_one_stuck_for_days_is_caught(self, bench):
+        bench.run(notify=False)
+        state = bench.state()
+        entry = next(e for e in state.listings.values() if e.get("pending"))
+        entry["pending"]["since"] = "2026-01-01T00:00:00+00:00"
+
+        broken = invariants.check(bench.cfg, state)
+        assert "accounted-for" in rules(broken)
+        assert "not delivered" in str(broken[0])
+
+    def test_it_clears_once_the_alert_goes_out(self, bench):
+        bench.run(notify=False)
+        state = bench.state()
+        for entry in state.listings.values():
+            if entry.get("pending"):
+                entry["pending"]["since"] = "2026-01-01T00:00:00+00:00"
+        state.save()
+
+        bench.run()                       # channels are back
+        assert invariants.check(bench.cfg, bench.state()) == []
