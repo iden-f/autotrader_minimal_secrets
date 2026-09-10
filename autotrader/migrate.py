@@ -63,9 +63,18 @@ def read_archive(folder: Path) -> tuple[Listing | None, str | None]:
             log.debug("could not read %s: %s", page, exc)
 
     if listing is None and meta.get("url"):
-        # No usable HTML, but the metadata still names the car.
-        listing = Listing(id=folder.name, url=meta["url"],
-                          title=str(meta.get("title", ""))[:120])
+        if "archived_at" in meta or "price" in meta or "year" in meta:
+            # A v2 metadata file: the facts were read out of the page before
+            # the page was thrown away, so rebuild from them rather than
+            # falling back to the id and a title.
+            try:
+                listing = Listing.from_dict(meta)
+            except (TypeError, ValueError) as exc:
+                log.debug("could not rebuild %s from metadata: %s", folder, exc)
+        if listing is None:
+            # v1 metadata: no usable HTML, but it still names the car.
+            listing = Listing(id=folder.name, url=meta["url"],
+                              title=str(meta.get("title", ""))[:120])
 
     if listing is not None:
         listing.id = folder.name

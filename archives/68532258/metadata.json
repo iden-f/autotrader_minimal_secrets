@@ -1,6 +1,35 @@
 {
   "id": "68532258",
   "url": "https://www.autotrader.ca/a/bmw/m5/oakville/ontario/5_68532258_20251110121311053/",
-  "title": "2 Oakville \u2219 3,364 km 88,500 km 2023 BMW M5 Competition Sedan M5 Competition Black Sapphire \nMetallic Carbon Roof\nAragon Brown Extended Merino Leather interior  Clean Carfax- No accident \n98,888 +HST, Certification & Licensing\n\nPlease book appointment to view this vehicle \n**********\nwisewheelsautosales.com\n********** Trade-in",
-  "saved": "2025-11-12 16:57:06"
+  "title": "2023 BMW M5",
+  "year": 2023,
+  "make": "BMW",
+  "model": "M5",
+  "trim": "Competition",
+  "price": 98888,
+  "price_source": "detail",
+  "card_price": null,
+  "currency": "CAD",
+  "mileage_km": 88500,
+  "location": "Oakville",
+  "province": "Ontario",
+  "seller": "",
+  "seller_type": "",
+  "body": "Sedan",
+  "color": "Black",
+  "transmission": "Automatic",
+  "drivetrain": "AWD",
+  "fuel": "Gas",
+  "engine": "8 cylinder",
+  "vin": "",
+  "images": [
+    "https://mkt-vehicleimages-prd.autotradercdn.ca/photos/202511/1216/5116/fb982b16-3eb6-4648-8ccb-22b3f5393dad.jpg",
+    "https://mkt-vehicleimages-prd.autotradercdn.ca/photos/202511/1216/5126/6ac30362-1eaf-4fd5-b26e-7d73ac041314.jpg"
+  ],
+  "search_id": "",
+  "search_name": "",
+  "source": "",
+  "enriched": true,
+  "archived_at": "2025-11-12T16:57:06+00:00",
+  "compacted_from": "v1-archive"
 }

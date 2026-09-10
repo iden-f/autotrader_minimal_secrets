@@ -111,6 +111,72 @@ def prune(config: dict[str, Any], root: Path = ARCHIVE_DIR,
     return removed
 
 
+def compact(root: Path = ARCHIVE_DIR, *, dry_run: bool = False,
+             keep_images: int = 0) -> dict[str, Any]:
+    """Rewrite v1 archive folders into the metadata-only shape.
+
+    v1 folders hold a ~197 KB ``page.html`` and eight ``image_N.jpg`` files.
+    The images are the same eight pieces of page furniture in all fifty
+    folders - the manufacturer logo strip, not the car. The HTML is worth
+    something, but only for the schema.org data inside it, and once that has
+    been read out into ``metadata.json`` there is no reason to keep 197 KB of
+    markup for a car that sold last year.
+
+    So: read each page one final time, write everything it knows into the v2
+    metadata file, and only then delete it. Nothing is discarded before it has
+    been extracted, and re-running ``migrate`` afterwards rebuilds the same
+    listings from the metadata instead of the HTML.
+    """
+    from .migrate import read_archive     # local: migrate imports this module
+
+    result: dict[str, Any] = {"folders": 0, "upgraded": 0, "failed": [],
+                              "bytes_freed": 0, "removed": []}
+    if not root.exists():
+        return result
+
+    for folder in sorted(p for p in root.iterdir() if p.is_dir()):
+        doomed = [p for p in folder.glob("page.html")]
+        doomed += sorted(folder.glob("image_*"))[keep_images:]
+        if not doomed:
+            continue
+        result["folders"] += 1
+
+        try:
+            listing, saved_at = read_archive(folder)
+        except Exception as exc:  # noqa: BLE001 - a bad archive is not fatal
+            log.warning("could not read %s: %s", folder, exc)
+            listing, saved_at = None, None
+        if listing is None:
+            # Nothing could be extracted, so there is nothing safe to delete.
+            result["failed"].append(folder.name)
+            continue
+
+        payload = listing.to_dict()
+        payload["archived_at"] = saved_at or datetime.now(
+            timezone.utc).isoformat(timespec="seconds")
+        payload["compacted_from"] = "v1-archive"
+        if not dry_run:
+            try:
+                (folder / "metadata.json").write_text(
+                    json.dumps(payload, indent=2, ensure_ascii=False),
+                    encoding="utf-8")
+            except OSError as exc:
+                log.warning("could not rewrite %s: %s", folder, exc)
+                result["failed"].append(folder.name)
+                continue
+        result["upgraded"] += 1
+
+        for item in doomed:
+            try:
+                result["bytes_freed"] += item.stat().st_size
+            except OSError:
+                continue
+            result["removed"].append(str(item))
+            if not dry_run:
+                item.unlink(missing_ok=True)
+    return result
+
+
 def size_report(root: Path = ARCHIVE_DIR) -> dict[str, Any]:
     """What the archive currently costs, for the dashboard's Status tab."""
     if not root.exists():

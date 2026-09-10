@@ -470,6 +470,22 @@ def cmd_ui(args: argparse.Namespace) -> int:
 def cmd_prune(args: argparse.Namespace) -> int:
     cfg = Config.load(args.config)
     conf = dict(cfg.get("archive", {}) or {})
+
+    if args.compact:
+        from .archive import compact
+        result = compact(dry_run=args.dry_run, keep_images=args.keep_images)
+        verb = "would free" if args.dry_run else "freed"
+        print(_ok(f"{verb} {result['bytes_freed'] / 1048576:.1f} MB across "
+                  f"{result['folders']} v1 folder(s)"))
+        print(f"   {DIM}{result['upgraded']} rewritten as metadata, "
+              f"{len(result['removed'])} file(s) removed{RESET}")
+        if result["failed"]:
+            # Nothing is deleted from a folder we could not read, so this is a
+            # report, not a loss.
+            print(_warn(f"left alone (could not be read): "
+                        f"{', '.join(result['failed'][:8])}"))
+        return 0
+
     if args.keep_last is not None:
         conf["keep_last"] = args.keep_last
     if args.keep_days is not None:
@@ -687,6 +703,10 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("prune", help="delete old archive folders")
     p.add_argument("--keep-last", type=int)
     p.add_argument("--keep-days", type=int)
+    p.add_argument("--compact", action="store_true",
+                   help="rewrite v1 folders as metadata and drop the raw HTML")
+    p.add_argument("--keep-images", type=int, default=0,
+                   help="photos to keep per folder when compacting (default 0)")
     p.add_argument("--dry-run", action="store_true")
     p.set_defaults(func=cmd_prune)
 
