@@ -15,7 +15,7 @@ on:
     # (A soak test temporarily drops this to hourly, because the soak holds the
     # same concurrency group for hours and anything more frequent would only
     # queue up and be superseded.)
-    - cron: '*/30 * * * *'
+    - cron: '*/10 * * * *'
 
   # Check straight away when the watch list changes, instead of leaving someone
   # who just added a search waiting half an hour to find out whether it works.
