@@ -124,11 +124,19 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           # `git add -A a b c` stages NOTHING if any pathspec is missing, and
           # `diagnostics/` only exists after a failed parse. That silently
-          # discarded a successful run's results, so add each path that is
-          # actually there.
+          # discarded a successful run's results, so add each path separately.
+          #
+          # "if it exists" is not the test, though: a path the run *deleted*
+          # no longer exists, so guarding on that alone means the deletion is
+          # never staged. That is why the one-shot .capture-raw marker kept
+          # coming back - it was removed on disk every run and restored by the
+          # next checkout, re-capturing the page forever. A path git already
+          # tracks is staged whether it is still there or not.
           for path in state.json docs/data.json archives config.json \
                       NOTIFY.md diagnostics validation-report.md .capture-raw; do
-            if [ -e "$path" ]; then git add -A -- "$path"; fi
+            if [ -e "$path" ] || [ -n "$(git ls-files -- "$path")" ]; then
+              git add -A -- "$path"
+            fi
           done
           if git diff --cached --quiet; then
             echo "nothing changed"

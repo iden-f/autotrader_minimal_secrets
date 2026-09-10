@@ -1,6 +1,0 @@
-Delete this file to stop asking.
-
-While it exists, the next scheduled run saves the live search page itself
-(gzipped, ~70 KB) into diagnostics/ before it does anything else, so a parser
-strategy can be rewritten against real markup. The workflow removes the file
-afterwards, so the capture happens once per time you commit it.
