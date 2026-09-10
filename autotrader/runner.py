@@ -469,8 +469,8 @@ def run(cfg: Config | None = None, state: State | None = None, *,
 
             # Cars that were filtered out still count as "seen", so they do not
             # look like removals on the next pass.
-            for listing in (l for l, _ in dropped):
-                state.record(listing, filtered=True)
+            for listing, why in dropped:
+                state.record(listing, filtered=True, filter_reason=why)
                 state.mark_notified([listing.id])
 
             for change in state.mark_missing(search.id, seen_ids):

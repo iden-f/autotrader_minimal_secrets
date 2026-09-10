@@ -365,7 +365,10 @@ class TestFiltersOnRealCars:
 
 
 class TestFilteredCarsStayOutOfSight:
-    def test_a_filtered_car_is_not_published_to_the_dashboard(self, live):
+    def test_a_filtered_car_is_published_only_as_a_hidden_row(self, live):
+        """It has to be countable and explainable, so the dashboard can say
+        "44 hidden by your rules" instead of quietly showing a smaller number
+        than the site does. It must never look like a car you are watching."""
         from autotrader.dashboard import build_payload
         live.cfg.set("filters.max_price", 100000)
         live.cfg.save()
@@ -373,8 +376,16 @@ class TestFilteredCarsStayOutOfSight:
 
         state = State.load(live.path / "state.json")
         payload = build_payload(live.cfg, state, {})
-        for item in payload["listings"]:
+
+        shown = [i for i in payload["listings"] if not i["filtered"]]
+        hidden = [i for i in payload["listings"] if i["filtered"]]
+        assert shown and hidden
+        for item in shown:
             assert item.get("price") is None or item["price"] <= 100000
+        for item in hidden:
+            assert item["price"] > 100000
+            assert "above maximum" in item["filter_reason"]
+        assert payload["health"]["counts"]["filtered"] == len(hidden)
 
     def test_the_live_count_excludes_filtered_cars(self, live):
         live.cfg.set("filters.max_price", 100000)

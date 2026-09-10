@@ -120,6 +120,21 @@ input.field,select.field{height:36px}
   box-shadow:0 1px 3px rgba(0,0,0,.25)}
 .badge.drop{background:var(--good)} .badge.gone{background:var(--gone)}
 .badge.rise{background:var(--signal)}
+.badge.ask{background:var(--muted)} .badge.rule{background:var(--gone)}
+.card.muted{opacity:.66}
+.card .why{font-size:12px;color:var(--muted);line-height:1.35}
+
+/* ---------- the parser ladder, on the Status tab ---------- */
+.rungs{display:flex;flex-direction:column;gap:8px}
+.rung{display:grid;grid-template-columns:minmax(96px,auto) 1fr minmax(52px,auto);
+  gap:10px;align-items:center;font-size:13px}
+.rung code{font-size:12px}
+.rung .bar{height:7px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.rung .bar i{display:block;height:100%;background:var(--good);border-radius:99px}
+.rung.dead .bar i{background:var(--signal)}
+.rung.dead code{color:var(--signal)}
+.rung.winner code{font-weight:700}
+.rung .n{text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
 .card-body{padding:13px 14px 14px;display:flex;flex-direction:column;gap:9px;flex:1}
 .card h3{font-size:15px;font-weight:600;line-height:1.3}
 .card h3 a{color:inherit;text-decoration:none}
@@ -265,6 +280,8 @@ tr:last-child td{border-bottom:0}
         <div class="chipbar" id="statefilter">
           <button class="chip on" data-state="all" type="button">All</button>
           <button class="chip" data-state="active" type="button">Live</button>
+          <button class="chip" data-state="ask" type="button">Call for price</button>
+          <button class="chip" data-state="hidden" type="button">Hidden by rules</button>
           <button class="chip" data-state="gone" type="button">Gone</button>
           <button class="chip" data-state="drops" type="button">Price drops</button>
         </div>
@@ -399,6 +416,18 @@ tr:last-child td{border-bottom:0}
       <div class="panel">
         <h2>Search health</h2>
         <div class="tablewrap"><table id="healthtable"></table></div>
+      </div>
+      <div class="panel">
+        <h2>How each search is being read</h2>
+        <p class="hint">Four independent parsers try every page and the best result
+          wins. They are listed strongest first. If only one is scoring, the next
+          change to the site takes the bot out &mdash; that is exactly how it went
+          dark for a month.</p>
+        <div id="ladders"></div>
+      </div>
+      <div class="panel">
+        <h2>Notification channels</h2>
+        <div class="tablewrap"><table id="channeltable"></table></div>
       </div>
       <div class="panel">
         <h2>Recent runs</h2>
@@ -625,7 +654,9 @@ async function boot(){
 
 function renderAll(){
   renderStatusbar(); renderListings(); renderSearches(); renderSettings(); renderStatus();
-  $("#t-listings").textContent = (DATA.listings||[]).length;
+  // Cars your rules hid are in the payload so they can be listed and counted
+  // on demand; they must not inflate the number in the sidebar.
+  $("#t-listings").textContent = (DATA.listings||[]).filter(l => !l.filtered).length;
   $("#t-searches").textContent = (CONFIG.searches||[]).length;
   const fails = (DATA.searches||[]).reduce((n,s)=>n+(s.health?.consecutive_failures||0),0);
   $("#t-status").textContent = fails ? "!" : "";
@@ -696,6 +727,8 @@ function card(l){
   if (change < 0) badges.push(`<span class="badge drop">&darr; $${Math.abs(change).toLocaleString()}</span>`);
   else if (change > 0) badges.push(`<span class="badge rise">&uarr; $${change.toLocaleString()}</span>`);
   if (gone) badges.push('<span class="badge gone">Gone</span>');
+  if (l.price == null) badges.push('<span class="badge ask">Call for price</span>');
+  if (l.filtered) badges.push('<span class="badge rule">Hidden</span>');
 
   const first = (l.price_history||[])[0];
   const was = change < 0 && first ? `<span class="was">${money(first.price)}</span>` : "";
@@ -708,7 +741,7 @@ function card(l){
     (l.location || l.province) ? `<span>${esc(l.location || l.province)}</span>` : ""
   ].filter(Boolean).join("");
 
-  return `<article class="card${gone ? " gone" : ""}">
+  return `<article class="card${gone ? " gone" : ""}${l.filtered ? " muted" : ""}">
     <a class="shot" href="${esc(l.url)}" target="_blank" rel="noopener">
       <span class="placeholder">no photo</span>
       ${img ? `<img src="${esc(img)}" alt="" loading="lazy" onerror="this.remove()">` : ""}
@@ -721,9 +754,10 @@ function card(l){
       </div>
       ${sparkline(l)}
       <div class="specs">${specs}</div>
+      ${l.filtered ? `<div class="why">Hidden: ${esc(l.filter_reason || "one of your rules")}</div>` : ""}
       <div class="meta">
         <span>${esc(l.search_name || "")}</span>
-        <span class="id">#${esc(l.id)} &middot; ${esc(dateOf(l.first_seen))}</span>
+        <span class="id" title="${esc(l.id)}">#${esc(String(l.id).slice(0, 8))} &middot; ${esc(dateOf(l.first_seen))}</span>
       </div>
     </div>
   </article>`;
@@ -732,9 +766,17 @@ function card(l){
 function renderListings(){
   let items = (DATA.listings || []).slice();
   if (ui.search !== "all") items = items.filter(l => l.search_id === ui.search);
-  if (ui.state === "active") items = items.filter(l => l.status === "active");
-  else if (ui.state === "gone") items = items.filter(l => l.status === "gone");
-  else if (ui.state === "drops") items = items.filter(l => priceChange(l) < 0);
+  // Cars your own rules hid are published so they can be counted and explained,
+  // but they never appear unless you ask for them - otherwise "All" would show
+  // 44 cars you told the bot you did not want.
+  if (ui.state === "hidden") items = items.filter(l => l.filtered);
+  else {
+    items = items.filter(l => !l.filtered);
+    if (ui.state === "active") items = items.filter(l => l.status === "active");
+    else if (ui.state === "ask") items = items.filter(l => l.price == null && l.status === "active");
+    else if (ui.state === "gone") items = items.filter(l => l.status === "gone");
+    else if (ui.state === "drops") items = items.filter(l => priceChange(l) < 0);
+  }
   if (ui.q) {
     const q = ui.q.toLowerCase();
     items = items.filter(l => [l.title,l.make,l.model,l.trim,l.color,l.location,
@@ -763,8 +805,10 @@ function renderListings(){
       : "<h3>Nothing here yet</h3><p>Add a search on the Searches tab, then run the bot.</p>";
   }
   const sel = $("#which"), current = sel.value;
-  sel.innerHTML = '<option value="all">All searches</option>' +
-    (DATA.searches||[]).map(s => `<option value="${esc(s.id)}">${esc(s.name)}</option>`).join("");
+  const tally = c => c ? ` (${c.active} live${c.filtered ? ", " + c.filtered + " hidden" : ""})` : "";
+  sel.innerHTML = `<option value="all">All searches${tally(DATA.health && DATA.health.counts)}</option>` +
+    (DATA.searches||[]).map(s =>
+      `<option value="${esc(s.id)}">${esc(s.name)}${tally(s.counts)}</option>`).join("");
   sel.value = current && [...sel.options].some(o => o.value === current) ? current : "all";
 }
 
@@ -978,17 +1022,85 @@ function collect(){
 }
 
 /* ============================================================ status */
+function renderLadders(h){
+  const box = $("#ladders");
+  const searches = Object.entries(h.strategies || {});
+  if (!searches.length) {
+    box.innerHTML = '<p class="hint">No searches configured yet.</p>';
+    return;
+  }
+  const drift = h.drift || [];
+  box.innerHTML = searches.map(([id, st]) => {
+    const scores = st.scores || {};
+    const top = Math.max(1, ...Object.values(scores).map(Number));
+    const order = st.order && st.order.length ? st.order : Object.keys(scores);
+    const dead = order.filter(n => !Number(scores[n]));
+    const mine = drift.filter(d => (d.search || "") === (st.name || ""));
+    return `<div style="margin:0 0 18px">
+      <div class="toolbar" style="margin:0 0 8px;justify-content:space-between">
+        <b>${esc(st.name || id)}</b>
+        <span class="pill ${dead.length >= order.length - 1 ? "need" : "on"}">
+          ${order.length - dead.length} of ${order.length} working</span>
+      </div>
+      <div class="rungs">${order.map(n => {
+        const v = Number(scores[n] || 0);
+        return `<div class="rung${v ? "" : " dead"}${n === st.winner ? " winner" : ""}">
+          <code>${esc(n)}${n === st.winner ? " &check;" : ""}</code>
+          <div class="bar"><i style="width:${Math.round(v / top * 100)}%"></i></div>
+          <span class="n">${v || "none"}</span>
+        </div>`;
+      }).join("")}</div>
+      ${dead.length >= order.length - 1 ? `<div class="banner warn" style="margin-top:10px">
+        Only one parser is reading this search. It still works, but there is
+        nothing behind it if the site changes again.</div>` : ""}
+      ${mine.length ? `<div class="banner ${mine.some(d=>d.serious) ? "warn" : ""}" style="margin-top:10px">
+        <b>${mine.some(d=>d.serious) ? "The page changed shape" : "Page shape moved"}:</b>
+        ${esc(mine.flatMap(d => d.reasons || []).join("; "))}</div>` : ""}
+    </div>`;
+  }).join("");
+}
+
+function renderChannels(){
+  const health = DATA.channel_health || {}, cfgd = DATA.channels || {};
+  const rows = Object.entries(cfgd).filter(([n, c]) => c.active || health[n]);
+  $("#channeltable").innerHTML = rows.length ? `
+    <thead><tr><th>Channel</th><th>State</th><th>Last delivered</th><th>Last problem</th></tr></thead>
+    <tbody>${rows.map(([name, c]) => {
+      const hh = health[name] || {};
+      const state = hh.disabled_at
+        ? '<span class="pill need">switched off</span>'
+        : c.active ? '<span class="pill on">active</span>'
+                   : '<span class="pill">idle</span>';
+      return `<tr>
+        <td><b>${esc(c.label || name)}</b>${c.free ? '' : ' <span class="pill">paid</span>'}</td>
+        <td>${state}</td>
+        <td>${esc(timeOf(hh.last_ok)) || "never"}</td>
+        <td style="color:var(--muted);font-size:12px">${esc(hh.last_error || "none")}</td>
+      </tr>`;
+    }).join("")}</tbody>` :
+    '<tbody><tr><td style="color:var(--muted)">No channel has been used yet.</td></tr></tbody>';
+}
+
 function renderStatus(){
   const s = DATA.stats || {}, r = DATA.last_run;
   const kpi = (k,v) => `<div class="kpi"><div class="k">${esc(k)}</div><div class="v">${v}</div></div>`;
+  const h = DATA.health || {}, c = h.counts || {};
+  const rungs = Object.values(h.strategies || {});
+  const worst = rungs.length ? Math.min(...rungs.map(x => (x.working||[]).length)) : null;
   $("#kpis").innerHTML = [
-    kpi("Live listings", s.active ?? 0),
-    kpi("Tracked ever", s.total ?? 0),
+    kpi("Live listings", c.active ?? s.active ?? 0),
+    kpi("Hidden by your rules", c.filtered ?? 0),
+    kpi("Call for price", c.unpriced ?? 0),
     kpi("Median price", s.median_price ? money(s.median_price) : "—"),
-    kpi("Cheapest", s.min_price ? money(s.min_price) : "—"),
     kpi("Last run found", r ? (r.listings_seen ?? 0) : "—"),
-    kpi("Searches failing", (DATA.searches||[]).filter(x=>(x.health?.consecutive_failures||0)>0).length)
+    kpi("Clean runs in a row", h.ok_streak ?? 0),
+    kpi("Parsers working", worst == null ? "—" :
+        `${worst}<span style="color:var(--faint);font-weight:400"> / ${rungs[0].of}</span>`),
+    kpi("Requests last run", `${h.budget?.used ?? 0}<span style="color:var(--faint);font-weight:400"> / ${h.budget?.limit ?? 0}</span>`)
   ].join("");
+
+  renderLadders(h);
+  renderChannels();
 
   const health = (DATA.searches||[]);
   $("#healthtable").innerHTML = health.length ? `
@@ -1005,13 +1117,17 @@ function renderStatus(){
 
   const runs = DATA.runs || [];
   $("#runtable").innerHTML = runs.length ? `
-    <thead><tr><th>When</th><th>Result</th><th>Seen</th><th>New</th><th>Drops</th><th>Took</th><th>Notes</th></tr></thead>
+    <thead><tr><th>When</th><th>Result</th><th>Seen</th><th>New</th><th>Drops</th>
+      <th>Gone</th><th>Hidden</th><th>Reqs</th><th>Took</th><th>Notes</th></tr></thead>
     <tbody>${runs.slice(0,20).map(x => `<tr>
       <td>${esc(timeOf(x.at))}</td>
       <td>${x.ok ? '<span class="pill on">ok</span>' : '<span class="pill need">failed</span>'}</td>
       <td class="num">${x.listings_seen ?? 0}</td>
       <td class="num">${x.new ?? 0}</td>
       <td class="num">${x.price_drops ?? 0}</td>
+      <td class="num">${x.removed ?? 0}</td>
+      <td class="num">${x.filtered_out ?? 0}</td>
+      <td class="num">${x.requests_made ?? 0}</td>
       <td class="num">${x.duration_s ?? 0}s</td>
       <td style="color:var(--muted);font-size:12px">${esc((x.errors||[])[0] || (x.warnings||[])[0] || "")}</td>
     </tr>`).join("")}</tbody>` :
@@ -1046,13 +1162,16 @@ function renderStatus(){
       <p class="hint">Sent via <b>${(n.active||[]).map(esc).join(", ") || "nothing yet"}</b>.</p>`;
   }
 
-  const ch = DATA.channel_health || {};
-  const troubled = Object.entries(ch).filter(([, h]) => h.last_error || h.disabled_at);
-  if (troubled.length) {
+  // A channel that retired itself is worth saying out loud, because it means
+  // alerts silently stopped going somewhere. An ordinary failure is already in
+  // the channels table above and does not need repeating here.
+  const retired = Object.entries(DATA.channel_health || {})
+    .filter(([, h]) => h.disabled_at);
+  if (retired.length) {
     panel.innerHTML += `<div class="banner warn" style="margin-top:12px">
-      ${troubled.map(([name, h]) => h.disabled_at
-        ? `<b>${esc(name)}</b> was switched off automatically &mdash; ${esc(h.last_error || "credentials rejected")}`
-        : `<b>${esc(name)}</b> last failed with: ${esc(h.last_error)}`).join("<br>")}
+      ${retired.map(([name, h]) =>
+        `<b>${esc(name)}</b> switched itself off &mdash; ${esc(h.last_error || "credentials rejected")}`
+      ).join("<br>")}
     </div>`;
   }
 

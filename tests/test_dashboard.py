@@ -92,3 +92,99 @@ class TestPayloadShape:
                                  title=f"Car {i}", price=1000 * i,
                                  price_source="detail", search_id="s"))
         assert len(build_payload(cfg, state, {})["listings"]) == 2
+
+
+class TestTheBotsOwnState:
+    """The dashboard showed cars and nothing else.
+
+    Every question about whether the watcher was still working - is a parser
+    failing? did a channel die? why does it show fewer cars than the site? -
+    had to be answered by reading state.json by hand.
+    """
+
+    def _bench(self, tmp_path):
+        cfg = Config.defaults(tmp_path / "c.json")
+        cfg.add_search("https://www.autotrader.ca/cars/bmw/m5/?rcp=15", "M5")
+        sid = cfg.searches[0].id
+        state = State(path=tmp_path / "s.json")
+        state.record(Listing(id="keep", url="https://www.autotrader.ca/offers/a-" + "0" * 8
+                             + "-1111-2222-3333-444444444444",
+                             title="2021 BMW M5", price=100000, search_id=sid))
+        state.record(Listing(id="ask", url="https://www.autotrader.ca/offers/b-" + "1" * 8
+                             + "-1111-2222-3333-444444444444",
+                             title="2022 BMW M5", price=None, search_id=sid))
+        state.record(Listing(id="nope", url="https://www.autotrader.ca/offers/c-" + "2" * 8
+                             + "-1111-2222-3333-444444444444",
+                             title="2023 BMW M5", price=400000, search_id=sid),
+                     filtered=True, filter_reason="price $400,000 above maximum $150,000")
+        return cfg, state, sid
+
+    def test_hidden_cars_are_published_with_the_reason_they_were_hidden(self, tmp_path):
+        cfg, state, _ = self._bench(tmp_path)
+        payload = build_payload(cfg, state, env={})
+
+        hidden = [l for l in payload["listings"] if l["filtered"]]
+        assert [l["id"] for l in hidden] == ["nope"]
+        assert "above maximum" in hidden[0]["filter_reason"]
+
+    def test_a_hidden_car_carries_no_photos_or_history(self, tmp_path):
+        """It has to be countable and explainable, not browsable."""
+        cfg, state, _ = self._bench(tmp_path)
+        hidden = next(l for l in build_payload(cfg, state, env={})["listings"]
+                      if l["filtered"])
+        assert "images" not in hidden
+        assert len(hidden["price_history"]) <= 2
+
+    def test_counts_separate_live_hidden_and_call_for_price(self, tmp_path):
+        cfg, state, sid = self._bench(tmp_path)
+        payload = build_payload(cfg, state, env={})
+
+        assert payload["health"]["counts"] == {
+            "active": 2, "filtered": 1, "unpriced": 1, "gone": 0, "total": 3}
+        assert payload["searches"][0]["counts"]["active"] == 2
+        assert payload["searches"][0]["counts"]["filtered"] == 1
+
+    def test_the_whole_parser_ladder_is_reported_not_just_the_winner(self, tmp_path):
+        """Two of four scoring is the warning that matters, and it is only
+        visible if the ones scoring zero are named."""
+        cfg, state, sid = self._bench(tmp_path)
+        state.record_shape(sid, {
+            "strategy": "jsonld",
+            "scores": {"jsonld": 20, "embedded_json": 20, "anchors": 0, "regex": 0},
+            "working": ["embedded_json", "jsonld"],
+            "markers": {"offer_links": "many"},
+        })
+        ladder = build_payload(cfg, state, env={})["health"]["strategies"][sid]
+
+        assert ladder["winner"] == "jsonld"
+        assert ladder["order"] == ["jsonld", "embedded_json", "anchors", "regex"]
+        assert ladder["of"] == 4
+        assert ladder["scores"]["anchors"] == 0
+
+    def test_a_run_that_drifted_says_so(self, tmp_path):
+        cfg, state, _ = self._bench(tmp_path)
+        state.record_run({"ok": True, "shape_drift": [
+            {"search": "M5", "reasons": ["the winning strategy changed"], "serious": True}]})
+        health = build_payload(cfg, state, env={})["health"]
+
+        assert health["drift"][0]["serious"] is True
+        assert health["ok_streak"] == 1
+
+    def test_a_broken_streak_is_reported_honestly(self, tmp_path):
+        cfg, state, _ = self._bench(tmp_path)
+        state.record_run({"ok": True})
+        state.record_run({"ok": False})
+        state.record_run({"ok": True})     # most recent
+        assert build_payload(cfg, state, env={})["health"]["ok_streak"] == 1
+
+    def test_hidden_cars_do_not_crowd_live_ones_out_of_the_cap(self, tmp_path):
+        cfg, state, sid = self._bench(tmp_path)
+        cfg.set("dashboard.max_listings", 2)
+        for n in range(20):
+            state.record(Listing(id=f"junk{n}", url=f"https://www.autotrader.ca/a/x/19_{n}_/",
+                                 title="2019 BMW M5", price=999999, search_id=sid),
+                         filtered=True, filter_reason="too dear")
+
+        published = build_payload(cfg, state, env={})["listings"]
+        assert len(published) == 2
+        assert all(not l["filtered"] for l in published)

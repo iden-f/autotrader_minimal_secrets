@@ -185,7 +185,7 @@ class State:
         return Listing.from_dict(raw) if raw else None
 
     def record(self, listing: Listing, *, seen_at: str | None = None,
-               filtered: bool = False) -> Change | None:
+               filtered: bool = False, filter_reason: str = "") -> Change | None:
         """Store a listing and return what changed about it, if anything.
 
         Returns a Change for a genuinely new car or a price move, and None when
@@ -199,6 +199,7 @@ class State:
             entry.update({
                 "first_seen": now, "last_seen": now, "status": "active",
                 "notified": False, "filtered": filtered,
+                "filter_reason": filter_reason,
                 # A fact about the car, not about the filters: it is tracked
                 # either way, and this is what tells the dashboard and the
                 # "price published" alert apart from a price drop.
@@ -235,6 +236,9 @@ class State:
         # by misses it accrued before.
         entry["misses"] = 0
         entry["filtered"] = filtered
+        # Why it was hidden, so the dashboard can say so instead of just
+        # showing a smaller number than the site does.
+        entry["filter_reason"] = filter_reason
         was_unpriced = (existing.get("unpriced") if "unpriced" in existing
                         else existing.get("price") is None)
         entry["unpriced"] = listing.price is None

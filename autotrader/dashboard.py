@@ -17,8 +17,13 @@ import re
 
 from .archive import size_report
 from .config import CHANNEL_SECRETS, Config
+from .parser import STRATEGIES
 from .state import State
 from .urls import describe_search
+
+# The ladder, in order, so the dashboard can show which rungs are missing
+# rather than only which one happened to win.
+STRATEGY_ORDER = tuple(name for name, _ in STRATEGIES)
 
 DOCS_DIR = Path("docs")
 DATA_FILE = DOCS_DIR / "data.json"
@@ -29,7 +34,7 @@ LISTING_FIELDS = (
     "mileage_km", "location", "province", "seller", "body", "color",
     "transmission", "drivetrain", "fuel", "engine", "images", "search_id",
     "search_name", "first_seen", "last_seen", "status", "price_history",
-    "price_source",
+    "price_source", "filtered", "filter_reason", "unpriced", "enriched",
 )
 
 
@@ -42,19 +47,43 @@ def build_payload(cfg: Config, state: State, env: dict[str, str] | None = None
     for entry in state.listings.values():
         if entry.get("imported_from"):
             continue  # a bare id from v1 with no data - nothing to show
-        if entry.get("filtered"):
-            continue  # hidden by the user's own filters
+        # Filtered cars are published too, flagged, so the dashboard can say
+        # "44 hidden by your rules" and show which ones and why. They are
+        # still kept out of every count and list by default: the point is
+        # that a number you can click on beats a number that silently omits.
         item = {k: entry.get(k) for k in LISTING_FIELDS if k in entry}
+        item["filtered"] = bool(entry.get("filtered"))
+        item["unpriced"] = entry.get("price") is None
         item["price_history"] = (entry.get("price_history") or [])[-20:]
         item["is_new"] = False
+        if item["filtered"]:
+            # A hidden car needs to be listable and explainable, not browsable.
+            # Carrying its photos and price history triples the size of the
+            # published file for rows nobody scrolls through.
+            item.pop("images", None)
+            item["price_history"] = item["price_history"][-2:]
         history = item["price_history"]
         if len(history) >= 2 and history[0].get("price") and history[-1].get("price"):
             item["price_change"] = history[-1]["price"] - history[0]["price"]
         listings.append(item)
 
-    listings.sort(key=lambda item: (item.get("first_seen") or "", item.get("id")),
+    listings.sort(key=lambda item: (not item.get("filtered"),
+                                    item.get("first_seen") or "", item.get("id")),
                   reverse=True)
     listings = listings[:limit]
+
+    def counts_for(search_id: str | None = None) -> dict[str, int]:
+        rows = [l for l in listings
+                if search_id is None or l.get("search_id") == search_id]
+        live = [l for l in rows if l.get("status") == "active"]
+        return {
+            "active": sum(1 for l in live if not l.get("filtered")),
+            "filtered": sum(1 for l in live if l.get("filtered")),
+            "unpriced": sum(1 for l in live if l.get("unpriced")
+                            and not l.get("filtered")),
+            "gone": sum(1 for l in rows if l.get("status") == "gone"),
+            "total": len(rows),
+        }
 
     searches = []
     for search in cfg.searches:
@@ -71,9 +100,8 @@ def build_payload(cfg: Config, state: State, env: dict[str, str] | None = None
                 "last_strategy": health.get("last_strategy"),
                 "consecutive_failures": health.get("consecutive_failures", 0),
             },
-            "active_count": sum(1 for l in listings
-                                if l.get("search_id") == search.id
-                                and l.get("status") == "active"),
+            "active_count": counts_for(search.id)["active"],
+            "counts": counts_for(search.id),
             "rules": {
                 "filters": search.filters,
                 "notify_on": search.notify_on,
@@ -92,14 +120,44 @@ def build_payload(cfg: Config, state: State, env: dict[str, str] | None = None
             "missing": status["missing"], "active": status["active"],
         }
 
-    channels = {}
-    for name, status in cfg.channel_status(env).items():
-        channels[name] = {
-            "label": status["label"], "free": status["free"], "help": status["help"],
-            "required": status["required"], "setting": status["setting"],
-            # Only whether a secret is present, never its value.
-            "missing": status["missing"], "active": status["active"],
+    # What the bot knows about itself. The dashboard used to show cars and
+    # nothing else, which meant every question about whether it was still
+    # working - is a strategy failing? did a channel die? is a search being
+    # read at all? - had to be answered by reading state.json by hand.
+    runs = (state.data.get("runs") or [])
+    strategies: dict[str, Any] = {}
+    for search in cfg.searches:
+        shape = ((state.data.get("searches") or {}).get(search.id, {}) or {}).get("shape") or {}
+        scores = shape.get("scores") or {}
+        strategies[search.id] = {
+            "name": search.name,
+            "winner": shape.get("strategy"),
+            "scores": scores,
+            "working": shape.get("working") or [],
+            "of": len(STRATEGY_ORDER),
+            "order": list(STRATEGY_ORDER),
+            "markers": shape.get("markers") or {},
         }
+
+    last = state.last_run or {}
+    ok_streak = 0
+    for run in runs:
+        if not run.get("ok"):
+            break
+        ok_streak += 1
+
+    health = {
+        "counts": counts_for(),
+        "strategies": strategies,
+        "drift": last.get("shape_drift") or [],
+        "ok_streak": ok_streak,
+        "runs_kept": len(runs),
+        "budget": {"used": last.get("requests_made", 0),
+                   "limit": int(cfg.get("scraping.request_budget", 0) or 0),
+                   "exhausted": bool(last.get("budget_exhausted"))},
+        "pending": sum(1 for e in state.listings.values() if e.get("pending")),
+        "diagnostics": last.get("diagnostics") or [],
+    }
 
     ntfy = cfg.get("notifications.channels.ntfy", {}) or {}
     topic = str(ntfy.get("topic") or "").strip()
@@ -132,6 +190,7 @@ def build_payload(cfg: Config, state: State, env: dict[str, str] | None = None
             for name, h in (state.data.get("channels") or {}).items()
         },
         "last_run": state.last_run,
+        "health": health,
         "archive": size_report(),
         "config": _safe_config(cfg),
     }
