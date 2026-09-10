@@ -112,6 +112,12 @@ jobs:
           TWILIO_TOKEN:        ${{ secrets.TWILIO_TOKEN }}
           TWILIO_FROM:         ${{ secrets.TWILIO_FROM }}
           TWILIO_TO:           ${{ secrets.TWILIO_TO }}
+        env:
+          # Only a schedule firing twice is deduplicated; a run someone asked
+          # for always happens. GitHub fires cron late, early, twice or not at
+          # all, and two checks minutes apart cost requests to tell you the
+          # same thing.
+          AUTOTRADER_SCHEDULED: ${{ github.event_name == 'schedule' && '1' || '' }}
         run: |
           set -o pipefail
           python -m autotrader --no-colour run ${{ inputs.dry_run && '--dry-run' || '' }} | tee run.log

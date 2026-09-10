@@ -152,6 +152,15 @@ DEFAULTS: dict[str, Any] = {
         # many runs rather than failing identically forever.
         "disable_channel_after": 2,
         "watch_page_shape": True,
+        # What the schedule asks for. GitHub fires late, early, twice or not
+        # at all, so the bot compares against this rather than trusting that a
+        # run happening means a run was due.
+        "expected_interval_minutes": 30,
+        # Two checks closer together than this tell you the same thing twice.
+        "min_interval_minutes": 8,
+        # No successful check for this long and the bot is not watching
+        # anything, whatever the reason.
+        "silent_after_hours": 3,
     },
     "dashboard": {"enabled": True, "max_listings": 500},
 }

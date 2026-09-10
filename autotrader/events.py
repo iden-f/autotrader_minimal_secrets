@@ -150,7 +150,10 @@ def merge(found: dict[str, Event], previous: dict[str, Any]) -> dict[str, Any]:
             out[kind] = event.to_dict()
     return {"updated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             "first": out,
-            "waiting": [k for k in KINDS if k not in out]}
+            "waiting": [k for k in KINDS if k not in out],
+            # Which silence has already been reported, so a bot that stays
+            # quiet is announced once rather than once an hour.
+            "silence_reported": previous.get("silence_reported", "")}
 
 
 def render(record: dict[str, Any]) -> str:
@@ -201,6 +204,61 @@ def render(record: dict[str, Any]) -> str:
                 + (f"; sent via {', '.join(run.get('notified') or []) or 'nothing'}"
                    if "notified" in run else ""))
     return "\n".join(lines) + "\n"
+
+
+def silence(cfg, state, record: dict[str, Any],
+            now: datetime | None = None) -> dict[str, Any] | None:
+    """Has the bot stopped checking?  Returns what to say, or None.
+
+    A watcher cannot report its own absence: the run that would tell you is
+    the run that is not happening. This is asked by a separate job, on its own
+    schedule, from the state file rather than from anything the watcher does -
+    so a watcher that has silently stopped is still noticed.
+    """
+    hours = float((cfg.get("health", {}) or {}).get("silent_after_hours", 3) or 0)
+    if hours <= 0:
+        return None
+    now = now or datetime.now(timezone.utc)
+
+    last_ok = ""
+    for run in (state.data.get("runs") or []):
+        if run.get("ok") and str(run.get("at") or "") > last_ok:
+            last_ok = str(run["at"])
+    if not last_ok:
+        return None            # it has never worked; that is a different alarm
+
+    try:
+        when = datetime.fromisoformat(last_ok.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    quiet_for = (now - when).total_seconds() / 3600.0
+    if quiet_for < hours:
+        return None
+
+    # Say it once per silence, not once an hour for the length of it.
+    if str(record.get("silence_reported") or "") == last_ok:
+        return None
+    return {
+        "since": last_ok,
+        "hours": round(quiet_for, 1),
+        "subject": "AutoTrader watcher has gone quiet",
+        "body": (f"The last successful check was {quiet_for:.1f} hours ago "
+                 f"({last_ok}), and it is supposed to run every "
+                 f"{(cfg.get('health', {}) or {}).get('expected_interval_minutes', 30)} "
+                 f"minutes.\n\nNothing is being watched while this is true. "
+                 f"Check the Actions tab: GitHub disables scheduled workflows "
+                 f"on repositories with 60 days of no activity, and drops "
+                 f"scheduled runs under load."),
+    }
+
+
+def save(record: dict[str, Any], data_path: Path = DATA_PATH,
+         ledger_path: Path = LEDGER_PATH) -> None:
+    """Write the ledger back, after something was added to it."""
+    data_path.parent.mkdir(parents=True, exist_ok=True)
+    data_path.write_text(json.dumps(record, indent=1, ensure_ascii=False),
+                         encoding="utf-8")
+    ledger_path.write_text(render(record), encoding="utf-8")
 
 
 def update(state, ledger_path: Path = LEDGER_PATH,

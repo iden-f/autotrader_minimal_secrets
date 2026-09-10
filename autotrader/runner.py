@@ -14,6 +14,7 @@ import logging
 import os
 import time
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -64,6 +65,10 @@ class RunReport:
     shut_out: list[str] = field(default_factory=list)
     # Changes on cars your rules hide: real, deliberately unannounced, counted.
     hidden_events: dict[str, int] = field(default_factory=dict)
+    # The schedule fired twice, so this run stood down.
+    skipped: bool = False
+    # Minutes since the last successful run, when that is longer than planned.
+    missed_by: int = 0
     notified: list[str] = field(default_factory=list)
     errors: list[str] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
@@ -89,7 +94,8 @@ class RunReport:
             "unpriced": self.unpriced, "priced": self.priced,
             "relisted": self.relisted, "baselines": self.baselines,
             "invariants": self.invariants, "shut_out": self.shut_out,
-            "hidden_events": self.hidden_events,
+            "hidden_events": self.hidden_events, "skipped": self.skipped,
+            "missed_by": self.missed_by,
             "requests_made": self.requests_made,
             "budget_exhausted": self.budget_exhausted,
             "empty_parses": self.empty_parses,
@@ -304,6 +310,19 @@ def _why_none_survived(dropped: list[tuple[Listing, str]]) -> str:
     return ", ".join(f"{n} {label}" for label, n in ranked) or "every one of them"
 
 
+def _minutes_since_last_ok(state: State) -> float | None:
+    """How long since a run last succeeded, or None if none ever has."""
+    for run in (state.data.get("runs") or []):
+        if not run.get("ok"):
+            continue
+        try:
+            when = datetime.fromisoformat(str(run.get("at")).replace("Z", "+00:00"))
+        except (TypeError, ValueError):
+            continue
+        return max(0.0, (datetime.now(timezone.utc) - when).total_seconds() / 60.0)
+    return None
+
+
 def _price_disagrees(listing: Listing, state: State) -> bool:
     """True when the results card has changed its mind about the price.
 
@@ -347,7 +366,8 @@ def enrich_listings(listings: list[Listing], cfg: Config, fetcher: Fetcher,
 
 def run(cfg: Config | None = None, state: State | None = None, *,
         dry_run: bool = False, env: dict[str, str] | None = None,
-        notify: bool = True, fetcher: Fetcher | None = None) -> RunReport:
+        notify: bool = True, fetcher: Fetcher | None = None,
+        force: bool = False) -> RunReport:
     """Execute one full pass and return what happened."""
     cfg = cfg or Config.load()
     state = state or State.load()
@@ -370,12 +390,38 @@ def run(cfg: Config | None = None, state: State | None = None, *,
     # shown to work against the live site.
     report.first_run = not any(r.get("ok") for r in (state.data.get("runs") or []))
 
+    # GitHub fires a schedule late, early, twice, or not at all. Two runs
+    # minutes apart cost requests and tell you nothing new, and a four-hour
+    # gap is worth saying out loud rather than leaving you to notice the
+    # dashboard has gone stale.
+    health_conf = cfg.get("health", {}) or {}
+    expected = int(health_conf.get("expected_interval_minutes", 30) or 0)
+    gap = _minutes_since_last_ok(state)
+    if gap is not None and expected > 0:
+        floor = float(health_conf.get("min_interval_minutes", expected / 3.0) or 0)
+        # Only a schedule firing twice is deduplicated. Someone who typed
+        # `python -m autotrader run` wants a run, and gets one.
+        on_a_schedule = str(env.get("AUTOTRADER_SCHEDULED") or "").strip().lower() \
+            not in ("", "0", "false", "no")
+        if gap < floor and on_a_schedule and not force:
+            report.warnings.append(
+                f"the last successful check was {gap:.0f} minute(s) ago and the "
+                f"schedule asks for one every {expected} - skipping this one "
+                f"rather than checking the site twice for the same answer.")
+            report.skipped = True
+            return report
+        if gap > expected * 2:
+            report.missed_by = round(gap)
+            report.warnings.append(
+                f"the last successful check was {gap / 60:.1f} hour(s) ago, not "
+                f"{expected} minute(s) - the schedule dropped "
+                f"{int(gap // expected) - 1} run(s). Catching up now.")
+
     settings = cfg.get("notifications", {}) or {}
     notify_on = settings.get("notify_on", {}) or {}
     filter_conf = cfg.get("filters", {}) or {}
     scraping = cfg.get("scraping", {}) or {}
     archive_conf = cfg.get("archive", {}) or {}
-    health_conf = cfg.get("health", {}) or {}
 
     fetcher = fetcher or Fetcher(
         timeout=int(scraping.get("timeout_seconds", 30) or 30),
@@ -998,7 +1044,8 @@ def run(cfg: Config | None = None, state: State | None = None, *,
 
     finally:
         report.requests_made = getattr(fetcher, "spent", 0)
-        fetcher.close()
+        if fetcher is not None:
+            fetcher.close()
         if not dry_run:
             # This is the whole point: state is written even if something above
             # blew up, so a failure costs one run, never the entire history.

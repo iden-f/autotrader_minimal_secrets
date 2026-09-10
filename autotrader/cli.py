@@ -52,7 +52,8 @@ def cmd_run(args: argparse.Namespace) -> int:
     try:
         with run_lock(enabled=not args.no_lock and not args.dry_run):
             report = run_once(cfg, state, dry_run=args.dry_run,
-                              notify=not args.no_notify)
+                              notify=not args.no_notify,
+                              force=getattr(args, "force", False))
     except AlreadyRunning as exc:
         print(_warn(str(exc)))
         return 0        # not an error: the other run is doing the work
@@ -636,9 +637,28 @@ def cmd_events(args: argparse.Namespace) -> int:
     """
     from . import events
 
+    cfg = Config.load(args.config)
     state = State.load(args.state)
     record = events.update(state)
     first, waiting = record.get("first", {}), record.get("waiting", [])
+
+    # A watcher cannot report its own absence - the run that would tell you is
+    # the run that is not happening - so this job, which runs on its own
+    # schedule and reads only the state file, does it instead.
+    quiet = events.silence(cfg, state, record)
+    if quiet:
+        print(_bad(f"no successful check for {quiet['hours']} hour(s) "
+                   f"(since {quiet['since']})"))
+        if args.notify:
+            results = notifiers.alert(cfg, quiet["subject"], quiet["body"],
+                                      dict(os.environ))
+            for result in results:
+                print(f"   {result}")
+            if any(r.ok for r in results):
+                record["silence_reported"] = quiet["since"]
+                events.save(record)
+    elif state.last_run:
+        print(_ok(f"last successful check {state.last_run.get('at')}"))
 
     for kind, label in events.KINDS.items():
         seen = first.get(kind)
@@ -754,6 +774,8 @@ def build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command")
 
     p = sub.add_parser("run", help="check every search once")
+    p.add_argument("--force", action="store_true",
+                   help="check even if one just ran (the schedule fired twice)")
     p.add_argument("--dry-run", action="store_true",
                    help="report what would happen, change nothing, send nothing")
     p.add_argument("--no-notify", action="store_true", help="update state but stay silent")
@@ -829,6 +851,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.set_defaults(func=cmd_soak_note)
 
     p = sub.add_parser("events", help="record the first real market event of each kind")
+    p.add_argument("--notify", action="store_true",
+                   help="also raise the alarm if the bot has gone quiet")
     p.set_defaults(func=cmd_events)
 
     p = sub.add_parser("migrate", help="import v1 data (seen_listings.json + archives)")

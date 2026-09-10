@@ -48,9 +48,18 @@ jobs:
 
       - name: Look for anything that happened for the first time
         id: look
+        env:
+          TELEGRAM_BOT_TOKEN:  ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:    ${{ secrets.TELEGRAM_CHAT_ID }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL:   ${{ secrets.SLACK_WEBHOOK_URL }}
+          NTFY_TOKEN:          ${{ secrets.NTFY_TOKEN }}
         run: |
           set -o pipefail
-          python -m autotrader --no-colour events | tee events.log
+          # --notify makes this the watchdog as well: a watcher cannot report
+          # its own absence, because the run that would tell you is the run
+          # that is not happening.
+          python -m autotrader --no-colour events --notify | tee events.log
           {
             echo "## Market events"
             echo '```'
