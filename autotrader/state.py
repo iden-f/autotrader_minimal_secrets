@@ -518,6 +518,22 @@ class State:
         gone = [sid for sid in searches if sid not in keep_ids]
         for sid in gone:
             del searches[sid]
+
+        # Its cars have to stop being live too. They are not sold - you simply
+        # stopped watching - but leaving them active makes them cars owned by a
+        # search that does not exist, which is either a dashboard full of
+        # listings nothing is checking or, once the run started auditing
+        # itself, a failed run every time.
+        released = 0
+        for entry in self.listings.values():
+            if entry.get("search_id") not in keep_ids and entry.get("status") == "active":
+                entry["status"] = "gone"
+                entry["removed_at"] = utcnow()
+                entry["quiet_reason"] = "the search that was watching this was removed"
+                entry["notified"] = True
+                released += 1
+        if released:
+            log.info("released %d listing(s) from removed searches", released)
         return gone
 
     def prune(self, *, keep_days: int = 730, keep_max: int = 5000) -> int:

@@ -390,7 +390,9 @@ def run(cfg: Config | None = None, state: State | None = None, *,
             report.warnings.append(
                 "No searches configured. Paste an AutoTrader search link into "
                 "config.json, or run: python -m autotrader add <url>")
-            return report
+            # Deliberately not an early return. Removing your last search is
+            # exactly when housekeeping matters - its cars have to stop being
+            # counted as live, and the run has to audit what it leaves behind.
 
         for search in searches:
             try:
@@ -888,6 +890,17 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                 cfg, state, report, env,
                 int(health_conf.get("disable_channel_after", 2) or 0))
 
+        # ---- housekeeping -------------------------------------------
+        if not dry_run:
+            forgotten = state.forget_searches({s.id for s in cfg.searches})
+            if forgotten:
+                report.warnings.append(
+                    f"forgot {len(forgotten)} search(es) no longer configured")
+            pruned = archive_mod.prune(archive_conf)
+            if pruned:
+                report.warnings.append(f"pruned {len(pruned)} old archive folder(s)")
+            state.prune()
+
         # ---- does the bookkeeping still make sense? ------------------
         # Every serious bug in this rebuild has been silently wrong state
         # rather than a crash, so the run asks itself the questions that would
@@ -909,16 +922,6 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                     + "; ".join(report.invariants[:3])
                     + (f" (+{len(broken) - 3} more)" if len(broken) > 3 else ""))
 
-        # ---- housekeeping -------------------------------------------
-        if not dry_run:
-            forgotten = state.forget_searches({s.id for s in cfg.searches})
-            if forgotten:
-                report.warnings.append(
-                    f"forgot {len(forgotten)} search(es) no longer configured")
-            pruned = archive_mod.prune(archive_conf)
-            if pruned:
-                report.warnings.append(f"pruned {len(pruned)} old archive folder(s)")
-            state.prune()
 
     finally:
         report.requests_made = getattr(fetcher, "spent", 0)

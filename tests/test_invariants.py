@@ -601,3 +601,29 @@ class TestAlertsMovingHouse:
         report = bench.run()
         assert not any("moved" in s.lower() for s, _ in bench.sink.alerts)
         assert not any("resubscribe" in w for w in report.warnings)
+
+
+class TestRemovingASearch:
+    def test_its_cars_stop_being_live_rather_than_becoming_orphans(self, bench):
+        """You stopped watching. They are not sold, but nothing is checking
+        them, so they cannot go on counting as live - and a car owned by a
+        search that no longer exists fails the audit every run."""
+        bench.run()
+        assert any(e["status"] == "active" for e in bench.state().listings.values())
+
+        bench.cfg.data["searches"] = []
+        bench.cfg.save()
+        report = bench.run()
+
+        assert report.ok and not report.invariants
+        entries = bench.state().listings
+        assert all(e["status"] == "gone" for e in entries.values())
+        assert all("was removed" in (e.get("quiet_reason") or "")
+                   for e in entries.values())
+
+    def test_the_audit_runs_after_housekeeping_not_before(self, bench):
+        """Otherwise it validates a state the run then goes on to change."""
+        bench.run()
+        bench.cfg.data["searches"] = []
+        bench.cfg.save()
+        assert bench.run().invariants == []
