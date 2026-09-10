@@ -300,3 +300,46 @@ class TestTheFallbackLadderOnTheCurrentPlatform:
         assert result.strategy in ("jsonld", "embedded_json")
         with_year = [l for l in result.listings if l.year]
         assert len(with_year) == len(result.listings)
+
+
+class TestTheAnchorStrategyReadsTheRightFigure:
+    """A card carries several numbers and only one of them is the asking price."""
+
+    def test_the_msrp_beside_the_price_is_not_mistaken_for_it(self):
+        from bs4 import BeautifulSoup
+        from autotrader.parser import _strategy_anchors
+
+        card = ('<article><a href="/offers/bmw-m5-' + "a" * 8 +
+                '-1111-2222-3333-444444444444">go</a>'
+                '<h2>2027 BMW M5 Touring</h2>'
+                '<p data-testid="regular-price">$ 162,995</p>'
+                '<p data-testid="suggested-retail-price">$ 174,196</p>'
+                '</article>')
+        html = f"<html><body>{card}</body></html>"
+        listing = _strategy_anchors(BeautifulSoup(html, "html.parser"), html, BASE)[0]
+        assert listing.price == 162995
+
+    def test_a_renamed_price_field_is_still_found(self):
+        """The exact test id can change; the fallback has to keep working."""
+        from bs4 import BeautifulSoup
+        from autotrader.parser import _strategy_anchors
+
+        card = ('<article><a href="/offers/bmw-m5-' + "b" * 8 +
+                '-1111-2222-3333-444444444444">go</a>'
+                '<h2>2020 BMW M5</h2>'
+                '<p data-testid="listing-price-v3">$ 85,888</p></article>')
+        html = f"<html><body>{card}</body></html>"
+        listing = _strategy_anchors(BeautifulSoup(html, "html.parser"), html, BASE)[0]
+        assert listing.price == 85888
+
+    def test_a_monthly_payment_is_never_read_as_the_price(self):
+        from bs4 import BeautifulSoup
+        from autotrader.parser import _strategy_anchors
+
+        card = ('<article><a href="/offers/bmw-m5-' + "c" * 8 +
+                '-1111-2222-3333-444444444444">go</a>'
+                '<h2>2019 BMW M5</h2>'
+                '<p data-testid="monthly-price">$ 899</p></article>')
+        html = f"<html><body>{card}</body></html>"
+        listing = _strategy_anchors(BeautifulSoup(html, "html.parser"), html, BASE)[0]
+        assert listing.price != 899

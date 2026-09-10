@@ -494,12 +494,16 @@ _TESTID_FUEL = ("VehicleDetails-gas_pump", "fuel")
 _TESTID_SELLER = ("sellerinfo-company-name", "seller-name", "dealer-name")
 _TESTID_ADDRESS = ("sellerinfo-address", "seller-address", "location")
 
+# Figures on a card that are not what the seller is asking today.
+_WRONG_FIGURE = ("suggested", "msrp", "retail", "old", "was", "monthly",
+                 "finance", "lease", "saving", "discount", "tax")
+
 # Photo hosts, and the paths on them that are the car rather than the furniture.
 _PHOTO_HINTS = ("vehicleimages", "/vehicles/", "listing-images")
 _NOT_PHOTO_HINTS = ("dealer-info", "/logo", "placeholder", "/assets/", "/icons/")
 
 
-def _testid_text(card: Any, names: Iterable[str]) -> str:
+def _testid_text(card: Any, names: Iterable[str], *, fallback: bool = True) -> str:
     """Text of the first element on the card carrying one of these test ids."""
     if not hasattr(card, "find"):
         return ""
@@ -509,16 +513,50 @@ def _testid_text(card: Any, names: Iterable[str]) -> str:
             text = _clean(node.get_text(" ", strip=True))
             if text:
                 return text
+    if not fallback:
+        return ""
     # Fall back to a substring match, so "VehicleDetails-mileage_odometer_v2"
     # still answers to "mileage".
     lowered = [n.lower() for n in names]
     for node in card.find_all(attrs={"data-testid": True}):
         tid = str(node.get("data-testid", "")).lower()
+        # A loose match on "price" would happily return the MSRP, the
+        # struck-through old price or a monthly payment - all of which are
+        # worse than no price at all, because they look like real ones.
+        if any(wrong in tid for wrong in _WRONG_FIGURE):
+            continue
         if any(name in tid for name in lowered):
             text = _clean(node.get_text(" ", strip=True))
             if text:
                 return text
     return ""
+
+
+def _card_price(card: Any, card_text: str) -> int | None:
+    """The figure the seller is asking, or None.
+
+    A card carries several numbers - an MSRP beside the price, a struck-through
+    old price, a monthly payment - and every one of them is worse than no price
+    at all, because a wrong price looks like a real one and will happily
+    trigger a "price drop" alert.
+
+    So: take a labelled price if there is one. If the card labels its prices
+    but none of the labels is an asking price, that is an answer - do not fall
+    back to scraping whatever number is lying around. Only a card with no
+    labelled prices at all (the old markup) gets read as text.
+    """
+    exact = _testid_text(card, _TESTID_PRICE, fallback=False)
+    if exact:
+        return _price_from_text(exact)
+
+    labelled = False
+    if hasattr(card, "find_all"):
+        labelled = any("price" in str(node.get("data-testid", "")).lower()
+                       for node in card.find_all(attrs={"data-testid": True}))
+    if labelled:
+        return _price_from_text(_testid_text(card, _TESTID_PRICE))
+
+    return _price_from_text(card_text)
 
 
 def _card_photo(card: Any) -> str:
@@ -577,10 +615,7 @@ def _strategy_anchors(soup: BeautifulSoup, html: str, base_url: str) -> list[Lis
         if not title:
             title = _title_from_text(_clean(anchor.get_text(" ", strip=True)) or card_text)
 
-        # A labelled price beats scraping the card, which on this platform
-        # holds the asking price twice and sometimes an MSRP beside it.
-        price = _price_from_text(_testid_text(card, _TESTID_PRICE)) \
-            or _price_from_text(card_text)
+        price = _card_price(card, card_text)
         mileage = _mileage_from_text(_testid_text(card, _TESTID_MILEAGE)) \
             or _mileage_from_text(card_text)
 
