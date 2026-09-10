@@ -366,17 +366,6 @@ class State:
             changes.append(Change(Change.REMOVED, Listing.from_dict(entry)))
         return changes
 
-    def hold_missing(self, search_id: str) -> None:
-        """Freeze the removal countdown for a search we could not read.
-
-        record_search_ok is still what resets a car's miss counter when it is
-        actually seen; this only makes sure a run that read nothing does not
-        push every car in the search one step closer to being declared sold.
-        """
-        for entry in self.listings.values():
-            if entry.get("search_id") == search_id and entry.get("status") == "active":
-                entry.setdefault("misses", 0)
-
     # ---------------- run + search health ----------------
 
     def search_health(self, search_id: str) -> dict[str, Any]:

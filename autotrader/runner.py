@@ -585,10 +585,9 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                     report.removed += 1
                     if search_notify.get("removed", False):
                         queue(change)
-            else:
-                # Not even a miss: the grace period exists to absorb a car
-                # dropping off one page, not to be spent on our own failure.
-                state.hold_missing(search.id)
+            # Otherwise nothing happens at all - not even a miss. The grace
+            # period exists to absorb a car dropping off one page, not to be
+            # spent on a page we could not read.
 
         # ---- notify -------------------------------------------------
         # Anything an earlier run detected but could not deliver (quiet hours,
