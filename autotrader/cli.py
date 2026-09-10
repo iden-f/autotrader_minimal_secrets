@@ -565,14 +565,21 @@ def cmd_soak_note(args: argparse.Namespace) -> int:
         return 0
 
     live = [e for e in state.listings.values() if e.get("status") != "gone"]
-    if not SOAK_REPORT.exists():
+
+    header = ("| # | at (UTC) | seen | new | drop | rise | priced | gone | back | "
+              "unpriced | filtered | reqs | s | strategies | notes |\n"
+              "|--:|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|---|---|\n")
+    existing = SOAK_REPORT.read_text(encoding="utf-8") if SOAK_REPORT.exists() else ""
+    if not existing:
         SOAK_REPORT.write_text(
             "# Soak log\n\nOne line per cycle, written by the bot as it ran "
-            "against the live site.\n\n"
-            "| # | at (UTC) | seen | new | drop | rise | priced | gone | back | "
-            "unpriced | filtered | reqs | s | strategies | notes |\n"
-            "|--:|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|---|---|\n",
-            encoding="utf-8")
+            "against the live site.\n\n" + header, encoding="utf-8")
+    elif header not in existing:
+        # The bot was upgraded mid-soak and reports a column it did not
+        # before. Start a new table rather than writing rows the old header
+        # cannot describe.
+        with SOAK_REPORT.open("a", encoding="utf-8") as handle:
+            handle.write("\n" + header)
 
     notes: list[str] = []
     for name in ("errors", "warnings"):
