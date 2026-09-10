@@ -671,3 +671,35 @@ class TestBeingToldAboutIt:
         report = bench.run()
         assert any("cleared" in w for w in report.warnings)
         assert report.ok
+
+
+class TestACardThatForgetsThePrice:
+    """A results card showing no price does not make the car call-for-price.
+
+    The listing page had already told us what it costs. The flag was being set
+    from the incoming observation rather than from the record, so a car with a
+    price ended up flagged as having none - found by the audit on its first
+    contact with the old platform's markup, not by anyone reading the code.
+    """
+
+    def test_the_flag_follows_the_record_not_the_card(self, tmp_path):
+        from autotrader.listing import Listing
+
+        state = State(path=tmp_path / "s.json")
+        state.record(Listing(id="1", url="u", title="2021 BMW M5", price=98888,
+                             price_source="detail", search_id="s"))
+
+        # Next run: the card omits the price, as they do.
+        state.record(Listing(id="1", url="u", title="2021 BMW M5", price=None,
+                             search_id="s"))
+
+        entry = state.listings["1"]
+        assert entry["price"] == 98888
+        assert entry["unpriced"] is False
+
+    def test_a_car_that_never_had_a_price_is_still_flagged(self, tmp_path):
+        from autotrader.listing import Listing
+        state = State(path=tmp_path / "s.json")
+        state.record(Listing(id="1", url="u", title="t", price=None, search_id="s"))
+        state.record(Listing(id="1", url="u", title="t", price=None, search_id="s"))
+        assert state.listings["1"]["unpriced"] is True

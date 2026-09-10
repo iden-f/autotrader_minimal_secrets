@@ -238,7 +238,7 @@ class State:
                 # A fact about the car, not about the filters: it is tracked
                 # either way, and this is what tells the dashboard and the
                 # "price published" alert apart from a price drop.
-                "unpriced": listing.price is None,
+                "unpriced": entry.get("price") is None,
                 "price_history": ([{"at": now, "price": listing.price}]
                                   if listing.price is not None else []),
             })
@@ -282,7 +282,6 @@ class State:
         entry["filter_reason"] = filter_reason
         was_unpriced = (existing.get("unpriced") if "unpriced" in existing
                         else existing.get("price") is None)
-        entry["unpriced"] = listing.price is None
         entry.pop("removed_at", None)
         entry["notified"] = True if was_imported else existing.get("notified", False)
         history = list(existing.get("price_history") or [])
@@ -326,6 +325,11 @@ class State:
                 change = Change(Change.RELISTED, merged, new_price=listing.price)
 
         entry["price_history"] = history[-MAX_PRICE_POINTS:]
+        # Set last, from the entry rather than from this observation. A results
+        # card that shows no price does not make a car call-for-price when we
+        # already have one from its listing page - and the two disagreeing is
+        # how a car with a price ends up flagged as having none.
+        entry["unpriced"] = entry.get("price") is None
         if was_imported:
             entry.pop("imported_from", None)
         self.listings[listing.id] = entry
