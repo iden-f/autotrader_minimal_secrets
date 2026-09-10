@@ -361,13 +361,18 @@ pip install -r requirements.txt pytest
 python -m pytest -q
 ```
 
-240 tests. They run against the real listing pages captured in `archives/`, so
-the parser is checked against what AutoTrader actually served — not a mock.
+586 tests. They run against real pages AutoTrader actually served — ten
+captured listing pages in `tests/fixtures/listings/` and captured results
+pages in `tests/fixtures/` — not against mocks.
 
 The suites worth knowing about:
 
 | File | Covers |
 |---|---|
+| `test_invariants.py` | The bot's own bookkeeping: ownership, every car accounted for, counts that reconcile, a scope change treated as a baseline, an owed alert that survives. |
+| `test_chaos.py` | Deliberate damage — corrupt state, invalid config, a truncated page, revoked credentials, a half-working parse — and whether it degrades, alerts, and recovers unaided. |
+| `test_live_data.py` | Behaviour against the real payload a live run returned: price drops, removals, relistings, call-for-price, overlapping searches, a rotating result window. |
+| `test_platform_2026.py` | The AutoScout24 migration, and that all four parse strategies still score on the current markup. |
 | `test_parser_hardening.py` | Zero results, one result, pagination, call-for-price, a broken primary strategy, markup nothing understands, hostile input. Every case asserts graceful degradation. |
 | `test_failure_modes.py` | Corrupt and truncated state, a full disk, a rate-limited channel, an interrupt mid-run, clock skew across quiet hours, duplicate ids, a listing that vanishes and returns. |
 | `test_budget.py` | The request budget is a hard stop, retries are billed, pacing is jittered. |
@@ -375,11 +380,18 @@ The suites worth knowing about:
 
 ### A note on what is and is not verified against the live site
 
-**Listing detail pages** are validated against 50 real captured pages.
+**Listing detail pages** were always validated against real captured pages.
 **Search-results pages** could not be fetched from the machine this was built
-on, so their markup is inferred. That is why there are four independent parse
-strategies, why `doctor --live` exists, and why a page that returns HTTP 200
-but parses nothing is treated as a failure rather than an empty search.
+on, so their markup was inferred — which is how two of the four parse
+strategies came to score zero for a month without anyone noticing. A live run
+has since captured one (`python -m autotrader capture --raw`) and the fixtures
+are cut from it, so all four are now checked against markup the site really
+served.
+
+That history is why there are four independent strategies, why `doctor --live`
+exists, why the Status tab shows every strategy's score rather than only the
+winner, and why a page that returns HTTP 200 but parses nothing is treated as
+a failure rather than an empty search.
 
 ## Note
 

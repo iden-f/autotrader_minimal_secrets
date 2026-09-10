@@ -12,14 +12,14 @@ No account, no token, nothing to sign up for.
 3. Enter exactly:
 
    ```
-   autotrader-dgsrx25873fcsru5gzjz
+   autotrader-gxpwckbyk9z9wk7daydk
    ```
 
 That is it. The next time the bot finds something, your phone buzzes.
 
 ## Or just open it in a browser
 
-<https://ntfy.sh/autotrader-dgsrx25873fcsru5gzjz>
+<https://ntfy.sh/autotrader-gxpwckbyk9z9wk7daydk>
 
 Leave the tab open and messages appear live.
 
