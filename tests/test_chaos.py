@@ -23,7 +23,8 @@ import pytest
 
 from autotrader import notifiers, runner as runner_mod
 from autotrader.config import Config, ConfigError
-from autotrader.runner import run
+from autotrader.http import FetchError, Response
+from autotrader.runner import _still_listed, run
 from autotrader.state import Change, State
 
 from .helpers import Capture, FakeFetcher, use_channels
@@ -371,3 +372,47 @@ class TestAHalfWorkingParse:
         assert removed == 2
         assert not any("of the usual" in w
                        for w in chaos.run(smaller).warnings)
+
+
+class TestConfirmingARemoval:
+    """The listing page is the only place that can settle whether a car sold."""
+
+    def _fetcher(self, *, status=200, body=""):
+        class One:
+            stats = {"requests": 0}
+            budget_left = 100
+
+            def get(self, url, referer=None, allow_block=False):
+                if status != 200:
+                    raise FetchError(f"HTTP {status} from {url}")
+                return Response(url=url, status=200, text=body, elapsed_ms=1)
+        return One()
+
+    def test_a_404_means_gone(self):
+        assert _still_listed("https://www.autotrader.ca/offers/x",
+                             self._fetcher(status=404)) is False
+
+    def test_a_timeout_means_nothing_either_way(self):
+        assert _still_listed("https://www.autotrader.ca/offers/x",
+                             self._fetcher(status=503)) is None
+
+    def test_the_page_saying_so_means_gone(self):
+        page = "<html><body><h1>This listing is no longer available</h1></body></html>"
+        assert _still_listed("https://www.autotrader.ca/offers/x",
+                             self._fetcher(body=page)) is False
+
+    def test_a_page_that_still_describes_a_car_means_still_listed(self):
+        page = ('<html><head><script type="application/ld+json">'
+                '{"@context":"https://schema.org","@type":"Car","name":"BMW M5",'
+                '"offers":{"@type":"Offer","price":90000,"priceCurrency":"CAD"}}'
+                '</script></head><body>for sale</body></html>')
+        assert _still_listed("https://www.autotrader.ca/offers/x",
+                             self._fetcher(body=page)) is True
+
+    def test_an_unreadable_page_is_not_taken_as_proof_of_a_sale(self):
+        """A parser that has fallen behind must not start announcing sales."""
+        assert _still_listed("https://www.autotrader.ca/offers/x",
+                             self._fetcher(body="<html><body>?</body></html>")) is None
+
+    def test_a_car_with_no_url_cannot_be_checked(self):
+        assert _still_listed("", self._fetcher()) is None
