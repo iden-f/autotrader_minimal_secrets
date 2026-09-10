@@ -572,3 +572,32 @@ class TestAnOwedAlertSurvives:
 
         state.prune(keep_days=30)
         assert "owed" in state.listings and "done" not in state.listings
+
+
+class TestAlertsMovingHouse:
+    """A changed ntfy topic is silence that looks like "nothing happened"."""
+
+    def test_a_new_topic_is_announced_on_the_new_one(self, bench):
+        bench.cfg.set("notifications.channels.ntfy.topic", "autotrader-first")
+        bench.cfg.save()
+        bench.run()
+        bench.sink.alerts.clear()
+
+        bench.cfg.set("notifications.channels.ntfy.topic", "autotrader-second")
+        bench.cfg.save()
+        report = bench.run()
+
+        assert any("alerts moved" in s.lower() for s, _ in bench.sink.alerts)
+        told = " ".join(body for _, body in bench.sink.alerts)
+        assert "autotrader-first" in told and "autotrader-second" in told
+        assert any("resubscribe" in w for w in report.warnings)
+
+    def test_an_unchanged_topic_says_nothing(self, bench):
+        bench.cfg.set("notifications.channels.ntfy.topic", "autotrader-steady")
+        bench.cfg.save()
+        bench.run()
+        bench.sink.alerts.clear()
+
+        report = bench.run()
+        assert not any("moved" in s.lower() for s, _ in bench.sink.alerts)
+        assert not any("resubscribe" in w for w in report.warnings)

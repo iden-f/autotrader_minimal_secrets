@@ -860,6 +860,24 @@ def run(cfg: Config | None = None, state: State | None = None, *,
             report.warnings.append("sent a page-shape warning: "
                                    + ", ".join(str(r) for r in results))
 
+        # ---- where alerts go ----------------------------------------
+        # A changed ntfy topic means everything now arrives somewhere the
+        # phone on the other end is not subscribed to. That is silence that
+        # looks exactly like "nothing happened", so it gets said out loud on
+        # the channel that can still be reached.
+        if not dry_run:
+            topic = str(cfg.get("notifications.channels.ntfy.topic") or "")
+            previous = str(state.data.get("ntfy_topic") or "")
+            state.data["ntfy_topic"] = topic
+            if previous and topic and previous != topic:
+                moved = (f"Alerts now go to the ntfy topic '{topic}'. They used "
+                         f"to go to '{previous}', and anything still subscribed "
+                         f"to that one will simply go quiet - resubscribe.")
+                report.warnings.append(moved)
+                if notify:
+                    report.channel_results.extend(notifiers.alert(
+                        cfg, "AutoTrader watcher: your alerts moved", moved, env))
+
         # ---- health -------------------------------------------------
         _health_check(cfg, state, report, env, blocked_searches,
                       int(health_conf.get("alert_after_failures", 3) or 0), notify and not dry_run)
