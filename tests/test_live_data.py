@@ -591,9 +591,14 @@ class RotatingSite:
         self.offset = (self.offset + self.window) % len(self.ids)
 
     def _slice(self, page):
-        start = (self.offset + (page - 1) * self.window) % len(self.ids)
-        picked = [self.ids[(start + n) % len(self.ids)] for n in range(self.window)]
-        return {i for i in picked if i != self.sold}
+        """A full page every time, so a short page still means "the end".
+
+        The sold car is simply not among the results any more; the site does
+        not serve a page with a hole in it.
+        """
+        live = [i for i in self.ids if i != self.sold]
+        start = (self.offset + (page - 1) * self.window) % len(live)
+        return {live[(start + n) % len(live)] for n in range(self.window)}
 
     def get(self, url, referer=None, allow_block=False):
         self.spent += 1

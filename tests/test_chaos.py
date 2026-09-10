@@ -416,3 +416,69 @@ class TestConfirmingARemoval:
 
     def test_a_car_with_no_url_cannot_be_checked(self):
         assert _still_listed("", self._fetcher()) is None
+
+
+class TestKnowingWhereTheResultsEnd:
+    """"Complete" is what licenses a removal, so it must not be guessed."""
+
+    def _fetcher(self, pages):
+        class Paged:
+            stats = {"requests": 0}
+            budget_left = 100
+
+            def __init__(self):
+                self.asked = []
+
+            def get(self, url, referer=None, allow_block=False):
+                n = int(re.search(r"[?&]page=(\d+)", url).group(1)) if "page=" in url else 1
+                self.asked.append(n)
+                return Response(url=url, status=200, elapsed_ms=1,
+                                text=pages[min(n, len(pages)) - 1])
+
+            def get_bytes(self, *a, **k):
+                return None
+
+            def close(self):
+                pass
+        return Paged()
+
+    def _page(self, letters):
+        """One card per letter, each with a real uuid so ids do not collide."""
+        cards = "".join(
+            f'<article><a href="/offers/bmw-m5-{c * 8}-1111-2222-3333-444444444444">x</a>'
+            f'<h2>2021 BMW M5</h2>'
+            f'<p data-testid="regular-price">$ 90,000</p></article>'
+            for c in letters)
+        return f"<html><body>{cards}</body></html>"
+
+    def _scrape(self, chaos, pages):
+        from autotrader.runner import scrape_search
+        chaos.cfg.set("scraping.max_pages", 4)
+        chaos.cfg.save()
+        return scrape_search(chaos.cfg.searches[0], chaos.cfg, self._fetcher(pages))
+
+    def test_a_short_last_page_is_the_end(self, chaos):
+        result = self._scrape(chaos, [
+            self._page("01234"), self._page("56789"), self._page("ab")])
+        assert result.complete
+        assert len(result.listings) == 12
+
+    def test_a_page_that_repeats_itself_is_the_end(self, chaos):
+        result = self._scrape(chaos, [self._page("01234"), self._page("01234")])
+        assert result.complete
+        assert len(result.listings) == 5
+
+    def test_stopping_at_the_page_limit_is_not_the_end(self, chaos):
+        result = self._scrape(chaos, [
+            self._page("0123"), self._page("4567"),
+            self._page("89ab"), self._page("cdef")])
+        assert not result.complete
+        assert len(result.listings) == 16
+
+    def test_a_page_we_could_not_read_is_not_the_end_either(self, chaos):
+        """Otherwise a broken page four authorises removals for pages five on."""
+        result = self._scrape(chaos, [
+            self._page("0123"), self._page("4567"),
+            "<html><body>nothing here</body></html>", self._page("89ab")])
+        assert not result.complete
+        assert len(result.listings) == 8

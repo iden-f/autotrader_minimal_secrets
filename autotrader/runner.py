@@ -172,6 +172,7 @@ def scrape_search(search, cfg: Config, fetcher: Fetcher) -> "SearchResult":
     said_no_results = False
     first_page = None
     complete = False
+    page_size = 0
     referer = "https://www.autotrader.ca/"
 
     for page in range(1, max_pages + 1):
@@ -197,11 +198,20 @@ def scrape_search(search, cfg: Config, fetcher: Fetcher) -> "SearchResult":
             listing.search_name = search.name
             found[listing.id] = listing
             fresh += 1
-        # A page that adds nothing new means we have reached the end of the
-        # results; asking for page 4 of a 2-page search just wastes requests.
-        # It also means the sample is the whole result set, which is what makes
-        # "this car is not here any more" mean anything.
-        if fresh == 0:
+
+        # Two ways to know we reached the end of the results, which is what
+        # makes "this car is not here any more" mean anything: a page that
+        # repeats what we already have, or a page that came back short.
+        #
+        # A page that parsed *nothing* proves neither. It is far more likely a
+        # page we failed to read than a search that ends on an empty page, and
+        # treating it as the end would let a broken parser authorise removals
+        # for every car on the pages we never got to.
+        if not result.listings:
+            break
+        if page == 1:
+            page_size = len(result.listings)
+        if fresh == 0 or len(result.listings) < page_size:
             complete = True
             break
 
