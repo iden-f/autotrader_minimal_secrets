@@ -371,3 +371,37 @@ class TestAScopeChangeIsABaseline:
         for _ in range(3):
             report = bench.run()
         assert report.removed == 0
+
+
+class TestTheDashboardShowsWhoWasNotToldAbout:
+    def test_every_car_is_delivered_queued_or_quiet(self, bench):
+        from autotrader.dashboard import build_payload
+        bench.cfg.set("filters.max_price", 90000)
+        bench.cfg.save()
+        bench.run()
+
+        accounted = build_payload(bench.cfg, bench.state(), {})["health"]["accounted"]
+        assert accounted["unexplained"] == 0
+        assert accounted["delivered"] + accounted["quiet"] > 0
+
+    def test_a_hidden_car_publishes_the_reason_it_was_not_mentioned(self, bench):
+        from autotrader.dashboard import build_payload
+        bench.cfg.set("filters.max_price", 90000)
+        bench.cfg.save()
+        bench.run()
+
+        published = build_payload(bench.cfg, bench.state(), {})["listings"]
+        hidden = [l for l in published if l.get("filtered")]
+        assert hidden
+        assert all(l["quiet_reason"] for l in hidden)
+
+    def test_a_car_nobody_decided_about_shows_up_in_the_count(self, bench):
+        from autotrader.dashboard import build_payload
+        bench.run()
+        state = bench.state()
+        entry = next(iter(state.listings.values()))
+        for key in ("notified_at", "quiet_reason", "pending"):
+            entry.pop(key, None)
+
+        accounted = build_payload(bench.cfg, state, {})["health"]["accounted"]
+        assert accounted["unexplained"] == 1

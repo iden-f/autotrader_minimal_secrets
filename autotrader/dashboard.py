@@ -35,6 +35,9 @@ LISTING_FIELDS = (
     "transmission", "drivetrain", "fuel", "engine", "images", "search_id",
     "search_name", "first_seen", "last_seen", "status", "price_history",
     "price_source", "filtered", "filter_reason", "unpriced", "enriched",
+    # Why you did or did not hear about this car. The whole point of keeping
+    # them is that "we never told you" is always a decision you can read back.
+    "notified_at", "quiet_reason",
 )
 
 
@@ -146,8 +149,25 @@ def build_payload(cfg: Config, state: State, env: dict[str, str] | None = None
             break
         ok_streak += 1
 
+    # Every car is delivered, owed, or deliberately quiet. Anything else is a
+    # car that mattered and was never mentioned, which is the failure the
+    # whole notification path is built to make impossible.
+    accounted = {"delivered": 0, "queued": 0, "quiet": 0, "unexplained": 0}
+    for entry in state.listings.values():
+        if entry.get("imported_from") or entry.get("migrated_from"):
+            continue
+        if entry.get("pending"):
+            accounted["queued"] += 1
+        elif entry.get("notified_at"):
+            accounted["delivered"] += 1
+        elif entry.get("quiet_reason"):
+            accounted["quiet"] += 1
+        else:
+            accounted["unexplained"] += 1
+
     health = {
         "counts": counts_for(),
+        "accounted": accounted,
         "strategies": strategies,
         "drift": last.get("shape_drift") or [],
         "ok_streak": ok_streak,

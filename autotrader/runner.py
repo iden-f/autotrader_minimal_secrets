@@ -99,10 +99,25 @@ class RunReport:
         }
 
     def summary(self) -> str:
-        return (f"{self.searches_run} search(es), {self.listings_seen} listing(s), "
-                f"{self.new} new, {self.price_drops} price drop(s), "
-                f"{self.removed} removed, {self.searches_failed} failed, "
-                f"{self.requests_made} request(s) in {self.duration_s}s")
+        """One line. Everything that happened, nothing that did not."""
+        bits = [f"{self.searches_run} search(es)", f"{self.listings_seen} listing(s)"]
+        for count, label in ((self.new, "new"),
+                             (self.price_drops, "price drop(s)"),
+                             (self.price_rises, "price rise(s)"),
+                             (self.priced, "price(s) published"),
+                             (self.removed, "removed"),
+                             (self.relisted, "back on sale"),
+                             (self.unpriced, "call for price"),
+                             (self.filtered_out, "hidden by your rules"),
+                             (self.searches_failed, "failed")):
+            if count:
+                bits.append(f"{count} {label}")
+        if self.baselines:
+            bits.append(f"{len(self.baselines)} baselined")
+        if len(bits) == 2:
+            bits.append("nothing changed")
+        return (", ".join(bits)
+                + f" - {self.requests_made} request(s) in {self.duration_s}s")
 
 
 # Below this a search is too small for "half of last time" to mean anything.

@@ -757,6 +757,8 @@ function card(l){
       ${sparkline(l)}
       <div class="specs">${specs}</div>
       ${l.filtered ? `<div class="why">Hidden: ${esc(l.filter_reason || "one of your rules")}</div>` : ""}
+      ${!l.filtered && !l.notified_at && l.quiet_reason
+        ? `<div class="why">Not alerted: ${esc(l.quiet_reason)}</div>` : ""}
       <div class="meta">
         <span>${esc(l.search_name || "")}</span>
         <span class="id" title="${esc(l.id)}">#${esc(String(l.id).slice(0, 8))} &middot; ${esc(dateOf(l.first_seen))}</span>
@@ -1100,6 +1102,9 @@ function renderStatus(){
     kpi("Median price", s.median_price ? money(s.median_price) : "—"),
     kpi("Last run found", r ? (r.listings_seen ?? 0) : "—"),
     kpi("Clean runs in a row", h.ok_streak ?? 0),
+    kpi("Never mentioned", (h.accounted?.unexplained ?? 0) === 0
+        ? '0<span style="color:var(--faint);font-weight:400"> — all accounted for</span>'
+        : `<span style="color:var(--signal)">${h.accounted.unexplained}</span>`),
     kpi("Parsers working", worst == null ? "—" :
         `${worst}<span style="color:var(--faint);font-weight:400"> / ${rungs[0].of}</span>`),
     kpi("Requests last run", `${h.budget?.used ?? 0}<span style="color:var(--faint);font-weight:400"> / ${h.budget?.limit ?? 0}</span>`)
