@@ -518,16 +518,25 @@ class State:
         """Forget cars that went away a long time ago, so state stays small."""
         if keep_days <= 0 and keep_max <= 0:
             return 0
-        cutoff = (datetime.now(timezone.utc) - timedelta(days=keep_days)).isoformat()
         removed = 0
-        for lid, entry in list(self.listings.items()):
-            if entry.get("status") != "gone":
-                continue
-            if (entry.get("removed_at") or entry.get("last_seen") or "") < cutoff:
-                del self.listings[lid]
-                removed += 1
+        if keep_days > 0:
+            # Zero means "no age limit", as it does for keep_max. It used to
+            # mean a cutoff of right now, which quietly deleted every piece of
+            # history the moment someone set it to zero to switch it off.
+            cutoff = (datetime.now(timezone.utc)
+                      - timedelta(days=keep_days)).isoformat()
+            for lid, entry in list(self.listings.items()):
+                if entry.get("status") != "gone":
+                    continue
+                if (entry.get("removed_at") or entry.get("last_seen") or "") < cutoff:
+                    del self.listings[lid]
+                    removed += 1
         if keep_max and len(self.listings) > keep_max:
-            ordered = sorted(self.listings.items(),
+            # Only history is disposable. Dropping a car that is still for sale
+            # would make the next run rediscover and re-announce it, which is
+            # the one thing state exists to prevent.
+            ordered = sorted((kv for kv in self.listings.items()
+                              if kv[1].get("status") == "gone"),
                              key=lambda kv: kv[1].get("last_seen") or "")
             for lid, _ in ordered[: len(self.listings) - keep_max]:
                 del self.listings[lid]

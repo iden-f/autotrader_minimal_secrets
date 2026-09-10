@@ -473,3 +473,31 @@ class TestQuietCorruption:
             report = bench.run()
         assert report.ok and not report.invariants
         assert invariants.check(bench.cfg, bench.state(), report) == []
+
+
+class TestPruningOnlyForgetsHistory:
+    def test_a_car_still_for_sale_is_never_pruned_away(self, tmp_path):
+        """Forgetting a live car makes the next run rediscover and re-announce
+        it, which is the one thing state exists to prevent."""
+        state = State(path=tmp_path / "s.json")
+        for n in range(30):
+            state.listings[f"gone{n}"] = {
+                "id": f"gone{n}", "status": "gone",
+                "last_seen": f"2026-01-{n % 28 + 1:02d}T00:00:00+00:00"}
+        for n in range(10):
+            state.listings[f"live{n}"] = {
+                "id": f"live{n}", "status": "active",
+                "last_seen": "2020-01-01T00:00:00+00:00"}   # oldest of all
+
+        state.prune(keep_days=0, keep_max=20)
+
+        assert all(f"live{n}" in state.listings for n in range(10))
+        assert len(state.listings) == 20
+
+    def test_switching_the_age_limit_off_does_not_delete_everything(self, tmp_path):
+        """Zero means "no limit", the same as it does for the count cap."""
+        state = State(path=tmp_path / "s.json")
+        state.listings["old"] = {"id": "old", "status": "gone",
+                                 "removed_at": "2019-01-01T00:00:00+00:00"}
+        assert state.prune(keep_days=0, keep_max=0) == 0
+        assert "old" in state.listings
