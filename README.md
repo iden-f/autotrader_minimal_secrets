@@ -271,6 +271,27 @@ Kept here because these are the failure modes worth not repeating.
 | Identifying itself | `User-Agent: AutoTraderBot/1.0`. | An ordinary browser UA, paced requests, retries with backoff. |
 | Searches | One, buried in a repository secret. | As many as you like, pasted in. |
 
+## Proving it, on purpose
+
+Two things run the bot harder than the schedule does, both started by
+committing a marker file rather than by clicking anything:
+
+* **`soak.json`** — `{"cycles": 24, "interval_minutes": 7}` runs the real bot
+  against the real site that many times, committing after each cycle and
+  appending a row to `SOAK.md`: what it saw, what changed, which strategy read
+  each search, what it cost. The workflow deletes the file when it finishes.
+  This is what a fixture cannot tell you — the first soak found that
+  autotrader.ca rotates which results surface, which was inventing removals.
+* **`.capture-raw`** — asks the next run to save the live search page itself,
+  gzipped, under `diagnostics/`. That is how a parser strategy gets rewritten
+  against real markup instead of a guess at it. The marker deletes itself.
+
+`tests/test_chaos.py` does the opposite: it breaks things on purpose — a
+half-written state file, invalid JSON in the config, a page truncated
+mid-transfer, a channel whose credentials were revoked — and checks the run
+finishes, somebody is told through a channel that still works, and the next
+clean run is normal again without anyone helping.
+
 ## Development
 
 ```bash

@@ -113,3 +113,13 @@ jobs:
             echo "## Soak"
             tail -120 SOAK.md 2>/dev/null || echo "no report"
           } >> "$GITHUB_STEP_SUMMARY"
+
+  # Every cycle commits with [skip ci] so the soak cannot re-trigger itself,
+  # which also suppresses the dashboard's own push trigger. Without this the
+  # published page would sit on pre-soak data for the whole run.
+  publish:
+    needs: soak
+    if: always()
+    permissions:
+      contents: write
+    uses: ./.github/workflows/pages.yml
