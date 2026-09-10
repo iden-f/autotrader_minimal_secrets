@@ -1,0 +1,73 @@
+{
+ "at": "2026-09-10T17:00:16+00:00",
+ "violations": [
+  {
+   "rule": "hidden-has-a-reason",
+   "detail": "listings that are not hidden but still say a rule is why they were kept quiet",
+   "count": 1,
+   "examples": [
+    "9b202e41-4d14-41fe-9bad-e19278a892b4"
+   ]
+  }
+ ],
+ "entries": {
+  "9b202e41-4d14-41fe-9bad-e19278a892b4": {
+   "id": "9b202e41-4d14-41fe-9bad-e19278a892b4",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-sedan-no-accidents-low-kms-717-hp-twin-turbo-4-gas-electric-hybrid-red-cat_ma13gr202609va3044mt15084-9b202e41-4d14-41fe-9bad-e19278a892b4",
+   "title": "2025 BMW M5 Sedan Sedan No Accidents | Low KMS | 717 HP Twin Turbo 4",
+   "year": 2025,
+   "make": "BMW",
+   "model": "M5",
+   "trim": "Sedan No Accidents | Low KMS | 717 HP Twin Turbo 4",
+   "price": 139888,
+   "price_source": "search",
+   "card_price": 139888,
+   "currency": "CAD",
+   "mileage_km": 10155,
+   "location": "Vancouver",
+   "province": "BC",
+   "seller": "Aston Martin Bentley Vancouver",
+   "seller_type": "",
+   "body": "Sedan",
+   "color": "Red",
+   "transmission": "Automatic",
+   "drivetrain": "",
+   "fuel": "Gas/Electric Hybrid",
+   "engine": "",
+   "vin": "",
+   "images": [
+    "https://prod.pictures.autoscout24.net/listing-images/9b202e41-4d14-41fe-9bad-e19278a892b4_439104b4-9c44-45d3-ac37-5c5ee7aaa051.jpg/250x188.webp?promo=d72e107f-9078-4052-89d1-d8d306a233f4_1",
+    "https://prod.pictures.autoscout24.net/listing-images/9b202e41-4d14-41fe-9bad-e19278a892b4_850a4fde-d511-453e-9fd4-d3c63c1e91e8.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/9b202e41-4d14-41fe-9bad-e19278a892b4_25bdd6f9-099a-4b37-9587-a0f1e1773f8f.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/9b202e41-4d14-41fe-9bad-e19278a892b4_4bb2a264-3317-43fa-86a4-8218639f2098.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/9b202e41-4d14-41fe-9bad-e19278a892b4_bcec8008-0771-49aa-b8f2-cc39a910ab3a.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/9b202e41-4d14-41fe-9bad-e19278a892b4_121d7f84-5e44-4faa-b0fd-f239295a9f4e.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/9b202e41-4d14-41fe-9bad-e19278a892b4_a2487146-80c1-40a3-8501-61192ad595b5.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/9b202e41-4d14-41fe-9bad-e19278a892b4_07ef2fda-a033-44ea-87fc-c23f5739b7a3.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/9b202e41-4d14-41fe-9bad-e19278a892b4_020d272e-ec95-48d4-840d-0b0bd871ba19.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/9b202e41-4d14-41fe-9bad-e19278a892b4_daf16aa4-686c-4702-8e07-84d320ed5cb8.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/9b202e41-4d14-41fe-9bad-e19278a892b4_064682a1-d81d-4478-968f-9cb230fe1623.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/9b202e41-4d14-41fe-9bad-e19278a892b4_07e94479-7c38-4ff1-a109-97b3d34a4450.jpg/250x188.webp"
+   ],
+   "search_id": "bmw-m5-bargains-any-year-f2f097",
+   "search_name": "BMW M5 bargains (any year)",
+   "source": "embedded_json",
+   "enriched": true,
+   "filter_reason": "",
+   "filtered": false,
+   "misses": 0,
+   "quiet_reason": "hidden by your rules: price $139,888 above maximum $100,000",
+   "unpriced": false,
+   "first_seen": "2026-09-09T22:52:45+00:00",
+   "last_seen": "2026-09-10T17:00:13+00:00",
+   "status": "active",
+   "notified": true,
+   "price_history": [
+    {
+     "at": "2026-09-09T22:52:45+00:00",
+     "price": 139888
+    }
+   ]
+  }
+ }
+}
