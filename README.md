@@ -413,7 +413,7 @@ clean run is normal again without anyone helping.
 ## Development
 
 ```bash
-pip install -r requirements.txt pytest
+pip install -r requirements.txt -r requirements-dev.txt
 python -m pytest -q
 ```
 
