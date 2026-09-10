@@ -157,6 +157,14 @@ REMOVAL_CHECKS_PER_RUN = 12
 # Runs that must independently reach "this page is gone" before it is believed.
 GONE_EVIDENCE_NEEDED = 2
 
+# More of a watch than this vanishing in one run is treated as suspicious
+# rather than as news, however complete the read looked.
+MASS_REMOVAL_FRACTION = 0.25
+
+# Runs of "could not tell" before absence is believed on its own. Without a
+# limit an unreadable listing page leaves a car pending for good.
+GONE_UNKNOWN_LIMIT = 5
+
 GONE_MARKERS = (
     "no longer available", "no longer for sale", "this listing has ended",
     "listing not found", "ad has been removed", "has been sold",
@@ -727,8 +735,24 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                 # our sample is not evidence: the site rotates which listings
                 # surface, and cars drop in and out of the window every run.
                 # Ask the listing page before calling a sale.
+                # Most of a watch disappearing at once is not a dealer
+                # clearing their lot, it is far more often a read that went
+                # wrong in a way the parser did not notice. Ask the listing
+                # pages before believing it, exactly as for a partial sample.
+                watched = [lid for lid, e in state.listings.items()
+                           if e.get("search_id") == search.id
+                           and e.get("status") == "active"]
+                vanished = [lid for lid in watched if lid not in seen_anywhere]
+                mass = (len(watched) >= MIN_COUNT_FOR_COLLAPSE
+                        and len(vanished) > len(watched) * MASS_REMOVAL_FRACTION)
+                if mass:
+                    report.warnings.append(
+                        f"{search.name}: {len(vanished)} of {len(watched)} watched "
+                        f"cars are missing at once - checking their listing pages "
+                        f"before calling any of them sold.")
+
                 confirm = None
-                if not complete:
+                if not complete or mass:
                     checked = [0]
 
                     def confirm(entry: dict[str, Any]) -> bool | None:
@@ -740,9 +764,22 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                         except BudgetExhausted:
                             return None
                         if live is None:
-                            return None
+                            # Nobody could say. Ask again - but not forever:
+                            # a car absent from the results for this long,
+                            # whose own page we have never once been able to
+                            # read, is not "pending", it is gone, and leaving
+                            # it in limbo is the silent state this whole check
+                            # exists to avoid.
+                            tries = int(entry.get("gone_checks", 0)) + 1
+                            entry["gone_checks"] = tries
+                            if tries < GONE_UNKNOWN_LIMIT:
+                                return None
+                            entry.pop("gone_checks", None)
+                            entry.pop("gone_evidence", None)
+                            return True
                         if live:
                             entry.pop("gone_evidence", None)
+                            entry.pop("gone_checks", None)
                             return False
                         # The page says gone - but a listing URL carries an SEO
                         # slug in front of its id, and that slug changes when

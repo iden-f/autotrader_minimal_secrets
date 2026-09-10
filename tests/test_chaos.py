@@ -357,8 +357,27 @@ class TestAHalfWorkingParse:
         number is the normal number, the missing cars really have gone."""
         chaos.run()
         small = self._shrink(chaos.html, 4)
-        removed = sum(chaos.run(small).removed for _ in range(4))
+
+        # Fifteen of nineteen vanishing at once is treated as suspicious, not
+        # as news: the bot checks their listing pages first, and only believes
+        # absence after several runs of not being able to establish anything.
+        # It gets there, it just refuses to get there in one step.
+        removed = 0
+        for _ in range(12):
+            report = chaos.run(small)
+            removed += report.removed
+            if removed == 15:
+                break
         assert removed == 15
+        assert report.requests_made <= 2 + 12, "verification ran without a cap"
+
+    def test_it_says_out_loud_that_it_is_checking_rather_than_believing(self, chaos):
+        chaos.run()
+        small = self._shrink(chaos.html, 4)
+        chaos.run(small)
+        report = chaos.run(small)
+        assert any("missing at once" in w for w in report.warnings), report.warnings
+        assert report.removed == 0
 
     def test_an_ordinary_wobble_is_still_treated_as_a_removal(self, chaos):
         """Losing two cars out of nineteen is a sale, not a broken parser.
