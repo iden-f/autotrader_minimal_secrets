@@ -19,3 +19,11 @@ One line per cycle, written by the bot as it ran against the live site.
 | 10/24 | 2026-09-10T02:02:10 | 206 | 0 | 0 | 0 | 0 | 0 | 0 | 2 | 119 | 14 | 27.2 | embedded_json, jsonld | clean |
 | 11/24 | 2026-09-10T02:09:11 | 206 | 0 | 0 | 0 | 0 | 0 | 0 | 2 | 116 | 14 | 28.1 | embedded_json, jsonld | clean |
 | 12/24 | 2026-09-10T02:16:07 | 206 | 0 | 0 | 0 | 0 | 0 | 0 | 2 | 116 | 12 | 23.7 | embedded_json, jsonld | clean |
+
+> Cycles 13 onward are missing from this log, not from the run. The soak kept
+> checking the live site on schedule, but its commit step wedged: a rebase
+> conflict against a concurrent push leaves the repository mid-rebase, and
+> every later git command in the loop failed against that, so nothing was
+> recorded from then on. The loop and the abort that fixes it are in
+> `.github/workflows/soak.yml`; the watcher took over the live cycles from
+> 02:33 on its own concurrency group.
