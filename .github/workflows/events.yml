@@ -17,7 +17,14 @@ on:
     workflows: ['Check AutoTrader']
     types: [completed]
   schedule:
-    - cron: '37 * * * *'
+    # Twice an hour, on two unrelated slots. This job is the only thing that
+    # can report the watcher's silence, and it is scheduled by the same
+    # best-effort cron that produces the silence - measured on this repository
+    # today, the watcher's own */30 fired once in eleven hours and the rest of
+    # its runs came from pushes. Two phases means a single dropped firing does
+    # not double the time before the alarm. Running twice is free: it reads
+    # three files, and a silence is announced once per silence, not per run.
+    - cron: '7,37 * * * *'
   workflow_dispatch:
 
 concurrency:
