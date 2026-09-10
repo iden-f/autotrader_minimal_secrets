@@ -540,9 +540,17 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                         # come back as "new" once a price appears on it.
                         state.mark_notified([listing.id])
                     archive_mod.archive_listing(listing, archive_conf, fetcher)
-                elif change.kind == Change.PRICED and search_notify.get("priced", True):
+                elif change.kind == Change.PRICED:
+                    # A car that was call-for-price now has a figure. That is
+                    # worth hearing about whatever require_price says: it is
+                    # the moment the car becomes judgeable.
                     report.priced += 1
-                    queue(change)
+                    if search_notify.get("priced", True):
+                        queue(change)
+                elif change.kind == Change.RELISTED:
+                    report.relisted += 1
+                    if tell_me_about_unpriced and search_notify.get("relisted", False):
+                        queue(change)
 
             # Cars that were filtered out still count as "seen", so they do not
             # look like removals on the next pass.

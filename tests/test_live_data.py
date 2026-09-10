@@ -736,3 +736,16 @@ class TestARealCarComingBack:
         report = live.run(drop_price(live.html, was, was - 9000))
         assert report.price_drops == 1
         assert report.relisted == 0
+
+    def test_a_call_for_price_car_coming_back_is_counted_too(self, live):
+        """The quiet bucket still has to keep its books straight."""
+        live.cfg.set("filters.require_price", True)
+        live.cfg.save()
+        target = unpriced_ids(live.html)[0]
+        live.run()
+        for _ in range(3):
+            live.run(remove_car(live.html, target))
+
+        report = live.run()
+        assert report.relisted == 1
+        assert report.new == 0
