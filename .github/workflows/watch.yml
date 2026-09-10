@@ -9,13 +9,12 @@ name: Check AutoTrader
 
 on:
   schedule:
-    # Every 10 minutes for the duration of the soak test, so behaviour that
-    # only shows up over time (a real price drop, a car pulled from sale, the
-    # two-run grace period before a removal is called) gets a chance to happen
-    # while someone is watching. GitHub queues scheduled jobs on a best-effort
-    # basis and drops them under load, so this is an upper bound, not a
-    # promise. Back to '*/30 * * * *' once the soak is done.
-    - cron: '*/10 * * * *'
+    # Hourly while the soak test runs. The soak holds this same concurrency
+    # group for hours at a time, and a scheduled run that arrives meanwhile is
+    # queued and then superseded - so asking for one every ten minutes buys
+    # nothing but a column of cancelled runs. The soak is the cadence for now;
+    # this goes back to '*/30 * * * *' when it finishes.
+    - cron: '5 * * * *'
 
   # Check straight away when the watch list changes, instead of leaving someone
   # who just added a search waiting half an hour to find out whether it works.

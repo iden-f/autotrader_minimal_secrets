@@ -549,6 +549,58 @@ def cmd_capture(args: argparse.Namespace) -> int:
     return 1 if failed else 0
 
 
+SOAK_REPORT = Path("SOAK.md")
+
+
+def cmd_soak_note(args: argparse.Namespace) -> int:
+    """Append one line to the soak log describing the run that just happened.
+
+    Written from state rather than from the run's own return value, because
+    the soak drives the bot as a subprocess - exactly as the schedule does -
+    so what is recorded here is what actually survived to disk.
+    """
+    state = State.load(args.state)
+    last = state.last_run
+    if not last:
+        return 0
+
+    live = [e for e in state.listings.values() if e.get("status") != "gone"]
+    if not SOAK_REPORT.exists():
+        SOAK_REPORT.write_text(
+            "# Soak log\n\nOne line per cycle, written by the bot as it ran "
+            "against the live site.\n\n"
+            "| # | at (UTC) | seen | new | drop | rise | priced | gone | "
+            "unpriced | filtered | reqs | s | strategies | notes |\n"
+            "|--:|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|---|---|\n",
+            encoding="utf-8")
+
+    notes: list[str] = []
+    for name in ("errors", "warnings"):
+        for item in (last.get(name) or [])[:2]:
+            notes.append(f"{name[:-1]}: {str(item)[:110]}")
+    for drift in (last.get("shape_drift") or []):
+        notes.append(("DRIFT " if drift.get("serious") else "drift ")
+                     + "; ".join(drift.get("reasons") or [])[:110])
+    if not notes:
+        notes.append("clean")
+
+    strategies = ", ".join(sorted(set((last.get("strategies") or {}).values())))
+    row = (f"| {args.cycle}/{args.total} | {str(last.get('at'))[:19]} "
+           f"| {last.get('listings_seen', 0)} | {last.get('new', 0)} "
+           f"| {last.get('price_drops', 0)} | {last.get('price_rises', 0)} "
+           f"| {last.get('priced', 0)} | {last.get('removed', 0)} "
+           f"| {last.get('unpriced', 0)} | {last.get('filtered_out', 0)} "
+           f"| {last.get('requests_made', 0)} | {last.get('duration_s', 0)} "
+           f"| {strategies or '-'} | " + "<br>".join(notes) + " |\n")
+    with SOAK_REPORT.open("a", encoding="utf-8") as handle:
+        handle.write(row)
+
+    print(f"cycle {args.cycle}/{args.total}: {len(live)} live, "
+          f"{last.get('new', 0)} new, {last.get('price_drops', 0)} drop(s), "
+          f"{last.get('removed', 0)} removed, ok={last.get('ok')}")
+    return 0
+
+
 def cmd_migrate(args: argparse.Namespace) -> int:
     from .migrate import migrate
     return migrate(config_path=Path(args.config), state_path=Path(args.state),
@@ -716,6 +768,11 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--raw", action="store_true",
                    help="also save the page itself, gzipped, for fixture work")
     p.set_defaults(func=cmd_capture)
+
+    p = sub.add_parser("soak-note", help="record one soak cycle in SOAK.md")
+    p.add_argument("cycle")
+    p.add_argument("total")
+    p.set_defaults(func=cmd_soak_note)
 
     p = sub.add_parser("migrate", help="import v1 data (seen_listings.json + archives)")
     p.add_argument("--dry-run", action="store_true")

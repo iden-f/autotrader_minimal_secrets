@@ -1,0 +1,5 @@
+{
+  "cycles": 24,
+  "interval_minutes": 7,
+  "why": "Prove the time-dependent behaviour against the live site rather than against a replayed payload: a real price drop, a real removal, a real relisting, and the two-run grace period that has to elapse before a car counts as gone. Committing this file starts the soak; the workflow deletes it when the soak ends."
+}

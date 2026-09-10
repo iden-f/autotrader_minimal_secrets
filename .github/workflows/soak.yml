@@ -1,0 +1,115 @@
+# A soak test: the same bot, against the real site, many times over.
+#
+# Everything the watcher does between runs - a price moving, a car being
+# pulled from sale, a car coming back, the two-run grace period before a
+# removal is believed - only happens as time passes. Replaying a captured
+# payload proves the logic; it does not prove the bot survives its own
+# schedule. This runs it for real, on a loop, and records what actually
+# happened each cycle.
+#
+# Committing soak.json starts it. The file says how long to run for, and the
+# workflow deletes it when the soak finishes so it cannot restart itself.
+
+name: Soak
+
+on:
+  push:
+    branches: [main]
+    paths: ['soak.json']
+
+# Shares the watcher's group on purpose. Two bots against one repository would
+# each rebase over the other's state.json and one run's results would be lost.
+concurrency:
+  group: autotrader-bot
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  soak:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run the soak
+        env:
+          SEARCH_URL:          ${{ secrets.SEARCH_URL }}
+          TELEGRAM_BOT_TOKEN:  ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:    ${{ secrets.TELEGRAM_CHAT_ID }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL:   ${{ secrets.SLACK_WEBHOOK_URL }}
+          NTFY_TOKEN:          ${{ secrets.NTFY_TOKEN }}
+        run: |
+          set -u
+          git config user.name  "autotrader-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          CYCLES=$(python -c "import json;print(int(json.load(open('soak.json'))['cycles']))")
+          GAP=$(python -c "import json;print(int(json.load(open('soak.json'))['interval_minutes'])*60)")
+          echo "soaking for $CYCLES cycles, ${GAP}s apart"
+
+          for i in $(seq 1 "$CYCLES"); do
+            echo "::group::cycle $i/$CYCLES"
+            START=$(date -u +%s)
+            python -m autotrader --no-colour run 2>&1 | tee cycle.log || true
+            python -m autotrader --no-colour soak-note "$i" "$CYCLES" || true
+
+            for path in state.json docs/data.json archives config.json \
+                        NOTIFY.md diagnostics validation-report.md SOAK.md; do
+              if [ -e "$path" ]; then git add -A -- "$path"; fi
+            done
+            if ! git diff --cached --quiet; then
+              git commit -q -m "Soak cycle $i/$CYCLES [skip ci]"
+              for attempt in 1 2 3 4 5; do
+                git pull --rebase --autostash -q origin main && \
+                  git push -q origin HEAD:main && break
+                echo "push attempt $attempt failed; retrying"
+                sleep $((attempt * 4))
+              done
+            else
+              echo "cycle $i changed nothing"
+            fi
+            echo "::endgroup::"
+
+            if [ "$i" -lt "$CYCLES" ]; then
+              # Sleep the remainder of the interval, so a slow cycle does not
+              # push the whole soak out.
+              ELAPSED=$(( $(date -u +%s) - START ))
+              REMAIN=$(( GAP - ELAPSED ))
+              [ "$REMAIN" -gt 0 ] && sleep "$REMAIN"
+            fi
+          done
+
+      - name: Stop the soak restarting itself
+        if: always()
+        run: |
+          set -u
+          rm -f soak.json
+          git add -A -- soak.json SOAK.md 2>/dev/null || true
+          if ! git diff --cached --quiet; then
+            git commit -q -m "Soak finished [skip ci]"
+            for attempt in 1 2 3 4 5; do
+              git pull --rebase --autostash -q origin main && \
+                git push -q origin HEAD:main && exit 0
+              sleep $((attempt * 4))
+            done
+          fi
+
+      - name: Publish the soak report
+        if: always()
+        run: |
+          {
+            echo "## Soak"
+            tail -120 SOAK.md 2>/dev/null || echo "no report"
+          } >> "$GITHUB_STEP_SUMMARY"
