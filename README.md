@@ -253,6 +253,14 @@ A run that read nothing, or a fraction of its usual count, does not spend the
 grace period either. The countdown is there to absorb a car falling off one
 page, not to absorb our own broken parse.
 
+And **most of a watch vanishing at once is treated as suspicious, not as
+news** — however complete the read looked. More than a quarter missing in one
+run forces the same listing-page checks a partial sample gets, and the run
+says so. Replaying a 20-car page against a 187-car state used to produce 154
+"sold" alerts; it now produces none. If those checks can never establish
+anything either way, absence is believed on its own after five runs, so
+nothing sits in limbo unannounced and unresolved.
+
 ## Nothing goes missing quietly
 
 Every serious bug found while rebuilding this was the same shape: not a crash,
