@@ -215,3 +215,88 @@ class TestImplausibleValuesAreDropped:
         listing = self._listing(price=134_998_134_998)
         assert listing is not None and listing.id == UUID
         assert listing.price_text == "Price not listed"
+
+
+class TestTheFallbackLadderOnTheCurrentPlatform:
+    """All four strategies must score, or a search runs on one parser.
+
+    ``anchors`` matched ``/a/`` links and ``regex`` matched the old
+    ``<n>_<id>_<ref>`` path, so after the migration both returned zero on every
+    run. Nothing failed - jsonld and embedded_json carried it - which is
+    exactly why it went unnoticed: the ladder had quietly lost two rungs.
+    """
+
+    def test_every_strategy_scores_on_a_real_captured_page(self, fixture_html):
+        result = parse_search_page(fixture_html("search_2026_full"), BASE)
+        assert all(result.candidates[name] > 0 for name in
+                   ("jsonld", "embedded_json", "anchors", "regex")), result.candidates
+
+    def test_anchors_reads_a_card_with_no_json_on_the_page_at_all(self, fixture_html):
+        """Real card markup, JSON-LD and __NEXT_DATA__ stripped out."""
+        result = parse_search_page(fixture_html("search_2026_cards"), BASE)
+
+        assert result.candidates["jsonld"] == 0
+        assert result.candidates["embedded_json"] == 0
+        assert result.strategy == "anchors"
+        assert len(result.listings) == 3
+
+        car = next(l for l in result.listings
+                   if l.id == "a5f73b97-2d46-4fbf-9c1b-28b061887307")
+        assert car.year == 2025
+        assert car.price == 144900
+        assert car.mileage_km == 13913
+        assert (car.location, car.province) == ("Vancouver", "BC")
+        assert car.seller == "Brian Jessel BMW Pre-Owned"
+        assert car.transmission == "Automatic"
+
+    def test_anchors_is_the_only_strategy_that_sees_both_year_and_seller(
+            self, fixture_html):
+        """Which is the argument for keeping it in the ladder, not just alive.
+
+        The current JSON-LD carries no model year at all and the front-end
+        blob carries no seller, so the card is the only place both appear.
+        """
+        from bs4 import BeautifulSoup
+        from autotrader.parser import STRATEGIES
+
+        html = fixture_html("search_2026_full")
+        soup = BeautifulSoup(html, "html.parser")
+        by_name = {name: fn(soup, html, BASE) for name, fn in STRATEGIES}
+
+        anchors = by_name["anchors"]
+        assert anchors and all(l.year for l in anchors)
+        assert any(l.seller for l in anchors)
+        assert not any(l.year for l in by_name["jsonld"])
+
+    def test_anchors_never_reports_the_dealer_logo_as_the_car(self, fixture_html):
+        """v1 archived 400 'photos', none of which were of a vehicle."""
+        result = parse_search_page(fixture_html("search_2026_cards"), BASE)
+        for listing in result.listings:
+            for image in listing.images:
+                assert "dealer-info" not in image
+                assert "listing-images" in image
+
+    def test_regex_finds_every_car_when_nothing_else_can(self, fixture_html):
+        """The last rung: ids and URLs out of raw text, no markup assumptions."""
+        from bs4 import BeautifulSoup
+        from autotrader.parser import _strategy_regex
+
+        html = fixture_html("search_2026_cards")
+        listings = _strategy_regex(BeautifulSoup(html, "html.parser"), html, BASE)
+
+        assert len(listings) == 3
+        assert all(l.url.startswith("https://www.autotrader.ca/offers/") for l in listings)
+        assert all(is_offer_url(l.url) for l in listings)
+
+    def test_the_ladder_still_reads_the_old_platform(self, fixture_html):
+        """autohebdo.net and the archives are still on the previous markup."""
+        result = parse_search_page(fixture_html("search_cards"), BASE)
+        assert result.candidates["anchors"] > 0
+        assert result.candidates["regex"] > 0
+
+    def test_a_weaker_strategy_fills_in_what_the_winner_missed(self, fixture_html):
+        """jsonld wins on real pages but has no year; the merge repairs that."""
+        result = parse_search_page(fixture_html("search_2026_full"), BASE)
+        assert result.strategy in ("jsonld", "embedded_json")
+        with_year = [l for l in result.listings if l.year]
+        assert len(with_year) == len(result.listings)

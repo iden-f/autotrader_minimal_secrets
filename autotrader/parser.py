@@ -35,6 +35,21 @@ PRICE_RE = re.compile(r"\$\s*" + _NUMBER + r"(?:\.\d{2})?")
 KM_RE = re.compile(_NUMBER + r"\s*km\b", re.I)
 YEAR_RE = re.compile(r"\b(19[7-9]\d|20[0-5]\d)\b")
 LISTING_HREF_RE = re.compile(r"""["'(]((?:https?://[^"'()\s]*)?/a/[^"'()\s]*?/\d+_\d{5,}_[^"'()\s]*?/)""")
+# The 2026 platform's listing links: /offers/<seo-slug>-<uuid>. The uuid is the
+# identity; the slug in front of it changes whenever the seller edits the ad.
+OFFER_HREF_RE = re.compile(
+    r"""["'(](?:https?://[^"'()\s]*)?"""
+    r"""(/offers?/[^"'()\s]*?[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})""",
+    re.I)
+
+# Cheap prefilter before the (more expensive) id parse. Both URL schemes are
+# accepted: the site changed under us once and may well change back for the
+# French sister site, which is still on the old markup.
+_LISTING_HREF_HINTS = ("/a/", "/offer")
+
+
+def _looks_like_listing_href(href: str) -> bool:
+    return any(hint in href for hint in _LISTING_HREF_HINTS)
 
 # JSON keys AutoTrader-ish payloads use for the same concepts.
 _JSON_KEYS = {
@@ -439,7 +454,7 @@ def _listing_ids_under(node) -> set[str]:
     ids = set()
     for anchor in node.find_all("a", href=True):
         href = anchor["href"]
-        if "/a/" not in href:
+        if not _looks_like_listing_href(href):
             continue
         lid = listing_id_from_url(href)
         if lid:
@@ -466,17 +481,84 @@ def _card_for(anchor) -> Any:
     return node
 
 
+# The current platform labels every fact on a results card with a data-testid.
+# Those are far more stable than class names (which carry a build hash:
+# ListItem_overlay_anchor__mHOPT) and they survive a restyle, so they are the
+# first thing tried; the text-scraping fallbacks below are what kept this
+# strategy alive on the old markup and cost nothing to keep.
+_TESTID_TITLE = ("listing-title", "ad-title", "title")
+_TESTID_PRICE = ("regular-price", "price", "listing-price", "search-price")
+_TESTID_MILEAGE = ("VehicleDetails-mileage_odometer", "mileage", "odometer")
+_TESTID_GEARBOX = ("VehicleDetails-gearbox", "transmission")
+_TESTID_FUEL = ("VehicleDetails-gas_pump", "fuel")
+_TESTID_SELLER = ("sellerinfo-company-name", "seller-name", "dealer-name")
+_TESTID_ADDRESS = ("sellerinfo-address", "seller-address", "location")
+
+# Photo hosts, and the paths on them that are the car rather than the furniture.
+_PHOTO_HINTS = ("vehicleimages", "/vehicles/", "listing-images")
+_NOT_PHOTO_HINTS = ("dealer-info", "/logo", "placeholder", "/assets/", "/icons/")
+
+
+def _testid_text(card: Any, names: Iterable[str]) -> str:
+    """Text of the first element on the card carrying one of these test ids."""
+    if not hasattr(card, "find"):
+        return ""
+    for name in names:
+        node = card.find(attrs={"data-testid": name})
+        if node is not None:
+            text = _clean(node.get_text(" ", strip=True))
+            if text:
+                return text
+    # Fall back to a substring match, so "VehicleDetails-mileage_odometer_v2"
+    # still answers to "mileage".
+    lowered = [n.lower() for n in names]
+    for node in card.find_all(attrs={"data-testid": True}):
+        tid = str(node.get("data-testid", "")).lower()
+        if any(name in tid for name in lowered):
+            text = _clean(node.get_text(" ", strip=True))
+            if text:
+                return text
+    return ""
+
+
+def _card_photo(card: Any) -> str:
+    """The first image on the card that is actually the car."""
+    if not hasattr(card, "find_all"):
+        return ""
+    candidates = []
+    for img in card.find_all("img"):
+        src = (img.get("src") or img.get("data-src") or
+               img.get("data-original") or img.get("srcset") or "")
+        src = src.split()[0].split(",")[0] if " " in src or "," in src else src
+        if not src.startswith("http"):
+            continue
+        low = src.lower()
+        if any(bad in low for bad in _NOT_PHOTO_HINTS):
+            continue
+        # A gallery image is the car by definition; anything else has to look
+        # like one, so the dealer's own logo on the same CDN is not mistaken
+        # for the vehicle.
+        if str(img.get("data-testid", "")).startswith("list-gallery"):
+            return src
+        if any(hint in low for hint in _PHOTO_HINTS):
+            candidates.append(src)
+    return candidates[0] if candidates else ""
+
+
 def _strategy_anchors(soup: BeautifulSoup, html: str, base_url: str) -> list[Listing]:
     """Listing links plus whatever the surrounding card says.
 
-    This is the strategy the original bot used; it is kept because it is proven
-    to work against the real site, but it is now the third choice because card
-    markup is the part most likely to change.
+    This is the strategy the original bot used. It is the third choice because
+    card markup is the part most likely to change - and it duly did: after the
+    move to AutoScout24 it matched ``/a/`` links that no longer exist and
+    scored zero on every run, which left each search resting on one parser
+    with one backup. It now reads the current cards, which are richer than the
+    old ones: the seller, the city and the transmission are all on the card.
     """
     found: dict[str, Listing] = {}
     for anchor in soup.find_all("a", href=True):
         href = anchor["href"]
-        if "/a/" not in href:
+        if not _looks_like_listing_href(href):
             continue
         url = href if href.startswith("http") else _join(base_url, href)
         lid = listing_id_from_url(url)
@@ -484,33 +566,49 @@ def _strategy_anchors(soup: BeautifulSoup, html: str, base_url: str) -> list[Lis
             continue
         card = _card_for(anchor)
         card_text = _clean(card.get_text(" ", strip=True)) if card else ""
-        heading = card.find(["h1", "h2", "h3", "h4"]) if hasattr(card, "find") else None
-        title = _clean(anchor.get("title") or "")
-        if not title and heading is not None:
-            title = _clean(heading.get_text(" ", strip=True))
+
+        title = _testid_text(card, _TESTID_TITLE)
+        if not title:
+            heading = card.find(["h1", "h2", "h3", "h4"]) if hasattr(card, "find") else None
+            if heading is not None:
+                title = _clean(heading.get_text(" ", strip=True))
+        if not title:
+            title = _clean(anchor.get("title") or "")
         if not title:
             title = _title_from_text(_clean(anchor.get_text(" ", strip=True)) or card_text)
 
-        image = ""
-        if hasattr(card, "find"):
-            for img in card.find_all("img"):
-                src = (img.get("src") or img.get("data-src") or
-                       img.get("data-original") or "")
-                # Real car photos live on the vehicle-image CDN; the static CDN
-                # only serves manufacturer logos and UI chrome.
-                if "vehicleimages" in src or "/vehicles/" in src:
-                    image = src
-                    break
+        # A labelled price beats scraping the card, which on this platform
+        # holds the asking price twice and sometimes an MSRP beside it.
+        price = _price_from_text(_testid_text(card, _TESTID_PRICE)) \
+            or _price_from_text(card_text)
+        mileage = _mileage_from_text(_testid_text(card, _TESTID_MILEAGE)) \
+            or _mileage_from_text(card_text)
 
+        city = province = ""
+        address = _testid_text(card, _TESTID_ADDRESS)
+        if address:
+            # "VANCOUVER, BC"
+            head, _, tail = address.rpartition(",")
+            if head and len(tail.strip()) <= 3:
+                city, province = _titlecase_place(head), tail.strip().upper()
+            else:
+                city = _titlecase_place(address)
+
+        image = _card_photo(card)
         found[lid] = Listing(
             id=lid,
             url=canonical_listing_url(url),
             title=title or f"AutoTrader listing {lid}",
-            price=_price_from_text(card_text),
-            price_source="search" if _price_from_text(card_text) is not None else "",
-            card_price=_price_from_text(card_text),
-            mileage_km=_mileage_from_text(card_text),
-            images=[image] if image.startswith("http") else [],
+            price=price,
+            price_source="search" if price is not None else "",
+            card_price=price,
+            mileage_km=mileage,
+            location=city,
+            province=province,
+            seller=_testid_text(card, _TESTID_SELLER),
+            transmission=_testid_text(card, _TESTID_GEARBOX),
+            fuel=_testid_text(card, _TESTID_FUEL),
+            images=[image] if image else [],
         )
     return list(found.values())
 
@@ -519,16 +617,21 @@ def _strategy_regex(soup: BeautifulSoup, html: str, base_url: str) -> list[Listi
     """Last resort: pull listing URLs straight out of the raw HTML.
 
     This works even if the page is rendered entirely by JavaScript, as long as
-    the links appear somewhere in the payload.
+    the links appear somewhere in the payload - which on the current platform
+    they do twice over, in the anchors and again in the front-end state blob.
+    It knows nothing about a car except that it exists and where it lives, and
+    that is the point: it is the strategy that still returns something when
+    every assumption about markup has been invalidated.
     """
     found: dict[str, Listing] = {}
-    for match in LISTING_HREF_RE.finditer(html):
-        href = htmllib.unescape(match.group(1))
-        url = href if href.startswith("http") else _join(base_url, href)
-        lid = listing_id_from_url(url)
-        if lid and lid not in found:
-            found[lid] = Listing(id=lid, url=canonical_listing_url(url),
-                                 title=f"AutoTrader listing {lid}")
+    for pattern in (LISTING_HREF_RE, OFFER_HREF_RE):
+        for match in pattern.finditer(html):
+            href = htmllib.unescape(match.group(1))
+            url = href if href.startswith("http") else _join(base_url, href)
+            lid = listing_id_from_url(url)
+            if lid and lid not in found:
+                found[lid] = Listing(id=lid, url=canonical_listing_url(url),
+                                     title=f"AutoTrader listing {lid}")
     return list(found.values())
 
 

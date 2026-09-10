@@ -1,3 +1,4 @@
+import gzip
 import sys
 from pathlib import Path
 
@@ -8,7 +9,11 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 FIXTURES = ROOT / "tests" / "fixtures"
-ARCHIVES = ROOT / "archives"
+# Ten real listing pages the previous bot captured, kept gzipped. They used to
+# be read straight out of archives/, but archives/ is data the bot prunes -
+# compacting it away took fifty tests with it. A test fixture belongs in the
+# test suite, where nothing else gets to delete it.
+LISTING_PAGES = FIXTURES / "listings"
 
 
 @pytest.fixture
@@ -22,17 +27,18 @@ def fixture_html():
 def archive_html():
     """Real listing pages captured by the previous version of the bot."""
     def read(listing_id: str) -> str:
-        return (ARCHIVES / listing_id / "page.html").read_text(
-            encoding="utf-8", errors="replace")
+        return gzip.decompress(
+            (LISTING_PAGES / f"{listing_id}.html.gz").read_bytes()
+        ).decode("utf-8", "replace")
     return read
 
 
 @pytest.fixture
 def archive_ids():
-    if not ARCHIVES.exists():
+    if not LISTING_PAGES.exists():
         return []
-    return sorted(p.name for p in ARCHIVES.iterdir()
-                  if p.is_dir() and (p / "page.html").exists())
+    return sorted(p.name.replace(".html.gz", "")
+                  for p in LISTING_PAGES.glob("*.html.gz"))
 
 
 # ---------------------------------------------------------------- run harness
