@@ -272,6 +272,8 @@ tr:last-child td{border-bottom:0}
           <option value="cheap">Price: low to high</option>
           <option value="dear">Price: high to low</option>
           <option value="km">Odometer: low to high</option>
+          <option value="young">Model year: newest first</option>
+          <option value="oldcar">Model year: oldest first</option>
           <option value="drop">Biggest price drop</option>
         </select>
         <select class="field" id="which">
@@ -790,6 +792,10 @@ function renderListings(){
     cheap:(a,b) => (a.price ?? big) - (b.price ?? big),
     dear: (a,b) => (b.price ?? -1) - (a.price ?? -1),
     km:   (a,b) => (a.mileage_km ?? big) - (b.mileage_km ?? big),
+    // The model year was invisible until the card parser started reading it,
+    // so sorting by it is worth having in its own right.
+    young:  (a,b) => (b.year ?? 0) - (a.year ?? 0),
+    oldcar: (a,b) => (a.year ?? big) - (b.year ?? big),
     drop: (a,b) => priceChange(a) - priceChange(b)
   }[ui.sort];
   items.sort(by);
