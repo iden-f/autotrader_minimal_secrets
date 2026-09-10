@@ -30,6 +30,9 @@ permissions:
 
 jobs:
   soak:
+    # Removing the marker is a push to the same path, so without this the act
+    # of finishing a soak would start another one.
+    if: hashFiles('soak.json') != ''
     runs-on: ubuntu-latest
     timeout-minutes: 350
     steps:
@@ -141,7 +144,7 @@ jobs:
   # published page would sit on pre-soak data for the whole run.
   publish:
     needs: soak
-    if: always()
+    if: always() && needs.soak.result != 'skipped'
     permissions:
       contents: write
     uses: ./.github/workflows/pages.yml
