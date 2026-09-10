@@ -18,7 +18,7 @@ from typing import Any
 from . import archive as archive_mod
 from . import diagnose, filters, notifiers, provision, shape, validate
 from .config import Config
-from .enrich import enrich
+from .enrich import detail_from_html, enrich
 from .http import BlockedError, BudgetExhausted, FetchError, Fetcher
 from .listing import Listing
 from .parser import looks_like_no_results, parse_search_page
@@ -96,8 +96,66 @@ class RunReport:
                 f"{self.requests_made} request(s) in {self.duration_s}s")
 
 
-def scrape_search(search, cfg: Config, fetcher: Fetcher
-                  ) -> tuple[list[Listing], str, bool, dict[str, int], Any]:
+# Below this a search is too small for "half of last time" to mean anything.
+MIN_COUNT_FOR_COLLAPSE = 6
+
+# Wording a listing page uses once the car is no longer for sale.
+# A cap, so a search whose window rotates heavily cannot spend a whole run's
+# budget proving that nothing has changed.
+REMOVAL_CHECKS_PER_RUN = 12
+
+GONE_MARKERS = (
+    "no longer available", "no longer for sale", "this listing has ended",
+    "listing not found", "ad has been removed", "has been sold",
+    "n'est plus disponible", "annonce n'existe plus", "page not found",
+)
+
+
+def _still_listed(url: str, fetcher: Fetcher) -> bool | None:
+    """Is this car still on the site?  True, False, or None for "cannot tell".
+
+    A car missing from a sample of a larger result set has not necessarily
+    gone anywhere, so before announcing a sale we ask the listing page itself.
+    """
+    if not url:
+        return None
+    try:
+        response = fetcher.get(url, allow_block=True)
+    except BudgetExhausted:
+        raise
+    except FetchError as exc:
+        # 404/410 is the site telling us plainly. Anything else - a timeout,
+        # a 503 - says nothing about the car.
+        text = str(exc)
+        if "HTTP 404" in text or "HTTP 410" in text:
+            return False
+        return None
+    except Exception:  # noqa: BLE001 - a check that fails proves nothing
+        return None
+
+    body = (response.text or "")[:200000].lower()
+    if any(marker in body for marker in GONE_MARKERS):
+        return False
+    if detail_from_html(response.text, url=response.url) is not None:
+        return True
+    return None
+
+
+@dataclass
+class SearchResult:
+    """What one search returned, and how much of it we actually saw."""
+
+    listings: list[Listing]
+    strategy: str
+    said_no_results: bool
+    candidates: dict[str, int]
+    first_page: Any
+    # True when the last page added nothing new, i.e. we reached the end of the
+    # results rather than stopping at max_pages with more still to read.
+    complete: bool
+
+
+def scrape_search(search, cfg: Config, fetcher: Fetcher) -> "SearchResult":
     """Fetch and parse every page of one search.  Raises on a hard failure."""
     scraping = cfg.get("scraping", {}) or {}
     max_pages = max(1, int(search.max_pages or scraping.get("max_pages", 3) or 1))
@@ -108,6 +166,7 @@ def scrape_search(search, cfg: Config, fetcher: Fetcher
     candidates: dict[str, int] = {}
     said_no_results = False
     first_page = None
+    complete = False
     referer = "https://www.autotrader.ca/"
 
     for page in range(1, max_pages + 1):
@@ -135,10 +194,14 @@ def scrape_search(search, cfg: Config, fetcher: Fetcher
             fresh += 1
         # A page that adds nothing new means we have reached the end of the
         # results; asking for page 4 of a 2-page search just wastes requests.
+        # It also means the sample is the whole result set, which is what makes
+        # "this car is not here any more" mean anything.
         if fresh == 0:
+            complete = True
             break
 
-    return list(found.values()), strategy, said_no_results, candidates, first_page
+    return SearchResult(list(found.values()), strategy, said_no_results,
+                        candidates, first_page, complete)
 
 
 def _price_disagrees(listing: Listing, state: State) -> bool:
@@ -248,8 +311,12 @@ def run(cfg: Config | None = None, state: State | None = None, *,
 
         for search in searches:
             try:
-                listings, strategy, said_no_results, candidates, first_page = scrape_search(
-                    search, cfg, fetcher)
+                result = scrape_search(search, cfg, fetcher)
+                listings = result.listings
+                strategy = result.strategy
+                said_no_results = result.said_no_results
+                candidates = result.candidates
+                first_page = result.first_page
                 report.strategies[search.id] = strategy
             except BudgetExhausted as exc:
                 # Not a failure: we deliberately stopped. Leave the remaining
@@ -277,6 +344,10 @@ def run(cfg: Config | None = None, state: State | None = None, *,
 
             report.searches_run += 1
             report.listings_seen += len(listings)
+            # Read before recording, or "the usual count" is this run's count
+            # and the collapse check below can never fire.
+            usual_count = int((state.search_health(search.id) or {}).get(
+                "last_count", 0) or 0)
             state.record_search_ok(search.id, len(listings), strategy)
 
             assessments.append(validate.assess(
@@ -473,10 +544,51 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                 state.record(listing, filtered=True, filter_reason=why)
                 state.mark_notified([listing.id])
 
-            for change in state.mark_missing(search.id, seen_ids):
-                report.removed += 1
-                if search_notify.get("removed", False):
-                    queue(change)
+            # A car is only "gone" if we actually looked and did not find it.
+            # A page we could not read is not evidence of anything, and a page
+            # that collapsed to a fraction of its usual size is evidence of a
+            # half-working parser far more often than of a dealer clearing
+            # their lot. Left unchecked, four broken runs empty the dashboard
+            # and fire a removal alert for every car being watched.
+            trustworthy = bool(listings) or said_no_results
+            if (trustworthy and not report.first_run
+                    and usual_count >= MIN_COUNT_FOR_COLLAPSE
+                    and len(listings) * 2 < usual_count):
+                trustworthy = False
+                report.warnings.append(
+                    f"{search.name}: only {len(listings)} of the usual "
+                    f"{usual_count} listings were read, so removals are not "
+                    f"being called this run.")
+            if trustworthy:
+                # When the search has more results than we read, absence from
+                # our sample is not evidence: the site rotates which listings
+                # surface, and cars drop in and out of the window every run.
+                # Ask the listing page before calling a sale.
+                confirm = None
+                if not result.complete:
+                    checked = [0]
+
+                    def confirm(entry: dict[str, Any]) -> bool | None:
+                        if checked[0] >= REMOVAL_CHECKS_PER_RUN:
+                            return None       # ask again next run
+                        checked[0] += 1
+                        try:
+                            live = _still_listed(str(entry.get("url") or ""), fetcher)
+                        except BudgetExhausted:
+                            return None
+                        if live is None:
+                            return None
+                        return not live
+
+                for change in state.mark_missing(search.id, seen_ids,
+                                                 confirm=confirm):
+                    report.removed += 1
+                    if search_notify.get("removed", False):
+                        queue(change)
+            else:
+                # Not even a miss: the grace period exists to absorb a car
+                # dropping off one page, not to be spent on our own failure.
+                state.hold_missing(search.id)
 
         # ---- notify -------------------------------------------------
         # Anything an earlier run detected but could not deliver (quiet hours,

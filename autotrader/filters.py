@@ -7,10 +7,13 @@ from a dealer whose name contains X", "must mention manual", and so on.
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from typing import Any
 
 from .listing import Listing
+
+log = logging.getLogger(__name__)
 
 
 @dataclass
@@ -24,6 +27,25 @@ class Verdict:
     unpriced: bool = False
 
 
+def _number(value: Any) -> int | None:
+    """A filter value as a number, or None if it is not one.
+
+    config.json is a file people edit by hand and the settings UI writes text
+    boxes into. A max price of "" or "100,000" or "not a number" must mean
+    "no ceiling", not an exception that takes the whole run down before a
+    single car has been recorded.
+    """
+    if value is None or isinstance(value, bool):
+        return None
+    if isinstance(value, (int, float)):
+        return int(value)
+    try:
+        return int(float(str(value).replace(",", "").replace("$", "").strip()))
+    except (TypeError, ValueError):
+        log.warning("ignoring unusable filter value %r", value)
+        return None
+
+
 def _haystack(listing: Listing) -> str:
     return " ".join(str(v) for v in (
         listing.title, listing.display_title, listing.trim, listing.color,
@@ -32,40 +54,53 @@ def _haystack(listing: Listing) -> str:
     )).lower()
 
 
+def _as_list(value: Any) -> list[Any]:
+    """A keyword setting as a list. A bare string is one keyword, not N letters."""
+    if value is None or isinstance(value, bool):
+        return []
+    if isinstance(value, str):
+        return [value] if value.strip() else []
+    if isinstance(value, (list, tuple, set)):
+        return list(value)
+    return []
+
+
 def check(listing: Listing, filters: dict[str, Any] | None) -> Verdict:
     """Decide whether a listing survives the user's filters."""
     f = filters or {}
 
-    min_price = f.get("min_price")
-    max_price = f.get("max_price")
+    min_price = _number(f.get("min_price"))
+    max_price = _number(f.get("max_price"))
     if listing.price is not None:
-        if min_price and listing.price < int(min_price):
-            return Verdict(False, f"price ${listing.price:,} below minimum ${int(min_price):,}")
-        if max_price and listing.price > int(max_price):
-            return Verdict(False, f"price ${listing.price:,} above maximum ${int(max_price):,}")
+        if min_price and listing.price < min_price:
+            return Verdict(False, f"price ${listing.price:,} below minimum ${min_price:,}")
+        if max_price and listing.price > max_price:
+            return Verdict(False, f"price ${listing.price:,} above maximum ${max_price:,}")
 
+    min_year, max_year = _number(f.get("min_year")), _number(f.get("max_year"))
     if listing.year is not None:
-        if f.get("min_year") and listing.year < int(f["min_year"]):
-            return Verdict(False, f"year {listing.year} below minimum {f['min_year']}")
-        if f.get("max_year") and listing.year > int(f["max_year"]):
-            return Verdict(False, f"year {listing.year} above maximum {f['max_year']}")
+        if min_year and listing.year < min_year:
+            return Verdict(False, f"year {listing.year} below minimum {min_year}")
+        if max_year and listing.year > max_year:
+            return Verdict(False, f"year {listing.year} above maximum {max_year}")
 
-    max_km = f.get("max_mileage_km")
-    if max_km and listing.mileage_km is not None and listing.mileage_km > int(max_km):
-        return Verdict(False, f"{listing.mileage_km:,} km above maximum {int(max_km):,} km")
+    max_km = _number(f.get("max_mileage_km"))
+    if max_km and listing.mileage_km is not None and listing.mileage_km > max_km:
+        return Verdict(False, f"{listing.mileage_km:,} km above maximum {max_km:,} km")
 
     text = _haystack(listing)
 
-    include = [k.strip().lower() for k in (f.get("include_keywords") or []) if str(k).strip()]
+    include = [str(k).strip().lower() for k in _as_list(f.get("include_keywords"))
+               if str(k).strip()]
     if include and not any(k in text for k in include):
         return Verdict(False, f"none of the required keywords matched: {', '.join(include)}")
 
-    for word in (f.get("exclude_keywords") or []):
+    for word in _as_list(f.get("exclude_keywords")):
         word = str(word).strip().lower()
         if word and word in text:
             return Verdict(False, f"excluded keyword matched: {word}")
 
-    for seller in (f.get("exclude_sellers") or []):
+    for seller in _as_list(f.get("exclude_sellers")):
         seller = str(seller).strip().lower()
         if seller and listing.seller and seller in listing.seller.lower():
             return Verdict(False, f"excluded seller: {listing.seller}")
