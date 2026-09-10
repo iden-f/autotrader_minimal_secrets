@@ -922,6 +922,26 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                     + "; ".join(report.invariants[:3])
                     + (f" (+{len(broken) - 3} more)" if len(broken) > 3 else ""))
 
+                # Tell someone now rather than after three failed runs. This
+                # is rare by construction, so it cannot become noise - and it
+                # means the bot is not to be trusted about what it has told
+                # you, which is worth interrupting for. Only when the set of
+                # broken rules changes, so a fault that persists does not
+                # repeat itself every ten minutes.
+                fingerprint = ",".join(sorted({v.rule for v in broken}))
+                if notify and state.data.get("invariants_told") != fingerprint:
+                    state.data["invariants_told"] = fingerprint
+                    report.channel_results.extend(notifiers.alert(
+                        cfg, "AutoTrader watcher: its own records do not add up",
+                        "The watcher checks its bookkeeping after every run and "
+                        "this one did not hold:\n\n"
+                        + "\n".join(f"- {line}" for line in report.invariants[:6])
+                        + "\n\nUntil this is fixed, treat what it has and has "
+                          "not told you as unreliable. The offending entries are "
+                          "in diagnostics/invariants.json.", env))
+            elif state.data.pop("invariants_told", None):
+                report.warnings.append("the bookkeeping problem has cleared")
+
 
     finally:
         report.requests_made = getattr(fetcher, "spent", 0)

@@ -627,3 +627,47 @@ class TestRemovingASearch:
         bench.cfg.data["searches"] = []
         bench.cfg.save()
         assert bench.run().invariants == []
+
+
+class TestBeingToldAboutIt:
+    def _break(self, monkeypatch, rule="one-owner"):
+        monkeypatch.setattr(
+            runner_mod.invariants, "check",
+            lambda cfg, state, report=None, payload=None, seen=None: [
+                invariants.Violation(rule, "invented", ["x"], 1)])
+
+    def test_a_violation_is_reported_at_once(self, bench, monkeypatch):
+        bench.run()
+        bench.sink.alerts.clear()
+        self._break(monkeypatch)
+        bench.run()
+
+        assert any("do not add up" in subject for subject, _ in bench.sink.alerts)
+        told = " ".join(body for _, body in bench.sink.alerts)
+        assert "one-owner" in told and "unreliable" in told
+
+    def test_the_same_fault_does_not_repeat_every_run(self, bench, monkeypatch):
+        bench.run()
+        self._break(monkeypatch)
+        bench.run()
+        bench.sink.alerts.clear()
+        bench.run()
+        assert not [s for s, _ in bench.sink.alerts if "do not add up" in s]
+
+    def test_a_different_fault_is_worth_saying_again(self, bench, monkeypatch):
+        bench.run()
+        self._break(monkeypatch)
+        bench.run()
+        bench.sink.alerts.clear()
+        self._break(monkeypatch, rule="counts-reconcile")
+        bench.run()
+        assert any("do not add up" in s for s, _ in bench.sink.alerts)
+
+    def test_clearing_up_is_noted(self, bench, monkeypatch):
+        bench.run()
+        self._break(monkeypatch)
+        bench.run()
+        monkeypatch.undo()
+        report = bench.run()
+        assert any("cleared" in w for w in report.warnings)
+        assert report.ok
