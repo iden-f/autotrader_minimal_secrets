@@ -253,6 +253,47 @@ A run that read nothing, or a fraction of its usual count, does not spend the
 grace period either. The countdown is there to absorb a car falling off one
 page, not to absorb our own broken parse.
 
+## Nothing goes missing quietly
+
+Every serious bug found while rebuilding this was the same shape: not a crash,
+but silently wrong state. Cars announced as sold that were still on the front
+page. A search reporting zero listings while working perfectly. A car stored
+and never mentioned because another search had already marked it seen. None of
+them raised anything.
+
+So the bot checks its own bookkeeping at the end of every run, and a violation
+is a **failed run** with the offending entries written to
+`diagnostics/invariants.json` — not a warning nobody reads:
+
+- every car it is watching is owned by exactly one of your searches;
+- every car is **delivered, queued, or deliberately quiet with a reason**, so
+  "you were never told" is always a decision you can read back;
+- a car hidden by a rule says which rule, and stops saying so when the rule
+  stops applying;
+- nothing is live and marked removed, or flagged call-for-price while carrying
+  a price, or stuck past the grace period unresolved;
+- the run's own numbers match state, and the dashboard's headline figures match
+  what it actually publishes.
+
+Status shows a **Never mentioned** figure. It should always read zero.
+`python -m autotrader doctor` runs the same checks on demand.
+
+## When what you watch changes
+
+Widening a search does not discover cars — it stops ignoring them. Reading ten
+pages instead of three once brought in 120 cars that had been in scope the
+whole time, every one labelled a new listing.
+
+Each search carries a fingerprint of what it actually asks for: the link, the
+rules layered on it, and how deep the bot reads. When that changes, the next
+run **records what it finds as a starting point and says so** instead of
+announcing it. A search running for the first time is not a baseline — those
+cars really are new to you.
+
+The reverse holds too: relaxing a filter admits cars the bot has been storing
+all along, and those are announced, because they are new to your watch even
+though they are not new to the bot.
+
 ## Upgrading from v1
 
 Nothing to do. On the first run:
