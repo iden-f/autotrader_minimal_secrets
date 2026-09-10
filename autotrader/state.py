@@ -356,6 +356,7 @@ class State:
                 continue
             if lid in seen_ids:
                 entry["misses"] = 0
+                entry.pop("gone_evidence", None)
                 continue
             misses = int(entry.get("misses", 0)) + 1
             entry["misses"] = misses

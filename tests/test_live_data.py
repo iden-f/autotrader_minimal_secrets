@@ -572,10 +572,13 @@ class RotatingSite:
     fourteen "removed" alerts in a single run, for cars still on page one.
     """
 
-    def __init__(self, html, ids, window, detail_status=200):
+    def __init__(self, html, ids, window, sold=None):
         self.html, self.ids, self.window = html, ids, window
         self.offset = 0
-        self.detail_status = detail_status
+        # One car genuinely off the market: absent from every page from now on,
+        # and its own listing page answers 404. Everything else stays live, so
+        # a test cannot pass by treating the whole site as gone.
+        self.sold = sold
         self.detail_hits: list[str] = []
         self.stats = {"requests": 0, "spent": 0, "budget": 0}
         self.spent = 0
@@ -590,15 +593,15 @@ class RotatingSite:
     def _slice(self, page):
         start = (self.offset + (page - 1) * self.window) % len(self.ids)
         picked = [self.ids[(start + n) % len(self.ids)] for n in range(self.window)]
-        return set(picked)
+        return {i for i in picked if i != self.sold}
 
     def get(self, url, referer=None, allow_block=False):
         self.spent += 1
         self.stats["requests"] = self.spent
         if "/offers/" in url:
             self.detail_hits.append(url)
-            if self.detail_status != 200:
-                raise FetchError(f"HTTP {self.detail_status} from {url}")
+            if self.sold and self.sold in url:
+                raise FetchError(f"HTTP 404 from {url}")
             return Response(url=url, status=200, elapsed_ms=1, text=(
                 '<html><head><script type="application/ld+json">'
                 '{"@context":"https://schema.org","@type":"Car","name":"BMW M5",'
@@ -640,14 +643,58 @@ class TestARotatingResultWindow:
             self._watch(live, site)
         assert site.detail_hits, "nothing was verified; removals were guessed"
 
-    def test_a_car_whose_page_is_gone_is_reported(self, live):
+    def test_the_one_car_that_really_sold_is_reported(self, live):
         """The check has to be able to say yes, or it is just a mute button."""
-        site = self._site(live, detail_status=404)
-        removed = 0
-        for _ in range(5):
+        live.run()                                  # see everything once
+        sold = all_ids(live.html)[0]
+        site = self._site(live, sold=sold)
+
+        for _ in range(6):
             site.rotate()
-            removed += self._watch(live, site).removed
-        assert removed > 0
+            self._watch(live, site)
+
+        entries = json.loads((live.path / "state.json").read_text())["listings"]
+        assert entries[sold]["status"] == "gone"
+        others = [e for i, e in entries.items() if i != sold]
+        assert all(e["status"] == "active" for e in others), \
+            "the rotating cars were swept up with the sold one"
+
+    def test_one_404_is_not_enough_to_call_a_sale(self, live):
+        """A listing URL carries an SEO slug in front of its id, and the slug
+        changes when the seller edits the ad. A single 404 could be a retitled
+        car as easily as a sold one."""
+        live.run()
+        sold = all_ids(live.html)[0]
+        site = self._site(live, sold=sold)
+
+        seen_evidence = False
+        for _ in range(6):
+            site.rotate()
+            self._watch(live, site)
+            entry = json.loads((live.path / "state.json").read_text())["listings"][sold]
+            if entry.get("gone_evidence"):
+                seen_evidence = True
+                # One 404 recorded, and the car not yet written off.
+                assert entry["status"] == "active"
+                break
+        assert seen_evidence, "the 404 was not remembered, so it never adds up"
+
+    def test_evidence_is_forgotten_when_the_car_turns_up_again(self, live):
+        live.run()
+        sold = all_ids(live.html)[0]
+        site = self._site(live, sold=sold)
+        site.rotate()
+        self._watch(live, site)
+        site.rotate()
+        self._watch(live, site)
+
+        site.sold = None                            # it was there all along
+        site.window = len(site.ids)
+        self._watch(live, site)
+
+        entry = json.loads((live.path / "state.json").read_text())["listings"][sold]
+        assert not entry.get("gone_evidence")
+        assert entry["status"] == "active"
 
     def test_verification_is_capped_so_it_cannot_eat_a_run(self, live):
         site = self._site(live)

@@ -106,6 +106,9 @@ MIN_COUNT_FOR_COLLAPSE = 6
 # budget proving that nothing has changed.
 REMOVAL_CHECKS_PER_RUN = 12
 
+# Runs that must independently reach "this page is gone" before it is believed.
+GONE_EVIDENCE_NEEDED = 2
+
 GONE_MARKERS = (
     "no longer available", "no longer for sale", "this listing has ended",
     "listing not found", "ad has been removed", "has been sold",
@@ -592,7 +595,21 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                             return None
                         if live is None:
                             return None
-                        return not live
+                        if live:
+                            entry.pop("gone_evidence", None)
+                            return False
+                        # The page says gone - but a listing URL carries an SEO
+                        # slug in front of its id, and that slug changes when
+                        # the seller edits the ad. A single 404 could be a
+                        # retitled car as easily as a sold one, so it takes two
+                        # runs saying the same thing. The cost of being wrong
+                        # here is telling someone a car sold when it did not.
+                        seen = int(entry.get("gone_evidence", 0)) + 1
+                        entry["gone_evidence"] = seen
+                        if seen < GONE_EVIDENCE_NEEDED:
+                            return None
+                        entry.pop("gone_evidence", None)
+                        return True
 
                 for change in state.mark_missing(search.id, seen_ids,
                                                  confirm=confirm):
