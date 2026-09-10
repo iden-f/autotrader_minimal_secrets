@@ -1,5 +1,5 @@
 {
- "updated_at": "2026-09-10T08:04:40+00:00",
+ "updated_at": "2026-09-10T08:12:51+00:00",
  "first": {
   "price_drop": {
    "kind": "price_drop",
@@ -48,13 +48,38 @@
     "requests_made": 2,
     "notified": []
    }
+  },
+  "removed": {
+   "kind": "removed",
+   "at": "2026-09-10T08:12:03+00:00",
+   "listing_id": "32dccae4-3921-4773-a293-1c9d7f3f7873",
+   "title": "BMW M5 Competition, One Owner, Two Sets Premium Pkg, Adva",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-competition-one-owner-two-sets-premium-pkg-adva-gasoline-black-cat_ma13gr202609tr17957-32dccae4-3921-4773-a293-1c9d7f3f7873",
+   "before": "active",
+   "after": "gone",
+   "delivered": "delivered (time reconstructed, 2026-09-10T08:12:04+00:00)",
+   "detail": "last seen 2026-09-10T02:59:59+00:00",
+   "run": {
+    "at": "2026-09-10T07:46:27+00:00",
+    "ok": true,
+    "listings_seen": 204,
+    "new": 0,
+    "price_drops": 0,
+    "price_rises": 0,
+    "removed": 0,
+    "relisted": 0,
+    "priced": 0,
+    "requests_made": 12,
+    "notified": []
+   }
   }
  },
  "waiting": [
   "price_rise",
-  "removed",
   "relisted"
  ],
  "silence_reported": "",
- "new_kinds": []
+ "new_kinds": [
+  "removed"
+ ]
 }
