@@ -671,3 +671,68 @@ class TestARotatingResultWindow:
         assert removed == 1
         state = json.loads((live.path / "state.json").read_text())
         assert state["listings"][target]["status"] == "gone"
+
+
+class TestARealCarComingBack:
+    """Removal and relisting are one loop, and it has to close.
+
+    The live soak marked fourteen cars removed that were still on sale. Those
+    cars will reappear in the sample, and what happens then decides whether a
+    wrong removal is self-correcting or permanent - and whether correcting it
+    costs the user a second round of "new listing" alerts for cars they have
+    already been told about.
+    """
+
+    def test_a_car_that_comes_back_is_a_relisting_not_a_discovery(self, live):
+        target = unpriced_ids(live.html)[0]
+        live.run()
+        without = remove_car(live.html, target)
+        for _ in range(3):
+            live.run(without)
+        assert json.loads((live.path / "state.json").read_text()
+                          )["listings"][target]["status"] == "gone"
+
+        live.sink.digests.clear()
+        report = live.run()
+
+        assert report.relisted == 1
+        assert report.new == 0, "a returning car was announced as a discovery"
+        entry = json.loads((live.path / "state.json").read_text())["listings"][target]
+        assert entry["status"] == "active"
+        assert entry["relisted_at"]
+
+    def test_it_stays_quiet_unless_asked(self, live):
+        target = unpriced_ids(live.html)[0]
+        live.run()
+        for _ in range(3):
+            live.run(remove_car(live.html, target))
+        live.sink.digests.clear()
+
+        live.run()
+        assert not [c for batch in live.sink.digests for c in batch]
+
+    def test_and_says_so_when_asked(self, live):
+        target = unpriced_ids(live.html)[0]
+        live.cfg.data["searches"][0]["notify_on"] = {"relisted": True}
+        live.cfg.save()
+        live.run()
+        for _ in range(3):
+            live.run(remove_car(live.html, target))
+        live.sink.digests.clear()
+
+        live.run()
+        announced = [c for batch in live.sink.digests for c in batch]
+        assert [c.kind for c in announced] == [Change.RELISTED]
+        assert "Back on the market" in announced[0].describe()
+
+    def test_a_car_that_comes_back_cheaper_reports_the_drop_instead(self, live):
+        """The price move is the useful fact; the relisting is context."""
+        priced = [l for l in parse_search_page(live.html, BASE).listings if l.price]
+        target, was = priced[0].id, priced[0].price
+        live.run()
+        for _ in range(3):
+            live.run(remove_car(live.html, target))
+
+        report = live.run(drop_price(live.html, was, was - 9000))
+        assert report.price_drops == 1
+        assert report.relisted == 0

@@ -105,6 +105,7 @@ DEFAULTS: dict[str, Any] = {
             "unpriced": None,
             "priced": True,
             "removed": False,
+            "relisted": False,
             "errors": True,
         },
         "price_drop_min_pct": 1.0,

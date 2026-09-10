@@ -44,6 +44,7 @@ class Change:
     PRICE_RISE = "price_rise"
     PRICED = "priced"
     REMOVED = "removed"
+    RELISTED = "relisted"
 
     def __init__(self, kind: str, listing: Listing, *, old_price: int | None = None,
                  new_price: int | None = None) -> None:
@@ -78,6 +79,8 @@ class Change:
                     if self.new_price else "Price published")
         if self.kind == Change.REMOVED:
             return "Listing removed"
+        if self.kind == Change.RELISTED:
+            return "Back on the market"
         return self.kind
 
     def to_dict(self) -> dict[str, Any]:
@@ -235,6 +238,12 @@ class State:
         # a car that reappears cannot be carried across the removal threshold
         # by misses it accrued before.
         entry["misses"] = 0
+        # A car we had written off has come back. Worth counting even when it
+        # is not worth an alert: a watcher that keeps resurrecting cars is
+        # telling you its removal detection is wrong.
+        came_back = existing.get("status") == "gone"
+        if came_back:
+            entry["relisted_at"] = now
         entry["filtered"] = filtered
         # Why it was hidden, so the dashboard can say so instead of just
         # showing a smaller number than the site does.
@@ -269,6 +278,8 @@ class State:
             if old_price is not None and not was_imported:
                 kind = Change.PRICE_DROP if listing.price < old_price else Change.PRICE_RISE
                 change = Change(kind, merged, old_price=old_price, new_price=listing.price)
+            elif came_back and not was_imported:
+                change = Change(Change.RELISTED, merged, new_price=listing.price)
             elif was_unpriced and not was_imported:
                 # A "call for price" car has put a figure on itself. That is
                 # not a price drop - there is nothing to compare against - but
@@ -279,6 +290,8 @@ class State:
             entry.pop("price_disputed", None)
             if not history and listing.price is not None:
                 history.append({"at": now, "price": listing.price})
+            if came_back and not was_imported:
+                change = Change(Change.RELISTED, merged, new_price=listing.price)
 
         entry["price_history"] = history[-MAX_PRICE_POINTS:]
         if was_imported:

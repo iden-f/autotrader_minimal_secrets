@@ -569,9 +569,9 @@ def cmd_soak_note(args: argparse.Namespace) -> int:
         SOAK_REPORT.write_text(
             "# Soak log\n\nOne line per cycle, written by the bot as it ran "
             "against the live site.\n\n"
-            "| # | at (UTC) | seen | new | drop | rise | priced | gone | "
+            "| # | at (UTC) | seen | new | drop | rise | priced | gone | back | "
             "unpriced | filtered | reqs | s | strategies | notes |\n"
-            "|--:|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|---|---|\n",
+            "|--:|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|---|---|\n",
             encoding="utf-8")
 
     notes: list[str] = []
@@ -589,6 +589,7 @@ def cmd_soak_note(args: argparse.Namespace) -> int:
            f"| {last.get('listings_seen', 0)} | {last.get('new', 0)} "
            f"| {last.get('price_drops', 0)} | {last.get('price_rises', 0)} "
            f"| {last.get('priced', 0)} | {last.get('removed', 0)} "
+           f"| {last.get('relisted', 0)} "
            f"| {last.get('unpriced', 0)} | {last.get('filtered_out', 0)} "
            f"| {last.get('requests_made', 0)} | {last.get('duration_s', 0)} "
            f"| {strategies or '-'} | " + "<br>".join(notes) + " |\n")

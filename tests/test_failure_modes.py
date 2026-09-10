@@ -5,6 +5,8 @@ import os
 import time
 from datetime import datetime
 
+from pathlib import Path
+
 import pytest
 
 from autotrader import notifiers, runner as runner_mod
@@ -299,9 +301,20 @@ class TestListingOddities:
         assert state.listings["1"]["status"] == "gone"
 
         # It comes back - relisted, or it simply fell off page 1 for a while.
-        assert state.record(car) is None
+        # Worth recording as its own kind of event, because a watcher that
+        # keeps resurrecting cars is telling you its removal detection is
+        # wrong. What it must never be is a second discovery.
+        change = state.record(car)
+        assert change is not None and change.kind == Change.RELISTED
+        assert change.kind != Change.NEW
         assert state.listings["1"]["status"] == "active"
         assert state.listings["1"]["notified"] is True
+        assert state.listings["1"]["relisted_at"]
+
+    def test_a_relisting_is_off_by_default_so_it_cannot_become_noise(self):
+        from autotrader.config import Config
+        assert Config.defaults(Path("/tmp/unused-config.json")).get(
+            "notifications.notify_on.relisted") is False
 
     def test_a_car_that_returns_cheaper_still_reports_the_drop(self, tmp_path):
         state = State(path=tmp_path / "s.json")

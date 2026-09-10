@@ -58,6 +58,8 @@ def _change_prefix(change: Change) -> str:
         return "Price now shown - "
     if change.kind == Change.REMOVED:
         return "Removed - "
+    if change.kind == Change.RELISTED:
+        return "Back on the market - "
     return ""
 
 
@@ -224,7 +226,7 @@ def as_discord_embeds(changes: list[Change], *, limit: int = 10) -> list[dict[st
     """Discord caps a message at 10 embeds."""
     colours = {Change.NEW: 0x1D4ED8, Change.PRICE_DROP: 0x0F7B3F,
                Change.PRICE_RISE: 0x9A3412, Change.PRICED: 0x0F7B3F,
-               Change.REMOVED: 0x6B7280}
+               Change.RELISTED: 0x1D4ED8, Change.REMOVED: 0x6B7280}
     embeds: list[dict[str, Any]] = []
     for change in changes[:min(limit, 10)]:
         listing = change.listing

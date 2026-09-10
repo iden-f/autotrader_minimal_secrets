@@ -53,6 +53,7 @@ class RunReport:
     # Cars that passed every filter and simply have no figure on them.
     unpriced: int = 0
     priced: int = 0
+    relisted: int = 0
     notified: list[str] = field(default_factory=list)
     errors: list[str] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
@@ -76,6 +77,7 @@ class RunReport:
             "price_drops": self.price_drops, "price_rises": self.price_rises,
             "removed": self.removed, "filtered_out": self.filtered_out,
             "unpriced": self.unpriced, "priced": self.priced,
+            "relisted": self.relisted,
             "requests_made": self.requests_made,
             "budget_exhausted": self.budget_exhausted,
             "empty_parses": self.empty_parses,
@@ -507,6 +509,10 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                 elif change.kind == Change.PRICED:
                     report.priced += 1
                     if search_notify.get("priced", True):
+                        queue(change)
+                elif change.kind == Change.RELISTED:
+                    report.relisted += 1
+                    if search_notify.get("relisted", False):
                         queue(change)
 
             # "Call for price" cars are tracked and stay visible; they are not
