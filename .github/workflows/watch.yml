@@ -33,9 +33,13 @@ on:
         type: boolean
         default: false
 
-# Two runs pushing to the same branch collide. Let an in-flight run finish.
+# Two runs pushing to the same branch collide, so scheduled runs queue behind
+# each other. The soak deliberately does NOT share this group: it holds a
+# runner for hours, and sharing meant one long soak silenced the watcher for
+# the whole of it. They can overlap safely because every push here rebases and
+# retries, and the generated files resolve in favour of the newer run.
 concurrency:
-  group: autotrader-bot
+  group: autotrader-watch
   cancel-in-progress: false
 
 permissions:
@@ -147,11 +151,20 @@ jobs:
           # Another run may have pushed while this one was scraping; rebase
           # rather than failing, and retry a few times on a busy repository.
           for attempt in 1 2 3 4 5; do
-            git pull --rebase --autostash origin "${GITHUB_REF_NAME}" && \
-              git push origin "HEAD:${GITHUB_REF_NAME}" && exit 0
+            # A conflict leaves the repository mid-rebase and every later git
+            # command fails against that, so clear it before trying again.
+            git rebase --abort 2>/dev/null || true
+            # state.json and docs/data.json are generated. What this run just
+            # wrote is the newer truth; a batch job has no business resolving
+            # a merge in them.
+            if git pull --rebase --autostash -X theirs origin "${GITHUB_REF_NAME}" && \
+               git push origin "HEAD:${GITHUB_REF_NAME}"; then
+              exit 0
+            fi
             echo "push attempt $attempt failed; retrying"
             sleep $((attempt * 4))
           done
+          git rebase --abort 2>/dev/null || true
           echo "could not push after 5 attempts"
           exit 1
 

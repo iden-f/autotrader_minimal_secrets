@@ -17,10 +17,12 @@ on:
     branches: [main]
     paths: ['soak.json']
 
-# Shares the watcher's group on purpose. Two bots against one repository would
-# each rebase over the other's state.json and one run's results would be lost.
+# Its own group. Sharing the watcher's meant one soak - which holds a runner
+# for hours - silenced every scheduled run for the whole of it, and a soak that
+# wedges itself silences them until its timeout. Overlapping is safe: both
+# push through the same rebase-and-retry loop.
 concurrency:
-  group: autotrader-bot
+  group: autotrader-soak
   cancel-in-progress: false
 
 permissions:
