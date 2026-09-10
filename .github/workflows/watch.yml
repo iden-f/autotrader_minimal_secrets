@@ -14,7 +14,14 @@ on:
     # produced none at all for twenty minutes at a stretch - so a shorter
     # interval buys nothing but a less predictable one. The old workflow asked
     # for 96 runs a day and got far fewer, unevenly.
-    - cron: '*/30 * * * *'
+    #
+    # But not */30. That asks for :00 and :30, the two most contended minutes of
+    # every hour on GitHub's shared scheduler, and asking for them has not
+    # been working: measured here, the schedule was served once in the twelve
+    # hours this workflow has existed, and every other check today came from a
+    # push. Off-peak minutes are the one lever available - the API cannot be
+    # asked to run a workflow with the token this repository has.
+    - cron: '13,43 * * * *'
 
   # Check straight away when the watch list changes, instead of leaving someone
   # who just added a search waiting half an hour to find out whether it works.
