@@ -5,7 +5,7 @@ opposed to in a replayed payload. Written by a job that only reads what
 the watcher has already stored - it never scrapes and never notifies,
 so nothing here can hold up a check.
 
-_Last looked: 2026-09-10T21:56:43+00:00_
+_Last looked: 2026-09-11T00:05:15+00:00_
 
 | Event | First seen | Car | Before | After | What was delivered |
 |---|---|---|---|---|---|
