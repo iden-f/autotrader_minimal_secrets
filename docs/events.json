@@ -1,5 +1,5 @@
 {
- "updated_at": "2026-09-11T09:08:25+00:00",
+ "updated_at": "2026-09-11T09:09:50+00:00",
  "first": {
   "price_drop": {
    "kind": "price_drop",
@@ -72,12 +72,39 @@
     "requests_made": 12,
     "notified": []
    }
+  },
+  "price_rise": {
+   "kind": "price_rise",
+   "at": "2026-09-11T09:09:21+00:00",
+   "listing_id": "0b85b6f4-df54-4ddb-b9b1-757c18e4a233",
+   "title": "BMW M5",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-carbon-roof-interior-i-hud-electric-white-cat_ma13gr202609va3044mt15084-0b85b6f4-df54-4ddb-b9b1-757c18e4a233",
+   "before": 130880,
+   "after": 132800,
+   "delivered": "deliberately quiet: hidden by your rules: price $132,800 above maximum $100,000",
+   "detail": "$1,920 more ($130,880 to $132,800)",
+   "run": {
+    "at": "2026-09-11T09:09:21+00:00",
+    "ok": false,
+    "listings_seen": 204,
+    "new": 0,
+    "price_drops": 0,
+    "price_rises": 0,
+    "removed": 2,
+    "relisted": 0,
+    "priced": 0,
+    "requests_made": 15,
+    "notified": [
+     "ntfy: sent - 2 change(s)"
+    ]
+   }
   }
  },
  "waiting": [
-  "price_rise",
   "relisted"
  ],
  "silence_reported": "2026-09-10T13:37:46+00:00",
- "new_kinds": []
+ "new_kinds": [
+  "price_rise"
+ ]
 }
