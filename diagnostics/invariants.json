@@ -1,5 +1,5 @@
 {
- "at": "2026-09-11T13:49:24+00:00",
+ "at": "2026-09-11T17:14:21+00:00",
  "violations": [
   {
    "rule": "hidden-has-a-reason",
@@ -59,7 +59,7 @@
    "quiet_reason": "hidden by your rules: price $139,888 above maximum $100,000",
    "unpriced": false,
    "first_seen": "2026-09-09T22:52:45+00:00",
-   "last_seen": "2026-09-11T13:49:19+00:00",
+   "last_seen": "2026-09-11T17:14:21+00:00",
    "status": "active",
    "notified": true,
    "price_history": [
