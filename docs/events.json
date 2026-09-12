@@ -1,5 +1,5 @@
 {
- "updated_at": "2026-09-12T07:18:34+00:00",
+ "updated_at": "2026-09-12T07:22:16+00:00",
  "first": {
   "price_drop": {
    "kind": "price_drop",
@@ -98,12 +98,36 @@
      "ntfy: sent - 2 change(s)"
     ]
    }
+  },
+  "relisted": {
+   "kind": "relisted",
+   "at": "2026-09-12T07:15:43+00:00",
+   "listing_id": "727d36cb-6045-44ea-bb97-7e3c022e2674",
+   "title": "BMW M5 Competition, Ultimate Package!! M Drivers Pkg!! Fu",
+   "url": "https://www.autotrader.ca/offers/bmw-m5-competition-ultimate-package-m-drivers-pkg-fu-gasoline-grey-cat_ma13gr202609va3044mt15083tr17957-727d36cb-6045-44ea-bb97-7e3c022e2674",
+   "before": "gone",
+   "after": "active",
+   "delivered": "delivered at 2026-09-10T02:15:46+00:00",
+   "detail": "written off, then listed again",
+   "run": {
+    "at": "2026-09-12T07:15:43+00:00",
+    "ok": true,
+    "listings_seen": 209,
+    "new": 0,
+    "price_drops": 0,
+    "price_rises": 0,
+    "removed": 0,
+    "relisted": 0,
+    "priced": 0,
+    "requests_made": 12,
+    "notified": []
+   }
   }
  },
- "waiting": [
-  "relisted"
- ],
+ "waiting": [],
  "silence_reported": "2026-09-10T13:37:46+00:00",
- "coverage_reported": "",
- "new_kinds": []
+ "coverage_reported": "2026-09-12T07:22:16+00:00",
+ "new_kinds": [
+  "relisted"
+ ]
 }
