@@ -16,6 +16,8 @@ from __future__ import annotations
 
 import logging
 import os
+import re
+import subprocess
 import secrets
 from pathlib import Path
 from typing import Any
@@ -167,6 +169,41 @@ def adopt_legacy_search(cfg: Config, env: dict[str, str] | None = None
             "url": raw, "name": search.name}
 
 
+def find_dashboard_url(env: dict[str, str] | None = None) -> str:
+    """Where this repository publishes its dashboard, if it can be worked out.
+
+    An alert that opens the car it is about beats one that opens the site's
+    search page, and the address is derivable rather than something anyone
+    should have to type. Inside Actions the owner and repo are handed to us;
+    outside it, the git remote says the same thing.
+    """
+    env = env if env is not None else dict(os.environ)
+    slug = str(env.get("GITHUB_REPOSITORY") or "").strip()
+    if not slug:
+        try:
+            slug = subprocess.run(
+                ["git", "remote", "get-url", "origin"],
+                capture_output=True, text=True, timeout=5).stdout.strip()
+        except (OSError, subprocess.SubprocessError):
+            return ""
+    match = re.search(r"(?:github\.com[:/])?([A-Za-z0-9_.-]+)/([A-Za-z0-9_.-]+?)(?:\.git)?$", slug)
+    if not match:
+        return ""
+    return f"https://{match.group(1).lower()}.github.io/{match.group(2)}"
+
+
+def ensure_dashboard_url(cfg: Config, env: dict[str, str] | None = None
+                         ) -> dict[str, Any]:
+    """Fill in where the dashboard lives, once, without overwriting a choice."""
+    if str(cfg.get("notifications.dashboard_url") or "").strip():
+        return {"changed": False, "detail": "already set"}
+    found = find_dashboard_url(env)
+    if not found:
+        return {"changed": False, "detail": "no git remote to work it out from"}
+    cfg.set("notifications.dashboard_url", found)
+    return {"changed": True, "detail": found}
+
+
 def bootstrap(cfg: Config, env: dict[str, str] | None = None,
               *, write_files: bool = True) -> dict[str, Any]:
     """Everything a first run needs, idempotently.
@@ -184,6 +221,10 @@ def bootstrap(cfg: Config, env: dict[str, str] | None = None,
     channels = ensure_notifications(cfg, env)
     channels["step"] = "notifications"
     steps.append(channels)
+
+    where = ensure_dashboard_url(cfg, env)
+    where["step"] = "dashboard"
+    steps.append(where)
 
     changed = any(s.get("changed") for s in steps)
     if changed:

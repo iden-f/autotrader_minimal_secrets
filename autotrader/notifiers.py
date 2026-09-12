@@ -234,11 +234,16 @@ class NtfyNotifier(Notifier):
         return f"{server}/{topic}"
 
     def _post(self, title: str, body: str, *, click: str = "",
-              tags: str = "car", priority: str = "") -> None:
+              tags: str = "car", priority: str = "", attach: str = "") -> None:
         headers = {"Title": title[:200].encode("utf-8", "replace").decode("latin-1", "replace"),
                    "Tags": tags, "Markdown": "yes"}
         if click:
             headers["Click"] = click
+        # A car alert without the car in it is a prompt to go and look
+        # somewhere else. ntfy fetches the image on the phone, so this costs
+        # the bot nothing and is dropped silently if the host is unreachable.
+        if attach:
+            headers["Attach"] = attach
         priority = priority or str(self.config.get("priority") or "").strip()
         if priority and priority != "default":
             headers["Priority"] = priority
@@ -250,12 +255,46 @@ class NtfyNotifier(Notifier):
         if not response.ok:
             raise RuntimeError(f"HTTP {response.status_code}: {response.text[:200]}")
 
+    # What each kind of change is worth waking a phone for. A price drop on a
+    # car inside your rules is the thing this bot exists for; a car leaving
+    # the market is worth recording and not worth a buzz at 2am.
+    _PRIORITY = {Change.PRICE_DROP: "high", Change.PRICED: "default",
+                 Change.NEW: "default", Change.RELISTED: "default",
+                 Change.PRICE_RISE: "low", Change.REMOVED: "low"}
+    _TAGS = {Change.PRICE_DROP: "chart_with_downwards_trend", Change.NEW: "car",
+             Change.PRICED: "label", Change.RELISTED: "arrows_counterclockwise",
+             Change.PRICE_RISE: "chart_with_upwards_trend", Change.REMOVED: "ghost"}
+
+    def _lead(self, changes: list[Change]) -> Change:
+        """The change the notification is about, when it is about one thing."""
+        drops = [c for c in changes if c.kind == Change.PRICE_DROP]
+        if drops:
+            return min(drops, key=lambda c: c.delta or 0)
+        for kind in (Change.PRICED, Change.NEW, Change.RELISTED,
+                     Change.PRICE_RISE, Change.REMOVED):
+            for change in changes:
+                if change.kind == kind:
+                    return change
+        return changes[0]
+
     def _send(self, changes: list[Change], run: dict[str, Any]) -> Result:
-        first = changes[0].listing if changes else None
+        if not changes:
+            return Result(self.name, True, "0 change(s)")
+        lead = self._lead(changes)
+        listing = lead.listing
+        # Straight to that car on the dashboard when there is one to go to -
+        # the alert is about a specific car and the listing page is one tap
+        # further on from there.
+        deep = str(self.settings.get("dashboard_url") or "").strip()
+        click = (f"{deep.rstrip('/')}/#/listing/{listing.id}"
+                 if deep and listing.id else (listing.url or ""))
+        photo = (getattr(listing, "images", None) or [""])[0] if len(changes) == 1 else ""
         self._post(render.headline(changes),
                    render.as_text(changes, limit=self.limit),
-                   click=first.url if first else "",
-                   tags="red_car" if any(c.kind == Change.PRICE_DROP for c in changes) else "car")
+                   click=click,
+                   tags=self._TAGS.get(lead.kind, "car"),
+                   priority=self._PRIORITY.get(lead.kind, "default"),
+                   attach=photo)
         return Result(self.name, True, f"{len(changes)} change(s)")
 
     def _send_text(self, subject: str, body: str) -> Result:

@@ -1,0 +1,1220 @@
+/* AutoTrader Watch - the reading end.
+ *
+ * No framework and no build step: the page is published to GitHub Pages by a
+ * bot that has no node in its runner, and every dependency would be one more
+ * thing that can be down when you open this on a phone in a car park.
+ *
+ * Everything here reads docs/data.json, which the bot rewrites after every
+ * check. Nothing is computed here that the bot could have computed once -
+ * see autotrader/insight.py - because the browser has one car's worth of
+ * context and the bot has the whole history.
+ */
+'use strict';
+
+const VIEWS = [
+  { id: 'feed', label: 'Feed' },
+  { id: 'listings', label: 'Listings' },
+  { id: 'searches', label: 'Searches' },
+  { id: 'status', label: 'Status' },
+];
+
+const KIND = {
+  new:        { label: 'New',        group: 'New to the market',  flag: 'new',    rule: 'Appeared on the site' },
+  price_drop: { label: 'Price drop', group: 'Price drops',        flag: 'drop',   rule: 'Asking price came down' },
+  price_rise: { label: 'Price rise', group: 'Price rises',        flag: 'rise',   rule: 'Asking price went up' },
+  priced:     { label: 'Now priced', group: 'Now priced',         flag: 'priced', rule: 'Call-for-price car named a figure' },
+  removed:    { label: 'Gone',       group: 'Gone from the site', flag: 'gone',   rule: 'No longer on the site' },
+  relisted:   { label: 'Back',       group: 'Back on the market', flag: 'back',   rule: 'Listed again after going' },
+};
+const KIND_ORDER = ['price_drop', 'new', 'priced', 'price_rise', 'relisted', 'removed'];
+
+const SORTS = [
+  { id: 'newest',   label: 'Newest first',      get: l => -(Date.parse(l.first_seen) || 0) },
+  { id: 'price',    label: 'Asking, low first', get: l => l.price ?? Infinity },
+  { id: 'priced',   label: 'Asking, high first',get: l => -(l.price ?? -Infinity) },
+  { id: 'perkm',    label: 'Best $/1000km',     get: l => l.per_1000km ?? Infinity },
+  { id: 'year',     label: 'Newest year',       get: l => -(l.year || 0) },
+  { id: 'km',       label: 'Lowest odometer',   get: l => l.mileage_km ?? Infinity },
+  { id: 'distance', label: 'Closest',           get: l => l.distance_km ?? Infinity },
+  { id: 'days',     label: 'Longest listed',    get: l => -(l.days_listed ?? -1) },
+];
+
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* private mode */ } },
+};
+
+const app = {
+  data: null,
+  view: 'feed',
+  offline: false,
+  loadError: null,
+  q: '',
+  sort: 'newest',
+  chip: 'all',
+  search: 'all',
+  showHidden: false,
+  lastSeen: store.get('lastSeen', null),
+  seenIds: new Set(store.get('seenIds', [])),
+  freshIds: new Set(),
+  draft: null,
+};
+
+/* ----------------------------------------------------------------- format */
+const money = n => (n === null || n === undefined || n === '') ? '—'
+  : '$' + Math.round(n).toLocaleString('en-CA');
+const signed = n => (n > 0 ? '+' : '−') + '$' + Math.abs(Math.round(n)).toLocaleString('en-CA');
+const daysListed = d => d === 0 ? 'listed today'
+  : d === 1 ? 'listed yesterday' : `${d} days listed`;
+const km = n => (n === null || n === undefined) ? null : Math.round(n).toLocaleString('en-CA');
+
+function when(iso) {
+  const t = Date.parse(iso);
+  if (!t) return '';
+  const mins = (Date.now() - t) / 60000;
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${Math.round(mins)}m ago`;
+  if (mins < 48 * 60) return `${Math.round(mins / 60)}h ago`;
+  return new Date(t).toLocaleDateString('en-CA', { month: 'short', day: 'numeric' });
+}
+function stamp(iso) {
+  const t = Date.parse(iso);
+  return t ? new Date(t).toLocaleString('en-CA',
+    { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) : '—';
+}
+/* A placeholder that is a car, rather than a grey rectangle or the title
+   printed a second time under the title. */
+const CAR_GLYPH = `<svg width="34" height="22" viewBox="0 0 34 22" fill="none" aria-hidden="true">
+  <path d="M3 15h28M6 15l2.4-7A3 3 0 0111.3 6h11.4a3 3 0 012.9 2l2.4 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="10" cy="17.5" r="2.4" stroke="currentColor" stroke-width="1.6"/>
+  <circle cx="24" cy="17.5" r="2.4" stroke="currentColor" stroke-width="1.6"/></svg>`;
+
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
+  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+/* AutoTrader titles arrive as pipe-delimited dealer shouting:
+   "BMW M5 4dr Sdn|STAGE 2|SAFETY CERTIFIED". The first segment is the car;
+   the rest is a sales pitch that makes every card look the same. */
+function carName(l) {
+  const head = String(l.title || '').split('|')[0].trim();
+  const year = l.year ? `${l.year} ` : '';
+  return (year + (head || [l.make, l.model].filter(Boolean).join(' '))).trim() || 'Listing';
+}
+function carExtras(l) {
+  return String(l.title || '').split('|').slice(1)
+    .map(s => s.trim()).filter(s => s && s.length < 40);
+}
+
+/* ----------------------------------------------------------------- helpers */
+const el = (tag, cls, html) => {
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (html !== undefined) n.innerHTML = html;
+  return n;
+};
+const live = () => (app.data?.listings || []).filter(l => l.status === 'active');
+const DAY = 86400000;
+const arrivedRecently = l => Date.parse(l.first_seen) > Date.now() - DAY;
+const visible = () => live().filter(l => !l.filtered);
+const byId = id => (app.data?.listings || []).find(l => String(l.id) === String(id));
+
+function lastEventOf(l) {
+  const h = l.price_history || [];
+  if (l.status === 'gone') return 'removed';
+  if (h.length >= 2) {
+    const a = h[h.length - 2]?.price, b = h[h.length - 1]?.price;
+    if (a && b && b !== a) return b < a ? 'price_drop' : 'price_rise';
+  }
+  if (app.data && Date.parse(l.first_seen) > Date.now() - 36e5 * 24) return 'new';
+  return null;
+}
+function priceMove(l) {
+  const h = (l.price_history || []).filter(p => p.price);
+  if (h.length < 2) return null;
+  const was = h[h.length - 2].price, now = h[h.length - 1].price;
+  return now === was ? null : { was, now, delta: now - was };
+}
+
+/* ----------------------------------------------------------------- trust */
+function trustState() {
+  const d = app.data;
+  if (!d) return { state: 'ok', text: 'Loading…' };
+  const run = d.last_run || {};
+  const cov = d.coverage || {};
+  // Age of the last *check*, not of the file. They differ whenever the file
+  // is rewritten without a check having happened, and the question being
+  // asked here is about the site, not about the publish step.
+  const ageMin = (Date.now() - Date.parse(run.at || d.generated_at)) / 60000;
+  const expected = cov.expected_interval_minutes || 30;
+  const failing = run.ok === false || (run.errors || []).length > 0;
+  const stale = ageMin > expected * 3;
+  // Coverage this poor means cars can arrive and go between checks, which is
+  // worth an amber light even when the most recent check was a minute ago.
+  const thin = cov.pct !== undefined && cov.pct < 50;
+
+  if (failing) {
+    return {
+      state: 'bad',
+      text: `Last check failed ${when(run.at)}`,
+      alarm: {
+        level: 'bad',
+        text: 'The last check did not finish cleanly, so what you are looking at may be out of date.',
+        detail: (run.errors || [])[0] || (run.invariants || [])[0] || '',
+      },
+    };
+  }
+  if (stale) {
+    return {
+      state: 'stale',
+      text: `Checked ${when(run.at)}`,
+      alarm: {
+        level: 'warn',
+        text: `No check has landed for ${Math.round(ageMin / 60)} hours, against one expected every ${expected} minutes. Cars may have come and gone since.`,
+        detail: cov.pct !== undefined
+          ? `Coverage over the last ${cov.window_hours}h: ${cov.pct}% — ${cov.successful} of ${cov.expected} expected checks.` : '',
+      },
+    };
+  }
+  if (thin) {
+    return {
+      state: 'stale',
+      text: `Checked ${when(run.at)}`,
+      alarm: {
+        level: 'warn',
+        text: `Only ${cov.pct}% of the expected checks happened in the last ${cov.window_hours} hours — ${cov.successful} of ${cov.expected}. A car can be listed and sold between checks at this rate.`,
+        detail: cov.longest_gap_minutes
+          ? `Longest gap: ${(cov.longest_gap_minutes / 60).toFixed(1)} hours.` : '',
+      },
+    };
+  }
+  return { state: 'ok', text: `Checked ${when(run.at)}` };
+}
+
+function renderTrust() {
+  const t = trustState();
+  store.set('lastTrust', { state: t.state, text: t.text, alarm: t.alarm || null });
+  const wrap = document.getElementById('trust');
+  wrap.dataset.state = t.state;
+  document.getElementById('trust-text').textContent = t.text;
+  const cov = app.data?.coverage;
+  document.getElementById('trust-cov').innerHTML = cov
+    ? `· <b class="num">${cov.pct}%</b> covered` : '';
+
+  const alarm = document.getElementById('alarm');
+  if (t.alarm) {
+    alarm.hidden = false;
+    alarm.dataset.level = t.alarm.level;
+    document.getElementById('alarm-text').textContent = t.alarm.text;
+    const detail = document.getElementById('alarm-detail');
+    detail.innerHTML = t.alarm.detail ? `<code>${esc(t.alarm.detail)}</code>` : '';
+  } else {
+    alarm.hidden = true;
+  }
+}
+
+/* ----------------------------------------------------------------- tabs */
+function renderTabs() {
+  const host = document.getElementById('tabs');
+  const unread = app.data ? feedEvents().filter(e => isUnread(e)).length : 0;
+  host.innerHTML = '';
+  for (const v of VIEWS) {
+    const b = el('button', 'tab');
+    b.type = 'button';
+    b.dataset.viewLink = v.id;
+    b.setAttribute('role', 'link');
+    if (app.view === v.id) b.setAttribute('aria-current', 'page');
+    let n = '';
+    if (v.id === 'feed' && unread) n = `<span class="tab__n num" data-unread="1">${unread}</span>`;
+    else if (v.id === 'listings' && app.data) n = `<span class="tab__n num">${visible().length}</span>`;
+    else if (v.id === 'searches' && app.data) n = `<span class="tab__n num">${(app.data.searches || []).length}</span>`;
+    else n = '<span class="tab__n num"></span>';
+    b.innerHTML = `<span>${v.label}</span>${n}`;
+    b.addEventListener('click', () => go(v.id));
+    host.appendChild(b);
+  }
+}
+
+function go(view, opts = {}) {
+  app.view = view;
+  if (!opts.silent) location.hash = `#/${view}`;
+  for (const s of document.querySelectorAll('.view')) s.hidden = s.dataset.view !== view;
+  renderTabs();
+  render();
+  if (opts.focus !== false) document.getElementById('main').focus({ preventScroll: true });
+  window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+}
+
+/* ----------------------------------------------------------------- feed */
+function feedEvents() {
+  return (app.data?.events || []);
+}
+const isUnread = e => !app.lastSeen || e.at > app.lastSeen;
+
+/* Shown once, on a browser that has never opened this before. It answers the
+   four questions a person has on first sight and then never appears again -
+   an explainer you have to dismiss twice is worse than no explainer. */
+function welcome() {
+  const d = app.data;
+  const box = el('section', 'state measure');
+  box.style.marginBottom = 'var(--s6)';
+  const searches = (d.searches || []).map(s => s.name);
+  const cov = d.coverage || {};
+  box.innerHTML = `
+    <h3>This is watching ${searches.length} search${searches.length === 1 ? '' : 'es'} on autotrader.ca</h3>
+    <p>${esc(searches.join(' and ') || 'nothing yet')} — ${visible().length} cars live
+       right now, re-read about every ${cov.expected_interval_minutes || 30} minutes.</p>
+    <p><b>Alerts</b> go to ${(d.notify?.active || []).join(', ') || 'nowhere yet — no channel is switched on'}.
+       <b>Feed</b> is what changed since you last looked. <b>Status</b> says whether
+       the bot itself is healthy, and the dot beside the title up there says it at a glance.</p>
+    <p>Add a search by pasting its link on the Searches tab.</p>`;
+  const b = el('button', 'btn btn--primary', 'Got it');
+  b.type = 'button';
+  b.addEventListener('click', () => {
+    store.set('welcomed', true);
+    app.firstVisit = false;
+    renderFeed();
+    document.getElementById('main').focus({ preventScroll: true });
+  });
+  box.appendChild(b);
+  return box;
+}
+
+function renderFeed() {
+  const host = document.querySelector('[data-view="feed"]');
+  host.innerHTML = '';
+  const head = el('div', 'view__head');
+  head.classList.add('measure');
+  head.innerHTML = `<h1 id="feed-h">What changed</h1>
+    <p>Everything that has happened to a car you are watching, newest first — including
+       cars your rules hide, which the run counters never counted.</p>`;
+  host.appendChild(head);
+  if (app.firstVisit && !store.get('welcomed', false)) {
+    host.appendChild(welcome());
+  }
+
+  if (app.firstVisit && store.get('welcomed', false)) {
+    const p = el('p', 'why measure');
+    p.innerHTML = `<b>First visit.</b> Everything already on the site is recorded as a
+      starting point rather than announced at you. From now on this shows only what
+      has changed since you last looked.`;
+    host.appendChild(p);
+  }
+
+  const events = feedEvents();
+  if (!events.length) {
+    host.appendChild(emptyState('Nothing has happened yet',
+      'The bot has not recorded a change since it started watching. The first check records everything it finds as a starting point rather than announcing 200 cars at you.'));
+    return;
+  }
+
+  const unread = events.filter(isUnread);
+  if (unread.length) {
+    const b = el('div', 'bar');
+    const btn = el('button', 'btn btn--primary', `Mark ${unread.length} as seen`);
+    btn.type = 'button';
+    btn.addEventListener('click', () => {
+      app.lastSeen = new Date().toISOString();
+      store.set('lastSeen', app.lastSeen);
+      renderTabs(); renderFeed();
+    });
+    b.appendChild(btn);
+    host.appendChild(b);
+  }
+
+  const groups = new Map();
+  for (const e of events) {
+    if (!groups.has(e.kind)) groups.set(e.kind, []);
+    groups.get(e.kind).push(e);
+  }
+  for (const kind of KIND_ORDER) {
+    const rows = groups.get(kind);
+    if (!rows || !rows.length) continue;
+    const sec = el('section', 'section measure');
+    const n = rows.filter(isUnread).length;
+    sec.innerHTML = `<div class="section__head">
+        <h2>${KIND[kind].group}</h2>
+        <span class="count num">${n === rows.length ? `${rows.length} new to you`
+          : n ? `${rows.length} · ${n} new to you` : rows.length}</span>
+      </div>`;
+    const list = el('ul', 'feed');
+    let markerDone = false;
+    for (const e of rows.slice(0, 60)) {
+      if (!markerDone && !isUnread(e) && rows.some(isUnread)) {
+        const m = el('li'); m.innerHTML = `<div class="marker">Seen before this</div>`;
+        list.appendChild(m); markerDone = true;
+      }
+      list.appendChild(eventRow(e));
+    }
+    if (rows.length > 60) {
+      const more = el('li', 'note', `and ${rows.length - 60} older`);
+      more.style.padding = 'var(--s3) var(--s4)';
+      list.appendChild(more);
+    }
+    sec.appendChild(list);
+    host.appendChild(sec);
+  }
+}
+
+function eventRow(e) {
+  const li = el('li');
+  const b = el('button', 'ev' + (isUnread(e) ? ' ev--unread' : ''));
+  b.type = 'button';
+  b.dataset.kind = e.kind;
+
+  let fig = '', sub = [];
+  if (e.kind === 'price_drop' || e.kind === 'price_rise') {
+    const cls = e.kind === 'price_drop' ? 'drop' : 'rise';
+    fig = `<span class="ev__fig num ${cls}">${signed(e.delta)}</span>`;
+    sub.push(`<span class="ev__was num">${money(e.old_price)}</span>`);
+    sub.push(`<span class="num">${money(e.new_price)}</span>`);
+  } else if (e.kind === 'priced') {
+    fig = `<span class="ev__fig num">${money(e.new_price)}</span>`;
+    sub.push('was call for price');
+  } else if (e.price) {
+    fig = `<span class="ev__fig num">${money(e.price)}</span>`;
+  }
+  if (e.filtered) sub.push(`<span>hidden — ${esc(e.filter_reason || 'a rule of yours')}</span>`);
+  else if (e.delivery?.state === 'sent') sub.push('<span>alerted</span>');
+  else if (e.delivery?.state === 'queued') sub.push('<span>queued, not sent yet</span>');
+  else if (e.delivery?.state === 'quiet') sub.push(`<span>${esc(e.delivery.text)}</span>`);
+
+  const name = (e.year ? e.year + ' ' : '') +
+    (String(e.title || '').split('|')[0].trim() || [e.make, e.model].filter(Boolean).join(' '));
+  b.innerHTML =
+    `<time class="ev__when" datetime="${esc(e.at)}">${when(e.at)}</time>
+     <span class="ev__title">${esc(name)}</span>${fig}
+     <span class="ev__sub">${sub.join('')}</span>`;
+  b.setAttribute('aria-label',
+    `${KIND[e.kind].label}: ${name}. ${b.querySelector('.ev__sub').textContent.trim()}`);
+  b.addEventListener('click', () => openSheet(e.listing_id));
+  li.appendChild(b);
+  return li;
+}
+
+/* ----------------------------------------------------------------- listings */
+function listingPool() {
+  let rows = (app.data?.listings || []);
+  if (app.search !== 'all') rows = rows.filter(l => l.search_id === app.search);
+
+  const chip = app.chip;
+  if (chip === 'all') rows = rows.filter(l => l.status === 'active' && (app.showHidden || !l.filtered));
+  else if (chip === 'drops') rows = rows.filter(l => l.status === 'active' && priceMove(l)?.delta < 0);
+  else if (chip === 'new') rows = rows.filter(l => l.status === 'active' && !l.filtered && arrivedRecently(l));
+  else if (chip === 'unpriced') rows = rows.filter(l => l.status === 'active' && l.unpriced && !l.filtered);
+  else if (chip === 'gone') rows = rows.filter(l => l.status === 'gone');
+  else if (chip === 'hidden') rows = rows.filter(l => l.status === 'active' && l.filtered);
+
+  const q = app.q.trim().toLowerCase();
+  if (q) {
+    rows = rows.filter(l => [l.title, l.location, l.color, l.trim, l.seller, l.model]
+      .filter(Boolean).join(' ').toLowerCase().includes(q));
+  }
+  const sort = SORTS.find(s => s.id === app.sort) || SORTS[0];
+  return rows.slice().sort((a, b) => {
+    const x = sort.get(a), y = sort.get(b);
+    return (x === y) ? 0 : (x < y ? -1 : 1);
+  });
+}
+
+function renderListings() {
+  const host = document.querySelector('[data-view="listings"]');
+  host.innerHTML = '';
+  const head = el('div', 'view__head');
+  head.innerHTML = `<h1 id="listings-h">Listings</h1>
+    <p>Every car the searches have turned up. Cars your rules hide are kept and
+       explained rather than dropped — the number you can click on beats the number
+       that quietly omits.</p>`;
+  host.appendChild(head);
+
+  const bar = el('div', 'bar');
+  bar.innerHTML = `
+    <label class="field">
+      <span class="sr">Filter listings</span>
+      <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true" style="flex:none;color:var(--text-3)">
+        <circle cx="6" cy="6" r="4.5" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        <path d="M9.5 9.5L13 13" stroke="currentColor" stroke-width="1.4"/></svg>
+      <input type="search" id="q" placeholder="Colour, city, trim, seller…" value="${esc(app.q)}">
+    </label>
+    <label class="sr" for="sort">Sort by</label>
+    <select id="sort">${SORTS.map(s =>
+      `<option value="${s.id}"${s.id === app.sort ? ' selected' : ''}>${s.label}</option>`).join('')}</select>
+    <label class="sr" for="search-pick">Search</label>
+    <select id="search-pick">
+      <option value="all">All searches</option>
+      ${(app.data.searches || []).map(s =>
+        `<option value="${esc(s.id)}"${s.id === app.search ? ' selected' : ''}>${esc(s.name)}</option>`).join('')}
+    </select>`;
+  host.appendChild(bar);
+
+  const counts = {
+    all: live().filter(l => !l.filtered).length,
+    drops: live().filter(l => priceMove(l)?.delta < 0).length,
+    new: live().filter(l => !l.filtered && arrivedRecently(l)).length,
+    unpriced: live().filter(l => l.unpriced && !l.filtered).length,
+    hidden: live().filter(l => l.filtered).length,
+    gone: (app.data.listings || []).filter(l => l.status === 'gone').length,
+  };
+  const chips = el('div', 'chips');
+  chips.setAttribute('role', 'group');
+  chips.setAttribute('aria-label', 'Filter by state');
+  for (const [id, label] of [['all', 'Live'], ['new', 'New'], ['drops', 'Price drops'],
+                             ['unpriced', 'Call for price'], ['hidden', 'Hidden by a rule'], ['gone', 'Gone']]) {
+    const c = el('button', 'chip');
+    c.type = 'button';
+    c.setAttribute('aria-pressed', app.chip === id ? 'true' : 'false');
+    c.innerHTML = `${label}<span class="n num">${counts[id] ?? 0}</span>`;
+    c.addEventListener('click', () => { app.chip = id; renderListings(); });
+    chips.appendChild(c);
+  }
+  if (app.chip === 'all' && counts.hidden) {
+    const btn = el('button', 'chip');
+    btn.type = 'button';
+    btn.setAttribute('aria-pressed', String(app.showHidden));
+    btn.innerHTML = `Include hidden<span class="n num">${counts.hidden}</span>`;
+    btn.addEventListener('click', () => { app.showHidden = !app.showHidden; renderListings(); });
+    chips.appendChild(btn);
+  }
+  host.appendChild(chips);
+
+  const rows = listingPool();
+  if (!rows.length) {
+    host.appendChild(noResults(counts));
+    return;
+  }
+
+  const grid = el('div', 'grid');
+  for (const l of rows.slice(0, 300)) grid.appendChild(card(l));
+  host.appendChild(grid);
+  if (rows.length > 300) {
+    host.appendChild(el('p', 'note', `Showing the first 300 of ${rows.length}.`));
+  }
+  bar.querySelector('#q').addEventListener('input', e => {
+    app.q = e.target.value;
+    const keep = document.activeElement === e.target;
+    renderListings();
+    if (keep) { const i = document.getElementById('q'); i.focus(); i.setSelectionRange(i.value.length, i.value.length); }
+  });
+  bar.querySelector('#sort').addEventListener('change', e => { app.sort = e.target.value; renderListings(); });
+  bar.querySelector('#search-pick').addEventListener('change', e => { app.search = e.target.value; renderListings(); });
+}
+
+/* Zero results, and specifically why - with the offending control offered
+   back rather than a shrug. */
+function noResults(counts) {
+  const s = el('div', 'state');
+  if (app.q) {
+    s.innerHTML = `<h3>Nothing matches “${esc(app.q)}”</h3>
+      <p>The text filter is applied to the title, city, colour, trim and seller.</p>`;
+    const b = el('button', 'btn', 'Clear the text filter');
+    b.type = 'button';
+    b.addEventListener('click', () => { app.q = ''; renderListings(); });
+    s.appendChild(b);
+    return s;
+  }
+  if (app.chip === 'hidden' && !counts.hidden) {
+    s.innerHTML = `<h3>Nothing is hidden right now</h3>
+      <p>Every car the searches found passed your rules.</p>`;
+    return s;
+  }
+  if (app.search !== 'all') {
+    const sr = (app.data.searches || []).find(x => x.id === app.search);
+    const why = sr?.health?.shut_out;
+    s.innerHTML = `<h3>${esc(sr?.name || 'This search')} has nothing to show</h3>
+      <p>${why ? `It read the site fine and every car was turned away: ${esc(why)}.`
+                : 'It has not kept any cars yet.'}</p>`;
+    const b = el('button', 'btn', 'Show all searches');
+    b.type = 'button';
+    b.addEventListener('click', () => { app.search = 'all'; renderListings(); });
+    s.appendChild(b);
+    return s;
+  }
+  s.innerHTML = `<h3>Nothing here</h3><p>No car is in this state at the moment.</p>`;
+  const b = el('button', 'btn', 'Back to live listings');
+  b.type = 'button';
+  b.addEventListener('click', () => { app.chip = 'all'; renderListings(); });
+  s.appendChild(b);
+  return s;
+}
+
+function emptyState(title, body) {
+  const s = el('div', 'state');
+  s.innerHTML = `<h3>${esc(title)}</h3><p>${esc(body)}</p>`;
+  return s;
+}
+
+function shot(l, cls) {
+  const box = el('div', cls || 'card__shot');
+  const src = (l.images || [])[0];
+  const fallback = () => {
+    box.innerHTML = `<div class="shot__fallback">${CAR_GLYPH}
+        <span>${l.filtered ? 'not kept for hidden cars' : 'no photo'}</span>
+      </div>`;
+  };
+  if (!src) { fallback(); return box; }
+  const img = new Image();
+  img.loading = 'lazy';
+  img.decoding = 'async';
+  img.width = 400; img.height = 300;
+  img.alt = '';
+  img.src = src;
+  img.addEventListener('error', fallback, { once: true });
+  box.appendChild(img);
+  return box;
+}
+
+function card(l) {
+  const b = el('button', 'card');
+  b.type = 'button';
+  if (l.status === 'gone') b.classList.add('card--gone');
+  if (l.filtered) b.classList.add('card--hidden');
+  if (app.freshIds.has(String(l.id))) b.classList.add('is-fresh');
+
+  const move = priceMove(l);
+  const kind = lastEventOf(l);
+  const cmp = app.data.comparables?.[String(l.id)];
+
+  if (!l.filtered) b.appendChild(shot(l));
+
+  const body = el('div', 'card__body');
+  let flag = '';
+  if (kind) flag = `<span class="flag flag--${KIND[kind].flag}">${KIND[kind].label}</span>`;
+
+  const price = l.unpriced
+    ? `<b>Call for price</b>`
+    : `<b class="num">${money(l.price)}</b>` +
+      (move && move.delta < 0
+        ? `<span class="card__was num">${money(move.was)}</span><span class="card__delta num drop">${signed(move.delta)}</span>`
+        : move && move.delta > 0
+        ? `<span class="card__was num">${money(move.was)}</span><span class="card__delta num rise">${signed(move.delta)}</span>`
+        : '');
+
+  const facts = [];
+  if (l.mileage_km) facts.push(`<span class="num">${km(l.mileage_km)}<u> km</u></span>`);
+  if (l.per_1000km) facts.push(`<span class="num">$${Math.round(l.per_1000km)}<u> /1000km</u></span>`);
+  if (l.distance_km !== undefined && l.distance_km !== null) facts.push(`<span class="num">${km(l.distance_km)}<u> km away</u></span>`);
+  if (l.location) facts.push(`<span>${esc(l.location)}</span>`);
+
+  const foot = [];
+  if (cmp?.pct !== undefined && cmp.notable) {
+    foot.push(`<span class="${cmp.pct < 0 ? 'drop' : ''}">${Math.round(Math.abs(cmp.pct))}% ${cmp.pct < 0 ? 'under' : 'over'} median of ${cmp.sample}</span>`);
+  }
+  if (l.days_listed !== undefined) foot.push(`<span class="num">${daysListed(l.days_listed)}</span>`);
+  if (l.photo_count) foot.push(`<span class="num">${l.photo_count} photos</span>`);
+
+  body.innerHTML =
+    `${flag}
+     <div class="card__price">${price}</div>
+     <div class="card__title">${esc(carName(l))}</div>
+     <div class="facts">${facts.join('')}</div>` +
+    (l.filtered ? `<p class="rule">Hidden: ${esc(l.filter_reason || 'a rule of yours')}</p>` : '') +
+    (foot.length ? `<div class="card__foot">${foot.join('')}</div>` : '');
+  b.appendChild(body);
+  b.setAttribute('aria-label',
+    `${carName(l)}, ${l.unpriced ? 'call for price' : money(l.price)}` +
+    (l.mileage_km ? `, ${km(l.mileage_km)} kilometres` : '') +
+    (l.filtered ? `, hidden: ${l.filter_reason || 'a rule'}` : ''));
+  b.addEventListener('click', () => openSheet(l.id));
+  return b;
+}
+
+/* ----------------------------------------------------------------- searches */
+function renderSearches() {
+  const host = document.querySelector('[data-view="searches"]');
+  host.innerHTML = '';
+  const head = el('div', 'view__head');
+  head.innerHTML = `<h1 id="searches-h">Searches</h1>
+    <p>What the bot is looking at, and the rules applied to what it finds. Editing a
+       rule shows what it would keep before you commit to it.</p>`;
+  host.appendChild(head);
+
+  for (const s of (app.data.searches || [])) {
+    const sec = el('section', 'section');
+    const h = s.health || {};
+    const bad = h.consecutive_failures > 0;
+    const shutOut = h.shut_out;
+    sec.innerHTML = `<div class="section__head">
+        <h2 class="name">${esc(s.name)}</h2>
+        <span class="count num">${s.counts?.active ?? 0} live · ${s.counts?.filtered ?? 0} hidden</span>
+      </div>`;
+
+    const kv = el('dl', 'kv');
+    const area = s.area?.text;
+    kv.innerHTML =
+      `<dt>Watching</dt><dd>${esc(searchWords(s))}
+         · <a href="${esc(s.url)}" rel="noopener" target="_blank">open on autotrader.ca</a></dd>` +
+      (area ? `<dt>Area</dt><dd>${esc(area)} <span class="note" style="margin:0">— enforced here, because the site ignores it</span></dd>` : '') +
+      `<dt>Last read</dt><dd>${h.last_ok ? stamp(h.last_ok) : '—'}${h.last_count !== undefined ? ` · ${h.last_count} listings` : ''}</dd>` +
+      (bad ? `<dt>Trouble</dt><dd class="err">${h.consecutive_failures} failures in a row — ${esc(h.last_error || '')}</dd>` : '') +
+      (shutOut ? `<dt>Note</dt><dd class="warnt">Reads fine, keeps nothing: ${esc(shutOut)}</dd>` : '');
+    sec.appendChild(kv);
+    sec.appendChild(rulesEditor(s));
+    host.appendChild(sec);
+  }
+
+  host.appendChild(pasteALink());
+}
+
+/* The search as a sentence, from the parts of the link the bot understood.
+   A person who pasted that link wants to know it was read correctly, which a
+   verbatim copy of their own URL does not tell them. */
+function searchWords(s) {
+  const m = s.summary || {};
+  const bits = [[m.make, m.model].filter(Boolean).join(' ') || 'any car'];
+  if (m.year_min && m.year_max) bits.push(`${m.year_min}–${m.year_max}`);
+  else if (m.year_min) bits.push(`${m.year_min} or newer`);
+  else if (m.year_max) bits.push(`up to ${m.year_max}`);
+  else bits.push('any year');
+  if (m.price_max) bits.push(`under ${money(m.price_max)}`);
+  if (m.mileage_max) bits.push(`under ${km(m.mileage_max)} km`);
+  for (const chip of (m.chips || [])) bits.push(chip);
+  return bits.join(' · ');
+}
+
+function rulesEditor(s) {
+  const box = el('div');
+  box.style.marginTop = 'var(--s4)';
+  const f = { ...(s.rules?.filters || {}) };
+  const id = s.id.replace(/[^a-z0-9]/gi, '');
+  const box_ = [
+    ['mx', 'Max asking', f.max_price, 'no ceiling'],
+    ['y0', 'From year', f.min_year, 'any'],
+    ['y1', 'To year', f.max_year, 'any'],
+    ['km', 'Within km', f.max_distance_km, 'anywhere'],
+  ];
+  box.innerHTML = `
+    <div class="bar">${box_.map(([k, label, value, hint]) => `
+      <label class="labelled"><span>${label}</span>
+        <span class="field"><input type="number" inputmode="numeric" id="${k}-${id}"
+          placeholder="${hint}" value="${value ?? ''}"></span></label>`).join('')}
+    </div>
+    <p class="why" id="pv-${id}"></p>`;
+  const preview = () => {
+    const v = k => {
+      const n = box.querySelector('#' + k + '-' + id).value.trim();
+      return n === '' ? null : Number(n);
+    };
+    const rule = { max_price: v('mx'), min_year: v('y0'), max_year: v('y1'), max_distance_km: v('km') };
+    const pool = (app.data.listings || []).filter(l => l.status === 'active' && l.search_id === s.id);
+    const kept = pool.filter(l => {
+      if (rule.max_price !== null && l.price !== null && l.price > rule.max_price) return false;
+      if (rule.min_year !== null && l.year && l.year < rule.min_year) return false;
+      if (rule.max_year !== null && l.year && l.year > rule.max_year) return false;
+      if (rule.max_distance_km !== null && l.distance_km !== null &&
+          l.distance_km !== undefined && l.distance_km > rule.max_distance_km) return false;
+      return true;
+    });
+    const changed = JSON.stringify(rule) !== JSON.stringify({
+      max_price: f.max_price ?? null, min_year: f.min_year ?? null,
+      max_year: f.max_year ?? null, max_distance_km: f.max_distance_km ?? null });
+    box.querySelector('#pv-' + id).innerHTML = pool.length
+      ? `<b>${kept.length}</b> of the ${pool.length} cars this search currently holds would pass` +
+        (changed ? ' under the rule above.' : ' under the rule as saved.')
+      : 'This search is not holding any cars to test the rule against.';
+  };
+  box.addEventListener('input', preview);
+  preview();
+  return box;
+}
+
+/* Paste a link and see what it would watch, before committing to it. The
+   page cannot write to the repository - it is a static file on Pages - so it
+   reads the link back and hands over the one command that does. */
+function pasteALink() {
+  const sec = el('section', 'section');
+  sec.innerHTML = `<div class="section__head"><h2>Add a search</h2></div>
+    <p class="note" style="margin-top:0">Set up the search you want on autotrader.ca, then
+       paste the address of the results page here.</p>
+    <div class="bar">
+      <label class="field" style="flex:1 1 320px"><span class="sr">Search link</span>
+        <input type="url" id="paste" placeholder="https://www.autotrader.ca/cars/…"
+          spellcheck="false" autocomplete="off"></label>
+    </div>
+    <div id="paste-out"></div>`;
+
+  const out = sec.querySelector('#paste-out');
+  sec.querySelector('#paste').addEventListener('input', e => {
+    const raw = e.target.value.trim();
+    if (!raw) { out.innerHTML = ''; return; }
+    let url;
+    try { url = new URL(raw); } catch {
+      out.innerHTML = `<p class="why err">That is not a web address yet — it should
+        start with <span class="mono">https://</span>.</p>`;
+      return;
+    }
+    if (!/autotrader\.ca$/i.test(url.hostname.replace(/^www\./, ''))) {
+      out.innerHTML = `<p class="why err">That is a link to
+        <b>${esc(url.hostname)}</b>, not autotrader.ca.</p>`;
+      return;
+    }
+    const q = url.searchParams;
+    const bits = [];
+    const seg = url.pathname.split('/').filter(Boolean);
+    if (seg[0] === 'cars' && seg[1]) bits.push(seg.slice(1, 3).join(' ').toUpperCase());
+    const yr = q.get('yRng');
+    if (yr) bits.push(yr.replace('%2C', ',').replace(',', '–'));
+    const pr = q.get('pRng');
+    if (pr) bits.push('price ' + pr.replace(',', '–'));
+    if (q.get('loc')) bits.push('near ' + q.get('loc'));
+    out.innerHTML = `
+      <p class="why"><b>Reads as:</b> ${bits.length ? esc(bits.join(' · ')) : 'every car on that page'}.
+        The bot re-reads the link itself on every check, so anything it did not
+        understand here is still applied by the site.</p>
+      <p class="note">To add it, run this where the bot lives:</p>
+      <p class="mono" style="background:var(--surface);padding:var(--s3);border-radius:var(--r-sm);
+         overflow-x:auto;white-space:nowrap;margin:0">python -m autotrader add "${esc(raw)}"</p>`;
+  });
+  return sec;
+}
+
+/* ----------------------------------------------------------------- status */
+function renderStatus() {
+  const host = document.querySelector('[data-view="status"]');
+  host.innerHTML = '';
+  const d = app.data;
+  const run = d.last_run || {};
+  const cov = d.coverage || {};
+  const h = d.health || {};
+
+  const head = el('div', 'view__head');
+  head.innerHTML = `<h1 id="status-h">Status</h1>
+    <p>Whether the thing watching is working. The useful measure is not whether the
+       last check passed — it is what share of the checks it was meant to make it made.</p>`;
+  host.appendChild(head);
+
+  const covTone = cov.pct >= 80 ? 'good' : cov.pct >= 40 ? 'warn' : 'bad';
+  const stats = el('dl', 'stats');
+  stats.innerHTML = `
+    <div class="stat" data-tone="${covTone}"><dt>Coverage, ${cov.window_hours || 24}h</dt>
+      <dd class="num">${cov.pct ?? '—'}%</dd>
+      <small>${cov.successful ?? 0} good checks of ${cov.expected ?? 0} expected</small></div>
+    <div class="stat"><dt>Last good check</dt><dd>${when(run.at)}</dd>
+      <small>${stamp(run.at)}</small></div>
+    <div class="stat" data-tone="${cov.longest_gap_minutes > 180 ? 'warn' : ''}"><dt>Longest gap</dt>
+      <dd class="num">${cov.longest_gap_minutes ? Math.round(cov.longest_gap_minutes / 60 * 10) / 10 : '—'}h</dd>
+      <small>between good checks</small></div>
+    <div class="stat"><dt>Requests last check</dt><dd class="num">${run.requests_made ?? '—'}</dd>
+      <small>budget ${h.budget?.limit ?? '—'}</small></div>
+    <div class="stat"><dt>Check took</dt><dd class="num">${run.duration_s ?? '—'}s</dd>
+      <small>${d.cost ? `${d.cost.minutes} min of runner in ${d.cost.window_hours}h` : ''}</small></div>
+    <div class="stat" data-tone="${h.accounted?.unexplained ? 'bad' : 'good'}"><dt>Unaccounted cars</dt>
+      <dd class="num">${h.accounted?.unexplained ?? 0}</dd>
+      <small>${h.accounted?.delivered ?? 0} told, ${h.accounted?.quiet ?? 0} deliberately quiet</small></div>`;
+  host.appendChild(stats);
+
+  if ((run.invariants || []).length) {
+    const s = el('section', 'section');
+    s.innerHTML = `<div class="section__head"><h2>Bookkeeping failures</h2></div>` +
+      `<ul class="note" style="padding-left:var(--s4)">` +
+      run.invariants.map(v => `<li class="err">${esc(v)}</li>`).join('') + `</ul>`;
+    host.appendChild(s);
+  }
+
+  // Run history as one mark per check. A gap reads as a gap.
+  const runs = (d.runs || []).slice().reverse();
+  if (runs.length) {
+    const s = el('section', 'section');
+    s.innerHTML = `<div class="section__head"><h2>Recent checks</h2>
+      <span class="count num">${runs.length} kept</span></div>`;
+    const tl = el('div', 'timeline');
+    tl.setAttribute('role', 'img');
+    tl.setAttribute('aria-label',
+      `${runs.filter(r => r.ok).length} of the last ${runs.length} checks succeeded`);
+    let prev = null;
+    for (const r of runs) {
+      const t = Date.parse(r.at);
+      if (prev && t - prev > (cov.expected_interval_minutes || 30) * 60000 * 2) {
+        const g = el('i'); g.dataset.gap = '1'; g.style.height = '30%'; tl.appendChild(g);
+      }
+      const i = el('i');
+      i.dataset.ok = r.ok ? '1' : '0';
+      i.style.height = Math.max(16, Math.min(100, (r.duration_s || 10) * 2)) + '%';
+      i.title = `${stamp(r.at)} — ${r.ok ? 'ok' : 'failed'}, ${r.listings_seen ?? 0} listings, ${r.duration_s ?? '?'}s`;
+      tl.appendChild(i);
+      prev = t;
+    }
+    s.appendChild(tl);
+    s.appendChild(el('p', 'note',
+      `Height is how long the check took. Grey marks a gap longer than two intervals.`));
+    host.appendChild(s);
+  }
+
+  // Parser ladder: which rungs scored, not just which one won.
+  const strat = h.strategies || {};
+  if (Object.keys(strat).length) {
+    const s = el('section', 'section');
+    s.innerHTML = `<div class="section__head"><h2>Parser ladder</h2></div>`;
+    const t = el('table', 'tbl');
+    t.innerHTML = `<thead><tr><th>Search</th><th>Winner</th><th>Working</th><th class="r">Scores</th></tr></thead><tbody>` +
+      Object.entries(strat).map(([, v]) => {
+        const order = v.order || [];
+        const lad = order.map(n => `<i data-on="${(v.working || []).includes(n) ? 1 : 0}" title="${esc(n)}"></i>`).join('');
+        const scores = order.map(n => `${n.replace('_', ' ')} ${v.scores?.[n] ?? 0}`).join('  ');
+        return `<tr><td>${esc(v.name)}</td><td class="mono">${esc(v.winner || '—')}</td>
+          <td><span class="ladder" role="img" aria-label="${(v.working || []).length} of ${v.of} strategies working">${lad}</span></td>
+          <td class="r mono" style="font-size:var(--t-micro)">${esc(scores)}</td></tr>`;
+      }).join('') + `</tbody>`;
+    s.appendChild(t);
+    if ((h.drift || []).length) {
+      s.appendChild(el('p', 'note warnt', 'Shape drift: ' + h.drift.join('; ')));
+    }
+    host.appendChild(s);
+  }
+
+  // Where alerts go, and whether they arrived.
+  const s2 = el('section', 'section');
+  s2.innerHTML = `<div class="section__head"><h2>Alerts</h2></div>`;
+  const rows = Object.entries(d.channel_health || {});
+  const active = (d.notify?.active || []);
+  const t2 = el('table', 'tbl');
+  t2.innerHTML = `<thead><tr><th>Channel</th><th>State</th><th>Last good</th></tr></thead><tbody>` +
+    (active.length ? active.map(name => {
+      const ch = (d.channel_health || {})[name] || {};
+      const fails = ch.consecutive_failures || 0;
+      return `<tr><td>${esc(d.channels?.[name]?.label || name)}</td>
+        <td class="${fails ? 'err' : 'ok'}">${fails ? `${fails} failures in a row` : 'delivering'}</td>
+        <td class="num">${ch.last_ok ? when(ch.last_ok) : '—'}</td></tr>`;
+    }).join('') : `<tr><td colspan="3">No channel is switched on, so nothing is being sent.</td></tr>`) +
+    `</tbody>`;
+  s2.appendChild(t2);
+  if (d.notify?.ntfy_url) {
+    const p = el('p', 'note');
+    p.innerHTML = `Your feed: <a href="${esc(d.notify.ntfy_url)}" rel="noopener">${esc(d.notify.ntfy_url)}</a>`;
+    s2.appendChild(p);
+  }
+  host.appendChild(s2);
+  void rows;
+}
+
+/* ----------------------------------------------------------------- sheet */
+let lastFocus = null;
+
+function openSheet(id) {
+  const l = byId(id);
+  const sheet = document.getElementById('sheet');
+  const scrim = document.getElementById('scrim');
+  const body = document.getElementById('sheet-body');
+  lastFocus = document.activeElement;
+
+  if (!l) {
+    body.innerHTML = '';
+    body.appendChild(emptyState('That listing is not in the published data',
+      'It may have been dropped when the file was trimmed, or the link may be from an older alert.'));
+  } else {
+    document.getElementById('sheet-title').textContent = carName(l);
+    body.innerHTML = '';
+    body.appendChild(sheetBody(l));
+  }
+  sheet.hidden = false; scrim.hidden = false;
+  requestAnimationFrame(() => { sheet.dataset.open = '1'; scrim.dataset.open = '1'; });
+  document.body.style.overflow = 'hidden';
+  document.getElementById('sheet-close').focus();
+  if (l) history.replaceState(null, '', `#/listing/${encodeURIComponent(l.id)}`);
+}
+
+function closeSheet() {
+  const sheet = document.getElementById('sheet');
+  const scrim = document.getElementById('scrim');
+  sheet.dataset.open = '0'; scrim.dataset.open = '0';
+  document.body.style.overflow = '';
+  const done = () => { sheet.hidden = true; scrim.hidden = true; };
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) done();
+  else setTimeout(done, 180);
+  history.replaceState(null, '', `#/${app.view}`);
+  if (lastFocus && lastFocus.isConnected) lastFocus.focus();
+}
+
+function sheetBody(l) {
+  const frag = document.createDocumentFragment();
+  const move = priceMove(l);
+  const cmp = app.data.comparables?.[String(l.id)];
+
+  const gal = el('div', 'gallery');
+  const imgs = (l.images || []).slice(0, 8);
+  if (imgs.length) {
+    for (const src of imgs) {
+      const box = el('div', 'shotbox');
+      const img = new Image();
+      img.loading = 'lazy'; img.decoding = 'async'; img.alt = '';
+      img.width = 400; img.height = 300; img.src = src;
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:var(--r-sm)';
+      img.addEventListener('error', () => {
+        box.innerHTML = `<div class="shot__fallback">${CAR_GLYPH}<span>photo did not load</span></div>`;
+      }, { once: true });
+      box.appendChild(img);
+      gal.appendChild(box);
+    }
+    gal.setAttribute('role', 'group');
+    gal.setAttribute('aria-label', `${imgs.length} photos`);
+    frag.appendChild(gal);
+  } else {
+    const box = el('div', 'shotbox');
+    box.style.cssText = 'width:100%;aspect-ratio:4/3;border-radius:var(--r-sm);margin-bottom:var(--s4)';
+    box.innerHTML = `<div class="shot__fallback">${CAR_GLYPH}<b>${esc(carName(l))}</b><span>${l.filtered ? 'photos not kept for hidden cars' : 'no photo published'}</span></div>`;
+    frag.appendChild(box);
+  }
+
+  const price = el('div');
+  price.style.marginBottom = 'var(--s4)';
+  price.innerHTML =
+    `<div style="display:flex;align-items:baseline;gap:var(--s3);flex-wrap:wrap">
+      <span class="num" style="font-size:var(--t-display);font-weight:560;letter-spacing:-.02em">
+        ${l.unpriced ? 'Call for price' : money(l.price)}</span>
+      ${move ? `<span class="card__was num">${money(move.was)}</span>
+        <span class="num ${move.delta < 0 ? 'drop' : 'rise'}" style="font-weight:520">${signed(move.delta)}</span>` : ''}
+    </div>` +
+    (cmp?.pct !== undefined
+      ? `<p class="note">${Math.round(Math.abs(cmp.pct))}% ${cmp.pct < 0 ? 'under' : 'over'} the median
+          ${money(cmp.median)} of <b>${cmp.sample}</b> comparable ${esc(l.make || '')} ${esc(l.model || '')}
+          within ${cmp.band} year of ${l.year}.</p>`
+      : cmp?.why_not ? `<p class="note">${esc(cmp.why_not)}.</p>` : '');
+  frag.appendChild(price);
+
+  // Why you are seeing this, or why you did not hear about it.
+  const why = el('p', 'why');
+  if (l.filtered) {
+    why.innerHTML = `<b>You were not told about this.</b> It is hidden by a rule on
+      ${esc(l.search_name || 'this search')}: ${esc(l.filter_reason || 'a rule of yours')}.
+      It is kept and tracked so a change to it is never silently lost.`;
+  } else if (l.notified_at) {
+    why.innerHTML = `<b>You were told about this</b> at ${stamp(l.notified_at)}, via the
+      channels switched on at the time.`;
+  } else if (l.quiet_reason) {
+    why.innerHTML = `<b>Deliberately quiet.</b> ${esc(l.quiet_reason)}.`;
+  } else {
+    why.innerHTML = `<b>No delivery record.</b> That is a fault rather than a decision, and
+      the next check's bookkeeping test should fail on it.`;
+  }
+  frag.appendChild(why);
+
+  const hist = (l.price_history || []).filter(p => p.price);
+  if (hist.length >= 2) {
+    const s = el('section', 'section');
+    s.innerHTML = `<div class="section__head"><h2>Asking price</h2>
+      <span class="count num">${hist.length} observations</span></div>`;
+    s.appendChild(sparkline(hist));
+    host_append(s, frag);
+  }
+
+  const spec = el('section', 'section');
+  spec.innerHTML = `<div class="section__head"><h2>Specification</h2></div>`;
+  const kv = el('dl', 'kv');
+  const pairs = [
+    ['Year', l.year], ['Odometer', l.mileage_km ? `${km(l.mileage_km)} km` : null],
+    ['Per 1000km', l.per_1000km ? `$${Math.round(l.per_1000km)}` : null],
+    ['Distance', (l.distance_km ?? null) !== null ? `${km(l.distance_km)} km from ${esc(l.distance_from || 'home')}` : null],
+    ['On the market', l.days_listed === undefined ? null : daysListed(l.days_listed)], ['Colour', l.color], ['Body', l.body],
+    ['Transmission', l.transmission], ['Drivetrain', l.drivetrain], ['Fuel', l.fuel],
+    ['Location', [l.location, l.province].filter(Boolean).join(', ')],
+    ['Seller', l.seller], ['Watched by', l.search_name],
+  ].filter(([, v]) => v !== null && v !== undefined && v !== '');
+  kv.innerHTML = pairs.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('');
+  spec.appendChild(kv);
+  const extras = carExtras(l);
+  if (extras.length) {
+    spec.appendChild(el('p', 'note', 'Dealer copy: ' + extras.join(' · ')));
+  }
+  host_append(spec, frag);
+
+  const events = (app.data.events || []).filter(e => String(e.listing_id) === String(l.id));
+  if (events.length) {
+    const s = el('section', 'section');
+    s.innerHTML = `<div class="section__head"><h2>Its life so far</h2>
+      <span class="count num">${events.length}</span></div>`;
+    const ul = el('ul', 'life');
+    for (const e of events) {
+      const li = el('li');
+      let what = KIND[e.kind]?.rule || e.kind;
+      if (e.kind === 'price_drop' || e.kind === 'price_rise') {
+        what = `${money(e.old_price)} → ${money(e.new_price)} <span class="num ${e.kind === 'price_drop' ? 'drop' : 'rise'}">${signed(e.delta)}</span>`;
+      }
+      li.innerHTML = `<time datetime="${esc(e.at)}">${stamp(e.at)}</time>
+        <span>${what}<br><span class="note" style="margin:0">${esc(e.delivery?.text || '')}</span></span>`;
+      ul.appendChild(li);
+    }
+    s.appendChild(ul);
+    host_append(s, frag);
+  }
+
+  const go = el('div', 'bar');
+  go.style.marginTop = 'var(--s6)';
+  const a = el('a', 'btn btn--primary', 'Open on autotrader.ca');
+  a.href = l.url; a.rel = 'noopener'; a.target = '_blank';
+  a.style.cssText = 'display:inline-flex;align-items:center;text-decoration:none';
+  go.appendChild(a);
+  frag.appendChild(go);
+  return frag;
+}
+function host_append(section, frag) { frag.appendChild(section); }
+
+/* A price history worth looking at needs no library: it is at most twenty
+   points and the only question is which way it went. */
+function sparkline(hist) {
+  const w = 100, h = 44, pad = 3;
+  const prices = hist.map(p => p.price);
+  const min = Math.min(...prices), max = Math.max(...prices);
+  const span = (max - min) || 1;
+  const pts = prices.map((p, i) => {
+    const x = pad + (i / Math.max(1, prices.length - 1)) * (w - pad * 2);
+    const y = h - pad - ((p - min) / span) * (h - pad * 2);
+    return [x, y];
+  });
+  const d = pts.map((p, i) => `${i ? 'L' : 'M'}${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ');
+  const area = `${d} L${pts[pts.length - 1][0].toFixed(1)} ${h} L${pts[0][0].toFixed(1)} ${h} Z`;
+  const svg = el('div');
+  svg.innerHTML =
+    `<svg class="hist" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" role="img"
+       aria-label="Asking price from ${money(prices[0])} to ${money(prices[prices.length - 1])} over ${prices.length} observations">
+      <path class="area" d="${area}"/><path d="${d}"/>
+      <circle cx="${pts[pts.length - 1][0].toFixed(1)}" cy="${pts[pts.length - 1][1].toFixed(1)}" r="1.8"/>
+    </svg>
+    <div class="facts" style="justify-content:space-between;margin-top:var(--s2)">
+      <span class="num">${money(min)} low</span><span class="num">${money(max)} high</span>
+    </div>`;
+  return svg;
+}
+
+/* ----------------------------------------------------------------- boot */
+function skeleton() {
+  const remembered = store.get('lastTrust', null);
+  if (remembered) {
+    document.getElementById('trust').dataset.state = remembered.state;
+    document.getElementById('trust-text').textContent = remembered.text;
+    if (remembered.alarm) {
+      const alarm = document.getElementById('alarm');
+      alarm.hidden = false;
+      alarm.dataset.level = remembered.alarm.level;
+      document.getElementById('alarm-text').textContent = remembered.alarm.text;
+      document.getElementById('alarm-detail').textContent = remembered.alarm.detail || '';
+    }
+  }
+  const host = document.querySelector('[data-view="feed"]');
+  host.hidden = false;
+  host.innerHTML = `<div class="view__head measure"><h1 id="feed-h">What changed</h1>
+    <p>Everything that has happened to a car you are watching, newest first — including
+       cars your rules hide, which the run counters never counted.</p></div>`;
+  const sec = el('section', 'section measure');
+  sec.innerHTML = `<div class="section__head"><h2>&nbsp;</h2></div>`;
+  const list = el('ul', 'feed');
+  for (let i = 0; i < 8; i++) {
+    const li = el('li');
+    li.innerHTML = `<div class="ev skel-row">
+        <span class="skel__line" style="width:52px;height:9px;margin:0"></span>
+        <span class="skel__line" style="width:${40 + (i % 4) * 12}%;height:12px;margin:0"></span>
+        <span class="skel__line" style="width:64px;height:12px;margin:0"></span>
+      </div>`;
+    list.appendChild(li);
+  }
+  sec.appendChild(list);
+  host.appendChild(sec);
+}
+
+function render() {
+  if (!app.data) return;
+  renderTrust();
+  if (app.view === 'feed') renderFeed();
+  else if (app.view === 'listings') renderListings();
+  else if (app.view === 'searches') renderSearches();
+  else if (app.view === 'status') renderStatus();
+}
+
+function route() {
+  const h = location.hash.replace(/^#\/?/, '');
+  const [what, arg] = h.split('/');
+  if (what === 'listing' && arg) {
+    const view = app.view || 'feed';
+    go(view, { silent: true, focus: false });
+    openSheet(decodeURIComponent(arg));
+    return;
+  }
+  if (VIEWS.some(v => v.id === what)) go(what, { silent: true, focus: false });
+  else go('feed', { silent: true, focus: false });
+}
+
+async function boot() {
+  renderTabs();
+  skeleton();
+  try {
+    const res = await fetch('data.json', { cache: 'no-cache' });
+    if (!res.ok) throw new Error(`data.json responded ${res.status}`);
+    app.data = await res.json();
+  } catch (err) {
+    // Offline, or the file is not there yet. Say which, and what to do.
+    try {
+      const cached = await caches.match('data.json');
+      if (cached) { app.data = await cached.json(); app.offline = true; }
+    } catch { /* no cache API */ }
+    if (!app.data) {
+      app.loadError = err.message;
+      document.querySelector('[data-view="feed"]').innerHTML = '';
+      const s = emptyState('Could not load the data',
+        `The page fetches data.json from alongside itself and got: ${err.message}. If this is a fresh install, nothing has been published yet — run a check and it will appear.`);
+      document.querySelector('[data-view="feed"]').appendChild(s);
+      renderTabs();
+      return;
+    }
+  }
+
+  if (app.lastSeen === null) {
+    app.lastSeen = new Date().toISOString();
+    store.set('lastSeen', app.lastSeen);
+    app.firstVisit = true;
+  }
+
+  // Which ids are new to this browser, so a card animates once on arrival
+  // rather than every time the list re-renders.
+  const ids = (app.data.listings || []).map(l => String(l.id));
+  for (const id of ids) if (!app.seenIds.has(id)) app.freshIds.add(id);
+  app.seenIds = new Set(ids);
+  store.set('seenIds', ids.slice(0, 1200));
+
+  if (app.offline) {
+    const alarm = document.getElementById('alarm');
+    alarm.hidden = false; alarm.dataset.level = 'warn';
+    document.getElementById('alarm-text').textContent =
+      'You are offline. This is the last data your phone saved.';
+    document.getElementById('alarm-detail').textContent =
+      `Published ${stamp(app.data.generated_at)}.`;
+  }
+
+  renderTabs();
+  route();
+  window.addEventListener('hashchange', route);
+  document.getElementById('sheet-close').addEventListener('click', closeSheet);
+  document.getElementById('scrim').addEventListener('click', closeSheet);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && document.getElementById('sheet').dataset.open === '1') closeSheet();
+    if (e.key === 'Tab' && document.getElementById('sheet').dataset.open === '1') {
+      const f = document.getElementById('sheet').querySelectorAll(
+        'a[href],button,input,select,[tabindex]:not([tabindex="-1"])');
+      if (!f.length) return;
+      const first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  });
+  // Push the sheet back down with a thumb. Only downward, only from the top
+  // of its own scroll, so it never fights the content inside it.
+  const sheet = document.getElementById('sheet');
+  let startY = null;
+  sheet.addEventListener('touchstart', e => {
+    startY = sheet.scrollTop <= 0 ? e.touches[0].clientY : null;
+  }, { passive: true });
+  sheet.addEventListener('touchmove', e => {
+    if (startY === null) return;
+    const dy = e.touches[0].clientY - startY;
+    if (dy > 0 && innerWidth < 700) sheet.style.transform = `translateY(${dy}px)`;
+  }, { passive: true });
+  sheet.addEventListener('touchend', e => {
+    if (startY === null) return;
+    const dy = (e.changedTouches[0].clientY - startY);
+    sheet.style.transform = '';
+    startY = null;
+    if (dy > 110 && innerWidth < 700) closeSheet();
+  });
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => { /* file:// or no https */ });
+  }
+}
+
+boot();

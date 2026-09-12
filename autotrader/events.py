@@ -164,7 +164,8 @@ def merge(found: dict[str, Event], previous: dict[str, Any]) -> dict[str, Any]:
             "waiting": [k for k in KINDS if k not in out],
             # Which silence has already been reported, so a bot that stays
             # quiet is announced once rather than once an hour.
-            "silence_reported": previous.get("silence_reported", "")}
+            "silence_reported": previous.get("silence_reported", ""),
+            "coverage_reported": previous.get("coverage_reported", "")}
 
 
 def render(record: dict[str, Any]) -> str:
@@ -321,3 +322,51 @@ def update(state, ledger_path: Path = LEDGER_PATH,
                            if k not in (previous.get("first") or {})]
     save(record, data_path, ledger_path)
     return record
+
+
+# Below this share of the expected checks, the bot is not really watching -
+# a car can be listed and sold inside a gap this size. Said once per day at
+# most, because it is a condition rather than an event.
+COVERAGE_FLOOR_PCT = 50.0
+
+
+def thin_coverage(cfg, state, record: dict[str, Any],
+                  now: datetime | None = None) -> dict[str, Any] | None:
+    """Is the schedule delivering enough checks to be worth trusting?
+
+    Separate from the silence alarm, and it has to be: a watcher that runs
+    reliably every four hours is never silent and is still missing most of
+    what happens. "The last check worked" has never been the question.
+    """
+    from . import insight
+
+    health = cfg.get("health", {}) or {}
+    floor = float(health.get("coverage_floor_pct", COVERAGE_FLOOR_PCT) or 0)
+    if floor <= 0:
+        return None
+    expected = int(health.get("expected_interval_minutes", 30) or 30)
+    now = now or datetime.now(timezone.utc)
+    cover = insight.coverage(state.data.get("runs") or [], expected, now=now)
+    if cover.get("checks", 0) < 2 or cover["pct"] >= floor:
+        return None
+
+    # Once a day. The condition persists for hours by its nature, and an
+    # hourly reminder that the schedule is thin is itself noise.
+    said = str(record.get("coverage_reported") or "")
+    if said and said[:10] == now.isoformat()[:10]:
+        return None
+
+    longest = cover.get("longest_gap_minutes") or 0
+    return {
+        "pct": cover["pct"],
+        "at": now.isoformat(timespec="seconds"),
+        "subject": f"AutoTrader watcher covered only {cover['pct']}% of yesterday",
+        "body": (f"{cover['successful']} successful checks in the last "
+                 f"{cover['window_hours']} hours, against {cover['expected']} "
+                 f"expected at one every {expected} minutes.\n\n"
+                 f"The longest gap was {longest / 60:.1f} hours. A car can be "
+                 f"listed and sold inside a gap that size, so treat anything "
+                 f"the dashboard says as a sample rather than the market.\n\n"
+                 f"This is GitHub's scheduler rather than the bot: check the "
+                 f"Actions tab to see how many runs were actually served."),
+    }

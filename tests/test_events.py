@@ -337,3 +337,58 @@ class TestSilenceAndFailureAreDifferentFaults:
     def test_a_recent_success_says_nothing_either_way(self, tmp_path):
         state = self._state(tmp_path, [{"at": self._ago(0.5), "ok": True}])
         assert events.silence(self._cfg(), state, {}) is None
+
+
+class TestRunningIsNotTheSameAsWatching:
+    """A watcher served one check in eight is never silent and still blind.
+
+    Measured on this repository: 12.5% coverage, an 18-hour gap, and a green
+    "last check succeeded" the whole time. The silence alarm cannot see that,
+    because nothing is silent.
+    """
+
+    def _cfg(self, floor=50):
+        return {"health": {"expected_interval_minutes": 30,
+                           "coverage_floor_pct": floor}}
+
+    def _runs(self, state, n, spread_hours=24):
+        from datetime import datetime, timedelta, timezone
+        now = datetime.now(timezone.utc)
+        state.data["runs"] = [
+            {"at": (now - timedelta(hours=spread_hours * i / max(1, n))).isoformat(
+                timespec="seconds"), "ok": True}
+            for i in range(n)]
+        return state
+
+    def test_a_thin_schedule_is_reported(self, tmp_path):
+        state = self._runs(State(path=tmp_path / "s.json"), 6)
+        said = events.thin_coverage(self._cfg(), state, {})
+        assert said and said["pct"] < 50
+        assert "18" in said["body"] or "hours" in said["body"]
+        assert "GitHub's scheduler" in said["body"], "say whose fault it is"
+
+    def test_a_full_schedule_says_nothing(self, tmp_path):
+        state = self._runs(State(path=tmp_path / "s.json"), 46)
+        assert events.thin_coverage(self._cfg(), state, {}) is None
+
+    def test_it_is_said_once_a_day_not_once_an_hour(self, tmp_path):
+        from datetime import datetime, timezone
+        state = self._runs(State(path=tmp_path / "s.json"), 6)
+        first = events.thin_coverage(self._cfg(), state, {})
+        assert first
+        again = events.thin_coverage(
+            self._cfg(), state, {"coverage_reported": first["at"]})
+        assert again is None
+        tomorrow = datetime.now(timezone.utc).replace(year=2099).isoformat()
+        assert events.thin_coverage(
+            self._cfg(), state, {"coverage_reported": "2000-01-01T00:00:00+00:00"})
+        assert tomorrow
+
+    def test_a_floor_of_zero_switches_it_off(self, tmp_path):
+        state = self._runs(State(path=tmp_path / "s.json"), 2)
+        assert events.thin_coverage(self._cfg(floor=0), state, {}) is None
+
+    def test_too_few_runs_to_judge_says_nothing(self, tmp_path):
+        """A fresh install has no history, which is not the same as a fault."""
+        state = self._runs(State(path=tmp_path / "s.json"), 1)
+        assert events.thin_coverage(self._cfg(), state, {}) is None

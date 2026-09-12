@@ -1,1315 +1,659 @@
+<!doctype html>
+<html lang="en">
+<head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>AutoTrader Watch</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<meta name="description" content="What changed on the cars you are watching, and whether the thing watching them is working.">
+<meta name="theme-color" content="#f2f2ef" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0e10" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="M5 Watch">
 <style>
-:root{
-  --ground:#f6f7f9; --surface:#ffffff; --surface-2:#f0f2f5;
-  --ink:#141a22; --ink-2:#3c4855; --muted:#5c6875; --faint:#8b95a1;
-  --line:#e1e5ea; --line-strong:#cdd4dc;
-  --accent:#1d3f6e; --accent-ink:#ffffff; --accent-soft:#e8eefa;
-  --good:#15803d; --good-soft:#e4f4ea;
-  --signal:#c2410c; --signal-soft:#fdece3;
-  --gone:#78716c; --gone-soft:#efedeb;
-  --shadow:0 1px 2px rgba(20,26,34,.06), 0 4px 12px rgba(20,26,34,.05);
-  --radius:10px;
-  --display:"Archivo","Helvetica Neue",Arial,sans-serif;
-  --body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
-  --mono:"IBM Plex Mono","SFMono-Regular",Consolas,monospace;
+/* ------------------------------------------------------------------ tokens
+   Every value here is named in DESIGN.md. Nothing in the components below
+   invents a colour, a radius, a duration or a step off the spacing scale. */
+:root {
+  color-scheme: light dark;
+
+  --bg:#f2f2ef; --surface:#ffffff; --surface-2:#e8e8e4; --surface-3:#dededa;
+  --line:rgba(18,19,22,.11); --line-strong:rgba(18,19,22,.20);
+  --text:#17181a; --text-2:#585d64; --text-3:#636870;
+  --ev-new:#1160c4; --ev-drop:#0f6f43; --ev-rise:#8a5207; --ev-gone:#6b6f76;
+  --ev-back:#5f37ab; --ev-priced:#0a6870;
+  --warn:#845400; --warn-bg:#fdf6e6; --bad:#ab241d; --bad-bg:#fdeceb;
+  --good:#0f6f43;
+  --focus:#1160c4;
+
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,"Helvetica Neue",Arial,sans-serif;
+  --font-mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+
+  --t-display:30px; --t-figure:21px; --t-h1:19px; --t-h2:15px;
+  --t-body:14px; --t-small:13px; --t-micro:11px;
+
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:20px; --s6:24px;
+  --s7:32px; --s8:40px; --s9:52px; --s10:64px;
+
+  --r-sm:4px; --r-md:8px;
+  --shadow-overlay:0 1px 2px rgba(0,0,0,.06), 0 12px 32px -8px rgba(0,0,0,.22);
+
+  --m-state:110ms; --m-enter:180ms; --m-number:220ms;
+  --ease:cubic-bezier(.2,0,0,1);
+
+  --gutter:var(--s4);
+  --tabbar:calc(56px + env(safe-area-inset-bottom,0px));
 }
-@media (prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
-    --ground:#0f141a; --surface:#161d26; --surface-2:#1d2631;
-    --ink:#e8ecf1; --ink-2:#c2ccd7; --muted:#94a1af; --faint:#6f7d8c;
-    --line:#28323e; --line-strong:#3a4655;
-    --accent:#7ba7e0; --accent-ink:#0f141a; --accent-soft:#1b2c44;
-    --good:#4ade80; --good-soft:#12301f;
-    --signal:#fb923c; --signal-soft:#331c0c;
-    --gone:#a8a29e; --gone-soft:#242322;
-    --shadow:0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:#0d0e10; --surface:#16181b; --surface-2:#1c1f23; --surface-3:#23262b;
+    --line:rgba(255,255,255,.10); --line-strong:rgba(255,255,255,.19);
+    --text:#e9eaec; --text-2:#a4a9b2; --text-3:#8b9099;
+    --ev-new:#71aef8; --ev-drop:#4cc98d; --ev-rise:#e3a94e; --ev-gone:#8b9099;
+    --ev-back:#b394f2; --ev-priced:#4ec6cf;
+    --warn:#e3b45e; --warn-bg:#2a2313; --bad:#f4867e; --bad-bg:#2e1615;
+    --good:#4cc98d;
+    --focus:#71aef8;
+    --shadow-overlay:0 1px 2px rgba(0,0,0,.5), 0 12px 32px -8px rgba(0,0,0,.7);
   }
 }
-:root[data-theme="dark"]{
-  --ground:#0f141a; --surface:#161d26; --surface-2:#1d2631;
-  --ink:#e8ecf1; --ink-2:#c2ccd7; --muted:#94a1af; --faint:#6f7d8c;
-  --line:#28323e; --line-strong:#3a4655;
-  --accent:#7ba7e0; --accent-ink:#0f141a; --accent-soft:#1b2c44;
-  --good:#4ade80; --good-soft:#12301f;
-  --signal:#fb923c; --signal-soft:#331c0c;
-  --gone:#a8a29e; --gone-soft:#242322;
-  --shadow:0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
+:root[data-theme="dark"] {
+  --bg:#0d0e10; --surface:#16181b; --surface-2:#1c1f23; --surface-3:#23262b;
+  --line:rgba(255,255,255,.10); --line-strong:rgba(255,255,255,.19);
+  --text:#e9eaec; --text-2:#a4a9b2; --text-3:#8b9099;
+  --ev-new:#71aef8; --ev-drop:#4cc98d; --ev-rise:#e3a94e; --ev-gone:#8b9099;
+  --ev-back:#b394f2; --ev-priced:#4ec6cf;
+  --warn:#e3b45e; --warn-bg:#2a2313; --bad:#f4867e; --bad-bg:#2e1615;
+  --good:#4cc98d;
+  --focus:#71aef8;
+  --shadow-overlay:0 1px 2px rgba(0,0,0,.5), 0 12px 32px -8px rgba(0,0,0,.7);
 }
-*{box-sizing:border-box}
-body{margin:0;background:var(--ground);color:var(--ink);font:400 15px/1.55 var(--body);
-     -webkit-font-smoothing:antialiased}
-h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;letter-spacing:-.01em}
-a{color:var(--accent)}
-button,input,select,textarea{font:inherit;color:inherit}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
-.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+@media (min-width:700px){ :root{ --gutter:var(--s6); } }
+@media (min-width:1100px){ :root{ --gutter:var(--s7); } }
 
-/* ---------- shell ---------- */
-.shell{display:grid;grid-template-columns:232px 1fr;min-height:100vh}
-.rail{background:var(--surface);border-right:1px solid var(--line);padding:20px 14px;
-      display:flex;flex-direction:column;gap:22px;position:sticky;top:0;height:100vh;overflow-y:auto}
-.brand{display:flex;align-items:center;gap:10px;padding:0 8px}
-.brand svg{flex:none}
-.brand-name{font-family:var(--display);font-weight:700;font-size:15px;line-height:1.15}
-.brand-sub{font-size:11px;color:var(--faint);letter-spacing:.06em;text-transform:uppercase}
-.nav{display:flex;flex-direction:column;gap:2px}
-.nav button{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;
-  background:none;border:0;padding:9px 10px;border-radius:7px;cursor:pointer;color:var(--ink-2);
-  font-weight:500;text-align:left}
-.nav button:hover{background:var(--surface-2);color:var(--ink)}
-.nav button[aria-current="true"]{background:var(--accent);color:var(--accent-ink)}
-.nav .tally{font:500 11px/1 var(--mono);opacity:.75}
-.rail-foot{margin-top:auto;font-size:12px;color:var(--faint);padding:0 8px;display:flex;
-  flex-direction:column;gap:8px}
-.theme-toggle{background:none;border:1px solid var(--line-strong);border-radius:6px;
-  padding:6px 9px;cursor:pointer;color:var(--muted);font-size:12px;align-self:flex-start}
-.main{padding:26px 30px 60px;min-width:0}
-
-/* ---------- status bar ---------- */
-.statusbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding:12px 16px;
-  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
-  margin-bottom:22px;box-shadow:var(--shadow)}
-.dot{width:8px;height:8px;border-radius:99px;flex:none}
-.dot.ok{background:var(--good)} .dot.warn{background:var(--signal)} .dot.idle{background:var(--faint)}
-.statusbar .item{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--muted)}
-.statusbar .item b{color:var(--ink);font-weight:600}
-.statusbar .spacer{flex:1}
-
-/* ---------- headers ---------- */
-.head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:0 0 6px}
-.head h1{font-size:23px;font-weight:700}
-.sub{color:var(--muted);font-size:13.5px;margin:0 0 18px;max-width:65ch}
-
-/* ---------- controls ---------- */
-.toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;align-items:center}
-.field{background:var(--surface);border:1px solid var(--line-strong);border-radius:7px;
-  padding:8px 11px;min-width:0}
-.field:focus{outline:2px solid var(--accent);outline-offset:1px}
-input.field,select.field{height:36px}
-.grow{flex:1;min-width:180px}
-.btn{background:var(--accent);color:var(--accent-ink);border:1px solid transparent;border-radius:7px;
-  padding:9px 15px;font-weight:600;font-size:14px;cursor:pointer}
-.btn:hover{filter:brightness(1.08)}
-.btn.ghost{background:var(--surface);color:var(--ink-2);border-color:var(--line-strong)}
-.btn.ghost:hover{background:var(--surface-2);filter:none}
-.btn.danger{background:none;color:var(--signal);border-color:transparent;padding:6px 8px}
-.btn:disabled{opacity:.45;cursor:not-allowed;filter:none}
-.chipbar{display:flex;flex-wrap:wrap;gap:6px}
-.chip{font-size:12px;padding:3px 9px;border-radius:99px;background:var(--surface-2);
-  color:var(--ink-2);border:1px solid var(--line);white-space:nowrap}
-.chip.on{background:var(--accent);color:var(--accent-ink);border-color:transparent}
-
-/* ---------- listing grid ---------- */
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(276px,1fr));gap:14px}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
-  overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--shadow)}
-.card.gone{opacity:.72}
-.shot{aspect-ratio:16/10;background:var(--surface-2);position:relative;overflow:hidden;display:block}
-.shot img{width:100%;height:100%;object-fit:cover;display:block;position:relative;z-index:1}
-.shot .placeholder{position:absolute;inset:0;display:grid;place-items:center;color:var(--faint);
-  font-size:11px;letter-spacing:.08em;text-transform:uppercase;z-index:0}
-.badges{position:absolute;top:9px;left:9px;display:flex;gap:5px;flex-wrap:wrap}
-.badge{font:600 10.5px/1 var(--body);letter-spacing:.04em;text-transform:uppercase;
-  padding:5px 8px;border-radius:5px;color:#fff;background:var(--accent);
-  box-shadow:0 1px 3px rgba(0,0,0,.25)}
-.badge.drop{background:var(--good)} .badge.gone{background:var(--gone)}
-.badge.rise{background:var(--signal)}
-.badge.ask{background:var(--muted)} .badge.rule{background:var(--gone)}
-.card.muted{opacity:.66}
-.card .why{font-size:12px;color:var(--muted);line-height:1.35}
-
-/* ---------- the parser ladder, on the Status tab ---------- */
-.rungs{display:flex;flex-direction:column;gap:8px}
-.rung{display:grid;grid-template-columns:minmax(96px,auto) 1fr minmax(52px,auto);
-  gap:10px;align-items:center;font-size:13px}
-.rung code{font-size:12px}
-.rung .bar{height:7px;border-radius:99px;background:var(--surface-2);overflow:hidden}
-.rung .bar i{display:block;height:100%;background:var(--good);border-radius:99px}
-.rung.dead .bar i{background:var(--signal)}
-.rung.dead code{color:var(--signal)}
-.rung.winner code{font-weight:700}
-.rung .n{text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
-.card-body{padding:13px 14px 14px;display:flex;flex-direction:column;gap:9px;flex:1}
-.card h3{font-size:15px;font-weight:600;line-height:1.3}
-.card h3 a{color:inherit;text-decoration:none}
-.card h3 a:hover{color:var(--accent)}
-.price-row{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
-.price{font:600 21px/1 var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
-.price.drop{color:var(--good)}
-.was{font:400 13px/1 var(--mono);color:var(--faint);text-decoration:line-through}
-.specs{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12.5px;color:var(--muted);margin-top:auto}
-.specs span{display:inline-flex;align-items:center;gap:4px}
-.spark{height:26px;width:100%;display:block}
-.meta{display:flex;justify-content:space-between;gap:8px;font-size:11px;color:var(--faint);
-  border-top:1px solid var(--line);padding-top:9px}
-.meta .id{font-family:var(--mono)}
-
-/* ---------- panels & forms ---------- */
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
-  padding:18px;margin-bottom:16px;box-shadow:var(--shadow)}
-.panel h2{font-size:16px;font-weight:600;margin-bottom:4px}
-.panel .hint{font-size:13px;color:var(--muted);margin:0 0 14px;max-width:64ch}
-.formgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px 16px}
-label.lbl{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;
-  color:var(--muted);letter-spacing:.02em}
-label.lbl .field{font-weight:400;color:var(--ink)}
-.row{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}
-.row:last-child{border-bottom:0}
-.row .txt{flex:1;min-width:0}
-.row .txt b{display:block;font-size:14px;font-weight:600}
-.row .txt small{color:var(--muted);font-size:12.5px;display:block;margin-top:2px}
-.switch{position:relative;width:40px;height:23px;flex:none}
-.switch input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer;z-index:1}
-.switch i{position:absolute;inset:0;background:var(--line-strong);border-radius:99px;transition:.15s}
-.switch i::after{content:"";position:absolute;top:3px;left:3px;width:17px;height:17px;
-  background:#fff;border-radius:99px;transition:.15s;box-shadow:0 1px 2px rgba(0,0,0,.3)}
-.switch input:checked + i{background:var(--good)}
-.switch input:checked + i::after{transform:translateX(17px)}
-.switch input:focus-visible + i{outline:2px solid var(--accent);outline-offset:2px}
-.pill{font:600 11px/1 var(--body);padding:4px 8px;border-radius:99px;white-space:nowrap}
-.pill.on{background:var(--good-soft);color:var(--good)}
-.pill.off{background:var(--surface-2);color:var(--faint)}
-.pill.need{background:var(--signal-soft);color:var(--signal)}
-.pill.free{background:var(--accent-soft);color:var(--accent)}
-code{font:500 12.5px/1.5 var(--mono);background:var(--surface-2);padding:2px 5px;border-radius:4px;
-  border:1px solid var(--line)}
-pre{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:12px;
-  overflow-x:auto;font:400 12.5px/1.6 var(--mono);margin:0}
-
-/* ---------- paste box ---------- */
-.paste{border:1.5px dashed var(--line-strong);border-radius:var(--radius);padding:16px;
-  background:var(--surface-2);transition:.15s}
-.paste.valid{border-color:var(--good);border-style:solid;background:var(--good-soft)}
-.paste.invalid{border-color:var(--signal);border-style:solid;background:var(--signal-soft)}
-.paste textarea{width:100%;min-height:62px;resize:vertical;font:400 13px/1.5 var(--mono);
-  background:var(--surface);border:1px solid var(--line-strong);border-radius:7px;padding:10px}
-.preview{margin-top:12px;display:flex;flex-direction:column;gap:9px}
-.preview .name{font-family:var(--display);font-weight:700;font-size:17px}
-.preview .why{font-size:13px;color:var(--signal);font-weight:500}
-
-/* ---------- status view ---------- */
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:12px;margin-bottom:16px}
-.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
-.kpi .k{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);font-weight:600}
-.kpi .v{font:600 25px/1.15 var(--mono);font-variant-numeric:tabular-nums;margin-top:6px;letter-spacing:-.02em}
-.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}
-table{border-collapse:collapse;width:100%;font-size:13px;min-width:520px}
-th{text-align:left;font:600 11px/1 var(--body);letter-spacing:.06em;text-transform:uppercase;
-  color:var(--faint);padding:11px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
-td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
-tr:last-child td{border-bottom:0}
-.empty{text-align:center;padding:52px 20px;color:var(--muted);border:1.5px dashed var(--line-strong);
-  border-radius:var(--radius)}
-.empty h3{font-size:17px;margin-bottom:7px;color:var(--ink)}
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(24px);
-  background:var(--ink);color:var(--ground);padding:11px 18px;border-radius:8px;font-weight:500;
-  font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.28);z-index:50;max-width:min(560px,92vw);
-  opacity:0;visibility:hidden;pointer-events:none;transition:opacity .18s,transform .18s,visibility .18s}
-.toast.show{transform:translateX(-50%) translateY(0);opacity:1;visibility:visible}
-.banner{padding:11px 14px;border-radius:8px;font-size:13.5px;margin-bottom:14px;
-  border:1px solid var(--line)}
-.banner.warn{background:var(--signal-soft);color:var(--signal);border-color:transparent}
-.banner.info{background:var(--accent-soft);color:var(--accent);border-color:transparent}
-.hidden{display:none!important}
-@media (max-width:860px){
-  .shell{grid-template-columns:1fr}
-  .rail{position:static;height:auto;flex-direction:row;align-items:center;gap:12px;
-        overflow-x:auto;border-right:0;border-bottom:1px solid var(--line);padding:11px 12px}
-  .nav{flex-direction:row;gap:4px}
-  .nav button{padding:8px 11px;white-space:nowrap}
-  .brand-sub,.rail-foot{display:none}
-  .main{padding:18px 14px 48px}
+*,*::before,*::after{ box-sizing:border-box; }
+html{ -webkit-text-size-adjust:100%; }
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font:400 var(--t-body)/1.45 var(--font);
+  -webkit-font-smoothing:antialiased;
+  padding-bottom:var(--tabbar);
 }
-@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (min-width:700px){ body{ padding-bottom:0; } }
+img{ max-width:100%; display:block; }
+button,input,select,textarea{ font:inherit; color:inherit; }
+a{ color:var(--ev-new); text-underline-offset:2px; }
+[hidden]{ display:none !important; }
+
+/* Figures. Tabular everywhere - a column of prices that shifts as digits
+   change is a column you cannot scan. */
+.num{ font-variant-numeric:tabular-nums; font-feature-settings:"tnum" 1; }
+.mono{ font-family:var(--font-mono); font-size:.92em; }
+
+:focus-visible{ outline:2px solid var(--focus); outline-offset:2px; border-radius:2px; }
+:focus:not(:focus-visible){ outline:none; }
+.skip{
+  position:absolute; left:var(--s3); top:-100px; z-index:60;
+  background:var(--surface); color:var(--text); padding:var(--s2) var(--s3);
+  border:1px solid var(--line-strong); border-radius:var(--r-sm);
+  transition:top var(--m-state) var(--ease);
+}
+.skip:focus{ top:var(--s3); }
+.sr{
+  position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0;
+}
+
+/* ------------------------------------------------------------------ chrome */
+.wrap{ max-width:1180px; margin:0 auto; padding-inline:var(--gutter); }
+/* Reading measure for anything that is a list of sentences rather than a
+   grid. A price 900px from the car it belongs to is not a row, it is two
+   columns that happen to share a border. */
+.measure{ max-width:820px; }
+
+.topbar{
+  position:sticky; top:0; z-index:30; background:var(--bg);
+  border-bottom:1px solid var(--line);
+  padding-top:env(safe-area-inset-top,0px);
+}
+.topbar__in{ display:flex; align-items:center; gap:var(--s3); height:52px; flex-wrap:nowrap; }
+.brand{ display:flex; align-items:baseline; gap:var(--s2); margin-right:auto; flex:none; }
+.brand b{ font-size:var(--t-h2); font-weight:620; letter-spacing:-.01em; }
+.brand span{
+  font-size:var(--t-micro); font-weight:520; letter-spacing:.06em;
+  text-transform:uppercase; color:var(--text-3);
+}
+@media (max-width:459px){ .brand span{ display:none; } }
+
+/* The trust line. Always present, because "is this current" is the first
+   question and it should never need a click. */
+.trust{
+  display:flex; align-items:center; gap:var(--s2); min-width:0;
+  font-size:var(--t-small); color:var(--text-2); white-space:nowrap;
+  overflow:hidden;
+}
+.trust > span:not(.trust__dot){ overflow:hidden; text-overflow:ellipsis; }
+.trust__dot{
+  width:7px; height:7px; border-radius:50%; background:var(--good);
+  flex:none;
+}
+.trust[data-state="stale"] .trust__dot{ background:var(--warn); }
+.trust[data-state="bad"] .trust__dot{ background:var(--bad); }
+.trust b{ font-weight:520; color:var(--text); }
+@media (max-width:699px){ .trust__cov{ display:none; } }
+
+/* A failing bot should make the page look wrong on purpose. */
+.alarm{
+  background:var(--warn-bg); color:var(--text); font-size:var(--t-small);
+  border-left:2px solid var(--warn); border-radius:0 var(--r-sm) var(--r-sm) 0;
+  margin-top:var(--s5);
+}
+.alarm[data-level="bad"]{ border-left-color:var(--bad); }
+.alarm[data-level="bad"]{ background:var(--bad-bg); }
+.alarm__in{ display:flex; gap:var(--s3); align-items:flex-start; padding:var(--s3); }
+.alarm__mark{ font-weight:560; color:var(--warn); flex:none; }
+.alarm[data-level="bad"] .alarm__mark{ color:var(--bad); }
+.alarm p{ margin:0; }
+.alarm p + p{ margin-top:var(--s1); color:var(--text-2); }
+.alarm code{ font-family:var(--font-mono); font-size:.92em; word-break:break-word; }
+
+/* Tabs: a bottom bar on a phone (thumb), a row under the header above it. */
+.tabs{ background:var(--bg); }
+.tabs__in{ display:flex; gap:var(--s1); }
+.tab{
+  appearance:none; background:none; border:0; cursor:pointer;
+  display:flex; align-items:center; gap:var(--s2);
+  padding:var(--s3) 0; margin-right:var(--s5);
+  font-size:var(--t-small); font-weight:520; color:var(--text-2);
+  border-bottom:2px solid transparent; border-radius:0;
+  transition:color var(--m-state) var(--ease), border-color var(--m-state) var(--ease);
+}
+.tab[aria-current="page"]{ color:var(--text); border-bottom-color:var(--text); }
+.tab__n{
+  font-size:var(--t-micro); font-variant-numeric:tabular-nums;
+  color:var(--text-3); background:var(--surface-2);
+  padding:1px var(--s1); border-radius:var(--r-sm);
+}
+.tab[aria-current="page"] .tab__n{ color:var(--text-2); }
+.tab__n[data-unread="1"]{
+  background:var(--ev-new); color:var(--bg); font-weight:560;
+}
+
+@media (max-width:699px){
+  .tabs{
+    position:fixed; left:0; right:0; bottom:0; z-index:30;
+    border-top:1px solid var(--line);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  .tabs__in{ justify-content:space-around; }
+  .tab{
+    flex:1; flex-direction:column; gap:3px; margin:0; padding:var(--s2) var(--s1);
+    height:54px; justify-content:center; border-bottom:0;
+    border-top:2px solid transparent; font-size:var(--t-micro);
+  }
+  /* The badge keeps its slot whether or not there is a number in it, so the
+     labels sit on one line across the bar. */
+  .tab__n{ min-width:20px; text-align:center; min-height:15px; }
+  .tab__n:empty{ background:none; }
+  .tab[aria-current="page"]{ border-top-color:var(--text); border-bottom-color:transparent; }
+}
+@media (min-width:700px){ .tabs{ border-bottom:1px solid var(--line); } }
+
+/* ------------------------------------------------------------------ views */
+.view{ padding-block:var(--s6) var(--s9); }
+.view[hidden]{ display:none !important; }
+.view__head{ margin-bottom:var(--s5); }
+.view__head h1{
+  margin:0; font-size:var(--t-h1); font-weight:560; letter-spacing:-.01em;
+}
+.view__head p{
+  margin:var(--s2) 0 0; color:var(--text-2); font-size:var(--t-small);
+  max-width:68ch;
+}
+@media (prefers-reduced-motion:no-preference){
+  .view:not([hidden]){ animation:rise var(--m-enter) var(--ease) both; }
+}
+@keyframes rise{ from{ opacity:0; transform:translateY(4px);} to{ opacity:1; transform:none; } }
+
+.section{ margin-top:var(--s7); }
+.section.measure{ max-width:820px; }
+.section:first-child{ margin-top:0; }
+.section__head{
+  display:flex; align-items:baseline; gap:var(--s3);
+  padding-bottom:var(--s2); margin-bottom:var(--s3);
+  border-bottom:1px solid var(--line);
+}
+.section__head h2{
+  margin:0; font-size:var(--t-micro); font-weight:520; letter-spacing:.06em;
+  text-transform:uppercase; color:var(--text-2);
+}
+/* A name is a name. Uppercasing "BMW M5 bargains (any year)" turns it into a
+   label, and next to a name that is already mostly digits the two stop
+   looking like the same kind of thing. */
+.section__head h2.name{
+  font-size:var(--t-h2); font-weight:560; letter-spacing:-.01em;
+  text-transform:none; color:var(--text);
+}
+.section__head .count{
+  font-size:var(--t-micro); color:var(--text-3);
+  font-variant-numeric:tabular-nums; margin-left:auto;
+}
+
+/* ------------------------------------------------------------------ feed */
+.feed{ list-style:none; margin:0; padding:0; }
+.ev{
+  display:grid; grid-template-columns:auto 1fr auto; gap:0 var(--s3);
+  align-items:baseline;
+  padding:var(--s3) var(--s3) var(--s3) var(--s4);
+  border-left:2px solid var(--line);
+  background:none; border-top:0; border-right:0; border-bottom:0;
+  width:100%; text-align:left; cursor:pointer; font:inherit; color:inherit;
+  border-radius:0 var(--r-sm) var(--r-sm) 0;
+  transition:background var(--m-state) var(--ease);
+}
+.ev:hover{ background:var(--surface-2); }
+.ev + .ev{ border-top:1px solid var(--line); }
+.ev[data-kind="new"]{ border-left-color:var(--ev-new); }
+.ev[data-kind="price_drop"]{ border-left-color:var(--ev-drop); }
+.ev[data-kind="price_rise"]{ border-left-color:var(--ev-rise); }
+.ev[data-kind="removed"]{ border-left-color:var(--ev-gone); }
+.ev[data-kind="relisted"]{ border-left-color:var(--ev-back); }
+.ev[data-kind="priced"]{ border-left-color:var(--ev-priced); }
+
+.ev__when{
+  grid-row:1; font-size:var(--t-micro); color:var(--text-3);
+  font-variant-numeric:tabular-nums; white-space:nowrap;
+}
+.ev__title{
+  grid-row:1; font-size:var(--t-h2); font-weight:520; color:var(--text);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.ev__fig{
+  grid-row:1; font-size:var(--t-h2); font-weight:560;
+  font-variant-numeric:tabular-nums; white-space:nowrap;
+}
+.ev__sub{
+  grid-column:2/-1; grid-row:2; margin-top:var(--s1);
+  font-size:var(--t-small); color:var(--text-2);
+  display:flex; flex-wrap:wrap; gap:0 var(--s2);
+}
+.ev__was{ text-decoration:line-through; color:var(--text-3); }
+.ev--unread .ev__title::after{
+  content:""; display:inline-block; width:6px; height:6px; margin-left:var(--s2);
+  border-radius:50%; background:var(--ev-new); vertical-align:middle;
+}
+.drop{ color:var(--ev-drop); }
+.rise{ color:var(--ev-rise); }
+@media (max-width:559px){
+  .ev{ grid-template-columns:1fr auto; }
+  .ev__when{ grid-column:1/-1; grid-row:1; margin-bottom:var(--s1); }
+  .ev__title{ grid-row:2; grid-column:1; }
+  .ev__fig{ grid-row:2; grid-column:2; }
+  .ev__sub{ grid-row:3; grid-column:1/-1; }
+}
+
+.marker{
+  display:flex; align-items:center; gap:var(--s3); margin:var(--s5) 0;
+  font-size:var(--t-micro); font-weight:520; letter-spacing:.06em;
+  text-transform:uppercase; color:var(--ev-new);
+}
+.marker::before,.marker::after{
+  content:""; height:1px; background:var(--ev-new); opacity:.35; flex:1;
+}
+
+/* ------------------------------------------------------------------ cards */
+.grid{
+  display:grid; gap:var(--s4);
+  grid-template-columns:repeat(auto-fill,minmax(232px,1fr));
+}
+@media (max-width:559px){ .grid{ grid-template-columns:1fr; gap:var(--s2); } }
+
+.card{
+  display:flex; flex-direction:column; text-align:left;
+  background:var(--surface); border:0; border-radius:var(--r-md);
+  padding:0; overflow:hidden; cursor:pointer; font:inherit; color:inherit;
+  outline-offset:2px;
+  transition:background var(--m-state) var(--ease);
+}
+.card:hover{ background:var(--surface-2); }
+.card__shot{
+  position:relative; aspect-ratio:4/3; background:var(--surface-2);
+  overflow:hidden;
+}
+.card__shot img{
+  width:100%; height:100%; object-fit:cover; display:block;
+  background:var(--surface-2);
+}
+/* A photo that fails is not an empty box. It says what the car is. */
+.shot__fallback{
+  position:absolute; inset:0; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:var(--s2);
+  background:var(--surface-3); color:var(--text-2); text-align:center;
+  padding:var(--s3);
+}
+.shot__fallback svg{ opacity:.5; }
+.shot__fallback span{
+  font-size:var(--t-micro); letter-spacing:.06em; text-transform:uppercase;
+}
+.shot__fallback b{ font-size:var(--t-small); font-weight:520; color:var(--text-2); }
+.card__body{ padding:var(--s3); display:flex; flex-direction:column; gap:var(--s2); flex:1; }
+.card__title{
+  font-size:var(--t-small); font-weight:400; color:var(--text-2);
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+  overflow:hidden; line-height:1.35; min-height:2.7em;
+}
+.card__price{
+  display:flex; align-items:baseline; gap:var(--s2); flex-wrap:wrap;
+}
+.card__price b{
+  font-size:var(--t-figure); font-weight:560; letter-spacing:-.015em;
+  font-variant-numeric:tabular-nums;
+}
+.card__was{
+  font-size:var(--t-small); color:var(--text-3); text-decoration:line-through;
+  font-variant-numeric:tabular-nums;
+}
+.card__delta{ font-size:var(--t-small); font-weight:520; font-variant-numeric:tabular-nums; }
+.facts{
+  display:flex; flex-wrap:wrap; gap:0 var(--s3); font-size:var(--t-small);
+  color:var(--text-2); font-variant-numeric:tabular-nums;
+}
+.facts u{ text-decoration:none; font-size:var(--t-micro); color:var(--text-3); }
+.card__foot{
+  margin-top:auto; padding-top:var(--s2); border-top:1px solid var(--line);
+  display:flex; align-items:center; gap:var(--s2); flex-wrap:wrap;
+  font-size:var(--t-micro); color:var(--text-3);
+}
+.card--gone .card__shot img,.card--gone .card__title{ opacity:.5; }
+.card--gone .card__price b{ text-decoration:line-through; color:var(--text-3); }
+.card--hidden{ background:none; border:1px dashed var(--line); }
+.card--hidden:hover{ background:var(--surface-2); }
+
+/* On a phone a 4:3 photo at full width is one car per screen, and this is a
+   comparison task. Defined after the card itself so it actually wins. */
+@media (max-width:559px){
+  .card{ flex-direction:row; align-items:stretch; }
+  /* Fills the card's height rather than leaving a gap under a 4:3 box. The
+     width is fixed, so the space is still reserved before the image loads
+     and nothing shifts when it arrives. */
+  .card__shot{ flex:none; width:116px; aspect-ratio:auto; align-self:stretch; min-height:92px; }
+  .card__body{ flex:1; min-width:0; padding:var(--s3); gap:var(--s1); }
+  .card__title{ -webkit-line-clamp:2; min-height:0; }
+  .card__foot{ padding-top:var(--s1); }
+}
+.rule{
+  font-size:var(--t-small); color:var(--text-2); border-left:2px solid var(--line-strong);
+  padding-left:var(--s2); margin:0;
+}
+
+.flag{
+  display:inline-flex; align-items:center; gap:var(--s1);
+  font-size:var(--t-micro); font-weight:520; letter-spacing:.04em;
+  text-transform:uppercase;
+}
+.flag::before{ content:""; width:6px; height:6px; border-radius:50%; background:currentColor; }
+.flag--new{ color:var(--ev-new); }
+.flag--drop{ color:var(--ev-drop); }
+.flag--rise{ color:var(--ev-rise); }
+.flag--gone{ color:var(--ev-gone); }
+.flag--back{ color:var(--ev-back); }
+.flag--priced{ color:var(--ev-priced); }
+
+@media (prefers-reduced-motion:no-preference){
+  .is-fresh{ animation:rise var(--m-enter) var(--ease) both; }
+}
+
+/* ------------------------------------------------------------------ controls */
+.bar{
+  display:flex; flex-wrap:wrap; gap:var(--s2); align-items:center;
+  margin-bottom:var(--s4);
+}
+.field{
+  flex:1 1 200px; min-width:0; display:flex; align-items:center; gap:var(--s2);
+  background:var(--surface); border:1px solid var(--line-strong);
+  border-radius:var(--r-sm); padding:0 var(--s3); min-height:38px;
+}
+.field input{ border:0; background:none; outline:none; width:100%; min-width:0; padding:var(--s2) 0; }
+.labelled{ display:flex; flex-direction:column; gap:var(--s1); flex:0 1 160px; }
+.labelled > span{
+  font-size:var(--t-micro); font-weight:520; letter-spacing:.06em;
+  text-transform:uppercase; color:var(--text-3);
+}
+.labelled .field{ flex:none; }
+.field:focus-within{ border-color:var(--focus); box-shadow:0 0 0 1px var(--focus); }
+select,.btn{
+  background:var(--surface); border:1px solid var(--line-strong);
+  border-radius:var(--r-sm); padding:0 var(--s3); min-height:38px;
+  cursor:pointer; font-size:var(--t-small);
+  transition:background var(--m-state) var(--ease), border-color var(--m-state) var(--ease);
+}
+select:hover,.btn:hover{ background:var(--surface-2); }
+.btn--primary{
+  background:var(--text); color:var(--bg); border-color:var(--text); font-weight:520;
+}
+.btn--primary:hover{ background:var(--text-2); border-color:var(--text-2); }
+.chips{ display:flex; flex-wrap:wrap; gap:var(--s2); margin-bottom:var(--s4); }
+.chip{
+  appearance:none; cursor:pointer; font-size:var(--t-small);
+  background:none; color:var(--text-2);
+  border:1px solid var(--line-strong); border-radius:999px;
+  padding:var(--s1) var(--s3); min-height:32px;
+  transition:background var(--m-state) var(--ease), color var(--m-state) var(--ease),
+             border-color var(--m-state) var(--ease);
+}
+.chip:hover{ background:var(--surface-2); }
+.chip[aria-pressed="true"]{
+  background:var(--text); color:var(--bg); border-color:var(--text); font-weight:520;
+}
+.chip .n{ font-variant-numeric:tabular-nums; opacity:.65; margin-left:var(--s1); }
+
+/* ------------------------------------------------------------------ states */
+.state{
+  border:1px dashed var(--line-strong); border-radius:var(--r-md);
+  padding:var(--s6); max-width:68ch;
+}
+.state h3{ margin:0 0 var(--s2); font-size:var(--t-h2); font-weight:560; }
+.state p{ margin:0 0 var(--s3); color:var(--text-2); font-size:var(--t-small); }
+.state p:last-child{ margin-bottom:0; }
+
+.skel{ background:var(--surface); border-radius:var(--r-md); overflow:hidden; }
+/* Same metrics as a real feed row, so replacing it moves nothing. */
+.skel-row{ cursor:default; }
+.skel-row .skel__line{ border-radius:3px; background:var(--surface-2); align-self:center; }
+.skel__shot{ aspect-ratio:4/3; background:var(--surface-2); }
+.skel__line{ height:11px; border-radius:3px; background:var(--surface-2); margin:var(--s3); }
+.skel__line:nth-child(2){ width:70%; }
+.skel__line:nth-child(3){ width:40%; height:18px; }
+@media (prefers-reduced-motion:no-preference){
+  .skel__shot,.skel__line{ animation:pulse 1.4s ease-in-out infinite; }
+}
+@keyframes pulse{ 0%,100%{ opacity:1 } 50%{ opacity:.55 } }
+
+/* ------------------------------------------------------------------ tables */
+.tbl{ width:100%; border-collapse:collapse; font-size:var(--t-small); }
+.tbl th{
+  text-align:left; font-size:var(--t-micro); font-weight:520; letter-spacing:.06em;
+  text-transform:uppercase; color:var(--text-3);
+  padding:0 var(--s3) var(--s2) 0; border-bottom:1px solid var(--line);
+  white-space:nowrap;
+}
+.tbl td{ padding:var(--s2) var(--s3) var(--s2) 0; border-bottom:1px solid var(--line); vertical-align:top; }
+.tbl td:last-child,.tbl th:last-child{ padding-right:0; }
+.tbl .r{ text-align:right; font-variant-numeric:tabular-nums; }
+.tbl tr:last-child td{ border-bottom:0; }
+
+.kv{ display:grid; grid-template-columns:auto 1fr; gap:var(--s2) var(--s4); font-size:var(--t-small); }
+.kv dt{ color:var(--text-3); font-size:var(--t-micro); letter-spacing:.06em; text-transform:uppercase; padding-top:2px; }
+.kv dd{ margin:0; font-variant-numeric:tabular-nums; }
+
+.stats{ display:grid; gap:var(--s4); grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); }
+.stat{ background:var(--surface); border-radius:var(--r-md); padding:var(--s4); }
+.stat dt{
+  font-size:var(--t-micro); font-weight:520; letter-spacing:.06em;
+  text-transform:uppercase; color:var(--text-3); margin-bottom:var(--s2);
+}
+.stat dd{ margin:0; font-size:var(--t-figure); font-weight:560; font-variant-numeric:tabular-nums; letter-spacing:-.015em; }
+.stat small{ display:block; margin-top:var(--s1); font-size:var(--t-small); font-weight:400; color:var(--text-2); letter-spacing:0; }
+.stat[data-tone="warn"] dd{ color:var(--warn); }
+.stat[data-tone="bad"] dd{ color:var(--bad); }
+.stat[data-tone="good"] dd{ color:var(--good); }
+
+/* Coverage / run timeline: one mark per check, so a gap is visible as a gap */
+.timeline{
+  display:flex; gap:3px; align-items:flex-end; height:40px;
+  max-width:820px;
+}
+.timeline i{ flex:1 1 6px; max-width:12px; min-width:3px; border-radius:1px; background:var(--good); }
+.timeline i[data-ok="0"]{ background:var(--bad); }
+/* A gap is absence, so it is drawn as absence rather than as another bar. */
+.timeline i[data-gap="1"]{
+  background:none; border-bottom:1px dashed var(--line-strong);
+  align-self:stretch; border-radius:0;
+}
+
+.ladder{ display:flex; gap:var(--s1); align-items:center; }
+.ladder i{
+  width:22px; height:5px; border-radius:2px; background:var(--line-strong);
+}
+.ladder i[data-on="1"]{ background:var(--good); }
+
+/* ------------------------------------------------------------------ sheet */
+.scrim{
+  position:fixed; inset:0; z-index:40; background:rgba(10,11,13,.44);
+  opacity:0; pointer-events:none; transition:opacity var(--m-enter) var(--ease);
+}
+.scrim[data-open="1"]{ opacity:1; pointer-events:auto; }
+.sheet{
+  position:fixed; z-index:41; background:var(--bg);
+  box-shadow:var(--shadow-overlay); overflow-y:auto; overscroll-behavior:contain;
+  inset:auto 0 0 0; max-height:92dvh; border-radius:var(--r-md) var(--r-md) 0 0;
+  transform:translateY(100%); transition:transform var(--m-enter) var(--ease);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+.sheet[data-open="1"]{ transform:none; }
+@media (min-width:700px){
+  .sheet{
+    inset:0 0 0 auto; width:min(560px,100%); max-height:none;
+    border-radius:0; transform:translateX(100%);
+  }
+  .sheet[data-open="1"]{ transform:none; }
+}
+@media (prefers-reduced-motion:reduce){
+  .sheet,.scrim{ transition:none; }
+}
+/* A bottom sheet needs to look like something you can push back down. */
+.sheet__grab{ display:none; }
+@media (max-width:699px){
+  .sheet__grab{
+    display:block; width:36px; height:4px; border-radius:2px;
+    background:var(--line-strong); margin:var(--s2) auto 0;
+  }
+}
+.sheet__bar{
+  position:sticky; top:0; z-index:2; background:var(--bg);
+  border-bottom:1px solid var(--line);
+  display:flex; align-items:center; gap:var(--s3); padding:var(--s3) var(--s4);
+}
+.sheet__bar h2{ margin:0; font-size:var(--t-h2); font-weight:560; flex:1; min-width:0;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.sheet__body{ padding:var(--s4) var(--s4) var(--s8); }
+.iconbtn{
+  appearance:none; background:none; border:1px solid var(--line-strong);
+  border-radius:var(--r-sm); width:34px; height:34px; cursor:pointer;
+  display:grid; place-items:center; flex:none;
+  transition:background var(--m-state) var(--ease);
+}
+.iconbtn:hover{ background:var(--surface-2); }
+
+.gallery{ display:flex; gap:var(--s2); overflow-x:auto; scroll-snap-type:x mandatory;
+  margin:0 calc(var(--s4)*-1) var(--s4); padding:0 var(--s4); }
+.gallery img,.gallery .shotbox{
+  flex:none; width:min(78%,300px); aspect-ratio:4/3; object-fit:cover;
+  border-radius:var(--r-sm); scroll-snap-align:start; background:var(--surface-2);
+}
+.shotbox{ position:relative; }
+
+.hist{ width:100%; height:88px; display:block; overflow:visible; }
+.hist path{ fill:none; stroke:var(--text-2); stroke-width:1.5; }
+.hist .area{ fill:var(--surface-2); stroke:none; }
+.hist circle{ fill:var(--text); }
+.hist text{ font-size:10px; fill:var(--text-3); font-family:var(--font); }
+
+.why{
+  border-left:2px solid var(--line-strong); padding:var(--s1) 0 var(--s1) var(--s3);
+  font-size:var(--t-small); color:var(--text-2); margin:0;
+}
+.why b{ color:var(--text); font-weight:520; }
+
+.life{ list-style:none; margin:0; padding:0; }
+.life li{
+  display:grid; grid-template-columns:auto 1fr; gap:var(--s3);
+  padding:var(--s2) 0; border-bottom:1px solid var(--line);
+  font-size:var(--t-small);
+}
+.life li:last-child{ border-bottom:0; }
+.life time{ color:var(--text-3); font-variant-numeric:tabular-nums; white-space:nowrap; font-size:var(--t-micro); padding-top:2px; }
+
+.note{ font-size:var(--t-small); color:var(--text-2); margin:var(--s2) 0 0; }
+.ok{ color:var(--good); font-weight:520; }
+.err{ color:var(--bad); }
+.warnt{ color:var(--warn); }
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:0ms !important; animation-delay:0ms !important;
+    transition-duration:0ms !important;
+  }
+}
 </style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
 
-<div class="shell">
-  <aside class="rail">
+<header class="topbar" role="banner">
+  <div class="wrap topbar__in">
     <div class="brand">
-      <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
-        <rect width="26" height="26" rx="7" fill="var(--accent)"/>
-        <path d="M5.5 15.5h15M8 15.5l1.6-5a2 2 0 0 1 1.9-1.4h3a2 2 0 0 1 1.9 1.4l1.6 5"
-              stroke="var(--accent-ink)" stroke-width="1.6" stroke-linecap="round" fill="none"/>
-        <circle cx="9.3" cy="17.4" r="1.5" fill="var(--accent-ink)"/>
-        <circle cx="16.7" cy="17.4" r="1.5" fill="var(--accent-ink)"/>
-      </svg>
-      <div>
-        <div class="brand-name">AutoTrader Watch</div>
-        <div class="brand-sub">autotrader.ca</div>
-      </div>
+      <b>AutoTrader Watch</b><span>autotrader.ca</span>
     </div>
-    <nav class="nav" id="nav">
-      <button data-view="listings" aria-current="true">Listings <span class="tally" id="t-listings">0</span></button>
-      <button data-view="searches">Searches <span class="tally" id="t-searches">0</span></button>
-      <button data-view="settings">Settings</button>
-      <button data-view="status">Status <span class="tally" id="t-status"></span></button>
-    </nav>
-    <div class="rail-foot">
-      <button class="theme-toggle" id="theme-toggle" type="button">Theme: auto</button>
-      <span id="generated">not loaded</span>
+    <div class="trust" id="trust" data-state="ok" aria-live="polite">
+      <span class="trust__dot" aria-hidden="true"></span>
+      <span id="trust-text">Loading…</span>
+      <span class="trust__cov" id="trust-cov"></span>
     </div>
-  </aside>
+  </div>
+</header>
 
-  <main class="main">
-    <div class="statusbar" id="statusbar"></div>
+<nav class="tabs" aria-label="Views">
+  <div class="wrap tabs__in" id="tabs"></div>
+</nav>
 
-    <!-- ============ LISTINGS ============ -->
-    <section id="view-listings">
-      <div class="head"><h1>Listings</h1></div>
-      <p class="sub">Every car your searches have turned up, newest first. Price drops are
-        tracked per listing, so a car you already saw will tell you when it gets cheaper.</p>
-      <div class="toolbar">
-        <input class="field grow" id="q" type="search" placeholder="Filter by name, colour, city, trim...">
-        <select class="field" id="sort">
-          <option value="new">Newest first</option>
-          <option value="old">Oldest first</option>
-          <option value="cheap">Price: low to high</option>
-          <option value="dear">Price: high to low</option>
-          <option value="km">Odometer: low to high</option>
-          <option value="young">Model year: newest first</option>
-          <option value="oldcar">Model year: oldest first</option>
-          <option value="drop">Biggest price drop</option>
-        </select>
-        <select class="field" id="which">
-          <option value="all">All searches</option>
-        </select>
-        <div class="chipbar" id="statefilter">
-          <button class="chip on" data-state="all" type="button">All</button>
-          <button class="chip" data-state="active" type="button">Live</button>
-          <button class="chip" data-state="ask" type="button">Call for price</button>
-          <button class="chip" data-state="hidden" type="button">Hidden by rules</button>
-          <button class="chip" data-state="gone" type="button">Gone</button>
-          <button class="chip" data-state="drops" type="button">Price drops</button>
-        </div>
-      </div>
-      <div class="grid" id="grid"></div>
-      <div id="none-listings" class="empty hidden">
-        <h3>Nothing here yet</h3>
-        <p>Add a search on the Searches tab, then run the bot.</p>
-      </div>
-    </section>
-
-    <!-- ============ SEARCHES ============ -->
-    <section id="view-searches" class="hidden">
-      <div class="head"><h1>Searches</h1></div>
-      <p class="sub">Watch a search by pasting its link. Run the search you want on
-        autotrader.ca, copy the address bar, and drop it below &mdash; every filter you set
-        there (model, price, year, distance) comes along with the link.</p>
-
-      <div class="panel">
-        <h2>Add a search</h2>
-        <p class="hint">Paste the whole address, starting with <code>https://www.autotrader.ca/cars/</code></p>
-        <div class="paste" id="paste">
-          <textarea id="url" spellcheck="false" placeholder="https://www.autotrader.ca/cars/bmw/m5/?rcp=15&amp;srt=35&amp;prx=-2&amp;loc=M5V&amp;sts=New-Used"></textarea>
-          <div class="preview" id="preview"></div>
-        </div>
-      </div>
-
-      <div id="searchlist"></div>
-      <div id="none-searches" class="empty hidden">
-        <h3>No searches yet</h3>
-        <p>Paste a link above to start watching one.</p>
-      </div>
-    </section>
-
-    <!-- ============ SETTINGS ============ -->
-    <section id="view-settings" class="hidden">
-      <div class="head"><h1>Settings</h1></div>
-      <p class="sub">Everything here is saved to <code>config.json</code>. Tokens and passwords
-        are never stored in this file &mdash; those live in your environment or GitHub repository
-        secrets, and this page only ever shows whether they are present.</p>
-      <div id="savebanner"></div>
-
-      <div class="panel">
-        <h2>How you get told</h2>
-        <p class="hint">Turn on as many as you like. Everything except SMS is free and unlimited.</p>
-        <div id="channels"></div>
-      </div>
-
-      <div class="panel">
-        <h2>What you get told about</h2>
-        <div id="notify-on"></div>
-        <div class="formgrid" style="margin-top:14px">
-          <label class="lbl">Only report drops of at least (%)
-            <input class="field num" type="number" min="0" step="0.5" id="s-pct"></label>
-          <label class="lbl">...and at least ($)
-            <input class="field num" type="number" min="0" step="50" id="s-abs"></label>
-          <label class="lbl">Max cars per message
-            <input class="field num" type="number" min="1" max="50" id="s-max"></label>
-          <label class="lbl">Time zone
-            <input class="field" id="s-tz" placeholder="America/Toronto"></label>
-        </div>
-        <div class="row" style="margin-top:6px">
-          <span class="switch"><input type="checkbox" id="s-quiet"><i></i></span>
-          <div class="txt"><b>Quiet hours</b>
-            <small>Hold alerts overnight. Nothing is lost &mdash; they arrive in the next run afterwards.</small></div>
-          <input class="field num" type="time" id="s-quiet-a" style="width:110px">
-          <input class="field num" type="time" id="s-quiet-b" style="width:110px">
-        </div>
-      </div>
-
-      <div class="panel">
-        <h2>Filters</h2>
-        <p class="hint">Applied on top of the search link, for things AutoTrader's own form
-          cannot express. Leave blank to ignore.</p>
-        <div class="formgrid">
-          <label class="lbl">Min price ($)<input class="field num" type="number" id="f-minp"></label>
-          <label class="lbl">Max price ($)<input class="field num" type="number" id="f-maxp"></label>
-          <label class="lbl">Min year<input class="field num" type="number" id="f-miny"></label>
-          <label class="lbl">Max year<input class="field num" type="number" id="f-maxy"></label>
-          <label class="lbl">Max odometer (km)<input class="field num" type="number" id="f-maxkm"></label>
-          <label class="lbl">Must mention (comma separated)<input class="field" id="f-inc" placeholder="manual, carbon"></label>
-          <label class="lbl">Never mention<input class="field" id="f-exc" placeholder="salvage, rebuilt, accident"></label>
-          <label class="lbl">Skip these sellers<input class="field" id="f-sell" placeholder="dealer name"></label>
-        </div>
-        <div class="row" style="margin-top:6px">
-          <span class="switch"><input type="checkbox" id="f-reqprice"><i></i></span>
-          <div class="txt"><b>Skip cars with no price</b>
-            <small>Hides &ldquo;please call&rdquo; listings.</small></div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <h2>Scraping and storage</h2>
-        <div class="formgrid">
-          <label class="lbl">Result pages per search<input class="field num" type="number" min="1" max="20" id="c-pages"></label>
-          <label class="lbl">Results per page<input class="field num" type="number" min="10" max="100" step="5" id="c-rpp"></label>
-          <label class="lbl">Pause between requests (ms)<input class="field num" type="number" min="0" step="100" id="c-delay"></label>
-          <label class="lbl">Retries per request<input class="field num" type="number" min="0" max="6" id="c-retries"></label>
-          <label class="lbl">Look up details for up to<input class="field num" type="number" min="0" max="200" id="c-enrich"></label>
-          <label class="lbl">Keep archives of the last<input class="field num" type="number" min="0" id="c-keep"></label>
-        </div>
-        <div class="row" style="margin-top:6px">
-          <span class="switch"><input type="checkbox" id="c-details"><i></i></span>
-          <div class="txt"><b>Read each listing page for exact details</b>
-            <small>Gets the real price, odometer and photos instead of guessing from the
-              results card. Costs one extra request per new car.</small></div>
-        </div>
-        <div class="row">
-          <div class="txt"><b>What to archive</b>
-            <small>Full pages are about 200&nbsp;KB each and get committed to your repository.</small></div>
-          <select class="field" id="c-archive">
-            <option value="off">Nothing</option>
-            <option value="metadata">Details only (recommended)</option>
-            <option value="full">Details and the full page</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="toolbar">
-        <button class="btn" id="save">Save settings</button>
-        <button class="btn ghost" id="copy">Copy config.json</button>
-        <button class="btn ghost" id="download">Download config.json</button>
-      </div>
-    </section>
-
-    <!-- ============ STATUS ============ -->
-    <section id="view-status" class="hidden">
-      <div class="head"><h1>Status</h1></div>
-      <p class="sub">Whether the watcher is actually working. The previous version failed
-        silently for a month; these are the numbers that would have shown it.</p>
-      <div class="kpis" id="kpis"></div>
-      <div class="panel">
-        <h2>Search health</h2>
-        <div class="tablewrap"><table id="healthtable"></table></div>
-      </div>
-      <div class="panel">
-        <h2>How each search is being read</h2>
-        <p class="hint">Four independent parsers try every page and the best result
-          wins. They are listed strongest first. If only one is scoring, the next
-          change to the site takes the bot out &mdash; that is exactly how it went
-          dark for a month.</p>
-        <div id="ladders"></div>
-      </div>
-      <div class="panel">
-        <h2>Notification channels</h2>
-        <div class="tablewrap"><table id="channeltable"></table></div>
-      </div>
-      <div class="panel">
-        <h2>Recent runs</h2>
-        <div class="tablewrap"><table id="runtable"></table></div>
-      </div>
-      <div class="panel" id="notifypanel"></div>
-      <div class="panel">
-        <h2>Storage</h2>
-        <div id="storage"></div>
-      </div>
-    </section>
-  </main>
-</div>
-<div class="toast" id="toast"></div>
-
-<script>
-(() => {
-"use strict";
-
-/* ============================================================
-   Sample data. The page must never open as an empty shell, and
-   data.json cannot be fetched over file://, so this stands in
-   until real data loads. It is clearly labelled in the UI.
-   ============================================================ */
-const SAMPLE = {
-  generated_at: null, sample: true,
-  stats: {total: 3, active: 2, gone: 1, with_price: 3,
-          min_price: 98888, max_price: 132500, median_price: 104999},
-  listings: [
-    {id:"13123827", url:"https://www.autotrader.ca/a/bmw/m5/trois-rivieres/quebec/19_13123827_/",
-     year:2022, make:"BMW", model:"M5", trim:"Competition", price:132500, mileage_km:9200,
-     location:"Trois-Rivières", province:"QC", color:"Black", drivetrain:"AWD",
-     transmission:"Automatic", images:[], status:"gone", search_name:"BMW M5",
-     first_seen:"2025-06-24T23:25:18+00:00", price_history:[{at:"2025-06-24T23:25:18+00:00",price:132500}]},
-    {id:"13187452", url:"https://www.autotrader.ca/a/bmw/m5/surrey/british%20columbia/19_13187452_/",
-     year:2021, make:"BMW", model:"M5", trim:"Competition", price:104999, mileage_km:38800,
-     location:"Surrey", province:"BC", color:"Blue", drivetrain:"AWD", transmission:"Automatic",
-     images:[], status:"active", search_name:"BMW M5", first_seen:"2025-09-11T02:14:11+00:00",
-     price_history:[{at:"2025-09-11T02:14:11+00:00",price:109999},{at:"2025-09-28T02:14:11+00:00",price:104999}]},
-    {id:"68532258", url:"https://www.autotrader.ca/a/bmw/m5/toronto/ontario/5_68532258_on/",
-     year:2023, make:"BMW", model:"M5", trim:"Competition", price:98888, mileage_km:88500,
-     location:"Toronto", province:"ON", color:"Black", drivetrain:"AWD", transmission:"Automatic",
-     images:[], status:"active", search_name:"BMW M5", first_seen:"2025-11-12T16:57:06+00:00",
-     price_history:[{at:"2025-11-12T16:57:06+00:00",price:98888}]}
-  ],
-  searches: [{id:"bmw-m5", name:"BMW M5", enabled:true,
-    url:"https://www.autotrader.ca/cars/bmw/m5/?rcp=15&srt=35&prx=-2&loc=M5V&sts=New-Used",
-    summary:{chips:["Canada-wide"],title:"BMW M5"},
-    health:{last_ok:null,last_count:3,last_strategy:"jsonld",consecutive_failures:0,last_error:null},
-    active_count:2}],
-  channels: {}, channel_catalog: {}, runs: [], last_run: null,
-  archive: {folders:0,bytes:0,html_bytes:0,image_bytes:0},
-  config: null
-};
-
-const DEFAULT_CONFIG = {
-  version:2, searches:[],
-  filters:{min_price:null,max_price:null,min_year:null,max_year:null,max_mileage_km:null,
-           include_keywords:[],exclude_keywords:[],exclude_sellers:[],require_price:false},
-  notifications:{digest:true,max_listings_per_message:12,timezone:"America/Toronto",
-    quiet_hours:{enabled:false,start:"23:00",end:"07:00"},
-    notify_on:{new:true,price_drop:true,price_rise:false,removed:false,errors:true},
-    price_drop_min_pct:1,price_drop_min_abs:250,
-    channels:{telegram:{enabled:"auto",photos:true},discord:{enabled:"auto"},
-      ntfy:{enabled:false,server:"https://ntfy.sh",topic:"",priority:"default"},
-      slack:{enabled:"auto"},email:{enabled:"auto",to:"",html:true},
-      webhook:{enabled:false,url:""},twilio:{enabled:false}}},
-  scraping:{max_pages:3,results_per_page:50,timeout_seconds:30,retries:3,delay_ms:1200,
-    enrich_details:true,enrich_limit:25,user_agent:"auto"},
-  archive:{mode:"metadata",images:0,keep_last:400,keep_days:730},
-  health:{alert_after_failures:3,heartbeat_hours:0},
-  dashboard:{enabled:true,max_listings:500}
-};
-
-const CATALOG = {
-  telegram:{label:"Telegram",free:true,required:["TELEGRAM_BOT_TOKEN","TELEGRAM_CHAT_ID"],
-    help:"Message @BotFather, send /newbot, and copy the token. Then message your new bot once and open https://api.telegram.org/bot<TOKEN>/getUpdates to find your chat id."},
-  discord:{label:"Discord",free:true,required:["DISCORD_WEBHOOK_URL"],
-    help:"Server Settings → Integrations → Webhooks → New Webhook → Copy URL."},
-  ntfy:{label:"ntfy",free:true,required:[],
-    help:"Install the ntfy app, subscribe to a topic name nobody could guess, and put that name below. No account needed."},
-  slack:{label:"Slack",free:true,required:["SLACK_WEBHOOK_URL"],
-    help:"Create a Slack app → Incoming Webhooks → Add New Webhook."},
-  email:{label:"Email",free:true,required:["GMAIL_USER","GMAIL_APP_PASSWORD"],
-    help:"Turn on 2-Step Verification, then make an App Password at myaccount.google.com/apppasswords."},
-  webhook:{label:"Custom webhook",free:true,required:[],help:"Any URL that accepts a JSON POST."},
-  twilio:{label:"Text message (Twilio)",free:false,required:["TWILIO_SID","TWILIO_TOKEN","TWILIO_FROM","TWILIO_TO"],
-    help:"Charges per message and per phone number. Telegram and ntfy give you the same phone alert for nothing."}
-};
-
-/* ============================================================
-   Reading a pasted autotrader.ca search link. Mirrors
-   autotrader/urls.py so the preview matches what the bot does.
-   ============================================================ */
-const PROVINCES = new Set(["ab","bc","mb","nb","nl","ns","nt","nu","on","pe","qc","sk","yt"]);
-const ACRONYMS = new Set(["bmw","gmc","ram","mg","vw","amg","srt","gti","sti","gt","rs","ev","suv"]);
-const HOSTS = new Set(["www.autotrader.ca","autotrader.ca","www.autohebdo.net","autohebdo.net"]);
-
-function titleCase(slug){
-  return decodeURIComponent(slug).split(/[-_+]/).filter(Boolean).map(w => {
-    const low = w.toLowerCase();
-    if (ACRONYMS.has(low) || (w.length <= 3 && /\d/.test(w))) return w.toUpperCase();
-    return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
-  }).join(" ");
-}
-const toInt = v => { const n = parseInt(String(v ?? "").replace(/[^\d-]/g,""),10); return Number.isFinite(n)?n:null; };
-function parseRange(v){
-  if (!v) return [null,null];
-  const [a,b] = decodeURIComponent(v).split(",");
-  return [toInt(a), toInt(b)];
-}
-
-function describeSearch(raw){
-  const out = {valid:true, problems:[], chips:[], title:"AutoTrader search", url:""};
-  let text = (raw||"").trim();
-  if (!text) { out.valid=false; out.problems.push("Paste a link to begin."); return out; }
-  if (!/^https?:\/\//i.test(text)) text = "https://" + text.replace(/^\/+/,"");
-  let u;
-  try { u = new URL(text); } catch { out.valid=false; out.problems.push("That is not a web address."); return out; }
-  if (!HOSTS.has(u.hostname.toLowerCase())) {
-    out.valid=false;
-    out.problems.push(u.hostname + " is not autotrader.ca. Paste a link from autotrader.ca (or autohebdo.net).");
-    return out;
-  }
-  if (/\/a\/(?:[^/]+\/)*?\d+_\d{5,}_/.test(u.pathname)) {
-    out.valid=false;
-    out.problems.push("That is one car's page, not a search. Run the search on autotrader.ca first, then copy the address bar.");
-    return out;
-  }
-  const seg = u.pathname.split("/").filter(Boolean);
-  if (!seg.length) {
-    out.valid=false;
-    out.problems.push("That is the autotrader.ca home page. Run a search first, then copy the address bar.");
-    return out;
-  }
-  const q = u.searchParams;
-  let make=null, model=null, province=null;
-  if (["cars","autos"].includes(seg[0].toLowerCase())) {
-    let rest = seg.slice(1);
-    if (rest.length && !PROVINCES.has(rest[0].toLowerCase())) {
-      make = titleCase(rest[0]); rest = rest.slice(1);
-      if (rest.length && !PROVINCES.has(rest[0].toLowerCase())) { model = titleCase(rest[0]); rest = rest.slice(1); }
-    }
-    if (rest.length && PROVINCES.has(rest[0].toLowerCase())) province = rest[0].toUpperCase();
-  }
-  const [yMin,yMax] = parseRange(q.get("yRng"));
-  const [pMin,pMax] = parseRange(q.get("pRng"));
-  const [,kmMax]    = parseRange(q.get("odRng"));
-  const loc  = q.get("loc") ? decodeURIComponent(q.get("loc")).replace(/\+/g," ").trim() : null;
-  const prv  = q.get("prv") ? decodeURIComponent(q.get("prv")).replace(/\+/g," ") : province;
-  const body = q.get("body") ? decodeURIComponent(q.get("body")).replace(/\+/g," ") : null;
-  const kwd  = q.get("kwd") ? decodeURIComponent(q.get("kwd")).replace(/\+/g," ") : null;
-  const prx  = toInt(q.get("prx"));
-  const radius = (prx !== null && prx > 0) ? prx : null;
-  const sts = (q.get("sts")||"").trim();
-  const condition = (sts && !["New-Used","Used-New"].includes(sts)) ? sts.replace(/-/g," & ") : null;
-
-  const nameBits = [];
-  if (yMin && yMax) nameBits.push(yMin+"-"+yMax);
-  else if (yMin) nameBits.push(yMin+"+");
-  else if (yMax) nameBits.push("up to "+yMax);
-  if (make) nameBits.push(make);
-  if (model) nameBits.push(model);
-  out.title = nameBits.length ? nameBits.join(" ") : "AutoTrader search";
-
-  const chips = [];
-  if (pMin && pMax) chips.push("$"+pMin.toLocaleString()+"–$"+pMax.toLocaleString());
-  else if (pMax) chips.push("under $"+pMax.toLocaleString());
-  else if (pMin) chips.push("over $"+pMin.toLocaleString());
-  if (kmMax) chips.push("under "+kmMax.toLocaleString()+" km");
-  if (body) chips.push(body);
-  if (condition) chips.push(condition);
-  if (loc) chips.push("near "+loc+(radius?" ("+radius+" km)":""));
-  else if (prv) chips.push(prv);
-  else if (radius === null) chips.push("Canada-wide");
-  if (kwd) chips.push('"'+kwd+'"');
-  out.chips = chips;
-  if (![...q.keys()].length) out.problems.push("This link carries no filters, so it will match very broadly.");
-  u.hash = "";
-  ["gclid","fbclid","utm_source","utm_medium","utm_campaign","ursrc","urp","urm"].forEach(k=>u.searchParams.delete(k));
-  out.url = u.toString();
-  return out;
-}
-
-/* ============================================================ helpers */
-const $  = s => document.querySelector(s);
-const $$ = s => Array.from(document.querySelectorAll(s));
-const esc = s => String(s ?? "").replace(/[&<>"']/g, c =>
-  ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const money = n => (n === null || n === undefined || n === "") ? null : "$" + Number(n).toLocaleString();
-const dateOf = s => { if(!s) return "—"; const d = new Date(s);
-  return isNaN(d) ? "—" : d.toLocaleDateString(undefined,{year:"numeric",month:"short",day:"numeric"}); };
-const timeOf = s => { if(!s) return "—"; const d = new Date(s);
-  return isNaN(d) ? "—" : d.toLocaleString(undefined,{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"}); };
-const csv = a => (Array.isArray(a) ? a : []).join(", ");
-const uncsv = s => String(s||"").split(",").map(x=>x.trim()).filter(Boolean);
-const bytes = n => !n ? "0 KB" : n < 1048576 ? (n/1024).toFixed(0)+" KB" : (n/1048576).toFixed(1)+" MB";
-
-let DATA = null, CONFIG = null, LIVE = false, dirty = false;
-const ui = {view:"listings", q:"", sort:"new", search:"all", state:"all"};
-
-function toast(msg, ms=2600){
-  const t = $("#toast"); t.textContent = msg; t.classList.add("show");
-  clearTimeout(t._t); t._t = setTimeout(()=>t.classList.remove("show"), ms);
-}
-
-/* ============================================================ boot */
-async function boot(){
-  try {
-    const res = await fetch("data.json", {cache:"no-store"});
-    if (!res.ok) throw new Error(res.status);
-    DATA = await res.json();
-  } catch { DATA = JSON.parse(JSON.stringify(SAMPLE)); }
-  CONFIG = DATA.config ? structuredClone(DATA.config) : structuredClone(DEFAULT_CONFIG);
-  if (!DATA.channel_catalog || !Object.keys(DATA.channel_catalog).length) DATA.channel_catalog = CATALOG;
-
-  try {
-    const probe = await fetch("api/health", {cache:"no-store"});
-    LIVE = probe.ok;
-  } catch { LIVE = false; }
-
-  initTheme(); wire(); renderAll();
-}
-
-function renderAll(){
-  renderStatusbar(); renderListings(); renderSearches(); renderSettings(); renderStatus();
-  // Cars your rules hid are in the payload so they can be listed and counted
-  // on demand; they must not inflate the number in the sidebar.
-  $("#t-listings").textContent = (DATA.listings||[]).filter(l => !l.filtered).length;
-  $("#t-searches").textContent = (CONFIG.searches||[]).length;
-  const fails = (DATA.searches||[]).reduce((n,s)=>n+(s.health?.consecutive_failures||0),0);
-  $("#t-status").textContent = fails ? "!" : "";
-  $("#generated").textContent = DATA.sample ? "showing example data"
-    : "updated " + timeOf(DATA.generated_at);
-}
-
-/* ============================================================ status bar */
-function renderStatusbar(){
-  const r = DATA.last_run, s = DATA.stats || {};
-  const fails = (DATA.searches||[]).filter(x => (x.health?.consecutive_failures||0) > 0);
-  let cls = "idle", label = "Never run";
-  if (r) { cls = r.ok && !fails.length ? "ok" : "warn";
-           label = r.ok && !fails.length ? "Healthy" : "Needs attention"; }
-  const on = Object.entries(DATA.channels||{}).filter(([,c])=>c.active).map(([,c])=>c.label);
-  const n = DATA.notify || {};
-  $("#statusbar").innerHTML = `
-    <span class="item"><span class="dot ${cls}"></span><b>${esc(label)}</b></span>
-    <span class="item">Last run <b>${esc(r ? timeOf(r.at) : "—")}</b></span>
-    <span class="item">Tracking <b class="num">${s.active ?? 0}</b> live &middot;
-      <b class="num">${s.total ?? 0}</b> total</span>
-    ${s.median_price ? `<span class="item">Median <b class="num">${money(s.median_price)}</b></span>` : ""}
-    <span class="spacer"></span>
-    <span class="item">${on.length
-      ? "Alerts via <b>" + on.map(esc).join(", ") + "</b>"
-        + (n.ntfy_url && on.some(x => /ntfy/i.test(x))
-           ? ` &middot; <a href="${esc(n.ntfy_url)}" target="_blank" rel="noopener">open your feed</a>`
-           : "")
-      : '<span class="pill need">No alert channel set up</span>'}</span>`;
-}
-
-/* ============================================================ listings */
-function priceChange(l){
-  const h = l.price_history || [];
-  if (h.length < 2) return 0;
-  const first = h[0].price, last = h[h.length-1].price;
-  return (first && last) ? last - first : 0;
-}
-
-function sparkline(l){
-  const h = (l.price_history||[]).filter(p => p.price);
-  if (h.length < 2) return "";
-  const vals = h.map(p => p.price);
-  const lo = Math.min(...vals), hi = Math.max(...vals), span = (hi - lo) || 1;
-  const W = 100, H = 26, pad = 3;
-  const pts = vals.map((v,i) => {
-    const x = vals.length === 1 ? W/2 : (i/(vals.length-1))*(W-pad*2)+pad;
-    const y = H - pad - ((v-lo)/span)*(H-pad*2);
-    return [x, y];
-  });
-  const d = pts.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+" "+p[1].toFixed(1)).join(" ");
-  const area = d + ` L${pts[pts.length-1][0].toFixed(1)} ${H} L${pts[0][0].toFixed(1)} ${H} Z`;
-  const down = vals[vals.length-1] < vals[0];
-  const col = down ? "var(--good)" : "var(--faint)";
-  const end = pts[pts.length-1];
-  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">
-    <path d="${area}" fill="${col}" opacity=".13"/>
-    <path d="${d}" fill="none" stroke="${col}" stroke-width="1.6"
-          stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
-    <circle cx="${end[0].toFixed(1)}" cy="${end[1].toFixed(1)}" r="2.2" fill="${col}"/>
-  </svg>`;
-}
-
-function card(l){
-  const change = priceChange(l);
-  const gone = l.status === "gone";
-  const badges = [];
-  if (change < 0) badges.push(`<span class="badge drop">&darr; $${Math.abs(change).toLocaleString()}</span>`);
-  else if (change > 0) badges.push(`<span class="badge rise">&uarr; $${change.toLocaleString()}</span>`);
-  if (gone) badges.push('<span class="badge gone">Gone</span>');
-  if (l.price == null) badges.push('<span class="badge ask">Call for price</span>');
-  if (l.filtered) badges.push('<span class="badge rule">Hidden</span>');
-
-  const first = (l.price_history||[])[0];
-  const was = change < 0 && first ? `<span class="was">${money(first.price)}</span>` : "";
-  const name = [l.year, l.make, l.model, l.trim].filter(Boolean).join(" ") || l.title || ("Listing " + l.id);
-  const img = (l.images||[])[0];
-  const specs = [
-    l.mileage_km != null ? `<span class="num">${Number(l.mileage_km).toLocaleString()} km</span>` : "",
-    l.drivetrain ? `<span>${esc(l.drivetrain)}</span>` : "",
-    l.color ? `<span>${esc(l.color)}</span>` : "",
-    (l.location || l.province) ? `<span>${esc(l.location || l.province)}</span>` : ""
-  ].filter(Boolean).join("");
-
-  return `<article class="card${gone ? " gone" : ""}${l.filtered ? " muted" : ""}">
-    <a class="shot" href="${esc(l.url)}" target="_blank" rel="noopener">
-      <span class="placeholder">no photo</span>
-      ${img ? `<img src="${esc(img)}" alt="" loading="lazy" onerror="this.remove()">` : ""}
-      <span class="badges">${badges.join("")}</span>
-    </a>
-    <div class="card-body">
-      <h3><a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(name)}</a></h3>
-      <div class="price-row">
-        <span class="price${change < 0 ? " drop" : ""}">${money(l.price) ?? "Ask"}</span>${was}
-      </div>
-      ${sparkline(l)}
-      <div class="specs">${specs}</div>
-      ${l.filtered ? `<div class="why">Hidden: ${esc(l.filter_reason || "one of your rules")}</div>` : ""}
-      ${!l.filtered && !l.notified_at && l.quiet_reason
-        ? `<div class="why">Not alerted: ${esc(l.quiet_reason)}</div>` : ""}
-      <div class="meta">
-        <span>${esc(l.search_name || "")}</span>
-        <span class="id" title="${esc(l.id)}">#${esc(String(l.id).slice(0, 8))} &middot; ${esc(dateOf(l.first_seen))}</span>
-      </div>
+<main id="main" class="wrap" tabindex="-1" style="display:flow-root">
+  <div class="alarm" id="alarm" role="status" hidden>
+    <div class="alarm__in">
+      <span class="alarm__mark" id="alarm-mark" aria-hidden="true">!</span>
+      <div><p id="alarm-text"></p><p id="alarm-detail"></p></div>
     </div>
-  </article>`;
-}
+  </div>
+  <section class="view" data-view="feed" aria-labelledby="feed-h" hidden></section>
+  <section class="view" data-view="listings" aria-labelledby="listings-h" hidden></section>
+  <section class="view" data-view="searches" aria-labelledby="searches-h" hidden></section>
+  <section class="view" data-view="status" aria-labelledby="status-h" hidden></section>
+</main>
 
-function renderListings(){
-  let items = (DATA.listings || []).slice();
-  if (ui.search !== "all") items = items.filter(l => l.search_id === ui.search);
-  // Cars your own rules hid are published so they can be counted and explained,
-  // but they never appear unless you ask for them - otherwise "All" would show
-  // 44 cars you told the bot you did not want.
-  if (ui.state === "hidden") items = items.filter(l => l.filtered);
-  else {
-    items = items.filter(l => !l.filtered);
-    if (ui.state === "active") items = items.filter(l => l.status === "active");
-    else if (ui.state === "ask") items = items.filter(l => l.price == null && l.status === "active");
-    else if (ui.state === "gone") items = items.filter(l => l.status === "gone");
-    else if (ui.state === "drops") items = items.filter(l => priceChange(l) < 0);
-  }
-  if (ui.q) {
-    const q = ui.q.toLowerCase();
-    items = items.filter(l => [l.title,l.make,l.model,l.trim,l.color,l.location,
-      l.province,l.body,l.transmission,l.drivetrain,l.id]
-      .filter(Boolean).join(" ").toLowerCase().includes(q));
-  }
-  const big = Number.MAX_SAFE_INTEGER;
-  const by = {
-    new:  (a,b) => String(b.first_seen||"").localeCompare(String(a.first_seen||"")),
-    old:  (a,b) => String(a.first_seen||"").localeCompare(String(b.first_seen||"")),
-    cheap:(a,b) => (a.price ?? big) - (b.price ?? big),
-    dear: (a,b) => (b.price ?? -1) - (a.price ?? -1),
-    km:   (a,b) => (a.mileage_km ?? big) - (b.mileage_km ?? big),
-    // The model year was invisible until the card parser started reading it,
-    // so sorting by it is worth having in its own right.
-    young:  (a,b) => (b.year ?? 0) - (a.year ?? 0),
-    oldcar: (a,b) => (a.year ?? big) - (b.year ?? big),
-    drop: (a,b) => priceChange(a) - priceChange(b)
-  }[ui.sort];
-  items.sort(by);
+<div class="scrim" id="scrim" hidden></div>
+<aside class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" hidden>
+  <div class="sheet__grab" aria-hidden="true"></div>
+  <div class="sheet__bar">
+    <h2 id="sheet-title">Listing</h2>
+    <button class="iconbtn" id="sheet-close" aria-label="Close">
+      <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>
+    </button>
+  </div>
+  <div class="sheet__body" id="sheet-body"></div>
+</aside>
 
-  $("#grid").innerHTML = items.map(card).join("");
-  $("#grid").classList.toggle("hidden", !items.length);
-  const none = $("#none-listings");
-  none.classList.toggle("hidden", !!items.length);
-  if (!items.length) {
-    const any = (DATA.listings||[]).length;
-    none.innerHTML = any
-      ? "<h3>Nothing matches</h3><p>Try clearing the filter or picking another search.</p>"
-      : "<h3>Nothing here yet</h3><p>Add a search on the Searches tab, then run the bot.</p>";
-  }
-  const sel = $("#which"), current = sel.value;
-  const tally = c => c ? ` (${c.active} live${c.filtered ? ", " + c.filtered + " hidden" : ""})` : "";
-  sel.innerHTML = `<option value="all">All searches${tally(DATA.health && DATA.health.counts)}</option>` +
-    (DATA.searches||[]).map(s =>
-      `<option value="${esc(s.id)}">${esc(s.name)}${tally(s.counts)}</option>`).join("");
-  sel.value = current && [...sel.options].some(o => o.value === current) ? current : "all";
-}
-
-/* ============================================================ searches */
-function renderPreview(){
-  const raw = $("#url").value.trim();
-  const box = $("#paste"), out = $("#preview");
-  box.classList.remove("valid","invalid");
-  if (!raw) { out.innerHTML = ""; return; }
-  const s = describeSearch(raw);
-  box.classList.add(s.valid ? "valid" : "invalid");
-  if (!s.valid) {
-    out.innerHTML = s.problems.map(p => `<div class="why">${esc(p)}</div>`).join("");
-    return;
-  }
-  const dup = (CONFIG.searches||[]).some(x => x.url === s.url);
-  out.innerHTML = `
-    <div class="name">${esc(s.title)}</div>
-    <div class="chipbar">${s.chips.map(c=>`<span class="chip">${esc(c)}</span>`).join("")
-      || '<span class="chip">no filters on this link</span>'}</div>
-    ${s.problems.map(p=>`<div class="why">${esc(p)}</div>`).join("")}
-    ${dup ? '<div class="why">You are already watching this exact search.</div>' : ""}
-    <div class="toolbar" style="margin:6px 0 0">
-      <input class="field grow" id="newname" value="${esc(s.title)}" placeholder="Name this search">
-      <button class="btn" id="addbtn" ${dup ? "disabled" : ""}>Watch this search</button>
-    </div>`;
-  const add = $("#addbtn");
-  if (add) add.onclick = () => {
-    const name = ($("#newname").value || s.title).trim();
-    const id = name.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,40)
-             + "-" + Math.random().toString(36).slice(2,8);
-    CONFIG.searches = CONFIG.searches || [];
-    CONFIG.searches.push({id, name, url:s.url, enabled:true});
-    $("#url").value = ""; renderPreview(); renderSearches();
-    dirty = true;
-    toast(LIVE ? 'Added "'+name+'". Press Save settings to keep it.'
-               : 'Added "'+name+'". Copy or download config.json to keep it.');
-  };
-}
-
-function ruleChips(rules){
-  if (!rules) return "";
-  const chips = [];
-  const label = {min_price:"from", max_price:"up to", min_year:"year from",
-                 max_year:"year to", max_mileage_km:"under"};
-  const f = rules.filters || {};
-  for (const [k, v] of Object.entries(f)) {
-    if (v === null || v === "" || (Array.isArray(v) && !v.length)) continue;
-    if (k === "max_price" || k === "min_price") chips.push(`${label[k]} $${Number(v).toLocaleString()}`);
-    else if (k === "max_mileage_km") chips.push(`under ${Number(v).toLocaleString()} km`);
-    // The distance rule reads as one thing, not as two unrelated settings.
-    else if (k === "near") { if (!f.max_distance_km) chips.push(`near ${v}`); }
-    else if (k === "max_distance_km") chips.push(
-      f.near ? `within ${Number(v).toLocaleString()} km of ${f.near}`
-             : `within ${Number(v).toLocaleString()} km`);
-    else if (k === "provinces") chips.push(`in ${[].concat(v).join(", ")}`);
-    else if (label[k]) chips.push(`${label[k]} ${v}`);
-    else chips.push(`${k}: ${Array.isArray(v) ? v.join(", ") : v}`);
-  }
-  for (const [k, v] of Object.entries(rules.notify_on || {}))
-    chips.push(`${k.replace(/_/g," ")}: ${v ? "on" : "off"}`);
-  if (rules.price_drop_min_abs != null)
-    chips.push(`drops of $${Number(rules.price_drop_min_abs).toLocaleString()}+`);
-  if (!chips.length) return "";
-  return `<div class="chipbar" style="margin-top:8px">
-    <span class="chip on">its own rules</span>
-    ${chips.map(c => `<span class="chip">${esc(c)}</span>`).join("")}</div>`;
-}
-
-function renderSearches(){
-  const list = CONFIG.searches || [];
-  $("#none-searches").classList.toggle("hidden", !!list.length);
-  $("#searchlist").innerHTML = list.map(s => {
-    const info = (DATA.searches||[]).find(x => x.id === s.id) || {};
-    const health = info.health || {};
-    const parsed = describeSearch(s.url);
-    const chips = (info.summary?.chips?.length ? info.summary.chips : parsed.chips) || [];
-    const bad = (health.consecutive_failures||0) > 0;
-    return `<div class="panel" data-id="${esc(s.id)}">
-      <div class="row" style="border:0;padding:0 0 10px">
-        <span class="switch"><input type="checkbox" class="s-on" ${s.enabled?"checked":""}><i></i></span>
-        <div class="txt">
-          <b>${esc(s.name)}</b>
-          <small>${chips.map(esc).join(" &middot; ") || "no filters on this link"}</small>
-        </div>
-        ${bad ? `<span class="pill need">${health.consecutive_failures} failed run(s)</span>`
-              : `<span class="pill ${s.enabled?"on":"off"}">${
-                  s.enabled ? (health.last_count ?? info.active_count ?? 0) + " found" : "paused"}</span>`}
-        <button class="btn danger s-del" title="Stop watching">Remove</button>
-      </div>
-      <div style="font:400 12px/1.5 var(--mono);color:var(--muted);word-break:break-all">
-        <a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.url)}</a></div>
-      ${health.shut_out ? `<div class="banner warn" style="margin:10px 0 0">
-        This search is reading the site fine and keeping nothing:
-        ${esc(health.shut_out)}. Widen a rule below, or leave it - it will
-        speak up as soon as something matches.</div>` : ""}
-      ${info.area ? `<div class="banner" style="margin:10px 0 0">
-        <b>Area enforced by the bot:</b> ${esc(info.area.text)}${
-          info.area.resolved === false
-            ? ' &mdash; <span style="color:var(--signal)">that place could not be located, so nothing is being enforced</span>'
-            : ""}.
-        The link still asks the site for this and the site ignores it.</div>` : ""}
-      ${health.last_error ? `<div class="banner warn" style="margin:10px 0 0">
-        Last error: ${esc(health.last_error)}</div>` : ""}
-      ${ruleChips(info.rules)}
-      ${health.last_strategy ? `<div style="margin-top:8px;font-size:12px;color:var(--faint)">
-        Read using the <code>${esc(health.last_strategy)}</code> method
-        ${health.last_ok ? "&middot; last worked " + esc(timeOf(health.last_ok)) : ""}</div>` : ""}
-    </div>`;
-  }).join("");
-
-  $$("#searchlist .panel").forEach(p => {
-    const id = p.dataset.id;
-    p.querySelector(".s-on").onchange = e => {
-      const s = CONFIG.searches.find(x => x.id === id);
-      if (s) { s.enabled = e.target.checked; dirty = true; renderSearches(); }
-    };
-    p.querySelector(".s-del").onclick = () => {
-      const s = CONFIG.searches.find(x => x.id === id);
-      if (!confirm('Stop watching "' + (s?.name || id) + '"?')) return;
-      CONFIG.searches = CONFIG.searches.filter(x => x.id !== id);
-      dirty = true; renderSearches(); renderPreview();
-      toast("Removed. " + (LIVE ? "Press Save settings." : "Copy config.json to keep the change."));
-    };
-  });
-}
-
-/* ============================================================ settings */
-function renderSettings(){
-  const n = CONFIG.notifications, f = CONFIG.filters, c = CONFIG.scraping, a = CONFIG.archive;
-
-  $("#savebanner").innerHTML = LIVE ? "" :
-    `<div class="banner info">This page is read-only here &mdash; it cannot write to your
-     repository. Change what you like, then <b>Copy config.json</b> and paste it into your
-     repo (or run <code>python -m autotrader ui</code> locally to save directly).</div>`;
-
-  $("#channels").innerHTML = Object.entries(DATA.channel_catalog||CATALOG).map(([key,spec]) => {
-    const live = (DATA.channels||{})[key] || {};
-    const conf = (n.channels||{})[key] || {};
-    const missing = live.missing || [];
-    const setting = conf.enabled;
-    const checked = setting === true || (setting === "auto" && live.active);
-    let pill;
-    if (live.active) pill = '<span class="pill on">Working</span>';
-    else if (missing.length) pill = `<span class="pill need">Needs ${esc(missing.join(", "))}</span>`;
-    else pill = '<span class="pill off">Off</span>';
-    const extra =
-      key === "ntfy" ? `<input class="field" data-ch="ntfy" data-key="topic" style="max-width:230px"
-            placeholder="pick a hard-to-guess topic" value="${esc(conf.topic||"")}">` :
-      key === "email" ? `<input class="field" data-ch="email" data-key="to" style="max-width:230px"
-            placeholder="send to (blank = yourself)" value="${esc(conf.to||"")}">` :
-      key === "webhook" ? `<input class="field" data-ch="webhook" data-key="url" style="max-width:230px"
-            placeholder="https://your-endpoint" value="${esc(conf.url||"")}">` : "";
-    return `<div class="row">
-      <span class="switch"><input type="checkbox" class="ch-on" data-ch="${esc(key)}" ${checked?"checked":""}><i></i></span>
-      <div class="txt">
-        <b>${esc(spec.label)} ${spec.free ? '<span class="pill free">free</span>'
-                                          : '<span class="pill need">costs money</span>'}</b>
-        <small>${esc(spec.help)}</small>
-        ${spec.required?.length ? `<small>Secrets: ${spec.required.map(r=>`<code>${esc(r)}</code>`).join(" ")}</small>` : ""}
-      </div>
-      ${extra}${pill}
-    </div>`;
-  }).join("");
-
-  const labels = {new:"A car that matches shows up", price_drop:"A car I have seen gets cheaper",
-    price_rise:"A car gets more expensive", removed:"A car disappears from the results",
-    errors:"The watcher itself stops working"};
-  $("#notify-on").innerHTML = Object.entries(labels).map(([k,text]) => `
-    <div class="row">
-      <span class="switch"><input type="checkbox" class="on-${esc(k)}" ${n.notify_on[k]?"checked":""}><i></i></span>
-      <div class="txt"><b>${esc(text)}</b></div>
-    </div>`).join("");
-
-  const set = (sel,v) => { const el = $(sel); if (el) el.value = (v ?? ""); };
-  set("#s-pct", n.price_drop_min_pct); set("#s-abs", n.price_drop_min_abs);
-  set("#s-max", n.max_listings_per_message); set("#s-tz", n.timezone);
-  $("#s-quiet").checked = !!n.quiet_hours.enabled;
-  set("#s-quiet-a", n.quiet_hours.start); set("#s-quiet-b", n.quiet_hours.end);
-  set("#f-minp", f.min_price); set("#f-maxp", f.max_price);
-  set("#f-miny", f.min_year); set("#f-maxy", f.max_year); set("#f-maxkm", f.max_mileage_km);
-  set("#f-inc", csv(f.include_keywords)); set("#f-exc", csv(f.exclude_keywords));
-  set("#f-sell", csv(f.exclude_sellers)); $("#f-reqprice").checked = !!f.require_price;
-  set("#c-pages", c.max_pages); set("#c-rpp", c.results_per_page); set("#c-delay", c.delay_ms);
-  set("#c-retries", c.retries); set("#c-enrich", c.enrich_limit); set("#c-keep", a.keep_last);
-  $("#c-details").checked = !!c.enrich_details; $("#c-archive").value = a.mode || "metadata";
-
-  $$(".ch-on").forEach(el => el.onchange = e => {
-    const key = e.target.dataset.ch;
-    n.channels[key] = n.channels[key] || {};
-    n.channels[key].enabled = e.target.checked ? true : false;
-    dirty = true;
-  });
-  $$("#channels [data-key]").forEach(el => el.oninput = e => {
-    const {ch, key} = e.target.dataset;
-    n.channels[ch] = n.channels[ch] || {};
-    n.channels[ch][key] = e.target.value.trim();
-    if (e.target.value.trim()) n.channels[ch].enabled = true;
-    dirty = true;
-  });
-  Object.keys(labels).forEach(k => {
-    const el = $(".on-"+k); if (el) el.onchange = e => { n.notify_on[k] = e.target.checked; dirty = true; };
-  });
-}
-
-function collect(){
-  const n = CONFIG.notifications, f = CONFIG.filters, c = CONFIG.scraping, a = CONFIG.archive;
-  const num = sel => { const v = $(sel).value.trim(); return v === "" ? null : Number(v); };
-  n.price_drop_min_pct = num("#s-pct") ?? 0;
-  n.price_drop_min_abs = num("#s-abs") ?? 0;
-  n.max_listings_per_message = num("#s-max") ?? 12;
-  n.timezone = $("#s-tz").value.trim() || "America/Toronto";
-  n.quiet_hours.enabled = $("#s-quiet").checked;
-  n.quiet_hours.start = $("#s-quiet-a").value || "23:00";
-  n.quiet_hours.end   = $("#s-quiet-b").value || "07:00";
-  f.min_price = num("#f-minp"); f.max_price = num("#f-maxp");
-  f.min_year = num("#f-miny");  f.max_year = num("#f-maxy");
-  f.max_mileage_km = num("#f-maxkm");
-  f.include_keywords = uncsv($("#f-inc").value);
-  f.exclude_keywords = uncsv($("#f-exc").value);
-  f.exclude_sellers  = uncsv($("#f-sell").value);
-  f.require_price = $("#f-reqprice").checked;
-  c.max_pages = num("#c-pages") ?? 3; c.results_per_page = num("#c-rpp") ?? 50;
-  c.delay_ms = num("#c-delay") ?? 1200; c.retries = num("#c-retries") ?? 3;
-  c.enrich_limit = num("#c-enrich") ?? 25; c.enrich_details = $("#c-details").checked;
-  a.keep_last = num("#c-keep") ?? 400; a.mode = $("#c-archive").value;
-  return CONFIG;
-}
-
-/* ============================================================ status */
-function renderLadders(h){
-  const box = $("#ladders");
-  const searches = Object.entries(h.strategies || {});
-  if (!searches.length) {
-    box.innerHTML = '<p class="hint">No searches configured yet.</p>';
-    return;
-  }
-  const drift = h.drift || [];
-  box.innerHTML = searches.map(([id, st]) => {
-    const scores = st.scores || {};
-    const top = Math.max(1, ...Object.values(scores).map(Number));
-    const order = st.order && st.order.length ? st.order : Object.keys(scores);
-    const dead = order.filter(n => !Number(scores[n]));
-    const mine = drift.filter(d => (d.search || "") === (st.name || ""));
-    return `<div style="margin:0 0 18px">
-      <div class="toolbar" style="margin:0 0 8px;justify-content:space-between">
-        <b>${esc(st.name || id)}</b>
-        <span class="pill ${dead.length >= order.length - 1 ? "need" : "on"}">
-          ${order.length - dead.length} of ${order.length} working</span>
-      </div>
-      <div class="rungs">${order.map(n => {
-        const v = Number(scores[n] || 0);
-        return `<div class="rung${v ? "" : " dead"}${n === st.winner ? " winner" : ""}">
-          <code>${esc(n)}${n === st.winner ? " &check;" : ""}</code>
-          <div class="bar"><i style="width:${Math.round(v / top * 100)}%"></i></div>
-          <span class="n">${v || "none"}</span>
-        </div>`;
-      }).join("")}</div>
-      ${dead.length >= order.length - 1 ? `<div class="banner warn" style="margin-top:10px">
-        Only one parser is reading this search. It still works, but there is
-        nothing behind it if the site changes again.</div>` : ""}
-      ${mine.length ? `<div class="banner ${mine.some(d=>d.serious) ? "warn" : ""}" style="margin-top:10px">
-        <b>${mine.some(d=>d.serious) ? "The page changed shape" : "Page shape moved"}:</b>
-        ${esc(mine.flatMap(d => d.reasons || []).join("; "))}</div>` : ""}
-    </div>`;
-  }).join("");
-}
-
-function renderChannels(){
-  const health = DATA.channel_health || {}, cfgd = DATA.channels || {};
-  const rows = Object.entries(cfgd).filter(([n, c]) => c.active || health[n]);
-  $("#channeltable").innerHTML = rows.length ? `
-    <thead><tr><th>Channel</th><th>State</th><th>Last delivered</th><th>Last problem</th></tr></thead>
-    <tbody>${rows.map(([name, c]) => {
-      const hh = health[name] || {};
-      const state = hh.disabled_at
-        ? '<span class="pill need">switched off</span>'
-        : c.active ? '<span class="pill on">active</span>'
-                   : '<span class="pill">idle</span>';
-      return `<tr>
-        <td><b>${esc(c.label || name)}</b>${c.free ? '' : ' <span class="pill">paid</span>'}</td>
-        <td>${state}</td>
-        <td>${esc(timeOf(hh.last_ok)) || "never"}</td>
-        <td style="color:var(--muted);font-size:12px">${esc(hh.last_error || "none")}</td>
-      </tr>`;
-    }).join("")}</tbody>` :
-    '<tbody><tr><td style="color:var(--muted)">No channel has been used yet.</td></tr></tbody>';
-}
-
-function renderStatus(){
-  const s = DATA.stats || {}, r = DATA.last_run;
-  const kpi = (k,v) => `<div class="kpi"><div class="k">${esc(k)}</div><div class="v">${v}</div></div>`;
-  const h = DATA.health || {}, c = h.counts || {};
-  const rungs = Object.values(h.strategies || {});
-  const worst = rungs.length ? Math.min(...rungs.map(x => (x.working||[]).length)) : null;
-  $("#kpis").innerHTML = [
-    kpi("Live listings", c.active ?? s.active ?? 0),
-    kpi("Hidden by your rules", c.filtered ?? 0),
-    kpi("Call for price", c.unpriced ?? 0),
-    kpi("Median price", s.median_price ? money(s.median_price) : "—"),
-    kpi("Last run found", r ? (r.listings_seen ?? 0) : "—"),
-    kpi("Clean runs in a row", h.ok_streak ?? 0),
-    kpi("Never mentioned", (h.accounted?.unexplained ?? 0) === 0
-        ? '0<span style="color:var(--faint);font-weight:400"> — all accounted for</span>'
-        : `<span style="color:var(--signal)">${h.accounted.unexplained}</span>`),
-    kpi("Parsers working", worst == null ? "—" :
-        `${worst}<span style="color:var(--faint);font-weight:400"> / ${rungs[0].of}</span>`),
-    kpi("Requests last run", `${h.budget?.used ?? 0}<span style="color:var(--faint);font-weight:400"> / ${h.budget?.limit ?? 0}</span>`)
-  ].join("");
-
-  renderLadders(h);
-  renderChannels();
-
-  const health = (DATA.searches||[]);
-  $("#healthtable").innerHTML = health.length ? `
-    <thead><tr><th>Search</th><th>Area</th><th>Last worked</th><th>Found</th><th>Read using</th><th>Problem</th></tr></thead>
-    <tbody>${health.map(h => `<tr>
-      <td><b>${esc(h.name)}</b></td>
-      <td>${h.area ? esc(h.area.text) : '<span style="color:var(--faint)">anywhere</span>'}</td>
-      <td>${esc(timeOf(h.health?.last_ok))}</td>
-      <td class="num">${h.health?.last_count ?? 0}</td>
-      <td>${h.health?.last_strategy ? `<code>${esc(h.health.last_strategy)}</code>` : "—"}</td>
-      <td>${h.health?.last_error
-        ? `<span style="color:var(--signal)">${esc(h.health.last_error)}</span>`
-        : h.health?.shut_out
-          ? `<span style="color:var(--muted)">nothing passed your rules &mdash; ${esc(h.health.shut_out)}</span>`
-          : "none"}</td>
-    </tr>`).join("")}</tbody>` :
-    '<tbody><tr><td style="color:var(--muted)">No searches configured yet.</td></tr></tbody>';
-
-  const runs = DATA.runs || [];
-  $("#runtable").innerHTML = runs.length ? `
-    <thead><tr><th>When</th><th>Result</th><th>Seen</th><th>New</th><th>Drops</th>
-      <th title="A call-for-price car published a figure">Priced</th>
-      <th>Gone</th><th title="A car that had been written off is listed again">Back</th>
-      <th>Hidden</th><th>Reqs</th><th>Took</th><th>Notes</th></tr></thead>
-    <tbody>${runs.slice(0,20).map(x => `<tr>
-      <td>${esc(timeOf(x.at))}</td>
-      <td>${x.ok ? '<span class="pill on">ok</span>' : '<span class="pill need">failed</span>'}</td>
-      <td class="num">${x.listings_seen ?? 0}</td>
-      <td class="num">${x.new ?? 0}</td>
-      <td class="num">${x.price_drops ?? 0}</td>
-      <td class="num">${x.priced ?? 0}</td>
-      <td class="num">${x.removed ?? 0}</td>
-      <td class="num">${x.relisted ?? 0}</td>
-      <td class="num">${x.filtered_out ?? 0}</td>
-      <td class="num">${x.requests_made ?? 0}</td>
-      <td class="num">${x.duration_s ?? 0}s</td>
-      <td style="color:var(--muted);font-size:12px">${esc((x.errors||[])[0] || (x.warnings||[])[0] || "")}</td>
-    </tr>`).join("")}</tbody>` :
-    '<tbody><tr><td style="color:var(--muted)">No runs recorded yet.</td></tr></tbody>';
-
-  const n = DATA.notify || {};
-  const panel = $("#notifypanel");
-  if (n.ntfy_url) {
-    panel.innerHTML = `
-      <h2>Where your alerts go</h2>
-      <p class="hint">No account, no token. Install the
-        <a href="https://ntfy.sh" target="_blank" rel="noopener">ntfy</a> app,
-        tap <b>+</b>, and subscribe to this topic.</p>
-      <div class="toolbar">
-        <input class="field grow num" id="topic" readonly value="${esc(n.ntfy_topic)}">
-        <button class="btn ghost" id="copytopic">Copy topic</button>
-        <a class="btn" href="${esc(n.ntfy_url)}" target="_blank" rel="noopener">Open in browser</a>
-      </div>
-      <div class="banner warn" style="margin-top:12px">
-        Anyone who knows this topic can read your alerts — the name is random so
-        nobody will guess it, but it is stored in your repository. The alerts only
-        contain public AutoTrader listings. For a channel with real authentication,
-        add a Telegram, Discord, Slack or email secret and it takes over.
-      </div>`;
-    const copy = $("#copytopic");
-    if (copy) copy.onclick = async () => {
-      try { await navigator.clipboard.writeText(n.ntfy_topic); toast("Topic copied"); }
-      catch { $("#topic").select(); toast("Select and copy the topic"); }
-    };
-  } else {
-    panel.innerHTML = `<h2>Where your alerts go</h2>
-      <p class="hint">Sent via <b>${(n.active||[]).map(esc).join(", ") || "nothing yet"}</b>.</p>`;
-  }
-
-  // A channel that retired itself is worth saying out loud, because it means
-  // alerts silently stopped going somewhere. An ordinary failure is already in
-  // the channels table above and does not need repeating here.
-  const retired = Object.entries(DATA.channel_health || {})
-    .filter(([, h]) => h.disabled_at);
-  if (retired.length) {
-    panel.innerHTML += `<div class="banner warn" style="margin-top:12px">
-      ${retired.map(([name, h]) =>
-        `<b>${esc(name)}</b> switched itself off &mdash; ${esc(h.last_error || "credentials rejected")}`
-      ).join("<br>")}
-    </div>`;
-  }
-
-  const a = DATA.archive || {};
-  $("#storage").innerHTML = `
-    <div class="formgrid">
-      <div><div class="k" style="font-size:11px;letter-spacing:.07em;text-transform:uppercase;
-        color:var(--faint);font-weight:600">Archived cars</div>
-        <div class="num" style="font-size:20px;font-weight:600">${a.folders ?? 0}</div></div>
-      <div><div class="k" style="font-size:11px;letter-spacing:.07em;text-transform:uppercase;
-        color:var(--faint);font-weight:600">Total on disk</div>
-        <div class="num" style="font-size:20px;font-weight:600">${bytes(a.bytes)}</div></div>
-      <div><div class="k" style="font-size:11px;letter-spacing:.07em;text-transform:uppercase;
-        color:var(--faint);font-weight:600">Of which saved pages</div>
-        <div class="num" style="font-size:20px;font-weight:600">${bytes(a.html_bytes)}</div></div>
-    </div>
-    ${a.html_bytes > 20*1048576 ? `<div class="banner warn" style="margin-top:12px">
-      Saved pages are using ${bytes(a.html_bytes)} of your repository. Set
-      <b>What to archive</b> to &ldquo;Details only&rdquo; and run
-      <code>python -m autotrader prune</code> to reclaim it.</div>` : ""}`;
-}
-
-/* ============================================================ wiring */
-function initTheme(){
-  const saved = (() => { try { return localStorage.getItem("at-theme"); } catch { return null; } })();
-  if (saved === "dark" || saved === "light") document.documentElement.dataset.theme = saved;
-  const btn = $("#theme-toggle");
-  const label = () => btn.textContent = "Theme: " + (document.documentElement.dataset.theme || "auto");
-  label();
-  btn.onclick = () => {
-    const now = document.documentElement.dataset.theme;
-    const next = now === "dark" ? "light" : now === "light" ? "" : "dark";
-    if (next) document.documentElement.dataset.theme = next;
-    else delete document.documentElement.dataset.theme;
-    try { next ? localStorage.setItem("at-theme", next) : localStorage.removeItem("at-theme"); } catch {}
-    label();
-  };
-}
-
-function show(view){
-  ui.view = view;
-  ["listings","searches","settings","status"].forEach(v =>
-    $("#view-"+v).classList.toggle("hidden", v !== view));
-  $$("#nav button").forEach(b => b.setAttribute("aria-current", String(b.dataset.view === view)));
-}
-
-function wire(){
-  $$("#nav button").forEach(b => b.onclick = () => show(b.dataset.view));
-  $("#q").oninput = e => { ui.q = e.target.value; renderListings(); };
-  $("#sort").onchange = e => { ui.sort = e.target.value; renderListings(); };
-  $("#which").onchange = e => { ui.search = e.target.value; renderListings(); };
-  $$("#statefilter .chip").forEach(c => c.onclick = () => {
-    ui.state = c.dataset.state;
-    $$("#statefilter .chip").forEach(x => x.classList.toggle("on", x === c));
-    renderListings();
-  });
-  const url = $("#url");
-  url.oninput = renderPreview;
-  url.onpaste = () => setTimeout(renderPreview, 0);
-
-  $("#save").onclick = async () => {
-    collect();
-    if (!LIVE) { copyConfig(); return; }
-    try {
-      const res = await fetch("api/config", {method:"POST",
-        headers:{"Content-Type":"application/json"}, body: JSON.stringify(CONFIG, null, 2)});
-      const body = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(body.error || ("HTTP " + res.status));
-      dirty = false;
-      toast("Saved to config.json");
-    } catch (err) { toast("Could not save: " + err.message, 5000); }
-  };
-  $("#copy").onclick = copyConfig;
-  $("#download").onclick = () => {
-    const blob = new Blob([JSON.stringify(collect(), null, 2) + "\n"], {type:"application/json"});
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob); a.download = "config.json";
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-    dirty = false;
-  };
-  window.addEventListener("beforeunload", e => {
-    if (dirty) { e.preventDefault(); e.returnValue = ""; }
-  });
-}
-
-async function copyConfig(){
-  const text = JSON.stringify(collect(), null, 2) + "\n";
-  try {
-    await navigator.clipboard.writeText(text);
-    dirty = false;
-    toast("config.json copied — paste it over the file in your repository");
-  } catch {
-    const ta = document.createElement("textarea");
-    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
-    document.body.appendChild(ta); ta.select();
-    try { document.execCommand("copy"); dirty = false; toast("config.json copied"); }
-    catch { toast("Could not copy — use Download instead", 4000); }
-    ta.remove();
-  }
-}
-
-boot();
-})();
-</script>
+<script src="app.js" defer></script>
+</body>
+</html>

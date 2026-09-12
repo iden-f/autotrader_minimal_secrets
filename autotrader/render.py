@@ -28,25 +28,72 @@ def _facts(listing) -> list[str]:
     return out
 
 
+def _short(listing) -> str:
+    """The car, in as few words as still identify it on a lock screen."""
+    title = str(getattr(listing, "display_title", "") or "").split("|")[0].strip()
+    return (title or "listing")[:48]
+
+
+def _one_line(change: Change) -> str:
+    """A single change, with the figure in it.
+
+    A notification that says "1 change" has told you nothing and costs you a
+    look at your phone to find out what. The number is the message.
+    """
+    listing = change.listing
+    car = _short(listing)
+    if change.kind == Change.PRICE_DROP:
+        return (f"{car} down ${abs(change.delta or 0):,} "
+                f"to {listing.price_text}")
+    if change.kind == Change.PRICE_RISE:
+        return (f"{car} up ${abs(change.delta or 0):,} "
+                f"to {listing.price_text}")
+    if change.kind == Change.PRICED:
+        return f"{car} now {listing.price_text} (was call for price)"
+    if change.kind == Change.REMOVED:
+        return f"{car} gone from the site"
+    if change.kind == Change.RELISTED:
+        return f"{car} back on the market at {listing.price_text}"
+    return f"{car} {listing.price_text}"
+
+
 def headline(changes: list[Change]) -> str:
-    """One line summarising a run, used as the subject / message title."""
-    new = sum(1 for c in changes if c.kind == Change.NEW)
-    drops = sum(1 for c in changes if c.kind == Change.PRICE_DROP)
-    rises = sum(1 for c in changes if c.kind == Change.PRICE_RISE)
-    gone = sum(1 for c in changes if c.kind == Change.REMOVED)
-    priced = sum(1 for c in changes if c.kind == Change.PRICED)
-    bits = []
-    if new:
-        bits.append(f"{new} new listing{'s' if new != 1 else ''}")
+    """One line summarising a run, used as the subject / message title.
+
+    At one change it names the car and the figure. At forty it leads with
+    whichever kind you most wanted to hear about and counts the rest, because
+    a title that reads "3 new listings, 1 price drop, 36 removed" buries the
+    drop behind arithmetic.
+    """
+    if not changes:
+        return "AutoTrader: no changes"
+    if len(changes) == 1:
+        return "AutoTrader: " + _one_line(changes[0])
+
+    counts = {kind: sum(1 for c in changes if c.kind == kind)
+              for kind in (Change.PRICE_DROP, Change.NEW, Change.PRICED,
+                           Change.RELISTED, Change.PRICE_RISE, Change.REMOVED)}
+    # The best drop is the thing worth putting first when there is one.
+    drops = [c for c in changes if c.kind == Change.PRICE_DROP]
     if drops:
-        bits.append(f"{drops} price drop{'s' if drops != 1 else ''}")
-    if rises:
-        bits.append(f"{rises} price increase{'s' if rises != 1 else ''}")
-    if priced:
-        bits.append(f"{priced} price published")
-    if gone:
-        bits.append(f"{gone} removed")
-    return "AutoTrader: " + (", ".join(bits) if bits else "no changes")
+        best = min(drops, key=lambda c: c.delta or 0)
+        lead = f"{_short(best.listing)} down ${abs(best.delta or 0):,}"
+        rest = len(changes) - 1
+        return f"AutoTrader: {lead}" + (f", +{rest} more change{'s' if rest != 1 else ''}" if rest else "")
+
+    label = {
+        Change.NEW: ("new listing", "new listings"),
+        Change.PRICED: ("price published", "prices published"),
+        Change.RELISTED: ("back on the market", "back on the market"),
+        Change.PRICE_RISE: ("price increase", "price increases"),
+        Change.REMOVED: ("removed", "removed"),
+    }
+    bits = []
+    for kind, (one, many) in label.items():
+        n = counts.get(kind, 0)
+        if n:
+            bits.append(f"{n} {one if n == 1 else many}")
+    return "AutoTrader: " + ", ".join(bits)
 
 
 def _change_prefix(change: Change) -> str:

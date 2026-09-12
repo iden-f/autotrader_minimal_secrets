@@ -660,6 +660,20 @@ def cmd_events(args: argparse.Namespace) -> int:
     elif state.last_run:
         print(_ok(f"last successful check {state.last_run.get('at')}"))
 
+    # Running and being useful are different questions. A watcher served one
+    # check in eight is never silent and is still missing most of the market.
+    thin = events.thin_coverage(cfg, state, record)
+    if thin:
+        print(_bad(f"only {thin['pct']}% of the expected checks happened"))
+        if args.notify:
+            results = notifiers.alert(cfg, thin["subject"], thin["body"],
+                                      dict(os.environ))
+            for result in results:
+                print(f"   {result}")
+            if any(r.ok for r in results):
+                record["coverage_reported"] = thin["at"]
+                events.save(record)
+
     for kind, label in events.KINDS.items():
         seen = first.get(kind)
         if seen:
@@ -672,6 +686,29 @@ def cmd_events(args: argparse.Namespace) -> int:
             print(f"-- {label}: still waiting")
     print(f"\n   {DIM}{len(first)} of {len(events.KINDS)} seen; "
           f"ledger written to {events.LEDGER_PATH}{RESET}")
+    return 0
+
+
+def cmd_weekly(args: argparse.Namespace) -> int:
+    """What the market did this week, rather than what the bot did.
+
+    Read-only, like `events`: it reads stored state and sends a note. Nothing
+    here can hold up or wedge a check.
+    """
+    from . import insight
+
+    cfg = Config.load(args.config)
+    state = State.load(args.state)
+    summary = insight.weekly(state.listings.values(),
+                             state.data.get("runs") or [], days=args.days)
+    text = insight.weekly_text(summary)
+    print(text)
+    if args.notify:
+        results = notifiers.alert(
+            cfg, f"AutoTrader: your last {args.days} days", text, dict(os.environ))
+        for result in results:
+            print(f"   {result}")
+        return 0 if any(r.ok for r in results) else 1
     return 0
 
 
@@ -854,6 +891,13 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--notify", action="store_true",
                    help="also raise the alarm if the bot has gone quiet")
     p.set_defaults(func=cmd_events)
+
+    p = sub.add_parser("weekly", help="what the market did over the last week")
+    p.add_argument("--notify", action="store_true",
+                   help="send the summary to your channels")
+    p.add_argument("--days", type=int, default=7,
+                   help="how many days to summarise (default 7)")
+    p.set_defaults(func=cmd_weekly)
 
     p = sub.add_parser("migrate", help="import v1 data (seen_listings.json + archives)")
     p.add_argument("--dry-run", action="store_true")

@@ -25,6 +25,9 @@ on:
     # not double the time before the alarm. Running twice is free: it reads
     # three files, and a silence is announced once per silence, not per run.
     - cron: '7,37 * * * *'
+    # Monday 14:20 UTC - a weekday morning in Vancouver, which is where the
+    # person reading it is.
+    - cron: '20 14 * * 1'
   workflow_dispatch:
 
 concurrency:
@@ -35,6 +38,27 @@ permissions:
   contents: write
 
 jobs:
+  # Monday morning, and only then. The per-check alerts say what the bot did;
+  # this one is about the market, which is the thing worth a weekly read.
+  weekly:
+    if: github.event_name == 'schedule' && github.event.schedule == '20 14 * * 1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: main }
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - run: pip install -r requirements.txt
+      - name: Send the week
+        env:
+          TELEGRAM_BOT_TOKEN:  ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:    ${{ secrets.TELEGRAM_CHAT_ID }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL:   ${{ secrets.SLACK_WEBHOOK_URL }}
+          NTFY_TOKEN:          ${{ secrets.NTFY_TOKEN }}
+        run: python -m autotrader --no-colour weekly --notify | tee -a "$GITHUB_STEP_SUMMARY"
+
   record:
     runs-on: ubuntu-latest
     # It reads a JSON file and writes two more. Anything longer than this is

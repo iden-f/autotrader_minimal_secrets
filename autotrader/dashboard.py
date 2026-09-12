@@ -16,7 +16,7 @@ from typing import Any
 import re
 
 from .archive import size_report
-from . import geo
+from . import geo, insight
 from .config import CHANNEL_SECRETS, Config
 from .parser import STRATEGIES
 from .state import State
@@ -36,6 +36,9 @@ LISTING_FIELDS = (
     "transmission", "drivetrain", "fuel", "engine", "images", "search_id",
     "search_name", "first_seen", "last_seen", "status", "price_history",
     "price_source", "filtered", "filter_reason", "unpriced", "enriched",
+    # When each thing happened to it, so the feed can be derived rather than
+    # stored twice and drift apart.
+    "removed_at", "relisted_at", "priced_at", "misses", "seller_type",
     # Why you did or did not hear about this car. The whole point of keeping
     # them is that "we never told you" is always a decision you can read back.
     "notified_at", "quiet_reason",
@@ -72,6 +75,20 @@ def build_payload(cfg: Config, state: State, env: dict[str, str] | None = None
     """Assemble everything the dashboard needs, with nothing secret in it."""
     limit = int(cfg.get("dashboard.max_listings", 500) or 500)
 
+    # Where "how far away is it" is measured from, per search. A search with
+    # no distance rule has no reference and its cars simply do not carry one,
+    # rather than quietly being measured from somewhere arbitrary.
+    references: dict[str, Any] = {}
+    reference_names: dict[str, str] = {}
+    for search in cfg.searches:
+        near = str((cfg.rules_for(search)["filters"] or {}).get("near") or "").strip()
+        if not near:
+            continue
+        point = geo.locate_reference(near)
+        if point:
+            references[search.id] = point
+            reference_names[search.id] = near
+
     listings: list[dict[str, Any]] = []
     for entry in state.listings.values():
         if entry.get("imported_from"):
@@ -94,6 +111,29 @@ def build_payload(cfg: Config, state: State, env: dict[str, str] | None = None
         history = item["price_history"]
         if len(history) >= 2 and history[0].get("price") and history[-1].get("price"):
             item["price_change"] = history[-1]["price"] - history[0]["price"]
+        # The signals a person actually compares on, computed once here rather
+        # than in the browser from data the browser does not have.
+        item["photo_count"] = len(entry.get("images") or [])
+        item["per_1000km"] = insight.per_1000km(entry.get("price"),
+                                                entry.get("mileage_km"))
+        first = entry.get("first_seen")
+        if first:
+            try:
+                seen = datetime.fromisoformat(str(first).replace("Z", "+00:00"))
+                item["days_listed"] = max(
+                    0, (datetime.now(timezone.utc) - seen).days)
+            except ValueError:
+                pass
+        reference = references.get(entry.get("search_id") or "")
+        here = (geo.locate(entry.get("location"), entry.get("province"))
+                if reference else None)
+        # A car the table cannot place carries no distance at all. Showing a
+        # guessed one would be worse than showing none: the whole point of the
+        # radius rule is that an unplaceable car is never excluded by it.
+        if reference and here:
+            item["distance_km"] = round(geo.distance_km(here, reference))
+            item["distance_from"] = reference_names.get(
+                entry.get("search_id") or "")
         listings.append(item)
 
     listings.sort(key=lambda item: (not item.get("filtered"),
@@ -244,6 +284,14 @@ def build_payload(cfg: Config, state: State, env: dict[str, str] | None = None
         },
         "last_run": state.last_run,
         "health": health,
+        # Derived, not stored: the run counters only ever counted changes on
+        # cars that passed the filters, so a price drop on a hidden car was
+        # real, recorded, and missing from every number the bot printed.
+        "events": insight.events(state.listings.values()),
+        "comparables": insight.comparables(state.listings.values()),
+        "coverage": insight.coverage(
+            runs, int(cfg.get("health.expected_interval_minutes", 30) or 30)),
+        "cost": insight.minutes_spent(runs),
         "archive": size_report(),
         "config": _safe_config(cfg),
     }

@@ -4,6 +4,7 @@ from datetime import datetime
 from autotrader import render
 from autotrader.config import Config
 from autotrader.listing import Listing
+from autotrader import notifiers
 from autotrader.notifiers import Notifier, Result, alert, dispatch, in_quiet_hours
 from autotrader.state import Change
 
@@ -98,8 +99,28 @@ class TestQuietHours:
 
 
 class TestRendering:
-    def test_the_headline_counts_each_kind(self):
-        assert render.headline(sample()) == "AutoTrader: 1 new listing, 1 price drop"
+    def test_the_headline_leads_with_the_drop_and_its_figure(self):
+        """A title is a lock screen, not an index.
+
+        "1 new listing, 1 price drop" costs a look at the phone to find out
+        what dropped and by how much, which is the entire content.
+        """
+        line = render.headline(sample())
+        assert line.startswith("AutoTrader: ")
+        assert "$" in line, line
+        assert "1 more change" in line, line
+
+    def test_one_change_names_the_car_and_the_figure(self):
+        [only] = [c for c in sample() if c.kind == Change.PRICE_DROP]
+        line = render.headline([only])
+        assert "down $" in line and only.listing.price_text in line, line
+
+    def test_no_changes_says_so(self):
+        assert render.headline([]) == "AutoTrader: no changes"
+
+    def test_without_a_drop_it_counts_the_kinds(self):
+        news = [c for c in sample() if c.kind == Change.NEW]
+        assert render.headline(news * 2) == "AutoTrader: 2 new listings"
 
     def test_sms_stays_within_one_message_budget(self):
         assert len(render.as_sms(sample())) <= render.MAX_SMS
@@ -128,8 +149,9 @@ class TestRendering:
         assert "$5,000 off" in out and "$104,999" in out
 
     def test_the_trim_is_not_repeated_after_the_title(self):
-        line = render.as_text([sample()[0]])
-        assert line.count("Competition") == 1
+        """In the body. The headline names the car too, and should."""
+        body = render.as_text([sample()[0]]).split("\n", 1)[1]
+        assert body.count("Competition") == 1, body
 
     def test_a_car_with_no_price_still_renders(self):
         listing = Listing(id="1", url="http://x", title="2020 BMW M5")
@@ -139,3 +161,71 @@ class TestRendering:
     def test_the_webhook_payload_is_json_serialisable(self):
         import json
         json.dumps(render.as_json_payload(sample(), {"ok": True}))
+
+
+class TestWhatThePushCarries:
+    """The alert is half the product, so what rides on it is tested.
+
+    All of this is checked against the request the notifier builds, never by
+    sending: a suite that touches ntfy.sh is a suite that fails when ntfy.sh
+    is having a bad day, and it would deliver to the topic on a real phone.
+    """
+
+    def _posted(self, changes, settings=None, monkeypatch=None):
+        sent = {}
+
+        class FakeResponse:
+            ok = True
+            status_code = 200
+            text = ""
+
+        def fake_post(url, data=None, headers=None, timeout=None):
+            sent["url"] = url
+            sent["headers"] = headers or {}
+            sent["body"] = (data or b"").decode("utf-8")
+            return FakeResponse()
+
+        monkeypatch.setattr(notifiers.requests, "post", fake_post)
+        # `settings or {...}` would swallow an explicit empty dict, which is
+        # exactly the case one of these tests is about.
+        if settings is None:
+            settings = {"dashboard_url": "https://example.test/watch"}
+        n = notifiers.NtfyNotifier({"topic": "t"}, {}, settings)
+        result = n.send(changes, {})
+        assert result.ok, result.detail
+        return sent
+
+    def test_a_price_drop_wakes_the_phone_and_a_removal_does_not(self, monkeypatch):
+        drop = [c for c in sample() if c.kind == Change.PRICE_DROP]
+        assert self._posted(drop, monkeypatch=monkeypatch)["headers"]["Priority"] == "high"
+
+        gone = [Change(Change.REMOVED, sample()[0].listing)]
+        assert self._posted(gone, monkeypatch=monkeypatch)["headers"]["Priority"] == "low"
+
+    def test_it_opens_the_car_on_the_dashboard_not_the_search_page(self, monkeypatch):
+        drop = [c for c in sample() if c.kind == Change.PRICE_DROP]
+        click = self._posted(drop, monkeypatch=monkeypatch)["headers"]["Click"]
+        assert click == f"https://example.test/watch/#/listing/{drop[0].listing.id}"
+
+    def test_with_no_dashboard_it_falls_back_to_the_listing(self, monkeypatch):
+        drop = [c for c in sample() if c.kind == Change.PRICE_DROP]
+        click = self._posted(drop, settings={}, monkeypatch=monkeypatch)["headers"]["Click"]
+        assert click == drop[0].listing.url
+
+    def test_one_change_carries_the_photo(self, monkeypatch):
+        listing = Listing(id="9", url="http://x", title="2022 BMW M5", price=90000,
+                          images=["https://pics.test/a.jpg"])
+        sent = self._posted([Change(Change.NEW, listing)], monkeypatch=monkeypatch)
+        assert sent["headers"]["Attach"] == "https://pics.test/a.jpg"
+
+    def test_a_digest_carries_no_photo(self, monkeypatch):
+        """Forty cars and one picture says the wrong thing about which one."""
+        listing = Listing(id="9", url="http://x", title="2022 BMW M5", price=90000,
+                          images=["https://pics.test/a.jpg"])
+        many = [Change(Change.NEW, listing), Change(Change.NEW, listing)]
+        assert "Attach" not in self._posted(many, monkeypatch=monkeypatch)["headers"]
+
+    def test_the_title_carries_the_figure(self, monkeypatch):
+        drop = [c for c in sample() if c.kind == Change.PRICE_DROP]
+        title = self._posted(drop, monkeypatch=monkeypatch)["headers"]["Title"]
+        assert "down $" in title and "change" not in title, title

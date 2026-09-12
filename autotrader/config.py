@@ -93,6 +93,11 @@ DEFAULTS: dict[str, Any] = {
     },
     "notifications": {
         "digest": True,
+        # Where the dashboard is published, so an alert can open the car it is
+        # about rather than the site's own listing page. Filled in by `setup`
+        # from the git remote; harmless when empty - the alert falls back to
+        # the autotrader.ca link.
+        "dashboard_url": "",
         "max_listings_per_message": 12,
         "timezone": "America/Toronto",
         "quiet_hours": {"enabled": False, "start": "23:00", "end": "07:00"},
