@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-09-12T20:33:27+00:00",
+ "generated_at": "2026-09-12T20:35:03+00:00",
  "notify": {
   "ntfy_topic": "autotrader-2q592ak9gnx7sqrere5r",
   "ntfy_url": "https://ntfy.sh/autotrader-2q592ak9gnx7sqrere5r",
@@ -12722,30 +12722,30 @@
     "text": "within 250 km of V6N 3B5"
    },
    "shape": {
+    "bytes": "lots",
+    "listing_count": 19,
+    "markers": {
+     "data_listing_id": "none",
+     "initial_state": "none",
+     "json_ld": "few",
+     "legacy_links": "none",
+     "next_data": "few",
+     "offer_links": "many",
+     "vehicle_cdn": "lots"
+    },
+    "scores": {
+     "anchors": 12,
+     "embedded_json": 19,
+     "jsonld": 12,
+     "regex": 19
+    },
     "strategy": "embedded_json",
     "working": [
      "anchors",
      "embedded_json",
      "jsonld",
      "regex"
-    ],
-    "scores": {
-     "jsonld": 12,
-     "embedded_json": 19,
-     "anchors": 12,
-     "regex": 19
-    },
-    "listing_count": 19,
-    "markers": {
-     "json_ld": "few",
-     "next_data": "few",
-     "initial_state": "none",
-     "offer_links": "many",
-     "legacy_links": "none",
-     "data_listing_id": "none",
-     "vehicle_cdn": "lots"
-    },
-    "bytes": "lots"
+    ]
    }
   },
   {
@@ -12806,30 +12806,30 @@
    },
    "area": null,
    "shape": {
+    "bytes": "lots",
+    "listing_count": 193,
+    "markers": {
+     "data_listing_id": "none",
+     "initial_state": "none",
+     "json_ld": "few",
+     "legacy_links": "none",
+     "next_data": "few",
+     "offer_links": "many",
+     "vehicle_cdn": "lots"
+    },
+    "scores": {
+     "anchors": 20,
+     "embedded_json": 20,
+     "jsonld": 20,
+     "regex": 20
+    },
     "strategy": "jsonld",
     "working": [
      "anchors",
      "embedded_json",
      "jsonld",
      "regex"
-    ],
-    "scores": {
-     "jsonld": 20,
-     "embedded_json": 20,
-     "anchors": 20,
-     "regex": 20
-    },
-    "listing_count": 193,
-    "markers": {
-     "json_ld": "few",
-     "next_data": "few",
-     "initial_state": "none",
-     "offer_links": "many",
-     "legacy_links": "none",
-     "data_listing_id": "none",
-     "vehicle_cdn": "lots"
-    },
-    "bytes": "lots"
+    ]
    }
   }
  ],
@@ -12992,56 +12992,56 @@
  "runs": [
   {
    "at": "2026-09-12T20:33:27+00:00",
-   "ok": true,
+   "baselines": [],
+   "budget_exhausted": false,
+   "diagnostics": [],
+   "disabled_channels": [],
+   "dry_run": false,
    "duration_s": 35.4,
-   "searches_run": 2,
-   "searches_failed": 0,
+   "empty_parses": [],
+   "errors": [],
+   "filtered_out": 121,
+   "first_run": false,
+   "hidden_events": {},
+   "invariants": [],
    "listings_seen": 212,
+   "missed_by": 76,
    "new": 0,
+   "notified": [],
+   "ok": true,
+   "photos": {
+    "bytes": 413434,
+    "failed": 0,
+    "fetched": 0,
+    "kept": 71,
+    "pruned": 0,
+    "samples": []
+   },
    "price_drops": 0,
    "price_rises": 0,
-   "removed": 0,
-   "filtered_out": 121,
-   "unpriced": 1,
    "priced": 0,
-   "relisted": 0,
    "qualified": 0,
-   "baselines": [],
-   "invariants": [],
+   "quiet": false,
+   "relisted": 0,
+   "removed": 0,
+   "requests_made": 14,
+   "searches_failed": 0,
+   "searches_run": 2,
+   "shape_drift": [],
    "shut_out": [
     "2021-2023 BMW M5"
    ],
-   "hidden_events": {},
    "skipped": false,
-   "missed_by": 76,
-   "requests_made": 14,
-   "budget_exhausted": false,
-   "empty_parses": [],
-   "diagnostics": [],
-   "shape_drift": [],
-   "disabled_channels": [],
-   "first_run": false,
-   "validation_ok": true,
-   "notified": [],
-   "errors": [],
-   "warnings": [
-    "the last successful check was 1.3 hours ago, not 30 minutes - the schedule dropped 1 run. Catching up now.",
-    "2021-2023 BMW M5: read 19 listings and none passed your rules for it (12 too far away, 7 outside the year range). It is working - it just has nothing to show you."
-   ],
    "strategies": {
     "2021-2023-bmw-m5-310324": "embedded_json",
     "bmw-m5-bargains-any-year-f2f097": "jsonld"
    },
-   "quiet": false,
-   "dry_run": false,
-   "photos": {
-    "kept": 71,
-    "fetched": 0,
-    "failed": 0,
-    "pruned": 0,
-    "bytes": 413434,
-    "samples": []
-   },
+   "unpriced": 1,
+   "validation_ok": true,
+   "warnings": [
+    "the last successful check was 1.3 hours ago, not 30 minutes - the schedule dropped 1 run. Catching up now.",
+    "2021-2023 BMW M5: read 19 listings and none passed your rules for it (12 too far away, 7 outside the year range). It is working - it just has nothing to show you."
+   ],
    "your_call": 0
   },
   {
@@ -14757,56 +14757,56 @@
  },
  "last_run": {
   "at": "2026-09-12T20:33:27+00:00",
-  "ok": true,
+  "baselines": [],
+  "budget_exhausted": false,
+  "diagnostics": [],
+  "disabled_channels": [],
+  "dry_run": false,
   "duration_s": 35.4,
-  "searches_run": 2,
-  "searches_failed": 0,
+  "empty_parses": [],
+  "errors": [],
+  "filtered_out": 121,
+  "first_run": false,
+  "hidden_events": {},
+  "invariants": [],
   "listings_seen": 212,
+  "missed_by": 76,
   "new": 0,
+  "notified": [],
+  "ok": true,
+  "photos": {
+   "bytes": 413434,
+   "failed": 0,
+   "fetched": 0,
+   "kept": 71,
+   "pruned": 0,
+   "samples": []
+  },
   "price_drops": 0,
   "price_rises": 0,
-  "removed": 0,
-  "filtered_out": 121,
-  "unpriced": 1,
   "priced": 0,
-  "relisted": 0,
   "qualified": 0,
-  "baselines": [],
-  "invariants": [],
+  "quiet": false,
+  "relisted": 0,
+  "removed": 0,
+  "requests_made": 14,
+  "searches_failed": 0,
+  "searches_run": 2,
+  "shape_drift": [],
   "shut_out": [
    "2021-2023 BMW M5"
   ],
-  "hidden_events": {},
   "skipped": false,
-  "missed_by": 76,
-  "requests_made": 14,
-  "budget_exhausted": false,
-  "empty_parses": [],
-  "diagnostics": [],
-  "shape_drift": [],
-  "disabled_channels": [],
-  "first_run": false,
-  "validation_ok": true,
-  "notified": [],
-  "errors": [],
-  "warnings": [
-   "the last successful check was 1.3 hours ago, not 30 minutes - the schedule dropped 1 run. Catching up now.",
-   "2021-2023 BMW M5: read 19 listings and none passed your rules for it (12 too far away, 7 outside the year range). It is working - it just has nothing to show you."
-  ],
   "strategies": {
    "2021-2023-bmw-m5-310324": "embedded_json",
    "bmw-m5-bargains-any-year-f2f097": "jsonld"
   },
-  "quiet": false,
-  "dry_run": false,
-  "photos": {
-   "kept": 71,
-   "fetched": 0,
-   "failed": 0,
-   "pruned": 0,
-   "bytes": 413434,
-   "samples": []
-  },
+  "unpriced": 1,
+  "validation_ok": true,
+  "warnings": [
+   "the last successful check was 1.3 hours ago, not 30 minutes - the schedule dropped 1 run. Catching up now.",
+   "2021-2023 BMW M5: read 19 listings and none passed your rules for it (12 too far away, 7 outside the year range). It is working - it just has nothing to show you."
+  ],
   "your_call": 0
  },
  "health": {
@@ -14828,9 +14828,9 @@
     "name": "2021-2023 BMW M5",
     "winner": "embedded_json",
     "scores": {
-     "jsonld": 12,
-     "embedded_json": 19,
      "anchors": 12,
+     "embedded_json": 19,
+     "jsonld": 12,
      "regex": 19
     },
     "working": [
@@ -14847,12 +14847,12 @@
      "regex"
     ],
     "markers": {
-     "json_ld": "few",
-     "next_data": "few",
-     "initial_state": "none",
-     "offer_links": "many",
-     "legacy_links": "none",
      "data_listing_id": "none",
+     "initial_state": "none",
+     "json_ld": "few",
+     "legacy_links": "none",
+     "next_data": "few",
+     "offer_links": "many",
      "vehicle_cdn": "lots"
     }
    },
@@ -14860,9 +14860,9 @@
     "name": "BMW M5 bargains (any year)",
     "winner": "jsonld",
     "scores": {
-     "jsonld": 20,
-     "embedded_json": 20,
      "anchors": 20,
+     "embedded_json": 20,
+     "jsonld": 20,
      "regex": 20
     },
     "working": [
@@ -14879,12 +14879,12 @@
      "regex"
     ],
     "markers": {
-     "json_ld": "few",
-     "next_data": "few",
-     "initial_state": "none",
-     "offer_links": "many",
-     "legacy_links": "none",
      "data_listing_id": "none",
+     "initial_state": "none",
+     "json_ld": "few",
+     "legacy_links": "none",
+     "next_data": "few",
+     "offer_links": "many",
      "vehicle_cdn": "lots"
     }
    }
@@ -18904,6 +18904,15 @@
    "notable": true,
    "cheaper_than": 36
   },
+  "100f8c97-78a4-4479-8b18-1e07b97f6de9": {
+   "sample": 118,
+   "band": 1,
+   "median": 162903,
+   "delta": -12908,
+   "pct": -7.9,
+   "notable": false,
+   "cheaper_than": 97
+  },
   "10197526-115f-4960-9b8d-b0a508a9f814": {
    "sample": 103,
    "band": 1,
@@ -20450,15 +20459,6 @@
    "pct": 13.4,
    "notable": true,
    "cheaper_than": 5
-  },
-  "100f8c97-78a4-4479-8b18-1e07b97f6de9": {
-   "sample": 118,
-   "band": 1,
-   "median": 162903,
-   "delta": -12908,
-   "pct": -7.9,
-   "notable": false,
-   "cheaper_than": 97
   }
  },
  "coverage": {
@@ -20473,13 +20473,14 @@
   "longest_gap_minutes": 208.5,
   "expected_interval_minutes": 30,
   "truncated": false,
-  "since": "2026-09-11T20:33:27+00:00",
+  "since": "2026-09-11T20:35:03+00:00",
   "slots": [
    2,
    0,
    0,
    2,
    0,
+   2,
    0,
    0,
    2,
@@ -20531,7 +20532,7 @@
   "window_hours": 24
  },
  "market": {
-  "at": "2026-09-12T20:33:27+00:00",
+  "at": "2026-09-12T20:35:03+00:00",
   "window": {
    "ids_span_days": 2,
    "watching_days": 2,
