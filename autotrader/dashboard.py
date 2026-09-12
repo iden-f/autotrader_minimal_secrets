@@ -307,6 +307,10 @@ def build_payload(cfg: Config, state: State, env: dict[str, str] | None = None
         "coverage": insight.coverage(
             runs, int(cfg.get("health.expected_interval_minutes", 30) or 30)),
         "cost": insight.minutes_spent(runs),
+        # What two hundred cars say together, rather than what one says. The
+        # window block travels with it: most of this is two days old.
+        "market": insight.market(state.listings.values()),
+        "score_check": insight.backtest(state.listings.values()),
         "archive": size_report(),
         "config": _safe_config(cfg),
     }

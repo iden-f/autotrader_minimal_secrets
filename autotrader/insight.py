@@ -346,3 +346,239 @@ def weekly_text(summary: dict[str, Any]) -> str:
         lines.append(line + ".")
     lines.append(f"Built from {summary['checks']} successful check(s) this week.")
     return "\n".join(lines)
+
+
+# ---------------------------------------------------------------- the market
+
+# Below this, a "median for the year" is one or two cars wearing a statistic.
+MIN_PER_BUCKET = 4
+# How long a price point has to survive before compaction stops thinning it.
+KEEP_DAILY_DAYS = 30
+
+
+def compact_history(history: list[dict[str, Any]], *,
+                    keep_daily_days: int = KEEP_DAILY_DAYS,
+                    now: datetime | None = None) -> list[dict[str, Any]]:
+    """Thin a price history without losing its shape.
+
+    Every observation is kept for the first month, because that is the window
+    a person is actually looking at. Older than that, one point per week is
+    enough to draw the trend, and the first and last points are always kept -
+    losing an endpoint would move the very numbers the history exists for.
+    """
+    if len(history) <= 2:
+        return list(history)
+    now = now or datetime.now(timezone.utc)
+    cut = now - timedelta(days=keep_daily_days)
+
+    kept: list[dict[str, Any]] = [history[0]]
+    last_week: str | None = None
+    for point in history[1:-1]:
+        when = _dt(point.get("at"))
+        if when is None:
+            continue
+        if when >= cut:
+            kept.append(point)
+            continue
+        week = f"{when.isocalendar().year}-{when.isocalendar().week}"
+        if week != last_week:
+            kept.append(point)
+            last_week = week
+    kept.append(history[-1])
+    return kept
+
+
+def _trim_of(entry: dict[str, Any]) -> str:
+    """A trim name coarse enough to group on.
+
+    Dealer titles carry a paragraph of options; the word that matters for
+    price is Competition, Touring, CS and so on. Anything else is "base",
+    which is honest about what is known rather than inventing a category.
+    """
+    text = " ".join(str(entry.get(k) or "") for k in ("trim", "title")).lower()
+    for word in ("competition", "touring", "cs", "m carbon", "lci"):
+        if word in text:
+            return word.replace("m carbon", "carbon")
+    return "base"
+
+
+def market(entries: Iterable[dict[str, Any]], *, now: datetime | None = None
+           ) -> dict[str, Any]:
+    """What the whole dataset says, rather than what one car says.
+
+    Two hundred listings and a few months of history is not a research
+    dataset. Everything below carries its sample size, and anything drawn
+    from fewer than a handful of cars is left out rather than rounded into a
+    number that looks authoritative.
+    """
+    now = now or datetime.now(timezone.utc)
+    entries = [e for e in entries
+               if not e.get("imported_from") and not e.get("migrated_from")]
+    live = [e for e in entries if e.get("status") == "active"]
+    gone = [e for e in entries if e.get("status") == "gone" and e.get("removed_at")]
+
+    # ---- price by year, and by year and trim ------------------------------
+    by_year: dict[str, Any] = {}
+    buckets: dict[int, list[int]] = {}
+    for entry in live:
+        if entry.get("price") and entry.get("year"):
+            buckets.setdefault(int(entry["year"]), []).append(int(entry["price"]))
+    for year, prices in sorted(buckets.items()):
+        if len(prices) < MIN_PER_BUCKET:
+            continue
+        prices.sort()
+        by_year[str(year)] = {
+            "n": len(prices),
+            "median": int(statistics.median(prices)),
+            "low": prices[0], "high": prices[-1],
+            "q1": int(statistics.quantiles(prices, n=4)[0]) if len(prices) >= 4 else None,
+            "q3": int(statistics.quantiles(prices, n=4)[2]) if len(prices) >= 4 else None,
+        }
+
+    by_trim: dict[str, Any] = {}
+    trims: dict[str, list[int]] = {}
+    for entry in live:
+        if entry.get("price"):
+            trims.setdefault(_trim_of(entry), []).append(int(entry["price"]))
+    for trim, prices in trims.items():
+        if len(prices) < MIN_PER_BUCKET:
+            continue
+        by_trim[trim] = {"n": len(prices),
+                         "median": int(statistics.median(sorted(prices)))}
+
+    # ---- how long things last --------------------------------------------
+    # "Sold" is not knowable from a listing disappearing, and saying so would
+    # be inventing data. What is knowable is how long a car was listed before
+    # it stopped being listed.
+    lifespans: list[int] = []
+    for entry in gone:
+        first, last = _dt(entry.get("first_seen")), _dt(entry.get("removed_at"))
+        if first and last and last > first:
+            lifespans.append(max(0, (last - first).days))
+    lifespans.sort()
+
+    standing: list[int] = []
+    for entry in live:
+        first = _dt(entry.get("first_seen"))
+        if first:
+            standing.append(max(0, (now - first).days))
+    standing.sort()
+
+    # ---- how fast the market moves ---------------------------------------
+    week = now - timedelta(days=7)
+    arrivals = sum(1 for e in entries
+                   if (_dt(e.get("first_seen")) or now) >= week)
+    departures = sum(1 for e in gone if (_dt(e.get("removed_at")) or now) >= week)
+
+    cut_total = 0
+    cut_cars = 0
+    for entry in entries:
+        history = entry.get("price_history") or []
+        drops = sum(max(0, a["price"] - b["price"])
+                    for a, b in zip(history, history[1:])
+                    if a.get("price") and b.get("price") and b["price"] < a["price"])
+        if drops:
+            cut_total += drops
+            cut_cars += 1
+
+    # How much of this is actually observation. The id record here goes back
+    # fifteen months because v1's listing ids were imported, but a price can
+    # only have moved on a car this bot has seen twice - and most of these it
+    # has seen for three days. Saying "median asking is up" off that would be
+    # a sentence about the sample, not about the market.
+    seen = sorted(t for t in (_dt(e.get("first_seen")) for e in entries) if t)
+    tracked = [e for e in entries if len(e.get("price_history") or []) > 1]
+    span_days = (now - seen[0]).days if seen else 0
+    watched = sorted(t for t in (_dt(e.get("first_seen")) for e in live) if t)
+    real_days = (now - watched[0]).days if watched else 0
+
+    return {
+        "at": now.isoformat(timespec="seconds"),
+        "window": {
+            "ids_span_days": span_days,
+            "watching_days": real_days,
+            "cars_with_two_prices": len(tracked),
+            "thin": len(tracked) < 20 or real_days < 14,
+            "note": (f"{len(tracked)} of {len(entries)} cars have been priced "
+                     f"more than once, over {real_days} day(s) of watching. "
+                     f"Anything below described as a trend is really a "
+                     f"snapshot until that number grows."),
+        },
+        "live": len(live),
+        "gone": len(gone),
+        "by_year": by_year,
+        "by_trim": by_trim,
+        "listed_days": {
+            "n": len(lifespans),
+            "median": lifespans[len(lifespans) // 2] if lifespans else None,
+            "p10": lifespans[len(lifespans) // 10] if len(lifespans) >= 10 else None,
+            "p90": lifespans[len(lifespans) * 9 // 10] if len(lifespans) >= 10 else None,
+            # Deliberately not called "days to sell". A listing coming down
+            # means the seller stopped advertising it, which is not the same
+            # thing, and the difference matters to anyone reading this.
+            "note": "how long a car was listed before it came down - not how "
+                    "long it took to sell, which a listing cannot tell you",
+        },
+        "still_listed_days": {
+            "n": len(standing),
+            "median": standing[len(standing) // 2] if standing else None,
+            "longest": standing[-1] if standing else None,
+        },
+        "velocity": {"arrived_7d": arrivals, "left_7d": departures},
+        "discounting": {"cars": cut_cars, "total": cut_total,
+                        "mean": int(cut_total / cut_cars) if cut_cars else None},
+    }
+
+
+def backtest(entries: Iterable[dict[str, Any]]) -> dict[str, Any]:
+    """Did the deal score say anything useful, in hindsight?
+
+    The score claims a car is under or over the median for its kind. If that
+    means anything, cars it called dear should have cut their prices more
+    often than cars it called cheap. This checks, over this dataset, and says
+    so either way - a score nobody has tested is decoration.
+    """
+    entries = list(entries)
+    scores = comparables(entries)
+    # Cars are re-scored against today's market, so a car that has since been
+    # discounted is compared at its current price. Using its first price is
+    # the honest test of "was it dear when it appeared".
+    cheap_cut = cheap_n = dear_cut = dear_n = 0
+    for entry in entries:
+        row = scores.get(str(entry.get("id")))
+        if not row or row.get("pct") is None:
+            continue
+        history = [p for p in (entry.get("price_history") or []) if p.get("price")]
+        if len(history) < 1:
+            continue
+        first = history[0]["price"]
+        last = history[-1]["price"]
+        cut = last < first
+        if row["pct"] <= -NOTABLE_PCT:
+            cheap_n += 1
+            cheap_cut += 1 if cut else 0
+        elif row["pct"] >= NOTABLE_PCT:
+            dear_n += 1
+            dear_cut += 1 if cut else 0
+
+    out: dict[str, Any] = {
+        "called_cheap": cheap_n, "cheap_that_cut": cheap_cut,
+        "called_dear": dear_n, "dear_that_cut": dear_cut,
+    }
+    if cheap_n >= 5 and dear_n >= 5:
+        cheap_rate = cheap_cut / cheap_n
+        dear_rate = dear_cut / dear_n
+        out["cheap_rate"] = round(cheap_rate * 100, 1)
+        out["dear_rate"] = round(dear_rate * 100, 1)
+        out["verdict"] = (
+            "cars it called dear cut their prices more often than cars it "
+            "called cheap, which is what the score claims"
+            if dear_rate > cheap_rate else
+            "cars it called dear did not cut more often than cars it called "
+            "cheap - on this data the score is not predicting anything")
+    else:
+        out["verdict"] = (
+            f"not enough scored cars to test it: {cheap_n} called cheap and "
+            f"{dear_n} called dear, and five of each is the minimum worth "
+            f"drawing a conclusion from")
+    return out

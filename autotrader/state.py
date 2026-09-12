@@ -617,6 +617,16 @@ class State:
                 removed += 1
         return removed
 
+        # Thin old price points. Every observation is kept for a month, then
+        # one a week is enough to draw the line - and the endpoints are always
+        # kept, because losing one moves the very numbers a history exists to
+        # give you.
+        from . import insight
+        for entry in self.listings.values():
+            history = entry.get("price_history") or []
+            if len(history) > 8:
+                entry["price_history"] = insight.compact_history(history)
+
     def stats(self) -> dict[str, Any]:
         # A car hidden by the user's own filters is not something they are
         # watching, so it does not count towards what is live.
