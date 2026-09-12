@@ -482,14 +482,35 @@ select:hover,.btn:hover{ background:var(--surface-2); }
 .chip[aria-pressed="true"]{
   background:var(--text); color:var(--bg); border-color:var(--text); font-weight:520;
 }
-.chip .n{ font-variant-numeric:tabular-nums; opacity:.65; margin-left:var(--s1); }
+/* Not opacity. Fading --text-2 to 65% over the page ground lands the count at
+   2.81:1, which axe is right about and which nobody would notice by looking -
+   the number is small, grey and plausible either way. --text-3 is the token
+   that already carries "quieter than the label" at a ratio that passes. */
+.chip .n{ font-variant-numeric:tabular-nums; color:var(--text-3); margin-left:var(--s1); }
+.chip[aria-pressed="true"] .n{ color:inherit; opacity:.72; }
+
+/* "A newer version is ready." Bottom-anchored above the phone tab bar, and
+   out of the way of the content rather than on top of it. */
+.newver{
+  position:fixed; left:50%; transform:translateX(-50%);
+  bottom:calc(var(--s4) + env(safe-area-inset-bottom));
+  display:flex; align-items:center; gap:var(--s3);
+  background:var(--surface); color:var(--text);
+  border:1px solid var(--line-strong); border-radius:999px;
+  padding:var(--s2) var(--s2) var(--s2) var(--s4);
+  font-size:var(--t-small); box-shadow:var(--shadow-overlay);
+  z-index:40; max-width:calc(100vw - var(--s8));
+}
+@media (max-width:699px){
+  .newver{ bottom:calc(var(--s10) + var(--s4) + env(safe-area-inset-bottom)); }
+}
 
 /* ------------------------------------------------------------------ states */
 .state{
   border:1px dashed var(--line-strong); border-radius:var(--r-md);
   padding:var(--s6); max-width:68ch;
 }
-.state h3{ margin:0 0 var(--s2); font-size:var(--t-h2); font-weight:560; }
+.state h2, .state h3{ margin:0 0 var(--s2); font-size:var(--t-h2); font-weight:560; }
 .state p{ margin:0 0 var(--s3); color:var(--text-2); font-size:var(--t-small); }
 .state p:last-child{ margin-bottom:0; }
 
@@ -531,7 +552,14 @@ select:hover,.btn:hover{ background:var(--surface-2); }
   text-transform:uppercase; color:var(--text-3); margin-bottom:var(--s2);
 }
 .stat dd{ margin:0; font-size:var(--t-figure); font-weight:560; font-variant-numeric:tabular-nums; letter-spacing:-.015em; }
-.stat small{ display:block; margin-top:var(--s1); font-size:var(--t-small); font-weight:400; color:var(--text-2); letter-spacing:0; }
+/* A second <dd> rather than a <small>. A <div> inside a <dl> may contain only
+   <dt> and <dd>, and a definition may have more than one <dd> - so the caption
+   under a figure is a second definition of the same term, which is what it
+   actually is. */
+.stat__note, .stat small{
+  display:block; margin:var(--s1) 0 0; font-size:var(--t-small);
+  font-weight:400; color:var(--text-2); letter-spacing:0;
+}
 .stat[data-tone="warn"] dd{ color:var(--warn); }
 .stat[data-tone="bad"] dd{ color:var(--bad); }
 .stat[data-tone="good"] dd{ color:var(--good); }

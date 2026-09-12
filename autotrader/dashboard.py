@@ -8,6 +8,7 @@ file) and keeps secrets out of it - only non-sensitive fields are exported.
 
 from __future__ import annotations
 
+import hashlib
 import json
 from datetime import datetime, timezone
 from pathlib import Path
@@ -409,4 +410,54 @@ def write(cfg: Config, state: State, env: dict[str, str] | None = None,
     tmp = path.with_suffix(".tmp")
     tmp.write_text(json.dumps(payload, indent=1, ensure_ascii=False), encoding="utf-8")
     tmp.replace(path)
+    stamp_worker(path.parent)
     return path
+
+
+SW_FILE = "sw.js"
+SW_WATCHES = ("index.html", "app.js")
+_BUILD_LINE = re.compile(r"^const BUILD = '([^']*)';$", re.M)
+
+
+def stamp_worker(docs: Path) -> str | None:
+    """Write the build id the service worker keys its caches on.
+
+    A browser installs a new service worker when the bytes of sw.js change,
+    and a new worker re-fetches everything it caches. That is the entire
+    update mechanism for an installed app, and nothing else reliably is: the
+    version this replaced tried to notice a changed app.js by re-fetching it
+    behind the cached response and comparing the text, which - measured
+    against a real browser and a real file change - picked up nothing on the
+    next load or the one after. An installed app would have run whatever
+    app.js it first saw forever.
+
+    So the stamp is derived here, from the files it is meant to track, on
+    every publish. Nobody has to remember to bump it, which is the only kind
+    of version discipline that survives six months.
+    """
+    worker = docs / SW_FILE
+    try:
+        source = worker.read_text(encoding="utf-8")
+    except OSError:
+        return None
+
+    digest = hashlib.sha256()
+    for name in SW_WATCHES:
+        try:
+            digest.update((docs / name).read_bytes())
+        except OSError:
+            digest.update(b"missing")
+    # The worker's own source, with the stamp line removed so hashing it does
+    # not depend on the last stamp and change on every single publish.
+    digest.update(_BUILD_LINE.sub("", source).encode("utf-8"))
+    build = digest.hexdigest()[:12]
+
+    updated = _BUILD_LINE.sub(f"const BUILD = '{build}';", source, count=1)
+    if updated == source:
+        return build          # already stamped with this build
+    try:
+        worker.write_text(updated, encoding="utf-8")
+    except OSError as exc:
+        log.warning("could not stamp %s: %s", worker, exc)
+        return None
+    return build

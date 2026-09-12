@@ -148,6 +148,24 @@ function trustState() {
   const d = app.data;
   if (!d) return { state: 'ok', text: 'Loading…' };
   const run = d.last_run || {};
+
+  // Offline outranks everything else this function can say. "Checked 3 days
+  // ago" with no other context reads as "the bot is broken" when the truth
+  // may be that the phone has no signal, and the two want opposite actions.
+  if (app.offline) {
+    const age = when(run.at || d.generated_at);
+    return {
+      state: 'stale',
+      text: `Offline · ${age}`,
+      alarm: {
+        level: 'warn',
+        text: `You are offline. This is the copy your phone saved, and the `
+            + `last check in it ran ${age}. Nothing here has been re-read `
+            + `since - cars may have sold or changed price.`,
+        detail: `Saved copy published ${stamp(d.generated_at)}.`,
+      },
+    };
+  }
   const cov = d.coverage || {};
   // Age of the last *check*, not of the file. They differ whenever the file
   // is rewritten without a check having happened, and the question being
@@ -211,6 +229,22 @@ function trustState() {
     };
   }
   return { state: 'ok', text: `Checked ${when(run.at)}` };
+}
+
+/* A newer build is cached and will run on the next load. Say so once. */
+let versionBannerUp = false;
+function newVersionReady() {
+  if (versionBannerUp) return;
+  versionBannerUp = true;
+  const bar = el('div', 'newver');
+  bar.setAttribute('role', 'status');
+  const text = el('span', '', 'A newer version of this page is ready.');
+  const btn = el('button', 'btn', 'Reload');
+  btn.type = 'button';
+  btn.addEventListener('click', () => location.reload());
+  bar.appendChild(text);
+  bar.appendChild(btn);
+  document.body.appendChild(bar);
 }
 
 function renderTrust() {
@@ -283,7 +317,7 @@ function welcome() {
   const searches = (d.searches || []).map(s => s.name);
   const cov = d.coverage || {};
   box.innerHTML = `
-    <h3>This is watching ${searches.length} search${searches.length === 1 ? '' : 'es'} on autotrader.ca</h3>
+    <h2>This is watching ${searches.length} search${searches.length === 1 ? '' : 'es'} on autotrader.ca</h2>
     <p>${esc(searches.join(' and ') || 'nothing yet')} — ${visible().length} cars live
        right now, re-read about every ${cov.expected_interval_minutes || 30} minutes.</p>
     <p><b>Alerts</b> go to ${(d.notify?.active || []).join(', ') || 'nowhere yet — no channel is switched on'}.
@@ -406,12 +440,20 @@ function eventRow(e) {
 
   const name = (e.year ? e.year + ' ' : '') +
     (String(e.title || '').split('|')[0].trim() || [e.make, e.model].filter(Boolean).join(' '));
+  // Named by its own content, with the kind word carried in a visually
+  // hidden span rather than an aria-label.
+  //
+  // The aria-label version failed WCAG 2.5.3: it said "Price drop: 2018 BMW
+  // M5. $66,888 $65,888 alerted" while the card visibly read "28h ago … 2018
+  // BMW M5 … −$1,000 … $66,888 $65,888 alerted". Someone driving this by
+  // voice reads what is on screen and says it, and no phrase they can see
+  // matches the name the button answers to. Building the name out of the
+  // content instead means the two cannot disagree.
   b.innerHTML =
-    `<time class="ev__when" datetime="${esc(e.at)}">${when(e.at)}</time>
+    `<span class="sr">${KIND[e.kind].label}.</span>
+     <time class="ev__when" datetime="${esc(e.at)}">${when(e.at)}</time>
      <span class="ev__title">${esc(name)}</span>${fig}
      <span class="ev__sub">${sub.join('')}</span>`;
-  b.setAttribute('aria-label',
-    `${KIND[e.kind].label}: ${name}. ${b.querySelector('.ev__sub').textContent.trim()}`);
   b.addEventListener('click', () => openSheet(e.listing_id));
   li.appendChild(b);
   return li;
@@ -545,7 +587,7 @@ function renderListings() {
 function noResults(counts) {
   const s = el('div', 'state');
   if (app.q) {
-    s.innerHTML = `<h3>Nothing matches “${esc(app.q)}”</h3>
+    s.innerHTML = `<h2>Nothing matches “${esc(app.q)}”</h2>
       <p>The text filter is applied to the title, city, colour, trim and seller.</p>`;
     const b = el('button', 'btn', 'Clear the text filter');
     b.type = 'button';
@@ -554,14 +596,14 @@ function noResults(counts) {
     return s;
   }
   if (app.chip === 'hidden' && !counts.hidden) {
-    s.innerHTML = `<h3>Nothing is hidden right now</h3>
+    s.innerHTML = `<h2>Nothing is hidden right now</h2>
       <p>Every car the searches found passed your rules.</p>`;
     return s;
   }
   if (app.search !== 'all') {
     const sr = (app.data.searches || []).find(x => x.id === app.search);
     const why = sr?.health?.shut_out;
-    s.innerHTML = `<h3>${esc(sr?.name || 'This search')} has nothing to show</h3>
+    s.innerHTML = `<h2>${esc(sr?.name || 'This search')} has nothing to show</h2>
       <p>${why ? `It read the site fine and every car was turned away: ${esc(why)}.`
                 : 'It has not kept any cars yet.'}</p>`;
     const b = el('button', 'btn', 'Show all searches');
@@ -570,7 +612,7 @@ function noResults(counts) {
     s.appendChild(b);
     return s;
   }
-  s.innerHTML = `<h3>Nothing here</h3><p>No car is in this state at the moment.</p>`;
+  s.innerHTML = `<h2>Nothing here</h2><p>No car is in this state at the moment.</p>`;
   const b = el('button', 'btn', 'Back to live listings');
   b.type = 'button';
   b.addEventListener('click', () => { app.chip = 'all'; renderListings(); });
@@ -578,9 +620,11 @@ function noResults(counts) {
   return s;
 }
 
+// h2, not h3. These sit directly under the view's h1 with nothing between,
+// and a skipped level is how a screen reader user loses the outline.
 function emptyState(title, body) {
   const s = el('div', 'state');
-  s.innerHTML = `<h3>${esc(title)}</h3><p>${esc(body)}</p>`;
+  s.innerHTML = `<h2>${esc(title)}</h2><p>${esc(body)}</p>`;
   return s;
 }
 
@@ -751,24 +795,24 @@ function renderMarket() {
   stats.innerHTML = `
     <div class="stat"><dt>${sinceWatch ? 'Arrived since watching began' : 'Arrived this week'}</dt>
       <dd class="num">${v.arrived_7d ?? '—'}</dd>
-      ${sinceWatch ? `<small>the watch is ${plural(st.watching_days ?? 0, 'day')}
-        old, so that is all of them rather than this week's</small>` : ''}</div>
+      ${sinceWatch ? `<dd class="stat__note">the watch is ${plural(st.watching_days ?? 0, 'day')}
+        old, so that is all of them rather than this week's</dd>` : ''}</div>
     <div class="stat"><dt>${sinceWatch ? 'Left since watching began' : 'Left this week'}</dt>
       <dd class="num">${v.left_7d ?? '—'}</dd></div>
     <div class="stat"><dt>Still listed, median</dt>
       <dd class="num">${st.median == null ? '—'
         : (st.censored ? '<small style="display:inline">at least </small>' : '') + days(st.median)}</dd>
-      <small>${st.censored
+      <dd class="stat__note">${st.censored
         ? 'nothing has been watched longer than this'
-        : `longest ${st.longest ?? '—'} days`}</small></div>
+        : `longest ${st.longest ?? '—'} days`}</dd></div>
     <div class="stat"><dt>Cars discounted</dt><dd class="num">${d.cars ?? 0}</dd>
-      <small>${d.total ? money(d.total) + ' off in total' : 'none yet'}</small></div>
+      <dd class="stat__note">${d.total ? money(d.total) + ' off in total' : 'none yet'}</dd></div>
     <div class="stat"><dt>Listed before coming down</dt>
       <dd class="num">${lt.median == null ? '—' : days(lt.median)}</dd>
-      <small>from ${lt.n ?? 0} that came down${lt.biased_short
-        ? ' — only short-lived ones can finish inside a watch this young' : ''}</small></div>
+      <dd class="stat__note">from ${lt.n ?? 0} that came down${lt.biased_short
+        ? ' — only short-lived ones can finish inside a watch this young' : ''}</dd></div>
     <div class="stat"><dt>Live now</dt><dd class="num">${m.live ?? 0}</dd>
-      <small>${m.gone ?? 0} gone and kept</small></div>`;
+      <dd class="stat__note">${m.gone ?? 0} gone and kept</dd></div>`;
   host.appendChild(stats);
   if (lt.note) {
     host.appendChild(el('p', 'note measure',
@@ -1076,19 +1120,19 @@ function renderStatus() {
   stats.innerHTML = `
     <div class="stat" data-tone="${covTone}"><dt>Coverage, ${cov.window_hours || 24}h</dt>
       <dd class="num">${cov.pct ?? '—'}%</dd>
-      <small>${cov.successful ?? 0} good checks of ${cov.expected ?? 0} expected</small></div>
+      <dd class="stat__note">${cov.successful ?? 0} good checks of ${cov.expected ?? 0} expected</dd></div>
     <div class="stat"><dt>Last good check</dt><dd>${when(run.at)}</dd>
-      <small>${stamp(run.at)}</small></div>
+      <dd class="stat__note">${stamp(run.at)}</dd></div>
     <div class="stat" data-tone="${cov.longest_gap_minutes > 180 ? 'warn' : ''}"><dt>Longest gap</dt>
       <dd class="num">${cov.longest_gap_minutes ? Math.round(cov.longest_gap_minutes / 60 * 10) / 10 : '—'}h</dd>
-      <small>between good checks</small></div>
+      <dd class="stat__note">between good checks</dd></div>
     <div class="stat"><dt>Requests last check</dt><dd class="num">${run.requests_made ?? '—'}</dd>
-      <small>budget ${h.budget?.limit ?? '—'}</small></div>
+      <dd class="stat__note">budget ${h.budget?.limit ?? '—'}</dd></div>
     <div class="stat"><dt>Check took</dt><dd class="num">${run.duration_s ?? '—'}s</dd>
-      <small>${d.cost ? `${d.cost.minutes} min of runner in ${d.cost.window_hours}h` : ''}</small></div>
+      <dd class="stat__note">${d.cost ? `${d.cost.minutes} min of runner in ${d.cost.window_hours}h` : ''}</dd></div>
     <div class="stat" data-tone="${h.accounted?.unexplained ? 'bad' : 'good'}"><dt>Unaccounted cars</dt>
       <dd class="num">${h.accounted?.unexplained ?? 0}</dd>
-      <small>${h.accounted?.delivered ?? 0} told, ${h.accounted?.quiet ?? 0} deliberately quiet</small></div>`;
+      <dd class="stat__note">${h.accounted?.delivered ?? 0} told, ${h.accounted?.quiet ?? 0} deliberately quiet</dd></div>`;
   host.appendChild(stats);
 
   if ((run.invariants || []).length) {
@@ -1567,6 +1611,11 @@ async function boot() {
   try {
     const res = await fetch('data.json', { cache: 'no-cache' });
     if (!res.ok) throw new Error(`data.json responded ${res.status}`);
+    // With a worker installed, an offline load still succeeds - the worker
+    // answers it from cache with a 200. Without this header the page had no
+    // way to tell that apart from a live fetch, and cheerfully drew a
+    // three-day-old market as today's with no mention of the network at all.
+    if (res.headers.get('X-From-Cache') === '1') app.offline = true;
     app.data = await res.json();
   } catch (err) {
     // Offline, or the file is not there yet. Say which, and what to do.
@@ -1598,13 +1647,18 @@ async function boot() {
   app.seenIds = new Set(ids);
   store.set('seenIds', ids.slice(0, 1200));
 
-  if (app.offline) {
-    const alarm = document.getElementById('alarm');
-    alarm.hidden = false; alarm.dataset.level = 'warn';
-    document.getElementById('alarm-text').textContent =
-      'You are offline. This is the last data your phone saved.';
-    document.getElementById('alarm-detail').textContent =
-      `Published ${stamp(app.data.generated_at)}.`;
+  // A newer worker has taken over, which means a newer page is cached and
+  // will run on the next load. Offered rather than applied: swapping the code
+  // under someone mid-tap is worse than a banner they can ignore.
+  //
+  // Guarded on there having been a controller to begin with - on a first ever
+  // visit the worker claims the page as it installs, and announcing "a newer
+  // version is ready" to someone who has been here for four seconds is noise.
+  if ('serviceWorker' in navigator) {
+    const hadOne = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (hadOne) newVersionReady();
+    });
   }
 
   renderTabs();

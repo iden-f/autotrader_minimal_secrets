@@ -245,3 +245,42 @@ def test_the_app_script_parses():
     out = subprocess.run(["node", "--check", str(DOCS / "app.js")],
                          capture_output=True, text=True)
     assert out.returncode == 0, out.stderr
+
+
+class TestVoiceControlCanSayWhatItSees:
+    """WCAG 2.5.3, Label in Name.
+
+    The feed cards carried an aria-label reading "Price drop: 2018 BMW M5.
+    $66,888 $65,888 alerted" while visibly reading "28h ago … 2018 BMW M5 …
+    -$1,000 … $66,888 $65,888 alerted". Someone driving the page by voice
+    reads what is on screen and says it, and no phrase they could see matched
+    the name the button answered to. Lighthouse caught it; the axe ruleset
+    this project runs does not include that check.
+
+    The fix is structural rather than a longer label: the name is built from
+    the button's own content, so the two cannot disagree again.
+    """
+
+    @staticmethod
+    def _code(block: str) -> str:
+        """The block with // comments stripped.
+
+        The first version of this test matched the word "aria-label" inside
+        the comment explaining why there is no aria-label, and failed.
+        """
+        import re
+        return re.sub(r"^\s*//.*$", "", block, flags=re.M)
+
+    def test_a_feed_card_has_no_aria_label_to_disagree_with(self):
+        from pathlib import Path
+        js = Path("docs/app.js").read_text()
+        block = js.split("const b = el('button', 'ev'")[1].split("li.appendChild(b)")[0]
+        assert "aria-label" not in self._code(block), (
+            "an aria-label here has to repeat every visible word or it fails "
+            "Label in Name - name it from the content instead")
+
+    def test_the_kind_still_reaches_a_screen_reader(self):
+        from pathlib import Path
+        js = Path("docs/app.js").read_text()
+        block = js.split("const b = el('button', 'ev'")[1].split("li.appendChild(b)")[0]
+        assert 'class="sr"' in block and "KIND[e.kind].label" in block
