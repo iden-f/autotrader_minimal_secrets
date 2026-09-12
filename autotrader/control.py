@@ -37,7 +37,12 @@ FENCE = re.compile(r"```autotrader\s*\n(.*?)```", re.S | re.I)
 
 ACTIONS = ("set-rule", "add-search", "remove-search", "mute-listing",
            "unmute-listing", "shortlist", "unshortlist", "dismiss",
-           "set-channel", "note")
+           # There was no way to take a dismissal back. The page's undo button
+           # sent "unshortlist", which clears a mark the car did not have and
+           # leaves dismissed exactly where it was - so a car dismissed by
+           # accident stayed dismissed, and the button that was meant to undo
+           # it reported success.
+           "undismiss", "set-channel", "note")
 
 # Rules a person may change from a phone, and what counts as a value. Anything
 # not on this list is refused by name rather than quietly ignored - a silent
@@ -308,7 +313,7 @@ def _plan(cfg, state, item: dict[str, Any]):
         return do
 
     if action in ("mute-listing", "unmute-listing", "shortlist",
-                  "unshortlist", "dismiss", "note"):
+                  "unshortlist", "dismiss", "undismiss", "note"):
         listing_id = str(item.get("listing") or "").strip()
         if not LISTING_ID.match(listing_id):
             raise Rejected(f"{listing_id[:40]!r} is not a listing id.")
@@ -337,6 +342,12 @@ def _plan(cfg, state, item: dict[str, Any]):
                 marks["dismissed"] = True
                 marks.pop("shortlisted", None)
                 return f"dismissed {title} - it stays quiet"
+            if action == "undismiss":
+                marks.pop("dismissed", None)
+                return f"{title} is back in play"
+            if not text:
+                marks.pop("note", None)
+                return f"cleared the note on {title}"
             marks["note"] = text
             return f"noted on {title}: {text[:60]}"
         return do

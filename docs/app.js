@@ -429,6 +429,13 @@ function listingPool() {
   else if (chip === 'unpriced') rows = rows.filter(l => l.status === 'active' && l.unpriced && !l.filtered);
   else if (chip === 'gone') rows = rows.filter(l => l.status === 'gone');
   else if (chip === 'hidden') rows = rows.filter(l => l.status === 'active' && l.filtered);
+  else if (chip === 'mine') rows = rows.filter(l => marks.of(l.id).shortlisted);
+  else if (chip === 'dropped') rows = rows.filter(l => marks.of(l.id).dismissed);
+
+  // A car you said you were not interested in is not deleted - it is kept and
+  // findable under its own chip. It just stops competing for attention in the
+  // list you actually scroll.
+  if (chip !== 'dropped') rows = rows.filter(l => !marks.of(l.id).dismissed);
 
   const q = app.q.trim().toLowerCase();
   if (q) {
@@ -472,8 +479,11 @@ function renderListings() {
     </select>`;
   host.appendChild(bar);
 
+  const kept = l => !marks.of(l.id).dismissed;
   const counts = {
-    all: live().filter(l => !l.filtered).length,
+    all: live().filter(l => !l.filtered && kept(l)).length,
+    mine: (app.data.listings || []).filter(l => marks.of(l.id).shortlisted).length,
+    dropped: (app.data.listings || []).filter(l => marks.of(l.id).dismissed).length,
     drops: live().filter(l => priceMove(l)?.delta < 0).length,
     new: live().filter(l => !l.filtered && arrivedRecently(l)).length,
     unpriced: live().filter(l => l.unpriced && !l.filtered).length,
@@ -484,7 +494,13 @@ function renderListings() {
   chips.setAttribute('role', 'group');
   chips.setAttribute('aria-label', 'Filter by state');
   for (const [id, label] of [['all', 'Live'], ['new', 'New'], ['drops', 'Price drops'],
-                             ['unpriced', 'Call for price'], ['hidden', 'Hidden by a rule'], ['gone', 'Gone']]) {
+                             ['mine', 'Shortlisted'],
+                             ['unpriced', 'Call for price'], ['hidden', 'Hidden by a rule'],
+                             ['gone', 'Gone'], ['dropped', 'Not interested']]) {
+    // Your own two only appear once you have used them. An empty "Shortlisted
+    // 0" on a first visit is a control that does nothing, sitting beside
+    // controls that do.
+    if ((id === 'mine' || id === 'dropped') && !counts[id] && app.chip !== id) continue;
     const c = el('button', 'chip');
     c.type = 'button';
     c.setAttribute('aria-pressed', app.chip === id ? 'true' : 'false');
@@ -647,6 +663,20 @@ function card(l) {
   }
   if (l.days_listed !== undefined) foot.push(`<span class="num">${daysListed(l.days_listed)}</span>`);
   if (l.photo_count) foot.push(`<span class="num">${l.photo_count} photos</span>`);
+  // Said, not implied. A greyed price is a de-emphasis; it does not tell you
+  // that alerts about this car are switched off, which is the thing you would
+  // want to know before wondering why it has gone quiet.
+  const yourMarks = marks.of(l.id);
+  if (yourMarks.muted) foot.push('<span>muted — no alerts</span>');
+  if (yourMarks.dismissed) foot.push('<span>not interested</span>');
+
+  // Your marks, on the card. A shortlist you can only see by opening every
+  // car one at a time is not a shortlist, and a note you wrote last week is
+  // worth nothing if the list will not show it to you.
+  const mine = yourMarks;
+  if (mine.shortlisted) b.classList.add('card--mine');
+  if (mine.dismissed) b.classList.add('card--dropped');
+  if (mine.muted) b.classList.add('card--muted');
 
   body.innerHTML =
     `${flag}
@@ -654,12 +684,17 @@ function card(l) {
      <div class="card__title">${esc(carName(l))}</div>
      <div class="facts">${facts.join('')}</div>` +
     (l.filtered ? `<p class="rule">Hidden: ${esc(l.filter_reason || 'a rule of yours')}</p>` : '') +
+    (mine.note ? `<p class="yours">${esc(mine.note)}</p>` : '') +
     (foot.length ? `<div class="card__foot">${foot.join('')}</div>` : '');
   b.appendChild(body);
   b.setAttribute('aria-label',
     `${carName(l)}, ${l.unpriced ? 'call for price' : money(l.price)}` +
     (l.mileage_km ? `, ${km(l.mileage_km)} kilometres` : '') +
-    (l.filtered ? `, hidden: ${l.filter_reason || 'a rule'}` : ''));
+    (l.filtered ? `, hidden: ${l.filter_reason || 'a rule'}` : '') +
+    (mine.shortlisted ? ', on your shortlist' : '') +
+    (mine.muted ? ', muted' : '') +
+    (mine.dismissed ? ', dismissed' : '') +
+    (mine.note ? `. Your note: ${mine.note}` : ''));
   b.addEventListener('click', () => openSheet(l.id));
   return b;
 }
@@ -1368,7 +1403,10 @@ function sheetBody(l) {
   for (const [key, on, off, action, undo] of [
     ['shortlisted', 'On your shortlist', 'Shortlist', 'shortlist', 'unshortlist'],
     ['muted', 'Muted', 'Mute this car', 'mute-listing', 'unmute-listing'],
-    ['dismissed', 'Dismissed', 'Not interested', 'dismiss', 'unshortlist'],
+    // 'undismiss', not 'unshortlist'. The undo used to send the wrong action
+    // entirely: it cleared a mark the car did not have, left the dismissal in
+    // place, and reported success.
+    ['dismissed', 'Dismissed', 'Not interested', 'dismiss', 'undismiss'],
   ]) {
     const active = !!mine[key];
     const b = el('button', 'chip', active ? on : off);
@@ -1388,6 +1426,43 @@ function sheetBody(l) {
     yours.appendChild(b);
   }
   frag.appendChild(yours);
+
+  // A note. Why you skipped it, what the seller said on the phone, which one
+  // this is among four silver Competitions - the things that make a shortlist
+  // usable a week later.
+  const noteBox = el('div', 'note-edit');
+  noteBox.style.marginTop = 'var(--s3)';
+  const field = el('textarea', 'field');
+  field.rows = 2;
+  field.maxLength = 400;
+  field.placeholder = 'A note to yourself about this car…';
+  field.value = mine.note || '';
+  field.id = `note-${l.id}`;
+  const label = el('label', 'note-edit__label', mine.note ? 'Your note' : 'Add a note');
+  label.setAttribute('for', field.id);
+  const save = el('button', 'chip', 'Save note');
+  save.type = 'button';
+  save.disabled = true;
+  field.addEventListener('input', () => {
+    save.disabled = field.value.trim() === (mine.note || '').trim();
+  });
+  save.addEventListener('click', () => {
+    const text = field.value.trim().slice(0, 400);
+    marks.set(l.id, { note: text });
+    const url = askUrl(
+      text ? `Note on ${name}` : `Clear the note on ${name}`,
+      [{ action: 'note', listing: String(l.id), text }],
+      `A note on ${name} — opened from the dashboard.`);
+    if (url) window.open(url, '_blank', 'noopener');
+    openSheet(l.id);
+  });
+  noteBox.appendChild(label);
+  noteBox.appendChild(field);
+  const noteBar = el('div', 'bar');
+  noteBar.style.marginTop = 'var(--s2)';
+  noteBar.appendChild(save);
+  noteBox.appendChild(noteBar);
+  frag.appendChild(noteBox);
 
   const go = el('div', 'bar');
   go.style.marginTop = 'var(--s3)';

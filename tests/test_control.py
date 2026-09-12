@@ -402,3 +402,56 @@ class TestWhatItSaysBack:
             out = control.apply(cfg, st, [{"action": "set-rule", "rule": rule,
                                            "value": 99_000_000}])
             assert "e+" not in out.comment(), (rule, out.comment())
+
+
+class TestTakingAMarkBack:
+    """Every mark needs an undo, and the undo has to undo that mark.
+
+    The page's "Dismissed" button sent `unshortlist` as its undo - an action
+    that clears a mark the car does not have and leaves the dismissal exactly
+    where it was. The button reported success, the car stayed dismissed, and
+    nothing anywhere said otherwise.
+    """
+    ID = "2b555f88-45fc-4e85-9d8b-a9c1c3c25c22"
+
+    def test_undismiss_clears_the_dismissal(self):
+        cfg, st = cfg_with(), state_with(self.ID)
+        control.apply(cfg, st, [{"action": "dismiss", "listing": self.ID}])
+        assert st.listings[self.ID]["you"]["dismissed"] is True
+        control.apply(cfg, st, [{"action": "undismiss", "listing": self.ID}])
+        assert "dismissed" not in st.listings[self.ID]["you"]
+
+    def test_an_empty_note_clears_it_rather_than_storing_nothing(self):
+        cfg, st = cfg_with(), state_with(self.ID)
+        control.apply(cfg, st, [{"action": "note", "listing": self.ID,
+                                 "text": "ask about the ceramics"}])
+        control.apply(cfg, st, [{"action": "note", "listing": self.ID, "text": ""}])
+        assert "note" not in st.listings[self.ID]["you"]
+
+    @pytest.mark.parametrize("mark,undo", [
+        ("shortlist", "unshortlist"),
+        ("mute-listing", "unmute-listing"),
+        ("dismiss", "undismiss"),
+    ])
+    def test_every_mark_round_trips(self, mark, undo):
+        cfg, st = cfg_with(), state_with(self.ID)
+        control.apply(cfg, st, [{"action": mark, "listing": self.ID}])
+        assert st.listings[self.ID].get("you"), mark
+        control.apply(cfg, st, [{"action": undo, "listing": self.ID}])
+        assert not st.listings[self.ID]["you"], (mark, undo)
+
+    def test_the_page_offers_an_undo_for_every_mark_it_can_set(self):
+        """The bug, stated so the page cannot drift from the module again."""
+        import re
+        from pathlib import Path
+        js = Path("docs/app.js").read_text()
+        rows = re.findall(
+            r"\['(\w+)', '[^']*', '[^']*', '([\w-]+)', '([\w-]+)'\]", js)
+        assert rows, "the marks table in the sheet could not be found"
+        for key, action, undo in rows:
+            assert action in control.ACTIONS, (key, action)
+            assert undo in control.ACTIONS, (key, undo)
+            # An undo that is not the inverse of the action is the whole bug.
+            assert undo.replace("un", "", 1).rstrip("-listing") in action \
+                or action.replace("un", "", 1) in undo \
+                or {action, undo} == {"dismiss", "undismiss"}, (key, action, undo)

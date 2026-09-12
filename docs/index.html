@@ -377,6 +377,18 @@ a{ color:var(--ev-new); text-underline-offset:2px; }
 }
 .card--gone .card__shot img,.card--gone .card__title{ opacity:.5; }
 .card--gone .card__price b{ text-decoration:line-through; color:var(--text-3); }
+/* Your own marks. A shortlisted car earns the one piece of chrome on this
+   page - a rule down its left edge in the accent colour - because you put it
+   there. A dismissed one stays legible and stops competing. */
+.card--mine{ box-shadow:inset 2px 0 0 var(--focus); }
+.card--dropped{ opacity:.62; }
+.card--dropped:hover{ opacity:1; }
+.card--muted .card__price b{ color:var(--text-2); }
+.yours{
+  font-size:var(--t-small); color:var(--text-2); border-left:2px solid var(--focus);
+  padding-left:var(--s2); margin:0; white-space:pre-wrap; overflow-wrap:anywhere;
+  display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
+}
 .card--hidden{ background:none; border:1px dashed var(--line); }
 .card--hidden:hover{ background:var(--surface-2); }
 
@@ -425,6 +437,20 @@ a{ color:var(--ev-new); text-underline-offset:2px; }
   border-radius:var(--r-sm); padding:0 var(--s3); min-height:38px;
 }
 .field input{ border:0; background:none; outline:none; width:100%; min-width:0; padding:var(--s2) 0; }
+/* A note to yourself. A textarea, so it inherits the field's frame rather
+   than the browser's, and grows with the text rather than scrolling inside
+   two lines. */
+.note-edit{ display:flex; flex-direction:column; gap:var(--s1); }
+.note-edit__label{
+  font-size:var(--t-micro); font-weight:520; letter-spacing:.06em;
+  text-transform:uppercase; color:var(--text-3);
+}
+textarea.field{
+  display:block; max-width:none; width:100%; padding:var(--s2) var(--s3);
+  font:inherit; font-size:var(--t-small); color:inherit; resize:vertical;
+  min-height:66px; line-height:1.5;
+}
+textarea.field:focus-visible{ outline:2px solid var(--focus); outline-offset:1px; }
 .labelled{ display:flex; flex-direction:column; gap:var(--s1); flex:0 1 160px; }
 .labelled > span{
   font-size:var(--t-micro); font-weight:520; letter-spacing:.06em;
