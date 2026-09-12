@@ -20,6 +20,8 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
+from .state import HIDDEN_REASON_PREFIX
+
 REPORT_PATH = Path("diagnostics/invariants.json")
 
 # A car needs this many consecutive absences before it counts as gone, so an
@@ -131,7 +133,7 @@ def check(cfg, state, report=None, payload: dict[str, Any] | None = None,
 
     stale = [lid for lid, e in listings.items()
              if not e.get("filtered")
-             and str(e.get("quiet_reason") or "").startswith("hidden by your rules")]
+             and str(e.get("quiet_reason") or "").startswith(HIDDEN_REASON_PREFIX)]
     if stale:
         out.append(_violation(
             "hidden-has-a-reason", "listings that are not hidden but still say "

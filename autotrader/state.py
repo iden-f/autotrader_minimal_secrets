@@ -21,6 +21,13 @@ from typing import Any, Iterable
 
 from .listing import Listing
 
+# The opening of every "we said nothing because a rule of yours hid it"
+# reason. It is a prefix rather than a flag because the rest of the sentence
+# names the rule, and because the dashboard and the ledger quote it verbatim.
+# One definition: the runner and the invariants both used to spell it out
+# themselves, which is two places for it to drift from the one that writes it.
+HIDDEN_REASON_PREFIX = "hidden by your rules: "
+
 log = logging.getLogger(__name__)
 
 STATE_PATH = Path(os.getenv("AUTOTRADER_STATE", "state.json"))
@@ -149,7 +156,7 @@ class State:
                 continue          # history, never a candidate for an alert
             if entry.get("filtered"):
                 why = entry.get("filter_reason") or "one of your rules"
-                entry["quiet_reason"] = f"hidden by your rules: {why}"[:200]
+                entry["quiet_reason"] = f"{HIDDEN_REASON_PREFIX}{why}"[:200]
                 filled["quiet_reason"] += 1
             elif entry.get("notified"):
                 # It was handled - delivered or deliberately quiet - before the
@@ -299,6 +306,21 @@ class State:
                         else existing.get("price") is None)
         entry.pop("removed_at", None)
         entry["notified"] = True if was_imported else existing.get("notified", False)
+        # A rule that no longer applies cannot still be the reason this car
+        # was kept quiet. Leaving it there is a contradiction the invariants
+        # catch and fail the run on - a $139,888 car hidden by a $100,000
+        # ceiling turned up with no price on its card, which is not a
+        # rejection, so it stopped being filtered while keeping the ceiling as
+        # its excuse, and every run for thirty-two hours failed on it.
+        #
+        # Clearing `notified` with it is the point rather than a side effect:
+        # the car now has nothing accounting for it, so the run must either
+        # announce it or say out loud why it is staying quiet. Loudly wrong
+        # beats quietly wrong.
+        if not filtered and str(existing.get("quiet_reason") or "").startswith(
+                HIDDEN_REASON_PREFIX):
+            entry.pop("quiet_reason", None)
+            entry["notified"] = False
         history = list(existing.get("price_history") or [])
 
         change: Change | None = None

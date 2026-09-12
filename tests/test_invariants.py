@@ -713,3 +713,85 @@ class TestACardThatForgetsThePrice:
         state.record(Listing(id="1", url="u", title="t", price=None, search_id="s"))
         state.record(Listing(id="1", url="u", title="t", price=None, search_id="s"))
         assert state.listings["1"]["unpriced"] is True
+
+
+class TestARuleThatStopsApplying:
+    """Live, and red for thirty-two hours: a car hidden by a rule, then not.
+
+    A 2025 M5 at $139,888 was correctly hidden by a $100,000 ceiling and
+    silenced with that rule as its reason. Later its card arrived with no
+    price on it - which is not a rejection, so the car stopped being filtered
+    while keeping the ceiling as its excuse for being quiet. Every run from
+    then on failed the bookkeeping check and nobody was told about the car
+    either way. It cleared itself only when the price came back.
+    """
+
+    ABOVE_CEILING = "d688f2af-dbd2-4e72-be59-0a91499a5a19"      # $109,910
+
+    @pytest.fixture
+    def bench(self, tmp_path, monkeypatch, fixture_html):
+        from autotrader import runner as runner_mod
+        from autotrader.config import Config
+        from autotrader.runner import run
+        from .helpers import Capture, FakeFetcher, use_channels
+
+        monkeypatch.chdir(tmp_path)
+        cfg = Config.defaults(tmp_path / "config.json")
+        cfg.add_search("https://www.autotrader.ca/cars/bmw/m5/?rcp=25", "BMW M5")
+        cfg.set("scraping.delay_ms", 0)
+        cfg.set("scraping.enrich_details", False)
+        cfg.set("archive.mode", "off")
+        cfg.set("filters.max_price", 100000)
+        cfg.set("filters.require_price", True)
+        cfg.save()
+        sink = Capture()
+        use_channels(monkeypatch, runner_mod, [sink])
+        priced = fixture_html("search_next_data")
+        # The same page, with that one car's price gone from its card.
+        priceless = priced.replace(
+            '"price":{"priceFormatted":"$ 109,910","priceRaw":109910',
+            '"price":{"priceFormatted":"","priceRaw":null')
+        assert priceless != priced, "fixture changed - the price markup moved"
+
+        def go(html):
+            return run(cfg, State.load(tmp_path / "state.json"),
+                       fetcher=FakeFetcher(html), env={})
+
+        return type("Bench", (), {
+            "cfg": cfg, "sink": sink, "priced": priced, "priceless": priceless,
+            "run": staticmethod(go),
+            "state": staticmethod(lambda: State.load(tmp_path / "state.json")),
+        })
+
+    def test_the_rule_is_the_reason_only_while_the_rule_applies(self, bench):
+        bench.run(bench.priced)
+        entry = bench.state().listings[self.ABOVE_CEILING]
+        assert entry["filtered"] and entry["quiet_reason"].startswith(
+            "hidden by your rules")
+
+        report = bench.run(bench.priceless)
+
+        entry = bench.state().listings[self.ABOVE_CEILING]
+        assert not entry.get("filtered"), "no price is not a rejection"
+        assert not str(entry.get("quiet_reason") or "").startswith(
+            "hidden by your rules"), (
+                "a ceiling it is no longer being measured against cannot still "
+                "be why it is being kept quiet")
+        assert not report.invariants, report.invariants
+
+    def test_and_the_car_is_still_accounted_for(self, bench):
+        """Clearing the reason must not leave the car with no reason at all."""
+        bench.run(bench.priced)
+        bench.run(bench.priceless)
+
+        entry = bench.state().listings[self.ABOVE_CEILING]
+        assert (entry.get("notified_at") or entry.get("pending")
+                or entry.get("quiet_reason")), (
+            "the car is neither delivered, owed, nor deliberately quiet")
+
+    def test_it_stays_clear_over_repeated_runs(self, bench):
+        """The live failure was not one bad run, it was every run after it."""
+        bench.run(bench.priced)
+        for _ in range(3):
+            report = bench.run(bench.priceless)
+            assert not report.invariants, report.invariants
