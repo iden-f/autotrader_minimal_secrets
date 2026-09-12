@@ -172,11 +172,28 @@ class TestThreePacemakersDoNotMeanThreeTimesTheScraping:
     an 8-minute floor is a check every 10 minutes rather than every 30.
     """
 
-    def test_the_floor_is_most_of_the_interval(self):
+    @pytest.mark.parametrize("where", ["defaults", "live"])
+    def test_the_floor_is_most_of_the_interval(self, where):
+        """Both the default and the config.json this repository actually runs.
+
+        Checking only the default is how the first version of this passed
+        while the bot hammered the site every twelve minutes. config.json is
+        materialised from the defaults once, at setup, and then owns its own
+        copy - so changing a default changes nothing for an installed bot, and
+        a test that reads only the default cannot see that.
+        """
+        from pathlib import Path
         from autotrader.config import Config
-        health = Config.defaults().get("health", {})
-        floor = health["min_interval_minutes"]
-        expected = health["expected_interval_minutes"]
+        if where == "live":
+            if not Path("config.json").exists():
+                pytest.skip("no live config in this checkout")
+            cfg = Config.load("config.json")
+            floor = cfg.get("health.min_interval_minutes")
+            expected = cfg.get("health.expected_interval_minutes")
+        else:
+            health = Config.defaults().get("health", {})
+            floor = health["min_interval_minutes"]
+            expected = health["expected_interval_minutes"]
         assert floor >= expected * 0.6, (
             f"a {floor}-minute floor under a {expected}-minute schedule lets "
             f"concurrent pacemakers check {expected // floor}x as often as "

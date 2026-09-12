@@ -1,131 +1,131 @@
 {
-  "version": 2,
-  "legacy_search_url_adopted": true,
-  "searches": [
-    {
-      "id": "2021-2023-bmw-m5-310324",
-      "name": "2021-2023 BMW M5",
-      "url": "https://www.autotrader.ca/cars/bmw/m5/?rcp=25&rcs=0&srt=9&yRng=2021%2C2023&prx=-1&loc=V6N+3B5&hprc=False&wcp=False&inMarket=advancedSearch",
-      "enabled": true,
-      "notes": "Imported from the SEARCH_URL repository secret. The year range is also enforced here because the new AutoScout24 platform no longer honours the yRng parameter in the original link - a live run returned 2014 and 2027 cars for it. The link's own 'near V6N 3B5' is ignored by the new platform too - it was returning Ontario, Alberta and Quebec cars - so the distance is enforced here instead, at 250 km: the Lower Mainland, the Fraser Valley and Vancouver Island.",
-      "filters": {
-        "min_year": 2021,
-        "max_year": 2023,
-        "near": "V6N 3B5",
-        "max_distance_km": 250
-      }
-    },
-    {
-      "id": "bmw-m5-bargains-any-year-f2f097",
-      "name": "BMW M5 bargains (any year)",
-      "url": "https://www.autotrader.ca/cars/bmw/m5/?prx=-2&inMarket=advancedSearch",
-      "enabled": true,
-      "notes": "A wider net on the same car: any year, Canada-wide, with the price ceiling applied by the bot rather than by the search link. Remove it in the dashboard if you only want the 2021-2023 watch. Read to the end of the results rather than the first three pages: autotrader.ca rotates which listings surface, so sampling 60 of 186 gave a different 60 every run and made cars look like they had been sold.",
-      "filters": {
-        "max_price": 120000,
-        "require_price": true,
-        "price_drop_min_abs": 1000
-      },
-      "notify_on": {
-        "removed": true
-      }
-    }
-  ],
-  "filters": {
-    "min_price": null,
-    "max_price": null,
-    "min_year": null,
-    "max_year": null,
-    "max_mileage_km": null,
-    "include_keywords": [],
-    "exclude_keywords": [],
-    "exclude_sellers": [],
-    "require_price": false
+ "version": 2,
+ "legacy_search_url_adopted": true,
+ "searches": [
+  {
+   "id": "2021-2023-bmw-m5-310324",
+   "name": "2021-2023 BMW M5",
+   "url": "https://www.autotrader.ca/cars/bmw/m5/?rcp=25&rcs=0&srt=9&yRng=2021%2C2023&prx=-1&loc=V6N+3B5&hprc=False&wcp=False&inMarket=advancedSearch",
+   "enabled": true,
+   "notes": "Imported from the SEARCH_URL repository secret. The year range is also enforced here because the new AutoScout24 platform no longer honours the yRng parameter in the original link - a live run returned 2014 and 2027 cars for it. The link's own 'near V6N 3B5' is ignored by the new platform too - it was returning Ontario, Alberta and Quebec cars - so the distance is enforced here instead, at 250 km: the Lower Mainland, the Fraser Valley and Vancouver Island.",
+   "filters": {
+    "min_year": 2021,
+    "max_year": 2023,
+    "near": "V6N 3B5",
+    "max_distance_km": 250
+   }
   },
-  "notifications": {
-    "digest": true,
-    "dashboard_url": "https://iden-f.github.io/autotrader_minimal_secrets",
-    "max_listings_per_message": 12,
-    "timezone": "America/Toronto",
-    "quiet_hours": {
-      "enabled": false,
-      "start": "23:00",
-      "end": "07:00"
-    },
-    "notify_on": {
-      "new": true,
-      "price_drop": true,
-      "price_rise": false,
-      "unpriced": null,
-      "priced": true,
-      "removed": false,
-      "relisted": false,
-      "qualified": true,
-      "errors": true
-    },
-    "price_drop_min_pct": 1.0,
-    "price_drop_min_abs": 250,
-    "channels": {
-      "telegram": {
-        "enabled": "auto",
-        "photos": true
-      },
-      "discord": {
-        "enabled": "auto"
-      },
-      "ntfy": {
-        "enabled": true,
-        "server": "https://ntfy.sh",
-        "topic": "autotrader-2q592ak9gnx7sqrere5r",
-        "priority": "default"
-      },
-      "slack": {
-        "enabled": "auto"
-      },
-      "email": {
-        "enabled": false,
-        "to": "",
-        "html": true,
-        "disabled_reason": "Switched off after Gmail rejected these credentials on every attempt across five live runs: 535 5.7.8 Username and Password not accepted. Set enabled back to true once GMAIL_APP_PASSWORD is a current 16-character App Password."
-      },
-      "webhook": {
-        "enabled": false,
-        "url": ""
-      },
-      "twilio": {
-        "enabled": false
-      }
-    }
-  },
-  "scraping": {
-    "max_pages": 10,
-    "results_per_page": 50,
-    "timeout_seconds": 30,
-    "retries": 3,
-    "delay_ms": 1200,
-    "enrich_details": true,
-    "enrich_limit": 25,
-    "unpriced_rechecks": 3,
-    "request_budget": 250,
-    "user_agent": "auto"
-  },
-  "archive": {
-    "mode": "metadata",
-    "images": 0,
-    "keep_last": 400,
-    "keep_days": 730
-  },
-  "health": {
-    "alert_after_failures": 3,
-    "heartbeat_hours": 0,
-    "disable_channel_after": 2,
-    "watch_page_shape": true,
-    "expected_interval_minutes": 30,
-    "min_interval_minutes": 8,
-    "silent_after_hours": 3
-  },
-  "dashboard": {
-    "enabled": true,
-    "max_listings": 500
+  {
+   "id": "bmw-m5-bargains-any-year-f2f097",
+   "name": "BMW M5 bargains (any year)",
+   "url": "https://www.autotrader.ca/cars/bmw/m5/?prx=-2&inMarket=advancedSearch",
+   "enabled": true,
+   "notes": "A wider net on the same car: any year, Canada-wide, with the price ceiling applied by the bot rather than by the search link. Remove it in the dashboard if you only want the 2021-2023 watch. Read to the end of the results rather than the first three pages: autotrader.ca rotates which listings surface, so sampling 60 of 186 gave a different 60 every run and made cars look like they had been sold.",
+   "filters": {
+    "max_price": 120000,
+    "require_price": true,
+    "price_drop_min_abs": 1000
+   },
+   "notify_on": {
+    "removed": true
+   }
   }
+ ],
+ "filters": {
+  "min_price": null,
+  "max_price": null,
+  "min_year": null,
+  "max_year": null,
+  "max_mileage_km": null,
+  "include_keywords": [],
+  "exclude_keywords": [],
+  "exclude_sellers": [],
+  "require_price": false
+ },
+ "notifications": {
+  "digest": true,
+  "dashboard_url": "https://iden-f.github.io/autotrader_minimal_secrets",
+  "max_listings_per_message": 12,
+  "timezone": "America/Toronto",
+  "quiet_hours": {
+   "enabled": false,
+   "start": "23:00",
+   "end": "07:00"
+  },
+  "notify_on": {
+   "new": true,
+   "price_drop": true,
+   "price_rise": false,
+   "unpriced": null,
+   "priced": true,
+   "removed": false,
+   "relisted": false,
+   "qualified": true,
+   "errors": true
+  },
+  "price_drop_min_pct": 1.0,
+  "price_drop_min_abs": 250,
+  "channels": {
+   "telegram": {
+    "enabled": "auto",
+    "photos": true
+   },
+   "discord": {
+    "enabled": "auto"
+   },
+   "ntfy": {
+    "enabled": true,
+    "server": "https://ntfy.sh",
+    "topic": "autotrader-2q592ak9gnx7sqrere5r",
+    "priority": "default"
+   },
+   "slack": {
+    "enabled": "auto"
+   },
+   "email": {
+    "enabled": false,
+    "to": "",
+    "html": true,
+    "disabled_reason": "Switched off after Gmail rejected these credentials on every attempt across five live runs: 535 5.7.8 Username and Password not accepted. Set enabled back to true once GMAIL_APP_PASSWORD is a current 16-character App Password."
+   },
+   "webhook": {
+    "enabled": false,
+    "url": ""
+   },
+   "twilio": {
+    "enabled": false
+   }
+  }
+ },
+ "scraping": {
+  "max_pages": 10,
+  "results_per_page": 50,
+  "timeout_seconds": 30,
+  "retries": 3,
+  "delay_ms": 1200,
+  "enrich_details": true,
+  "enrich_limit": 25,
+  "unpriced_rechecks": 3,
+  "request_budget": 250,
+  "user_agent": "auto"
+ },
+ "archive": {
+  "mode": "metadata",
+  "images": 0,
+  "keep_last": 400,
+  "keep_days": 730
+ },
+ "health": {
+  "alert_after_failures": 3,
+  "heartbeat_hours": 0,
+  "disable_channel_after": 2,
+  "watch_page_shape": true,
+  "expected_interval_minutes": 30,
+  "min_interval_minutes": 24,
+  "silent_after_hours": 3
+ },
+ "dashboard": {
+  "enabled": true,
+  "max_listings": 500
+ }
 }
