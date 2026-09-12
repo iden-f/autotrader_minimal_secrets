@@ -200,10 +200,21 @@ What helps: **more independent chances to be served.** Three pacemaker
 workflows sit on three unrelated sets of minutes. Each one that *is* served
 holds a runner for a bounded period and dispatches the watcher on a timer.
 
+One served firing holds a runner for 330 minutes and dispatches a check every
+30 - eleven checks, five hours of cover. That number is measured, not read: a
+probe job counted out loud until GitHub stopped it, reaching minute 361, so
+the runner's real ceiling is 360 and the backstop timeout sits at 350. It was
+180 before the probe answered, which was half of what the machine allows.
+Runner minutes are free here because the repository is public; on a private
+one this would be the wrong trade.
+
 They are deliberately **bounded**. A pacemaker does not re-trigger itself.
 A self-perpetuating job is a job that cannot be switched off from outside, and
 that is not a thing to build into somebody's repository. Every pacemaker
 stops on its own, and `PACEMAKER-OFF` in the repository kills all of them.
+`tests/test_workflows.py` holds all four bounds - the kill switch, the strike
+limit, the backstop under the measured ceiling, and the shift under the
+backstop - and asserts the only workflow a pacemaker can start is `watch.yml`.
 
 There is also a fourth lever in the sibling repository
 `iden-f/autotrader_notifier`: `poke-the-watcher.yml`, which fires
