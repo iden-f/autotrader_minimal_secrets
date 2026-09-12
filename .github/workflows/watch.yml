@@ -132,6 +132,11 @@ jobs:
       - name: Check for new listings
         id: bot
         env:
+          # Whether this repository has the Issues feature on. The dashboard
+          # has two ways to write a config change back - open an issue, or
+          # commit a file - and picking the wrong one gives a button that
+          # 404s. GitHub knows the answer; there is no reason to guess it.
+          REPO_HAS_ISSUES:     ${{ github.event.repository.has_issues }}
           # Non-secret settings live in config.json. Only credentials are here,
           # and every one of them is optional - the bot enables whichever
           # channels it finds and says so in the log.

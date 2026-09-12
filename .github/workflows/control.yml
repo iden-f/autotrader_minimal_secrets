@@ -1,19 +1,35 @@
 # Changing the configuration from a phone.
 #
 # The dashboard is a static file and cannot write to this repository, so a
-# change made there opens a GitHub issue instead - a write channel a phone
-# already has, with no token to carry and no terminal to find.
+# change made there has to arrive through something a phone browser can do
+# without a token and without a terminal. There are two such things, and this
+# workflow accepts either:
 #
-# This reads the issue, applies it whole or refuses it whole, says what it did
-# in a comment, closes it, and asks for a check so the result is visible
-# straight away. A refusal leaves the issue open with the reason on it.
+#   1. A committed file under control/. GitHub's web editor takes a prefilled
+#      filename and body in the URL, so the dashboard opens a page with the
+#      change already typed and the owner taps "Commit changes".
+#   2. A GitHub issue carrying an ```autotrader block.
 #
-# Only the repository owner may drive it. An issue is a thing any stranger can
-# open, and this one writes config.json.
+# (2) was built first and turned out not to exist on this repository: creating
+# an issue answers "410 Issues has been disabled in this repository", so the
+# dashboard's change button led to a 404 and the whole channel was decorative.
+# (1) needs no repository setting at all, which is why it is now the default
+# and (2) is the fallback for repositories that have issues switched on.
+#
+# Either way the change is applied whole or refused whole, and a refusal is
+# loud: the control file is left in place with the reason written beside it
+# and the job fails, so the commit carries a red X rather than a green tick
+# over an unchanged config.
+#
+# Only the repository owner may drive it. Both an issue and a fork's pull
+# request are things a stranger can open, and this one writes config.json.
 
 name: Apply a change
 
 on:
+  push:
+    branches: [main]
+    paths: ['control/**.json']
   issues:
     types: [opened, edited, reopened]
 
@@ -29,15 +45,20 @@ concurrency:
 jobs:
   apply:
     # Cheap filters first so a normal issue costs nothing: the marker the
-    # dashboard writes, and the one person allowed to change the config.
+    # dashboard writes, and the one person allowed to change the config. A
+    # push has already been authorised by write access, but the pusher is
+    # checked anyway - a repository can have collaborators.
     if: >-
-      contains(github.event.issue.body, '```autotrader') &&
-      github.event.issue.user.login == github.repository_owner
+      (github.event_name == 'push' &&
+       github.actor == github.repository_owner) ||
+      (github.event_name == 'issues' &&
+       contains(github.event.issue.body, '```autotrader') &&
+       github.event.issue.user.login == github.repository_owner)
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-        with: { ref: main }
+        with: { ref: main, fetch-depth: 2 }
 
       - uses: actions/setup-python@v5
         with:
@@ -47,36 +68,71 @@ jobs:
 
       - run: pip install -r requirements.txt
 
-      - name: Read the issue
+      - name: Find the change
+        id: read
         env:
-          BODY: ${{ github.event.issue.body }}
-        run: |
           # Through the environment and a file, never interpolated into the
-          # script: the body is text a person typed on a phone and may contain
-          # anything at all.
-          printf '%s' "$BODY" > /tmp/issue.md
-          wc -c /tmp/issue.md
+          # script: an issue body is text a person typed on a phone and may
+          # contain anything at all, backticks and $(…) included.
+          BODY: ${{ github.event.issue.body }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          set -u
+          if [ "$EVENT" = "issues" ]; then
+            printf '%s' "$BODY" > /tmp/change.txt
+            echo "source=issue #${{ github.event.issue.number }}" >> "$GITHUB_OUTPUT"
+            echo "file=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # The newest control file this push added. Sorted so a push that
+          # adds two is applied in a defined order rather than whichever git
+          # happens to name first.
+          file=$(git diff --name-only --diff-filter=d HEAD~1 HEAD -- 'control/*.json' \
+                 | sort | tail -1)
+          if [ -z "$file" ]; then
+            echo "no control file in this push; nothing to do"
+            echo "skip=yes" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          cp "$file" /tmp/change.txt
+          echo "source=$file" >> "$GITHUB_OUTPUT"
+          echo "file=$file" >> "$GITHUB_OUTPUT"
+          wc -c /tmp/change.txt
 
       - name: Apply it
         id: apply
+        if: steps.read.outputs.skip != 'yes'
         continue-on-error: true
         run: |
           set -o pipefail
-          python -m autotrader --no-colour control /tmp/issue.md \
+          python -m autotrader --no-colour control /tmp/change.txt \
             | tee /tmp/result.txt
 
       - name: Commit the change
         if: steps.apply.outcome == 'success'
+        env:
+          FILE: ${{ steps.read.outputs.file }}
+          SOURCE: ${{ steps.read.outputs.source }}
         run: |
           set -u
           git config user.name  "autotrader-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A -- config.json state.json
+          # An applied control file is spent. Leaving it would re-apply it on
+          # every later push that touches control/, and leave the repository
+          # accumulating instructions that already happened.
+          if [ -n "$FILE" ] && [ -f "$FILE" ]; then
+            git rm -q -- "$FILE"
+            # A refusal this change is the corrected version of. Leaving it
+            # would have the repository showing a rejection notice next to a
+            # change that has since been applied.
+            rm -f -- "${FILE%.json}.REJECTED.md"
+          fi
+          git add -A -- config.json state.json control
           if git diff --cached --quiet; then
             echo "nothing actually changed on disk"
             exit 0
           fi
-          git commit -m "Apply the change from #${{ github.event.issue.number }} [skip ci]"
+          git commit -m "Apply the change from ${SOURCE} [skip ci]"
           for attempt in 1 2 3; do
             git pull --rebase -X theirs origin main && git push origin main && exit 0
             git rebase --abort 2>/dev/null || true
@@ -85,8 +141,35 @@ jobs:
           echo "::error::could not push the change"
           exit 1
 
+      # A refused change has to be visible to someone holding a phone, and
+      # a phone does not read Actions logs. The reason is committed next to
+      # the file that caused it.
+      - name: Write the refusal down
+        if: steps.apply.outcome == 'failure' && steps.read.outputs.file != ''
+        env:
+          FILE: ${{ steps.read.outputs.file }}
+        run: |
+          set -u
+          {
+            echo "# This change was not applied"
+            echo
+            cat /tmp/result.txt 2>/dev/null || echo "Nothing was read."
+            echo
+            echo "Nothing was changed - not even partly. Edit \`$FILE\` and"
+            echo "commit again; I read it on every push."
+          } > "${FILE%.json}.REJECTED.md"
+          git config user.name  "autotrader-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A -- control
+          git commit -q -m "Refuse the change in $FILE [skip ci]"
+          for attempt in 1 2 3; do
+            git pull --rebase -X theirs origin main && git push origin main && exit 0
+            git rebase --abort 2>/dev/null || true
+            sleep $((attempt * 5))
+          done
+
       - name: Say what happened
-        if: always()
+        if: always() && github.event_name == 'issues'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -109,3 +192,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh workflow run watch.yml --ref main -f automatic=true
+
+      # A green tick over an unapplied change is the one outcome this whole
+      # workflow exists to prevent.
+      - name: Fail if it was refused
+        if: steps.apply.outcome == 'failure'
+        run: |
+          cat /tmp/result.txt 2>/dev/null || true
+          echo "::error::the change was refused and nothing was applied"
+          exit 1

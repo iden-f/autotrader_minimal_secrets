@@ -282,6 +282,12 @@ def build_payload(cfg: Config, state: State, env: dict[str, str] | None = None
         # channel a static page on Pages has, and the only one a phone can
         # use without carrying a token.
         "repo": _repo_slug(env),
+        # Whether this repository has the Issues feature switched on, which
+        # decides which of the two write channels the change button uses. Not
+        # a guess: the workflow reads it out of the event payload and hands it
+        # over. Absent means "assume not", which picks the channel that always
+        # works rather than the one that may 404.
+        "repo_issues": str(env.get("REPO_HAS_ISSUES", "")).lower() == "true",
         "stats": state.stats(),
         "listings": listings,
         "searches": searches,

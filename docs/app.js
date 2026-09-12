@@ -1138,17 +1138,37 @@ function renderStatus() {
    to carry a token. An issue is a write channel both of them already have:
    this composes one, prefilled, and a workflow on the other side applies it
    whole or refuses it whole and says why. */
+// Two ways a phone can write to a repository without a token or a terminal.
+// Committing a file works everywhere; opening an issue only works where the
+// Issues feature is switched on - and on this repository it is not, which is
+// how the change button spent its first day linking to a 404.
 function askUrl(title, instructions, prose) {
   const repo = app.data?.repo;
   if (!repo) return null;
-  const body = [
-    prose || 'Opened from the dashboard.', '',
-    '```autotrader',
-    JSON.stringify(instructions, null, 1),
-    '```',
-  ].join('\n');
-  return `https://github.com/${repo}/issues/new?title=${encodeURIComponent(title)}`
-       + `&body=${encodeURIComponent(body)}`;
+  const stamp = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14);
+  const slug = String(title).toLowerCase().replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '').slice(0, 40) || 'change';
+
+  if (app.data?.repo_issues) {
+    const body = [
+      prose || 'Opened from the dashboard.', '',
+      '```autotrader',
+      JSON.stringify(instructions, null, 1),
+      '```',
+    ].join('\n');
+    return `https://github.com/${repo}/issues/new?title=${encodeURIComponent(title)}`
+         + `&body=${encodeURIComponent(body)}`;
+  }
+
+  // GitHub's web editor takes the filename and the contents in the URL, so
+  // this opens a page with the change already typed and one button to press.
+  // The file is JSON only - the prose goes in the commit message, which the
+  // same page also prefills.
+  return `https://github.com/${repo}/new/main`
+       + `?filename=${encodeURIComponent(`control/${stamp}-${slug}.json`)}`
+       + `&value=${encodeURIComponent(JSON.stringify(instructions, null, 1))}`
+       + `&message=${encodeURIComponent(title)}`
+       + `&description=${encodeURIComponent(prose || 'Opened from the dashboard.')}`;
 }
 
 function askButton(label, title, instructions, prose) {

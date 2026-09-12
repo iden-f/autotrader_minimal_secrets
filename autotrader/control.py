@@ -56,6 +56,10 @@ RULE_BOUNDS: dict[str, tuple[float, float]] = {
     "price_drop_min_pct": (0, 100), "price_drop_min_abs": (0, 1_000_000),
 }
 LISTING_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{5,63}$")
+# Somewhere the distance rule can actually be measured from: a Canadian
+# postcode (full or the forward sortation area alone), or a place name.
+_PLACE = re.compile(r"^(?:[A-Za-z]\d[A-Za-z](?:\s?\d[A-Za-z]\d)?"
+                    r"|[A-Za-z][A-Za-z .'-]{1,40}(?:,\s*[A-Za-z .]{2,30})?)$")
 SEARCH_URL = re.compile(r"^https://(www\.)?autotrader\.ca/", re.I)
 
 
@@ -90,20 +94,34 @@ class Outcome:
 
 
 def parse(body: str) -> list[dict[str, Any]]:
-    """Pull the instructions out of an issue body.
+    """Pull the instructions out of whatever the change arrived in.
 
-    The body is markdown a person may have typed around, so only what is
-    inside the fenced ```autotrader block counts. Everything else is prose.
+    Two transports, because the first one turned out not to exist. An issue
+    body is markdown a person may have typed around, so only what is inside
+    the fenced ```autotrader block counts. A committed control file is JSON
+    and nothing else, so it is read whole.
+
+    Issues can be switched off per repository, and on this one they were -
+    creating one answers "410 Issues has been disabled in this repository",
+    which means the dashboard's change button led to a 404 and the whole
+    channel was decorative. Committing a file needs no repository setting,
+    no token and no terminal, and a phone browser can do it.
     """
-    match = FENCE.search(body or "")
-    if not match:
+    text = (body or "").strip()
+    match = FENCE.search(text)
+    if match:
+        raw = match.group(1).strip()
+        if not raw:
+            raise Rejected("The ```autotrader block is empty.")
+    elif text.startswith(("{", "[")):
+        raw = text                      # a control file, committed directly
+    elif not text:
+        raise Rejected("There is nothing here to read.")
+    else:
         raise Rejected(
-            "I could not find an ```autotrader block in this issue. The "
-            "dashboard writes one for you - open the change from there rather "
-            "than writing the issue by hand.")
-    raw = match.group(1).strip()
-    if not raw:
-        raise Rejected("The ```autotrader block is empty.")
+            "I could not find an ```autotrader block or a JSON instruction "
+            "here. The dashboard writes one for you - open the change from "
+            "there rather than writing it by hand.")
     try:
         loaded = json.loads(raw)
     except json.JSONDecodeError as exc:
@@ -157,6 +175,29 @@ def _rule_value(name: str, value: Any) -> Any:
         if str(value).lower() in ("false", "no", "off", "0"):
             return False
         raise Rejected(f"{name} is a yes/no rule; got {value!r}.")
+    if kind is str:
+        # This branch did not exist. `near` fell through to the numeric path,
+        # which compared a string against a float bound and raised TypeError
+        # out of the whole command - so the one rule a person is most likely
+        # to change from a phone ("I moved") crashed the run instead of
+        # refusing or applying. Nothing in the tests noticed, because there
+        # were none.
+        if not isinstance(value, (str, int, float)):
+            raise Rejected(f"{name} needs a place, not a "
+                           f"{type(value).__name__}.")
+        text = str(value).strip()
+        if not text:
+            raise Rejected(f"{name} cannot be empty. Give a postcode like "
+                           f"'V6N 3B5', or clear it with null.")
+        if len(text) > 60:
+            raise Rejected(f"{name} is {len(text)} characters; a place is "
+                           f"shorter than that.")
+        if not _PLACE.match(text):
+            raise Rejected(
+                f"{text!r} does not look like somewhere I can measure from. "
+                f"Use a Canadian postcode (V6N 3B5) or a city and province "
+                f"(Vancouver, BC).")
+        return text
     return _number(value, name, kind)
 
 
