@@ -347,6 +347,21 @@ class State:
                 HIDDEN_REASON_PREFIX):
             entry.pop("quiet_reason", None)
             entry["notified"] = False
+        # A car that changed hands between a private seller and a dealer, or
+        # the reverse. Recorded from this run on: the field was the empty
+        # string on every listing until the parser was taught to read it, so
+        # this cannot fire on the back catalogue.
+        #
+        # Recorded, not alerted. A private seller giving up and consigning to
+        # a dealer is genuinely interesting - it usually means a price is
+        # about to move - but it is rare enough that a push notification for
+        # it would arrive months apart and be forgotten in between.
+        was_kind = str(existing.get("seller_type") or "")
+        now_kind = str(getattr(listing, "seller_type", "") or "")
+        if was_kind and now_kind and was_kind != now_kind and not was_imported:
+            entry["seller_changed_at"] = now
+            entry["seller_was"] = was_kind
+
         # The first photos on a car that had none. Nine of the cars live right
         # now show nothing at all, and a car you cannot see is a car you
         # cannot judge - so the moment it becomes possible to look at it is

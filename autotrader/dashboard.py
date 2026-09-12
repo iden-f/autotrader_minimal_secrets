@@ -40,7 +40,7 @@ LISTING_FIELDS = (
     # When each thing happened to it, so the feed can be derived rather than
     # stored twice and drift apart.
     "removed_at", "relisted_at", "priced_at", "qualified_at", "qualified_from",
-    "photos_at", "misses", "seller_type",
+    "photos_at", "seller_changed_at", "seller_was", "misses", "seller_type",
     # Why you did or did not hear about this car. The whole point of keeping
     # them is that "we never told you" is always a decision you can read back.
     "notified_at", "quiet_reason",

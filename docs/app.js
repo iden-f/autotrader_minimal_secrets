@@ -30,11 +30,13 @@ const KIND = {
                 rule: 'A rule of yours stopped hiding it' },
   photos:     { label: 'Photos',     group: 'Can be looked at now', flag: 'new',
                 rule: 'First photos on a listing that had none' },
+  seller:     { label: 'Seller',     group: 'Changed hands', flag: 'back',
+                rule: 'Moved between a private seller and a dealer' },
 };
 // Ahead of "new": a car crossing back into your rules is the only moment you
 // will ever hear about it, where a new listing will still be there tomorrow.
 const KIND_ORDER = ['price_drop', 'qualified', 'new', 'priced', 'price_rise',
-                    'relisted', 'photos', 'removed'];
+                    'relisted', 'seller', 'photos', 'removed'];
 
 const SORTS = [
   { id: 'newest',   label: 'Newest first',      get: l => -(Date.parse(l.first_seen) || 0) },
@@ -475,6 +477,8 @@ function listingPool() {
   else if (chip === 'unpriced') rows = rows.filter(l => l.status === 'active' && l.unpriced && !l.filtered);
   else if (chip === 'gone') rows = rows.filter(l => l.status === 'gone');
   else if (chip === 'hidden') rows = rows.filter(l => l.status === 'active' && l.filtered);
+  else if (chip === 'private') rows = rows.filter(l => l.status === 'active'
+    && !l.filtered && l.seller_type === 'private');
   else if (chip === 'mine') rows = rows.filter(l => marks.of(l.id).shortlisted);
   else if (chip === 'dropped') rows = rows.filter(l => marks.of(l.id).dismissed);
 
@@ -528,6 +532,8 @@ function renderListings() {
   const kept = l => !marks.of(l.id).dismissed;
   const counts = {
     all: live().filter(l => !l.filtered && kept(l)).length,
+    private: live().filter(l => !l.filtered && kept(l)
+      && l.seller_type === 'private').length,
     mine: (app.data.listings || []).filter(l => marks.of(l.id).shortlisted).length,
     dropped: (app.data.listings || []).filter(l => marks.of(l.id).dismissed).length,
     drops: live().filter(l => priceMove(l)?.delta < 0).length,
@@ -540,13 +546,16 @@ function renderListings() {
   chips.setAttribute('role', 'group');
   chips.setAttribute('aria-label', 'Filter by state');
   for (const [id, label] of [['all', 'Live'], ['new', 'New'], ['drops', 'Price drops'],
-                             ['mine', 'Shortlisted'],
+                             ['private', 'Private sellers'], ['mine', 'Shortlisted'],
                              ['unpriced', 'Call for price'], ['hidden', 'Hidden by a rule'],
                              ['gone', 'Gone'], ['dropped', 'Not interested']]) {
     // Your own two only appear once you have used them. An empty "Shortlisted
     // 0" on a first visit is a control that does nothing, sitting beside
     // controls that do.
-    if ((id === 'mine' || id === 'dropped') && !counts[id] && app.chip !== id) continue;
+    // A filter that would return nothing is a control that does nothing,
+    // sitting beside controls that do.
+    if ((id === 'mine' || id === 'dropped' || id === 'private')
+        && !counts[id] && app.chip !== id) continue;
     const c = el('button', 'chip');
     c.type = 'button';
     c.setAttribute('aria-pressed', app.chip === id ? 'true' : 'false');
@@ -673,6 +682,9 @@ function shot(l, cls) {
   return box;
 }
 
+const sellerWord = kind => kind === 'private' ? 'private seller'
+                        : kind === 'dealer' ? 'dealer' : '';
+
 function card(l) {
   const b = el('button', 'card');
   b.type = 'button';
@@ -704,6 +716,10 @@ function card(l) {
   if (l.per_1000km) facts.push(`<span class="num">$${Math.round(l.per_1000km)}<u> /1000km</u></span>`);
   if (l.distance_km !== undefined && l.distance_km !== null) facts.push(`<span class="num">${km(l.distance_km)}<u> km away</u></span>`);
   if (l.location) facts.push(`<span>${esc(l.location)}</span>`);
+  // Dealer or private. Different negotiation, different paperwork, and the
+  // first thing a person filters on - which is why it being parsed, published
+  // and invisible for the whole project was worth fixing at both ends.
+  if (l.seller_type) facts.push(`<span>${esc(sellerWord(l.seller_type))}</span>`);
 
   const foot = [];
   if (cmp?.pct !== undefined && cmp.notable) {

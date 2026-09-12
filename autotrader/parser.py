@@ -183,6 +183,61 @@ def _clean(text: str) -> str:
     return re.sub(r"\s+", " ", htmllib.unescape(str(text or ""))).strip()
 
 
+def _seller_kind(node: Any, depth: int = 0) -> str:
+    """Dealer or private, from the seller's schema.org type.
+
+    The field has been on the Listing dataclass since the rebuild and nothing
+    has ever set it - 251 listings, all of them the empty string - while the
+    answer sat in the same JSON-LD the parser was already reading:
+    "seller": {"@type": "AutoDealer", ...}. It matters to a buyer, because a
+    dealer and a private seller are different negotiations.
+
+    Only what the page actually says. A listing with no seller type stays
+    empty rather than being guessed at from the name.
+    """
+    # Bounded. The nested lookup at the end follows a "seller" key, and a
+    # payload whose seller points back at itself would otherwise take the
+    # whole run down over a field that is decoration.
+    if not isinstance(node, dict) or depth > 3:
+        return ""
+    kind = str(node.get("@type") or node.get("type") or "").strip()
+    if kind in ("AutoDealer", "Organization", "Store", "LocalBusiness",
+                "Corporation", "AutomotiveBusiness"):
+        return "dealer"
+    if kind in ("Person", "Individual"):
+        return "private"
+    if kind:
+        word = _seller_word(kind)
+        if word:
+            return word
+    # Some payloads carry it as a flag beside the seller rather than as a type.
+    for key in ("sellerType", "seller_type", "isDealer", "dealer"):
+        value = node.get(key)
+        if isinstance(value, bool):
+            return "dealer" if value else "private"
+        if isinstance(value, str) and value.strip():
+            word = _seller_word(value)
+            if word:
+                return word
+    # The 2026 platform's embedded payload nests it one level down:
+    #   "seller": {"dealer": {...}, "id": "...", "type": "Dealer"}
+    # That is the strategy actually winning on live runs, so filling only the
+    # schema.org path above would have looked like a fix and changed nothing.
+    inner = node.get("seller")
+    if isinstance(inner, dict):
+        return _seller_kind(inner, depth + 1)
+    return ""
+
+
+def _seller_word(text: str) -> str:
+    low = str(text).strip().lower()
+    if "dealer" in low or low in ("d", "franchise", "independent"):
+        return "dealer"
+    if "private" in low or low in ("p", "individual", "fsbo", "owner"):
+        return "private"
+    return ""
+
+
 def _titlecase_place(text: str) -> str:
     """Dealer addresses arrive shouted ("MONTREAL", "TORONTO")."""
     text = _clean(text)
@@ -329,6 +384,7 @@ def _listing_from_json(node: dict, base_url: str) -> Listing | None:
     price = None
     currency = "CAD"
     seller_name = ""
+    seller_kind = ""
     city = ""
     region = ""
     if isinstance(offers, dict):
@@ -337,6 +393,7 @@ def _listing_from_json(node: dict, base_url: str) -> Listing | None:
         seller = offers.get("seller")
         if isinstance(seller, dict):
             seller_name = str(seller.get("name") or "")
+            seller_kind = _seller_kind(seller)
             address = seller.get("address")
             if isinstance(address, dict):
                 city = str(address.get("addressLocality") or "")
@@ -384,6 +441,7 @@ def _listing_from_json(node: dict, base_url: str) -> Listing | None:
                  or _place_from(_first_key(facts, _JSON_KEYS["province"]))[0],
         seller=_clean(seller_name)
                or _clean(str(_first_key(facts, _JSON_KEYS["seller"]) or ""))[:80],
+        seller_type=seller_kind or _seller_kind(facts),
         body=_clean(facts.get("bodyType") or facts.get("body") or ""),
         color=_clean(facts.get("color") or ""),
         transmission=_clean(facts.get("vehicleTransmission")

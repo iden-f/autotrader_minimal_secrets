@@ -181,6 +181,10 @@ def events(entries: Iterable[dict[str, Any]], limit: int = 400
         if entry.get("qualified_at"):
             add("qualified", entry["qualified_at"], entry,
                 was_hidden_by=entry.get("qualified_from") or "")
+        if entry.get("seller_changed_at"):
+            add("seller", entry["seller_changed_at"], entry,
+                was=entry.get("seller_was") or "",
+                now=entry.get("seller_type") or "")
         if entry.get("photos_at"):
             add("photos", entry["photos_at"], entry,
                 photos=len(entry.get("images") or []))

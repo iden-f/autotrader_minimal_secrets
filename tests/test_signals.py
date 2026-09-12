@@ -27,10 +27,15 @@ sounds useful:
           a 250-request budget. A signal that expensive has to be worth more
           than "the seller fixed a typo".
 
-  NOT     seller type changed. seller_type is the empty string on all 251
-          listings - the parser extracts nothing for it. Alerting on a field
-          that is always empty produces an alert that can never fire, which
-          is worse than no feature because it looks like one.
+  LATER   seller type changed. This was "not built", on the grounds that
+          seller_type was the empty string on all 251 listings - the parser
+          extracted nothing for it, and alerting on a field that can never be
+          set is worse than no feature because it looks like one. That turned
+          out to be a bug rather than a limit: the answer was in the same JSON
+          the parser was already reading. It is parsed now, and a change in it
+          is recorded and shown. Still not pushed: a private seller consigning
+          to a dealer is real news, and it is rare enough that the alert would
+          arrive months apart and be forgotten in between.
 
   NOT     sitting unusually long. "Unusually" needs a baseline, and the watch
           is two days old with every still-listed figure right-censored. The
@@ -154,18 +159,21 @@ class TestTheOnesNotBuiltAndWhy:
     when the decision deserves revisiting.
     """
 
-    def test_seller_type_is_still_empty_everywhere(self):
-        """If the parser ever fills this in, alerting on it becomes possible."""
-        import json
-        from pathlib import Path
-        state_file = Path("state.json")
-        if not state_file.exists():
-            return
-        entries = json.loads(state_file.read_text()).get("listings", {}).values()
-        filled = [e for e in entries if str(e.get("seller_type") or "").strip()]
-        assert not filled, (
-            f"{len(filled)} listings now carry a seller type - the reason for "
-            f"not alerting on a change in it no longer holds")
+    def test_the_seller_type_reason_has_since_been_answered(self):
+        """This test used to assert the field was empty everywhere.
+
+        It was: 251 listings, all of them the empty string, which was the
+        whole reason for not building the signal. The answer turned out to be
+        in the same JSON the parser was already reading, in both strategies
+        that win on this site. So the field is real now, and the decision it
+        justified has been revisited rather than left standing on a fact that
+        stopped being true.
+
+        The signal is recorded rather than pushed - see the module docstring.
+        """
+        from autotrader.parser import _seller_kind
+        assert _seller_kind({"@type": "AutoDealer"}) == "dealer"
+        assert _seller_kind({"seller": {"type": "Dealer"}}) == "dealer"
 
     def test_no_description_is_stored_to_compare_against(self):
         assert "description" not in Listing.__dataclass_fields__, (
@@ -257,3 +265,39 @@ class TestADigestCannotBeLostToAMalformedChange:
                    Change(Change.PRICE_DROP, listing())]      # malformed
         assert render.headline(changes)
         assert render.as_text(changes)
+
+
+class TestChangingHands:
+    def test_private_to_dealer_is_recorded(self):
+        st = fresh()
+        st.record(listing(seller_type="private"))
+        st.record(listing(seller_type="dealer"))
+        entry = st.listings[listing().id]
+        assert entry["seller_changed_at"] and entry["seller_was"] == "private"
+
+    def test_it_is_not_an_alert(self):
+        st = fresh()
+        st.record(listing(seller_type="private"))
+        assert st.record(listing(seller_type="dealer")) is None
+
+    def test_an_unchanged_seller_records_nothing(self):
+        st = fresh()
+        st.record(listing(seller_type="dealer"))
+        st.record(listing(seller_type="dealer"))
+        assert "seller_changed_at" not in st.listings[listing().id]
+
+    def test_a_field_arriving_for_the_first_time_is_not_a_change(self):
+        """Every car in state predates the parser learning to read this."""
+        st = fresh()
+        st.record(listing(seller_type=""))
+        st.record(listing(seller_type="dealer"))
+        assert "seller_changed_at" not in st.listings[listing().id]
+
+    def test_it_reaches_the_feed(self):
+        from autotrader import insight
+        st = fresh()
+        st.record(listing(seller_type="private"))
+        st.record(listing(seller_type="dealer"))
+        found = [e for e in insight.events(st.listings.values())
+                 if e["kind"] == "seller"]
+        assert found and found[0]["was"] == "private"
