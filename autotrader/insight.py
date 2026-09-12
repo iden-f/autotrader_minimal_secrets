@@ -106,15 +106,27 @@ def per_1000km(price: Any, km: Any) -> float | None:
 # ---------------------------------------------------------------- the feed
 
 def _delivery(entry: dict[str, Any]) -> dict[str, Any]:
-    """Whether you heard about this, and if not, why not."""
+    """Whether you heard about this, and if not, why not.
+
+    The quiet reason is asked first, and that ordering is the whole point. A
+    car can carry both: delivered once when it arrived and visible, then
+    hidden by a rule added afterwards. Reading notified_at first made the
+    ledger report a suppressed relisting as "delivered at 02:15" - a real
+    timestamp, attached to a different event, describing a message that was
+    never sent about this one.
+    """
     if entry.get("pending"):
         return {"state": "queued",
                 "text": "queued for delivery, not sent yet"}
+    if entry.get("quiet_reason"):
+        text = str(entry["quiet_reason"])
+        if entry.get("notified_at"):
+            text += (f" (you were told about this car at "
+                     f"{entry['notified_at']}, before that rule applied)")
+        return {"state": "quiet", "text": text}
     if entry.get("notified_at"):
         return {"state": "sent", "at": entry["notified_at"],
                 "text": f"sent {entry['notified_at']}"}
-    if entry.get("quiet_reason"):
-        return {"state": "quiet", "text": str(entry["quiet_reason"])}
     return {"state": "none",
             "text": "no record of telling you - which is itself a fault"}
 

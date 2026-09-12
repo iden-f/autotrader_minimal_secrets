@@ -53,16 +53,28 @@ class Event:
 
 
 def _delivery(entry: dict[str, Any]) -> str:
-    """What the bot did about this car, in the words it recorded at the time."""
+    """What the bot did about this car, in the words it recorded at the time.
+
+    The quiet reason comes first, and that ordering matters. A car can carry
+    both: delivered once when it arrived and visible, then hidden by a rule
+    added later. Reading the delivery time first reported a relisting that
+    was correctly suppressed as "delivered at 02:15" - a real timestamp,
+    belonging to a different event, describing a message never sent about
+    this one.
+    """
     if entry.get("pending"):
         return "queued, not yet delivered"
+    if entry.get("quiet_reason"):
+        text = f"deliberately quiet: {entry['quiet_reason']}"
+        if entry.get("notified_at"):
+            text += (f" (this car was announced at {entry['notified_at']}, "
+                     f"before that rule applied)")
+        return text
     if entry.get("notified_at"):
         stamp = entry["notified_at"]
         if entry.get("notified_at_backfilled"):
             return f"delivered (time reconstructed, {stamp})"
         return f"delivered at {stamp}"
-    if entry.get("quiet_reason"):
-        return f"deliberately quiet: {entry['quiet_reason']}"
     return "no record - which is itself a fault the run should have caught"
 
 

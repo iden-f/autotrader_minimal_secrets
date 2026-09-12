@@ -392,3 +392,51 @@ class TestRunningIsNotTheSameAsWatching:
         """A fresh install has no history, which is not the same as a fault."""
         state = self._runs(State(path=tmp_path / "s.json"), 1)
         assert events.thin_coverage(self._cfg(), state, {}) is None
+
+
+class TestACarThatWasAnnouncedAndIsNowHidden:
+    """Both records are true, and only one of them is the answer.
+
+    Live, on the first relisting this bot ever saw: a 2023 M5 came back on
+    12 September, and the ledger reported it "delivered at 2026-09-10
+    02:15:46". That timestamp was real - it was when the car first appeared,
+    while it was still visible. A radius rule added afterwards hid it, so the
+    relisting itself was correctly never sent. The ledger claimed an alert
+    that did not happen.
+    """
+
+    def _entry(self, state):
+        car(state, price=134998)
+        e = state.listings["1"]
+        e["notified_at"] = "2026-09-10T02:15:46+00:00"
+        e["notified"] = True
+        e["filtered"] = True
+        e["filter_reason"] = "Calgary, AB is 680 km from V6N 3B5"
+        e["quiet_reason"] = "hidden by your rules: Calgary, AB is 680 km from V6N 3B5"
+        return e
+
+    def test_the_ledger_says_quiet_not_delivered(self, tmp_path):
+        state = State(path=tmp_path / "s.json")
+        entry = self._entry(state)
+        said = events._delivery(entry)
+        assert said.startswith("deliberately quiet"), said
+        assert "680 km" in said
+
+    def test_and_still_says_when_it_was_announced_before(self, tmp_path):
+        """The earlier delivery is not erased - it is just not the answer."""
+        state = State(path=tmp_path / "s.json")
+        said = events._delivery(self._entry(state))
+        assert "2026-09-10T02:15:46" in said
+        assert "before that rule applied" in said
+
+    def test_a_visible_car_still_reports_its_delivery(self, tmp_path):
+        state = State(path=tmp_path / "s.json")
+        car(state, price=90000)
+        state.mark_notified(["1"])
+        assert events._delivery(state.listings["1"]).startswith("delivered at")
+
+    def test_the_dashboard_feed_agrees_with_the_ledger(self, tmp_path):
+        from autotrader import insight
+        state = State(path=tmp_path / "s.json")
+        entry = self._entry(state)
+        assert insight._delivery(entry)["state"] == "quiet"

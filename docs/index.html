@@ -195,7 +195,13 @@ a{ color:var(--ev-new); text-underline-offset:2px; }
   }
   /* The badge keeps its slot whether or not there is a number in it, so the
      labels sit on one line across the bar. */
-  .tab__n{ min-width:20px; text-align:center; min-height:15px; }
+  /* Exactly the same box whether or not there is a number in it. A two-pixel
+     difference repeated four times across a bar reads as sloppy even when
+     nobody can say what is wrong with it. */
+  .tab__n{
+    min-width:22px; height:17px; line-height:15px; text-align:center;
+    display:inline-block; padding:0 var(--s1);
+  }
   .tab__n:empty{ background:none; }
   .tab[aria-current="page"]{ border-top-color:var(--text); border-bottom-color:transparent; }
 }

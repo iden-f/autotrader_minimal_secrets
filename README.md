@@ -417,7 +417,7 @@ pip install -r requirements.txt -r requirements-dev.txt
 python -m pytest -q
 ```
 
-711 tests. They run against real pages AutoTrader actually served — ten
+762 tests. They run against real pages AutoTrader actually served — ten
 captured listing pages in `tests/fixtures/listings/` and captured results
 pages in `tests/fixtures/` — not against mocks.
 

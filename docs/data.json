@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-09-12T07:21:39+00:00",
+ "generated_at": "2026-09-12T07:28:33+00:00",
  "notify": {
   "ntfy_topic": "autotrader-2q592ak9gnx7sqrere5r",
   "ntfy_url": "https://ntfy.sh/autotrader-2q592ak9gnx7sqrere5r",
@@ -5189,7 +5189,7 @@
    "is_new": false,
    "photo_count": 1,
    "per_1000km": 3211.1,
-   "days_listed": 372
+   "days_listed": 373
   },
   {
    "id": "67855497",
@@ -14239,9 +14239,8 @@
    "filtered": true,
    "filter_reason": "Calgary, AB is 680 km from V6N 3B5, beyond the 250 km you asked for",
    "delivery": {
-    "state": "sent",
-    "at": "2026-09-10T02:15:46+00:00",
-    "text": "sent 2026-09-10T02:15:46+00:00"
+    "state": "quiet",
+    "text": "hidden by your rules: Calgary, AB is 680 km from V6N 3B5, beyond the 250 km you asked for (you were told about this car at 2026-09-10T02:15:46+00:00, before that rule applied)"
    }
   },
   {
@@ -14308,9 +14307,8 @@
    "filtered": true,
    "filter_reason": "Montréal, QC is 3,692 km from V6N 3B5, beyond the 250 km you asked for",
    "delivery": {
-    "state": "sent",
-    "at": "2026-09-10T02:15:46+00:00",
-    "text": "sent 2026-09-10T02:15:46+00:00"
+    "state": "quiet",
+    "text": "hidden by your rules: Montréal, QC is 3,692 km from V6N 3B5, beyond the 250 km you asked for (you were told about this car at 2026-09-10T02:15:46+00:00, before that rule applied)"
    }
   },
   {
@@ -14587,9 +14585,8 @@
    "filtered": true,
    "filter_reason": "price $153,287 above maximum $100,000",
    "delivery": {
-    "state": "sent",
-    "at": "2026-09-10T02:16:07+00:00",
-    "text": "sent 2026-09-10T02:16:07+00:00"
+    "state": "quiet",
+    "text": "hidden by your rules: price $153,287 above maximum $100,000 (you were told about this car at 2026-09-10T02:16:07+00:00, before that rule applied)"
    },
    "new_price": 153287
   },
@@ -15057,9 +15054,8 @@
    "filtered": true,
    "filter_reason": "price $153,287 above maximum $100,000",
    "delivery": {
-    "state": "sent",
-    "at": "2026-09-10T02:16:07+00:00",
-    "text": "sent 2026-09-10T02:16:07+00:00"
+    "state": "quiet",
+    "text": "hidden by your rules: price $153,287 above maximum $100,000 (you were told about this car at 2026-09-10T02:16:07+00:00, before that rule applied)"
    }
   },
   {
@@ -17616,9 +17612,8 @@
    "filtered": true,
    "filter_reason": "Calgary, AB is 680 km from V6N 3B5, beyond the 250 km you asked for",
    "delivery": {
-    "state": "sent",
-    "at": "2026-09-10T02:15:46+00:00",
-    "text": "sent 2026-09-10T02:15:46+00:00"
+    "state": "quiet",
+    "text": "hidden by your rules: Calgary, AB is 680 km from V6N 3B5, beyond the 250 km you asked for (you were told about this car at 2026-09-10T02:15:46+00:00, before that rule applied)"
    }
   },
   {
@@ -17683,9 +17678,8 @@
    "filtered": true,
    "filter_reason": "Calgary, AB is 680 km from V6N 3B5, beyond the 250 km you asked for",
    "delivery": {
-    "state": "sent",
-    "at": "2026-09-10T02:15:46+00:00",
-    "text": "sent 2026-09-10T02:15:46+00:00"
+    "state": "quiet",
+    "text": "hidden by your rules: Calgary, AB is 680 km from V6N 3B5, beyond the 250 km you asked for (you were told about this car at 2026-09-10T02:15:46+00:00, before that rule applied)"
    }
   },
   {
@@ -17766,9 +17760,8 @@
    "filtered": true,
    "filter_reason": "Edmonton, AB is 823 km from V6N 3B5, beyond the 250 km you asked for",
    "delivery": {
-    "state": "sent",
-    "at": "2026-09-10T02:15:46+00:00",
-    "text": "sent 2026-09-10T02:15:46+00:00"
+    "state": "quiet",
+    "text": "hidden by your rules: Edmonton, AB is 823 km from V6N 3B5, beyond the 250 km you asked for (you were told about this car at 2026-09-10T02:15:46+00:00, before that rule applied)"
    }
   },
   {
@@ -17783,9 +17776,8 @@
    "filtered": true,
    "filter_reason": "Saint-Paul, QC is beyond the 250 km you asked for around V6N 3B5",
    "delivery": {
-    "state": "sent",
-    "at": "2026-09-10T02:15:46+00:00",
-    "text": "sent 2026-09-10T02:15:46+00:00"
+    "state": "quiet",
+    "text": "hidden by your rules: Saint-Paul, QC is beyond the 250 km you asked for around V6N 3B5 (you were told about this car at 2026-09-10T02:15:46+00:00, before that rule applied)"
    }
   },
   {
@@ -17800,9 +17792,8 @@
    "filtered": true,
    "filter_reason": "Edmonton, AB is 823 km from V6N 3B5, beyond the 250 km you asked for",
    "delivery": {
-    "state": "sent",
-    "at": "2026-09-10T02:15:46+00:00",
-    "text": "sent 2026-09-10T02:15:46+00:00"
+    "state": "quiet",
+    "text": "hidden by your rules: Edmonton, AB is 823 km from V6N 3B5, beyond the 250 km you asked for (you were told about this car at 2026-09-10T02:15:46+00:00, before that rule applied)"
    }
   },
   {
@@ -17850,9 +17841,8 @@
    "filtered": true,
    "filter_reason": "Montréal, QC is 3,692 km from V6N 3B5, beyond the 250 km you asked for",
    "delivery": {
-    "state": "sent",
-    "at": "2026-09-10T02:15:46+00:00",
-    "text": "sent 2026-09-10T02:15:46+00:00"
+    "state": "quiet",
+    "text": "hidden by your rules: Montréal, QC is 3,692 km from V6N 3B5, beyond the 250 km you asked for (you were told about this car at 2026-09-10T02:15:46+00:00, before that rule applied)"
    }
   },
   {
@@ -17867,9 +17857,8 @@
    "filtered": true,
    "filter_reason": "Spruce grove, AB is 800 km from V6N 3B5, beyond the 250 km you asked for",
    "delivery": {
-    "state": "sent",
-    "at": "2026-09-10T02:15:46+00:00",
-    "text": "sent 2026-09-10T02:15:46+00:00"
+    "state": "quiet",
+    "text": "hidden by your rules: Spruce grove, AB is 800 km from V6N 3B5, beyond the 250 km you asked for (you were told about this car at 2026-09-10T02:15:46+00:00, before that rule applied)"
    }
   }
  ],
@@ -19464,10 +19453,10 @@
   "checks": 18,
   "successful": 8,
   "pct": 16.7,
-  "longest_gap_minutes": 1090.0,
+  "longest_gap_minutes": 1083.1,
   "expected_interval_minutes": 30,
   "truncated": false,
-  "since": "2026-09-11T07:21:39+00:00"
+  "since": "2026-09-11T07:28:33+00:00"
  },
  "cost": {
   "checks": 18,

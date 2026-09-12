@@ -152,6 +152,21 @@ function trustState() {
   // worth an amber light even when the most recent check was a minute ago.
   const thin = cov.pct !== undefined && cov.pct < 50;
 
+  // Nothing has ever run. That is not a fault, it is a fresh install, and
+  // reporting it as "0% coverage" tells somebody who has just set this up
+  // that it is already broken.
+  if (!run.at) {
+    return {
+      state: 'stale',
+      text: 'Not checked yet',
+      alarm: {
+        level: 'warn',
+        text: 'No check has run yet. The first one records everything already on the site as a starting point rather than announcing all of it at you, so expect the feed to stay quiet until something actually changes.',
+        detail: '',
+      },
+    };
+  }
+
   if (failing) {
     return {
       state: 'bad',
@@ -302,8 +317,11 @@ function renderFeed() {
 
   const events = feedEvents();
   if (!events.length) {
-    host.appendChild(emptyState('Nothing has happened yet',
-      'The bot has not recorded a change since it started watching. The first check records everything it finds as a starting point rather than announcing 200 cars at you.'));
+    host.appendChild(emptyState(
+      app.data.last_run ? 'Nothing has changed yet' : 'Nothing has been checked yet',
+      app.data.last_run
+        ? 'Every car the searches found was already there when the bot started watching. This fills up as prices move and cars come and go.'
+        : 'The first check has not run. When it does, everything already on the site is recorded as a starting point — you will hear about what changes after that, not about the back catalogue.'));
     return;
   }
 
