@@ -497,7 +497,8 @@ select:hover,.btn:hover{ background:var(--surface-2); }
 .kv dt{ color:var(--text-3); font-size:var(--t-micro); letter-spacing:.06em; text-transform:uppercase; padding-top:2px; }
 .kv dd{ margin:0; font-variant-numeric:tabular-nums; }
 
-.stats{ display:grid; gap:var(--s4); grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); }
+.stats{ display:grid; gap:var(--s3); grid-template-columns:repeat(2,1fr); }
+@media (min-width:560px){ .stats{ grid-template-columns:repeat(3,1fr); gap:var(--s4); } }
 .stat{ background:var(--surface); border-radius:var(--r-md); padding:var(--s4); }
 .stat dt{
   font-size:var(--t-micro); font-weight:520; letter-spacing:.06em;
@@ -518,8 +519,8 @@ select:hover,.btn:hover{ background:var(--surface-2); }
 .timeline i[data-ok="0"]{ background:var(--bad); }
 /* A gap is absence, so it is drawn as absence rather than as another bar. */
 .timeline i[data-gap="1"]{
-  background:none; border-bottom:1px dashed var(--line-strong);
-  align-self:stretch; border-radius:0;
+  background:none; border-left:1px dotted var(--line-strong);
+  align-self:stretch; border-radius:0; flex:0 0 5px; max-width:5px;
 }
 
 .ladder{ display:flex; gap:var(--s1); align-items:center; }

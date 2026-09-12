@@ -841,7 +841,7 @@ function renderStatus() {
     for (const r of runs) {
       const t = Date.parse(r.at);
       if (prev && t - prev > (cov.expected_interval_minutes || 30) * 60000 * 2) {
-        const g = el('i'); g.dataset.gap = '1'; g.style.height = '30%'; tl.appendChild(g);
+        const g = el('i'); g.dataset.gap = '1'; tl.appendChild(g);
       }
       const i = el('i');
       i.dataset.ok = r.ok ? '1' : '0';
@@ -852,7 +852,7 @@ function renderStatus() {
     }
     s.appendChild(tl);
     s.appendChild(el('p', 'note',
-      `Height is how long the check took. Grey marks a gap longer than two intervals.`));
+      `One mark per check, oldest first; height is how long it took. A dotted line is a gap longer than two intervals — a stretch with no check in it at all.`));
     host.appendChild(s);
   }
 
@@ -866,7 +866,7 @@ function renderStatus() {
       Object.entries(strat).map(([, v]) => {
         const order = v.order || [];
         const lad = order.map(n => `<i data-on="${(v.working || []).includes(n) ? 1 : 0}" title="${esc(n)}"></i>`).join('');
-        const scores = order.map(n => `${n.replace('_', ' ')} ${v.scores?.[n] ?? 0}`).join('  ');
+        const scores = order.map(n => `${n} ${v.scores?.[n] ?? 0}`).join(' · ');
         return `<tr><td>${esc(v.name)}</td><td class="mono">${esc(v.winner || '—')}</td>
           <td><span class="ladder" role="img" aria-label="${(v.working || []).length} of ${v.of} strategies working">${lad}</span></td>
           <td class="r mono" style="font-size:var(--t-micro)">${esc(scores)}</td></tr>`;
