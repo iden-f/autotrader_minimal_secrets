@@ -317,12 +317,24 @@ class TestListingOddities:
             "notifications.notify_on.relisted") is False
 
     def test_a_car_that_returns_cheaper_still_reports_the_drop(self, tmp_path):
+        """The drop is never lost. It is now told as the better story.
+
+        This used to assert PRICE_DROP, on the reasoning that the price move
+        is the useful fact and the relisting is context. That reading loses
+        something real: a seller who pulls a car and puts it back $8,000
+        cheaper has done more than edit a live listing, and reporting the two
+        identically throws the difference away. So the kind is now RELISTED -
+        carrying the same delta, counted in the same price_drops total, and
+        gated by the same price-drop switch.
+        """
         state = State(path=tmp_path / "s.json")
         state.record(Listing(id="1", url="u", price=100000, price_source="detail", search_id="s"))
         state.mark_missing("s", set()); state.mark_missing("s", set())
         change = state.record(Listing(id="1", url="u", price=92000,
                                       price_source="detail", search_id="s"))
-        assert change.kind == Change.PRICE_DROP and change.delta == -8000
+        assert change.kind == Change.RELISTED
+        assert change.delta == -8000
+        assert "$8,000 cheaper" in change.describe()
 
     def test_the_miss_counter_resets_when_a_car_reappears(self, tmp_path):
         state = State(path=tmp_path / "s.json")

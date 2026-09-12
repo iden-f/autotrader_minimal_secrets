@@ -111,6 +111,13 @@ DEFAULTS: dict[str, Any] = {
             "priced": True,
             "removed": False,
             "relisted": False,
+            # A car your rules had been hiding that now qualifies. On by
+            # default, and the reason is arithmetic: the price ceiling alone
+            # hides 114 of the 192 cars on this market, so this is the only
+            # moment any of them is ever mentioned. Off, and a car that drops
+            # into range is silently indistinguishable from one that never
+            # existed.
+            "qualified": True,
             "errors": True,
         },
         "price_drop_min_pct": 1.0,

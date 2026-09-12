@@ -260,9 +260,11 @@ class NtfyNotifier(Notifier):
     # the market is worth recording and not worth a buzz at 2am.
     _PRIORITY = {Change.PRICE_DROP: "high", Change.PRICED: "default",
                  Change.NEW: "default", Change.RELISTED: "default",
+                 Change.QUALIFIED: "default",
                  Change.PRICE_RISE: "low", Change.REMOVED: "low"}
     _TAGS = {Change.PRICE_DROP: "chart_with_downwards_trend", Change.NEW: "car",
              Change.PRICED: "label", Change.RELISTED: "arrows_counterclockwise",
+             Change.QUALIFIED: "unlock",
              Change.PRICE_RISE: "chart_with_upwards_trend", Change.REMOVED: "ghost"}
 
     def _lead(self, changes: list[Change]) -> Change:
@@ -280,7 +282,7 @@ class NtfyNotifier(Notifier):
         drops = [c for c in changes if c.kind == Change.PRICE_DROP]
         if drops:
             return min(drops, key=lambda c: c.delta or 0)
-        for kind in (Change.PRICED, Change.NEW, Change.RELISTED,
+        for kind in (Change.PRICED, Change.NEW, Change.QUALIFIED, Change.RELISTED,
                      Change.PRICE_RISE, Change.REMOVED):
             for change in changes:
                 if change.kind == kind:

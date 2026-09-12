@@ -52,6 +52,12 @@ class Change:
     PRICED = "priced"
     REMOVED = "removed"
     RELISTED = "relisted"
+    # A car that was here all along and did not qualify, and now does. The
+    # price ceiling alone hides 114 of the 192 cars on this market, so one of
+    # them crossing the line is not a new listing and not a price drop the
+    # user ever saw - it is the only moment they would ever hear about that
+    # car, and until now nothing generated an event for it.
+    QUALIFIED = "qualified"
 
     def __init__(self, kind: str, listing: Listing, *, old_price: int | None = None,
                  new_price: int | None = None) -> None:
@@ -87,7 +93,17 @@ class Change:
         if self.kind == Change.REMOVED:
             return "Listing removed"
         if self.kind == Change.RELISTED:
+            # Relisted at a different number is a different event from
+            # relisted. A seller who took a car down and put it back $4,000
+            # cheaper has told you something; one who put it back unchanged
+            # has told you the listing expired.
+            if self.delta:
+                direction = "cheaper" if self.delta < 0 else "dearer"
+                return (f"Back on the market ${abs(self.delta):,} {direction} "
+                        f"- ${self.old_price:,} to ${self.new_price:,}")
             return "Back on the market"
+        if self.kind == Change.QUALIFIED:
+            return "Now within your rules"
         return self.kind
 
     def to_dict(self) -> dict[str, Any]:
@@ -324,6 +340,24 @@ class State:
                 HIDDEN_REASON_PREFIX):
             entry.pop("quiet_reason", None)
             entry["notified"] = False
+        # The first photos on a car that had none. Nine of the cars live right
+        # now show nothing at all, and a car you cannot see is a car you
+        # cannot judge - so the moment it becomes possible to look at it is
+        # worth recording. Deliberately not an alert: nothing about the car
+        # changed, only what can be seen of it, and a push notification for
+        # "you can now look at this" is a push notification too many.
+        had_photos = bool(existing.get("images"))
+        if not had_photos and listing.images and not was_imported:
+            entry["photos_at"] = now
+
+        # The moment a hidden car crosses back into the rules. Recorded
+        # whatever else happened on this observation, so the dashboard can
+        # mark it even when the headline is the price drop that caused it.
+        crossed_in = bool(existing.get("filtered")) and not filtered \
+            and not was_imported and not came_back
+        if crossed_in:
+            entry["qualified_at"] = now
+            entry["qualified_from"] = str(existing.get("filter_reason") or "")[:200]
         history = list(existing.get("price_history") or [])
 
         change: Change | None = None
@@ -346,11 +380,20 @@ class State:
         elif listing.price is not None and listing.price != old_price:
             history.append({"at": now, "price": listing.price})
             entry.pop("price_disputed", None)
-            if old_price is not None and not was_imported:
+            if came_back and not was_imported:
+                # Coming back at a different number is one event, not two, and
+                # it is the stronger one. This branch used to sit behind the
+                # price-drop test, which requires only that an old price
+                # exists - so a car that was pulled and relisted $4,000
+                # cheaper was reported as an ordinary price drop and the fact
+                # that it had been withdrawn at all was thrown away. A seller
+                # who takes a car down and puts it back cheaper is telling you
+                # something a seller who edits a live listing is not.
+                change = Change(Change.RELISTED, merged, old_price=old_price,
+                                new_price=listing.price)
+            elif old_price is not None and not was_imported:
                 kind = Change.PRICE_DROP if listing.price < old_price else Change.PRICE_RISE
                 change = Change(kind, merged, old_price=old_price, new_price=listing.price)
-            elif came_back and not was_imported:
-                change = Change(Change.RELISTED, merged, new_price=listing.price)
             elif was_unpriced and not was_imported:
                 # A "call for price" car has put a figure on itself. That is
                 # not a price drop - there is nothing to compare against - but
@@ -363,7 +406,16 @@ class State:
             if not history and listing.price is not None:
                 history.append({"at": now, "price": listing.price})
             if came_back and not was_imported:
-                change = Change(Change.RELISTED, merged, new_price=listing.price)
+                change = Change(Change.RELISTED, merged, old_price=old_price,
+                                new_price=listing.price)
+
+        # A car that crossed into the rules with no other change to report.
+        # When a price drop caused the crossing, the drop is the better story
+        # and already carries the numbers - announcing both would be the same
+        # car twice in one digest.
+        if change is None and crossed_in:
+            change = Change(Change.QUALIFIED, merged, old_price=old_price,
+                            new_price=entry.get("price"))
 
         entry["price_history"] = history[-MAX_PRICE_POINTS:]
         # Set last, from the entry rather than from this observation. A results

@@ -4,11 +4,5 @@
   "search": "BMW M5 bargains (any year)",
   "rule": "max_price",
   "value": 120000
- },
- {
-  "action": "set-rule",
-  "search": "BMW M5 bargains (any year)",
-  "rule": "maximum_mileage",
-  "value": 150000
  }
 ]

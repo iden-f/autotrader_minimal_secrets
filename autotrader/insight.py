@@ -178,6 +178,12 @@ def events(entries: Iterable[dict[str, Any]], limit: int = 400
                 new_price=entry.get("price"))
         if entry.get("relisted_at"):
             add("relisted", entry["relisted_at"], entry)
+        if entry.get("qualified_at"):
+            add("qualified", entry["qualified_at"], entry,
+                was_hidden_by=entry.get("qualified_from") or "")
+        if entry.get("photos_at"):
+            add("photos", entry["photos_at"], entry,
+                photos=len(entry.get("images") or []))
         if entry.get("removed_at") and entry.get("status") == "gone":
             add("removed", entry["removed_at"], entry)
 
@@ -295,6 +301,7 @@ def weekly(entries: Iterable[dict[str, Any]], runs: list[dict[str, Any]],
         "new": len(by_kind.get("new", [])),
         "gone": len(by_kind.get("removed", [])),
         "back": len(by_kind.get("relisted", [])),
+        "qualified": len(by_kind.get("qualified", [])),
         "priced": len(by_kind.get("priced", [])),
         "drops": len(drops),
         "rises": len(by_kind.get("price_rise", [])),
@@ -332,7 +339,10 @@ def weekly_text(summary: dict[str, Any]) -> str:
         lines.append(f"{summary['gone']} left the market.")
     if summary["back"]:
         lines.append(f"{summary['back']} came back.")
-    if not any(summary[k] for k in ("new", "drops", "rises", "priced", "gone", "back")):
+    if summary.get("qualified"):
+        lines.append(f"{summary['qualified']} came back inside your rules.")
+    if not any(summary[k] for k in ("new", "drops", "rises", "priced", "gone",
+                                    "back", "qualified")):
         lines.append("Nothing moved. Every car is where it was.")
 
     lines.append("")

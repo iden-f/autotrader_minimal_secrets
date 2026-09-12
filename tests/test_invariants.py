@@ -296,7 +296,13 @@ class TestAScopeChangeIsABaseline:
         bench.cfg.save()
         report = bench.run()
 
-        assert report.new > 0, "the newly admitted cars were not noticed at all"
+        # Counted as "back inside your rules", not as "new". They have been on
+        # the market the whole time - a rule of yours was hiding them - and a
+        # digest that calls them new describes cars the user may have already
+        # scrolled past.
+        assert report.qualified > 0, \
+            "the newly admitted cars were not noticed at all"
+        assert report.new == 0, "cars that were always listed were called new"
         assert report.baselines == ["BMW M5"]
         assert not [c for batch in bench.sink.digests for c in batch], \
             "cars that were always in scope were announced as discoveries"

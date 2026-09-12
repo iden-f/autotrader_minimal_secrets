@@ -26,8 +26,15 @@ const KIND = {
   priced:     { label: 'Now priced', group: 'Now priced',         flag: 'priced', rule: 'Call-for-price car named a figure' },
   removed:    { label: 'Gone',       group: 'Gone from the site', flag: 'gone',   rule: 'No longer on the site' },
   relisted:   { label: 'Back',       group: 'Back on the market', flag: 'back',   rule: 'Listed again after going' },
+  qualified:  { label: 'In range',   group: 'Back inside your rules', flag: 'back',
+                rule: 'A rule of yours stopped hiding it' },
+  photos:     { label: 'Photos',     group: 'Can be looked at now', flag: 'new',
+                rule: 'First photos on a listing that had none' },
 };
-const KIND_ORDER = ['price_drop', 'new', 'priced', 'price_rise', 'relisted', 'removed'];
+// Ahead of "new": a car crossing back into your rules is the only moment you
+// will ever hear about it, where a new listing will still be there tomorrow.
+const KIND_ORDER = ['price_drop', 'qualified', 'new', 'priced', 'price_rise',
+                    'relisted', 'photos', 'removed'];
 
 const SORTS = [
   { id: 'newest',   label: 'Newest first',      get: l => -(Date.parse(l.first_seen) || 0) },

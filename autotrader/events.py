@@ -28,6 +28,7 @@ KINDS = {
     "price_rise": "a price went up",
     "removed": "a car left the market",
     "relisted": "a car came back",
+    "qualified": "a car came back inside your rules",
     "priced": "a call-for-price car named a figure",
 }
 
@@ -86,7 +87,8 @@ def _run_at(runs: list[dict[str, Any]], when: str) -> dict[str, Any]:
             if not best or str(run.get("at")) > str(best.get("at")):
                 best = run
     keep = ("at", "ok", "listings_seen", "new", "price_drops", "price_rises",
-            "removed", "relisted", "priced", "requests_made", "notified")
+            "removed", "relisted", "qualified", "priced", "requests_made",
+            "notified")
     return {k: best[k] for k in keep if k in best}
 
 

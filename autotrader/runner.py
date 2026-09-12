@@ -59,6 +59,7 @@ class RunReport:
     unpriced: int = 0
     priced: int = 0
     relisted: int = 0
+    qualified: int = 0
     # Searches that established a starting point this run instead of alerting.
     baselines: list[str] = field(default_factory=list)
     invariants: list[str] = field(default_factory=list)
@@ -97,7 +98,8 @@ class RunReport:
             "price_drops": self.price_drops, "price_rises": self.price_rises,
             "removed": self.removed, "filtered_out": self.filtered_out,
             "unpriced": self.unpriced, "priced": self.priced,
-            "relisted": self.relisted, "baselines": self.baselines,
+            "relisted": self.relisted, "qualified": self.qualified,
+            "baselines": self.baselines,
             "invariants": self.invariants, "shut_out": self.shut_out,
             "hidden_events": self.hidden_events, "skipped": self.skipped,
             "missed_by": self.missed_by,
@@ -124,6 +126,7 @@ class RunReport:
                              (self.priced, "price(s) published"),
                              (self.removed, "removed"),
                              (self.relisted, "back on sale"),
+                             (self.qualified, "back inside your rules"),
                              (self.unpriced, "call for price"),
                              (self.filtered_out, "hidden by your rules"),
                              (self.searches_failed, "failed")):
@@ -743,7 +746,12 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                     "quiet_reason") or "").startswith(HIDDEN_REASON_PREFIX)
                 change = state.record(listing, filtered=False)
                 if change is None and was_hidden:
-                    change = Change(Change.NEW, listing)
+                    # Not new. It has been on the market the whole time and a
+                    # rule of yours was hiding it; calling it "New listing" in
+                    # a digest describes a car you may have already scrolled
+                    # past, and buries the thing that actually changed.
+                    change = Change(Change.QUALIFIED, listing,
+                                    new_price=listing.price)
                 if change is None:
                     continue
                 if change.kind == Change.NEW:
@@ -778,8 +786,34 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                         queue(change)
                 elif change.kind == Change.RELISTED:
                     report.relisted += 1
-                    if search_notify.get("relisted", False) and not baseline:
+                    # A relist that is also a price drop is gated by the price
+                    # drop switch as well as the relist one. Relists are off by
+                    # default, and now that coming back cheaper is reported as
+                    # a relist rather than a drop, leaving it at that would
+                    # have silently stopped announcing a whole class of the
+                    # best price drops there are.
+                    came_back_cheaper = bool(
+                        change.delta and change.delta < 0
+                        and filters.is_significant_drop(
+                            change.old_price or 0, change.new_price or 0,
+                            rules["price_drop_min_pct"], rules["price_drop_min_abs"]))
+                    if baseline:
+                        pass
+                    elif search_notify.get("relisted", False):
                         queue(change)
+                    elif came_back_cheaper and search_notify.get("price_drop", True):
+                        report.price_drops += 1
+                        queue(change)
+                elif change.kind == Change.QUALIFIED:
+                    report.qualified += 1
+                    if baseline:
+                        silence(listing.id, "recorded as a starting point when "
+                                            "this search's scope changed")
+                    elif search_notify.get("qualified", True):
+                        queue(change)
+                    else:
+                        silence(listing.id, "it came back inside your rules, "
+                                            "and that is switched off here")
 
             # "Call for price" cars are tracked and stay visible; they are not
             # rejections, they are cars we cannot judge yet. require_price now
@@ -801,7 +835,8 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                     "quiet_reason") or "").startswith(HIDDEN_REASON_PREFIX)
                 change = state.record(listing)
                 if change is None and was_hidden:
-                    change = Change(Change.NEW, listing)
+                    change = Change(Change.QUALIFIED, listing,
+                                    new_price=listing.price)
                 if change is None:
                     continue
                 if change.kind == Change.NEW:
@@ -832,6 +867,16 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                     if (tell_me_about_unpriced and not baseline
                             and search_notify.get("relisted", False)):
                         queue(change)
+                elif change.kind == Change.QUALIFIED:
+                    report.qualified += 1
+                    if baseline:
+                        silence(listing.id, "recorded as a starting point when "
+                                            "this search's scope changed")
+                    elif tell_me_about_unpriced and search_notify.get("qualified", True):
+                        queue(change)
+                    else:
+                        silence(listing.id, "it came back inside your rules "
+                                            "but still has no price on it")
 
             # Held until every search has been read. Recording a rejection now
             # would mark the car seen-and-silenced, and a later search that

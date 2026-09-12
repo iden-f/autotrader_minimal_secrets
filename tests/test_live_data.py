@@ -777,8 +777,15 @@ class TestARealCarComingBack:
         assert [c.kind for c in announced] == [Change.RELISTED]
         assert "Back on the market" in announced[0].describe()
 
-    def test_a_car_that_comes_back_cheaper_reports_the_drop_instead(self, live):
-        """The price move is the useful fact; the relisting is context."""
+    def test_a_car_that_comes_back_cheaper_reports_both_facts(self, live):
+        """It is counted as a drop and told as a relisting.
+
+        The drop must reach the user - relist alerts are off by default, so
+        letting the relisting swallow the event would have quietly stopped
+        announcing a whole class of the best price drops there are. It is
+        billed to price_drops and gated by the price-drop switch; only the
+        wording changes, to say that the car was withdrawn first.
+        """
         priced = [l for l in parse_search_page(live.html, BASE).listings if l.price]
         target, was = priced[0].id, priced[0].price
         live.run()
@@ -787,7 +794,10 @@ class TestARealCarComingBack:
 
         report = live.run(drop_price(live.html, was, was - 9000))
         assert report.price_drops == 1
-        assert report.relisted == 0
+        assert report.relisted == 1
+        sent = [c for batch in live.sink.digests for c in batch]
+        assert any("cheaper" in c.describe() for c in sent), \
+            [c.describe() for c in sent]
 
     def test_a_call_for_price_car_coming_back_is_counted_too(self, live):
         """The quiet bucket still has to keep its books straight."""

@@ -53,7 +53,13 @@ def _one_line(change: Change) -> str:
     if change.kind == Change.REMOVED:
         return f"{car} gone from the site"
     if change.kind == Change.RELISTED:
+        if change.delta:
+            way = "cheaper" if change.delta < 0 else "dearer"
+            return (f"{car} back on the market ${abs(change.delta):,} {way}, "
+                    f"at {listing.price_text}")
         return f"{car} back on the market at {listing.price_text}"
+    if change.kind == Change.QUALIFIED:
+        return f"{car} is back inside your rules at {listing.price_text}"
     return f"{car} {listing.price_text}"
 
 
@@ -71,8 +77,9 @@ def headline(changes: list[Change]) -> str:
         return "AutoTrader: " + _one_line(changes[0])
 
     counts = {kind: sum(1 for c in changes if c.kind == kind)
-              for kind in (Change.PRICE_DROP, Change.NEW, Change.PRICED,
-                           Change.RELISTED, Change.PRICE_RISE, Change.REMOVED)}
+              for kind in (Change.PRICE_DROP, Change.QUALIFIED, Change.NEW,
+                           Change.PRICED, Change.RELISTED, Change.PRICE_RISE,
+                           Change.REMOVED)}
     # The best drop is the thing worth putting first when there is one.
     drops = [c for c in changes if c.kind == Change.PRICE_DROP]
     if drops:
@@ -82,6 +89,10 @@ def headline(changes: list[Change]) -> str:
         return f"AutoTrader: {lead}" + (f", +{rest} more change{'s' if rest != 1 else ''}" if rest else "")
 
     label = {
+        # Before "new" on purpose: a car crossing back into your rules is the
+        # only time you will hear about it, where a new listing will still be
+        # there tomorrow.
+        Change.QUALIFIED: ("back inside your rules", "back inside your rules"),
         Change.NEW: ("new listing", "new listings"),
         Change.PRICED: ("price published", "prices published"),
         Change.RELISTED: ("back on the market", "back on the market"),
@@ -106,7 +117,12 @@ def _change_prefix(change: Change) -> str:
     if change.kind == Change.REMOVED:
         return "Removed - "
     if change.kind == Change.RELISTED:
+        if change.delta:
+            way = "cheaper" if change.delta < 0 else "dearer"
+            return f"Back on the market, ${abs(change.delta):,} {way} - "
         return "Back on the market - "
+    if change.kind == Change.QUALIFIED:
+        return "Back inside your rules - "
     return ""
 
 
@@ -273,7 +289,8 @@ def as_discord_embeds(changes: list[Change], *, limit: int = 10) -> list[dict[st
     """Discord caps a message at 10 embeds."""
     colours = {Change.NEW: 0x1D4ED8, Change.PRICE_DROP: 0x0F7B3F,
                Change.PRICE_RISE: 0x9A3412, Change.PRICED: 0x0F7B3F,
-               Change.RELISTED: 0x1D4ED8, Change.REMOVED: 0x6B7280}
+               Change.RELISTED: 0x1D4ED8, Change.QUALIFIED: 0x1D4ED8,
+               Change.REMOVED: 0x6B7280}
     embeds: list[dict[str, Any]] = []
     for change in changes[:min(limit, 10)]:
         listing = change.listing
