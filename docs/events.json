@@ -1,5 +1,5 @@
 {
- "updated_at": "2026-09-12T09:04:05+00:00",
+ "updated_at": "2026-09-12T09:19:25+00:00",
  "first": {
   "removed": {
    "kind": "removed",
@@ -33,7 +33,7 @@
    "url": "https://www.autotrader.ca/offers/bmw-m5-carbon-roof-interior-i-hud-electric-white-cat_ma13gr202609va3044mt15084-0b85b6f4-df54-4ddb-b9b1-757c18e4a233",
    "before": 130880,
    "after": 132800,
-   "delivered": "deliberately quiet: hidden by your rules: price $132,800 above maximum $100,000",
+   "delivered": "deliberately quiet: hidden by your rules: price $132,800 above maximum $120,000",
    "detail": "$1,920 more ($130,880 to $132,800)",
    "run": {
     "at": "2026-09-11T09:10:25+00:00",
@@ -59,7 +59,7 @@
    "url": "https://www.autotrader.ca/offers/bmw-m5-m-carbon-exterior-advance-driver-assist-electric-grey-cat_ma13gr202609va3044mt15084-32dc5029-f764-4c3e-95fe-da915a01ffdf",
    "before": 139798,
    "after": 139399,
-   "delivered": "deliberately quiet: hidden by your rules: price $139,399 above maximum $100,000",
+   "delivered": "deliberately quiet: hidden by your rules: price $139,399 above maximum $120,000",
    "detail": "$399 off ($139,798 to $139,399)",
    "run": {
     "at": "2026-09-10T01:48:53+00:00",
@@ -124,7 +124,9 @@
    }
   }
  },
- "waiting": [],
+ "waiting": [
+  "qualified"
+ ],
  "silence_reported": "",
  "coverage_reported": "2026-09-12T08:19:51+00:00",
  "new_kinds": []
