@@ -180,6 +180,7 @@ a{ color:var(--ev-new); text-underline-offset:2px; }
 .tab__n[data-unread="1"]{
   background:var(--ev-new); color:var(--bg); font-weight:560;
 }
+.tab__n:empty{ display:none; }
 
 @media (max-width:699px){
   .tabs{
@@ -202,7 +203,9 @@ a{ color:var(--ev-new); text-underline-offset:2px; }
     min-width:22px; height:17px; line-height:15px; text-align:center;
     display:inline-block; padding:0 var(--s1);
   }
-  .tab__n:empty{ background:none; }
+  /* Here it keeps its slot rather than disappearing, because the four tabs
+     are equal cells and a missing box would lift two of the labels. */
+  .tab__n:empty{ display:inline-block; background:none; }
   .tab[aria-current="page"]{ border-top-color:var(--text); border-bottom-color:transparent; }
 }
 @media (min-width:700px){ .tabs{ border-bottom:1px solid var(--line); } }
@@ -417,7 +420,7 @@ a{ color:var(--ev-new); text-underline-offset:2px; }
   margin-bottom:var(--s4);
 }
 .field{
-  flex:1 1 200px; min-width:0; display:flex; align-items:center; gap:var(--s2);
+  flex:1 1 200px; min-width:0; max-width:420px; display:flex; align-items:center; gap:var(--s2);
   background:var(--surface); border:1px solid var(--line-strong);
   border-radius:var(--r-sm); padding:0 var(--s3); min-height:38px;
 }
