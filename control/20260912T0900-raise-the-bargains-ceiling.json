@@ -1,8 +1,0 @@
-[
- {
-  "action": "set-rule",
-  "search": "BMW M5 bargains (any year)",
-  "rule": "max_price",
-  "value": 120000
- }
-]
