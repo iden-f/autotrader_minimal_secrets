@@ -333,12 +333,29 @@ _SECRET_KEY_RE = re.compile(
     r"(token|password|secret|api[_-]?key|credential|auth)", re.I)
 
 # Shapes of real credentials, in case one arrives under an innocent key.
+# The first group is what this bot itself handles. The second is what GitHub's
+# own push protection rejects - which matters even though the bot never
+# creates one, because the bot commits config.json and docs/data.json on every
+# run. A token pasted into a search's notes field by someone doing the obvious
+# thing would be published to a public page *and* wedge every future push
+# behind a rejection, which is a scheduled job that stops working with no
+# error anyone reads. Cheaper to refuse it here, in words, with the field
+# named.
 _SECRET_VALUE_RES = (
     re.compile(r"\b\d{8,}:[A-Za-z0-9_-]{30,}\b"),                 # Telegram bot token
     re.compile(r"https://discord(?:app)?\.com/api/webhooks/\d+/"),  # Discord webhook
     re.compile(r"https://hooks\.slack\.com/services/T[A-Z0-9]+/"),  # Slack webhook
     re.compile(r"\bSK[0-9a-f]{32}\b"),                             # Twilio key
     re.compile(r"\bAC[0-9a-f]{32}\b"),                             # Twilio account SID
+
+    re.compile(r"\bgh[pousr]_[A-Za-z0-9]{36,}\b"),                 # GitHub token
+    re.compile(r"\bgithub_pat_[A-Za-z0-9_]{22,}\b"),               # GitHub fine-grained
+    re.compile(r"\bxox[abposr]-[A-Za-z0-9-]{10,}\b"),              # Slack token
+    re.compile(r"\b(?:AKIA|ASIA|ABIA|ACCA)[A-Z0-9]{16}\b"),        # AWS access key
+    re.compile(r"-----BEGIN (?:RSA |EC |DSA |OPENSSH |PGP )?PRIVATE KEY"),
+    re.compile(r"\bAIza[A-Za-z0-9_-]{35}\b"),                      # Google API key
+    re.compile(r"\bsk-(?:proj-)?[A-Za-z0-9_-]{32,}\b"),            # OpenAI-style key
+    re.compile(r"\bsk_(?:live|test)_[A-Za-z0-9]{24,}\b"),          # Stripe
 )
 
 

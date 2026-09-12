@@ -242,7 +242,18 @@ def _fetch_one(url: str | None, fetcher: Any
     note: dict[str, Any] = {"url": url[:120]}
 
     if hasattr(fetcher, "get_asset"):
-        got = fetcher.get_asset(url)
+        # Wrapped, like the text path below already was. get_asset swallows
+        # the HTTP errors it expects and returns them in the dict, but a CDN
+        # can fail in ways no client turns into a return value - a reset
+        # connection, a DNS failure, a socket timeout during TLS - and those
+        # came straight back out through sync() and ended the run. This module
+        # opens by saying a photo may never fail a check; for a whole class of
+        # CDN failure that was not true, and no test looked.
+        try:
+            got = fetcher.get_asset(url)
+        except Exception as exc:  # noqa: BLE001 - a photo may never fail a check
+            note.update(status=None, error=f"{type(exc).__name__}: {exc}"[:120])
+            return None, "", note
     else:
         # A stand-in in a test, or an older fetcher. Read whatever it gives.
         try:
