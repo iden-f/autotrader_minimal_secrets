@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-09-12T22:18:55+00:00",
+ "generated_at": "2026-09-12T22:19:21+00:00",
  "notify": {
   "ntfy_topic": "autotrader-2q592ak9gnx7sqrere5r",
   "ntfy_url": "https://ntfy.sh/autotrader-2q592ak9gnx7sqrere5r",
@@ -20473,7 +20473,7 @@
   "longest_gap_minutes": 208.5,
   "expected_interval_minutes": 30,
   "truncated": false,
-  "since": "2026-09-11T22:18:55+00:00",
+  "since": "2026-09-11T22:19:21+00:00",
   "slots": [
    2,
    2,
@@ -20532,7 +20532,7 @@
   "window_hours": 24
  },
  "market": {
-  "at": "2026-09-12T22:18:55+00:00",
+  "at": "2026-09-12T22:19:21+00:00",
   "window": {
    "ids_span_days": 3,
    "watching_days": 3,
