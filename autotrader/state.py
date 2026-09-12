@@ -550,7 +550,29 @@ class State:
 
     def record_run(self, summary: dict[str, Any]) -> None:
         summary = {"at": utcnow(), **summary}
-        self.data["runs"] = ([summary] + self.data.get("runs", []))[:MAX_RUN_HISTORY]
+        runs = self.data.get("runs", [])
+        # The run log is a rolling sixty. Anything that needs to know when the
+        # watch *began* - and the market layer does, because it decides which
+        # of its own figures are floors rather than measurements - cannot read
+        # it off the end of a window that slides forward every half hour.
+        # Written once and then left alone.
+        if not self.data.get("watch_started"):
+            oldest = min([r.get("at") for r in runs if r.get("at")]
+                         + [summary["at"]])
+            self.data["watch_started"] = oldest
+        self.data["runs"] = ([summary] + runs)[:MAX_RUN_HISTORY]
+
+    @property
+    def runs(self) -> list[dict[str, Any]]:
+        return self.data.get("runs") or []
+
+    @property
+    def watch_started(self) -> str | None:
+        """When this bot first ran, as far as it can still tell."""
+        if self.data.get("watch_started"):
+            return self.data["watch_started"]
+        ats = [r.get("at") for r in (self.data.get("runs") or []) if r.get("at")]
+        return min(ats) if ats else None
 
     @property
     def last_run(self) -> dict[str, Any] | None:

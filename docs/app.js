@@ -14,6 +14,7 @@
 const VIEWS = [
   { id: 'feed', label: 'Feed' },
   { id: 'listings', label: 'Listings' },
+  { id: 'market', label: 'Market' },
   { id: 'searches', label: 'Searches' },
   { id: 'status', label: 'Status' },
 ];
@@ -560,20 +561,38 @@ function emptyState(title, body) {
   return s;
 }
 
+// Reset per render: how many photos are worth blocking on. Six covers the
+// first screen at every width this is designed for.
+let eagerSlots = 0;
+
 function shot(l, cls) {
   const box = el('div', cls || 'card__shot');
   // Ours first. The seller's CDN is a fallback rather than the source: it is
   // unreachable offline, unreachable from the installed app on a plane, and
   // it drops the picture the day the car is delisted.
   const src = l.thumb || (l.images || [])[0];
+  // "No photo" under a card whose own footer says "12 photos" reads as a bug.
+  // Three different things are being said here and they are not the same:
+  // the seller published none, we have not copied one yet, or this car is
+  // hidden and never will be.
   const fallback = () => {
+    const has = (l.images || []).length;
+    const why = l.filtered ? 'not kept for hidden cars'
+              : has ? 'photo not copied yet'
+              : 'no photo';
     box.innerHTML = `<div class="shot__fallback">${CAR_GLYPH}
-        <span>${l.filtered ? 'not kept for hidden cars' : 'no photo'}</span>
+        <span>${why}</span>
       </div>`;
   };
   if (!src) { fallback(); return box; }
   const img = new Image();
-  img.loading = 'lazy';
+  // The first screenful is what the page is judged on, and a lazy image
+  // above the fold is a grey box that fills in after you have already looked
+  // at it. Everything below stays lazy - there are two hundred of these.
+  const eager = eagerSlots > 0;
+  if (eager) eagerSlots -= 1;
+  img.loading = eager ? 'eager' : 'lazy';
+  img.fetchPriority = eager ? 'high' : 'low';
   img.decoding = 'async';
   img.width = 400; img.height = 300;
   img.alt = '';
@@ -636,6 +655,196 @@ function card(l) {
     (l.filtered ? `, hidden: ${l.filter_reason || 'a rule'}` : ''));
   b.addEventListener('click', () => openSheet(l.id));
   return b;
+}
+
+/* ----------------------------------------------------------------- market */
+// "base" is a claim the listing never made. A car with no trim in its title
+// is a car with no trim in its title.
+function sentence(text) {
+  const t = String(text || '').trim();
+  if (!t) return '';
+  return t.charAt(0).toUpperCase() + t.slice(1) + (/[.!?]$/.test(t) ? '' : '.');
+}
+
+function trimLabel(name) {
+  if (name === 'base' || !name) return 'No trim named';
+  return name.charAt(0).toUpperCase() + name.slice(1);
+}
+
+function renderMarket() {
+  const host = document.querySelector('[data-view="market"]');
+  host.innerHTML = '';
+  const m = app.data.market || {};
+  const head = el('div', 'view__head measure');
+  // Listings counts what you can see; the market is the whole market. Two
+  // different numbers under one word is how a dashboard loses trust, so the
+  // difference is spelled out rather than left for the reader to notice.
+  const hiddenHere = (app.data.listings || [])
+    .filter(l => l.status === 'active' && l.filtered).length;
+  head.innerHTML = `<h1 id="market-h">The market</h1>
+    <p>What all ${m.live ?? 0} cars listed right now say together, rather than
+       what one says${hiddenHere ? `, including the ${hiddenHere} your rules hide`
+       : ''}. Everything here carries how many cars it is drawn from.</p>`;
+  host.appendChild(head);
+
+  // The window first, because it decides how much of the rest to believe.
+  if (m.window) {
+    const w = el('p', 'why measure');
+    w.innerHTML = m.window.thin
+      ? `<b>Read this as a snapshot.</b> ${esc(m.window.note)}`
+      : `<b>${m.window.cars_with_two_prices}</b> cars have been priced more than
+         once over ${m.window.watching_days} days of watching.`;
+    host.appendChild(w);
+  }
+
+  const v = m.velocity || {}, d = m.discounting || {};
+  const st = m.still_listed_days || {}, lt = m.listed_days || {};
+  const days = n => `${n}<small style="display:inline"> day${n === 1 ? '' : 's'}</small>`;
+  const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+  // Three of these six are bounded by how long the bot has been watching
+  // rather than by the market. Left unmarked, a two-day-old watch reports a
+  // market that turns over in two days, which is a statement about the bot.
+  const sinceWatch = v.window_is_the_watch;
+  const stats = el('dl', 'stats');
+  stats.innerHTML = `
+    <div class="stat"><dt>${sinceWatch ? 'Arrived since watching began' : 'Arrived this week'}</dt>
+      <dd class="num">${v.arrived_7d ?? '—'}</dd>
+      ${sinceWatch ? `<small>the watch is ${plural(st.watching_days ?? 0, 'day')}
+        old, so that is all of them rather than this week's</small>` : ''}</div>
+    <div class="stat"><dt>${sinceWatch ? 'Left since watching began' : 'Left this week'}</dt>
+      <dd class="num">${v.left_7d ?? '—'}</dd></div>
+    <div class="stat"><dt>Still listed, median</dt>
+      <dd class="num">${st.median == null ? '—'
+        : (st.censored ? '<small style="display:inline">at least </small>' : '') + days(st.median)}</dd>
+      <small>${st.censored
+        ? 'nothing has been watched longer than this'
+        : `longest ${st.longest ?? '—'} days`}</small></div>
+    <div class="stat"><dt>Cars discounted</dt><dd class="num">${d.cars ?? 0}</dd>
+      <small>${d.total ? money(d.total) + ' off in total' : 'none yet'}</small></div>
+    <div class="stat"><dt>Listed before coming down</dt>
+      <dd class="num">${lt.median == null ? '—' : days(lt.median)}</dd>
+      <small>from ${lt.n ?? 0} that came down${lt.biased_short
+        ? ' — only short-lived ones can finish inside a watch this young' : ''}</small></div>
+    <div class="stat"><dt>Live now</dt><dd class="num">${m.live ?? 0}</dd>
+      <small>${m.gone ?? 0} gone and kept</small></div>`;
+  host.appendChild(stats);
+  if (lt.note) {
+    host.appendChild(el('p', 'note measure',
+      '“Listed before coming down” is ' + lt.note + '.'));
+  }
+
+  const years = Object.entries(m.by_year || {});
+  if (years.length) {
+    const sec = el('section', 'section measure');
+    sec.innerHTML = `<div class="section__head"><h2>Asking price by year</h2>
+      <span class="count num">${years.length} years with enough cars</span></div>`;
+    sec.appendChild(rangeChart(years));
+    host.appendChild(sec);
+  }
+
+  const trims = Object.entries(m.by_trim || {})
+    .sort((a, b) => b[1].median - a[1].median);
+  if (trims.length) {
+    const sec = el('section', 'section measure');
+    sec.innerHTML = `<div class="section__head"><h2>By trim</h2></div>`;
+    const t = el('table', 'tbl');
+    t.innerHTML = `<thead><tr><th>Trim</th><th class="r">Cars</th>
+        <th class="r">Median asking</th></tr></thead><tbody>` +
+      trims.map(([name, row]) =>
+        `<tr><td>${esc(trimLabel(name))}</td><td class="r num">${row.n}</td>
+          <td class="r num">${money(row.median)}</td></tr>`).join('') + '</tbody>';
+    sec.appendChild(t);
+    host.appendChild(sec);
+  }
+
+  // Whether the deal score means anything, said either way.
+  const check = app.data.score_check;
+  if (check) {
+    const sec = el('section', 'section measure');
+    sec.innerHTML = `<div class="section__head"><h2>Is the deal score worth anything?</h2></div>
+      <p class="note" style="margin-top:0">${esc(sentence(check.verdict))}</p>`;
+    if (check.cheap_rate !== undefined) {
+      const t = el('table', 'tbl');
+      t.innerHTML = `<thead><tr><th>Called</th><th class="r">Cars</th>
+          <th class="r">Later cut the price</th></tr></thead><tbody>
+        <tr><td>cheap for its kind</td><td class="r num">${check.called_cheap}</td>
+          <td class="r num">${check.cheap_rate}%</td></tr>
+        <tr><td>dear for its kind</td><td class="r num">${check.called_dear}</td>
+          <td class="r num">${check.dear_rate}%</td></tr></tbody>`;
+      sec.appendChild(t);
+    }
+    host.appendChild(sec);
+  }
+
+  const out = el('section', 'section measure');
+  out.innerHTML = `<div class="section__head"><h2>Take it with you</h2></div>`;
+  const bar = el('div', 'bar');
+  for (const [label, make] of [['Listings as CSV', csvOfListings],
+                               ['Everything as JSON', () => JSON.stringify(app.data, null, 1)]]) {
+    const b = el('button', 'btn', label);
+    b.type = 'button';
+    b.addEventListener('click', () => download(label.includes('CSV') ? 'listings.csv' : 'autotrader.json', make()));
+    bar.appendChild(b);
+  }
+  out.appendChild(bar);
+  host.appendChild(out);
+}
+
+/* One row per year: the range as a bar, the median as a tick. A box plot
+   without the jargon, and it degrades to a table on a phone. */
+function rangeChart(years) {
+  const all = years.flatMap(([, r]) => [r.low, r.high]);
+  const min = Math.min(...all), max = Math.max(...all), span = (max - min) || 1;
+  const wrap = el('div');
+  for (const [year, r] of years) {
+    const row = el('div');
+    row.style.cssText = 'display:grid;grid-template-columns:48px 1fr auto;gap:var(--s3);align-items:center;padding:var(--s1) 0';
+    const at = v => ((v - min) / span) * 100;
+    // Full range as a hairline, middle half as the solid bar, median as the
+    // tick. One $150,000 outlier otherwise squashes every other year into a
+    // smudge and the chart stops saying anything.
+    const q1 = r.q1 ?? r.low, q3 = r.q3 ?? r.high;
+    row.innerHTML = `
+      <span class="num" style="font-size:var(--t-small)">${esc(year)}</span>
+      <span style="position:relative;height:16px;display:block">
+        <span style="position:absolute;left:${at(r.low)}%;width:${Math.max(at(r.high) - at(r.low), 0.4)}%;top:7px;height:1px;background:var(--line-strong)"></span>
+        <span style="position:absolute;left:${at(q1)}%;width:${Math.max(at(q3) - at(q1), 0.8)}%;top:5px;height:5px;border-radius:2px;background:var(--surface-3)"></span>
+        <span style="position:absolute;left:${at(r.median)}%;top:1px;width:2px;height:14px;background:var(--text)"></span>
+      </span>
+      <span class="num" style="font-size:var(--t-small)">${money(r.median)}
+        <u style="text-decoration:none;color:var(--text-3);font-size:var(--t-micro)"> n=${r.n}</u></span>`;
+    row.setAttribute('role', 'img');
+    row.setAttribute('aria-label',
+      `${year}: ${r.n} cars, ${money(r.low)} to ${money(r.high)}, ` +
+      `middle half ${money(q1)} to ${money(q3)}, median ${money(r.median)}`);
+    wrap.appendChild(row);
+  }
+  return wrap;
+}
+
+function csvOfListings() {
+  const cols = ['id', 'year', 'make', 'model', 'trim', 'price', 'mileage_km',
+                'per_1000km', 'distance_km', 'days_listed', 'location',
+                'province', 'seller', 'status', 'filtered', 'filter_reason',
+                'first_seen', 'last_seen', 'url'];
+  const cell = v => {
+    const text = v === null || v === undefined ? '' : String(v);
+    return /[",\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
+  };
+  return [cols.join(',')].concat(
+    (app.data.listings || []).map(l => cols.map(c => cell(l[c])).join(','))
+  ).join('\n');
+}
+
+function download(name, text) {
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 /* ----------------------------------------------------------------- searches */
@@ -1228,9 +1437,11 @@ function skeleton() {
 
 function render() {
   if (!app.data) return;
+  eagerSlots = 6;
   renderTrust();
   if (app.view === 'feed') renderFeed();
   else if (app.view === 'listings') renderListings();
+  else if (app.view === 'market') renderMarket();
   else if (app.view === 'searches') renderSearches();
   else if (app.view === 'status') renderStatus();
 }

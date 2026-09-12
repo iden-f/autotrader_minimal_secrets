@@ -19,6 +19,11 @@ def ago(days: float) -> str:
     return (NOW - timedelta(days=days)).isoformat(timespec="seconds")
 
 
+def runs_since(days: float) -> list[dict]:
+    """A run log whose oldest entry is where the watch began."""
+    return [{"at": ago(days)}, {"at": ago(days / 2)}, {"at": ago(0)}]
+
+
 def car(i, *, price=90000, year=2019, trim="", status="active",
         first=30, removed=None, history=None, title=""):
     entry = {
@@ -135,3 +140,118 @@ class TestTheScoreIsTested:
         out = insight.backtest(cars)
         assert out["called_cheap"] and out["called_dear"]
         assert "not predicting anything" in out["verdict"], out
+
+
+class TestNotConfusingTheWatchWithTheMarket:
+    """The failure this class exists to prevent, in one sentence.
+
+    A bot that started watching on Tuesday reports that every car on the
+    market arrived this week, that the median car has been listed two days,
+    and that listings come down within a day of going up. All three are
+    arithmetically correct and all three are statements about the bot. The
+    market layer has to hand the page enough to say so.
+    """
+
+    def test_every_car_still_here_arrived_when_the_watch_did(self):
+        """Right-censored: the figure is a floor, not a measurement."""
+        fleet = [car(i, first=2) for i in range(30)]
+        out = insight.market(fleet, now=NOW, runs=runs_since(2))
+        assert out["still_listed_days"]["median"] == 2
+        assert out["still_listed_days"]["censored"] is True
+        assert out["still_listed_days"]["watching_days"] == 2
+
+    def test_a_watch_older_than_its_oldest_car_is_measuring_the_market(self):
+        """The bug this replaced: comparing a number against itself.
+
+        Deriving "how long have we been watching" from the oldest car makes
+        the censoring test read ``longest >= longest``, which is true for
+        every dataset ever collected. The watch's own start comes from the
+        run log, which is the only record of it.
+        """
+        fleet = [car(i, first=3) for i in range(10)]
+        out = insight.market(fleet, now=NOW, runs=runs_since(200))
+        assert out["still_listed_days"]["censored"] is False
+        assert out["still_listed_days"]["watching_days"] == 200
+
+    def test_with_no_run_log_it_falls_back_rather_than_crashing(self):
+        fleet = [car(i, first=2) for i in range(5)]
+        out = insight.market(fleet, now=NOW)
+        assert out["still_listed_days"]["censored"] is True
+
+    def test_a_young_watch_says_its_arrivals_are_not_a_week(self):
+        out = insight.market([car(i, first=2) for i in range(5)], now=NOW,
+                             runs=runs_since(2))
+        assert out["velocity"]["window_is_the_watch"] is True
+
+    def test_a_watch_older_than_a_week_means_this_week_means_this_week(self):
+        fleet = [car(i, first=40) for i in range(5)]
+        out = insight.market(fleet, now=NOW, runs=runs_since(90))
+        assert out["velocity"]["window_is_the_watch"] is False
+        assert out["velocity"]["arrived_7d"] == 0
+
+    def test_only_short_lives_can_finish_inside_a_short_watch(self):
+        """Length-biased sampling, flagged rather than silently reported."""
+        fleet = [car(i, first=2) for i in range(10)]
+        fleet += [car(50 + i, first=2, removed=1, status="gone")
+                  for i in range(3)]
+        out = insight.market(fleet, now=NOW, runs=runs_since(2))
+        assert out["listed_days"]["n"] == 3
+        assert out["listed_days"]["biased_short"] is True
+
+    def test_a_long_watch_drops_the_warning(self):
+        fleet = [car(i, first=400) for i in range(10)]
+        fleet += [car(50 + i, first=300, removed=100, status="gone")
+                  for i in range(3)]
+        out = insight.market(fleet, now=NOW, runs=runs_since(400))
+        assert out["listed_days"]["biased_short"] is False
+
+
+class TestWordsAPersonWouldWrite:
+    def test_one_day_is_not_one_days(self):
+        assert insight._days(1) == "1 day"
+        assert insight._days(2) == "2 days"
+        assert insight._days(0) == "0 days"
+
+    def test_no_programmer_pluralisation_reaches_the_page(self):
+        out = insight.market([car(i, first=1) for i in range(3)], now=NOW,
+                             runs=runs_since(1))
+        assert "(s)" not in out["window"]["note"], out["window"]["note"]
+
+
+class TestTheWatchStartSurvivesTheRunLog:
+    """The run log is a rolling sixty; the watch start is not.
+
+    At eighteen checks a day the log holds three days. A bot that reads its
+    own start date off the end of that window reports "watching for 3 days"
+    on its first anniversary, and every censored figure downstream stays
+    wrong forever while looking freshly computed.
+    """
+
+    def test_the_first_run_writes_it_and_later_runs_leave_it_alone(self):
+        from autotrader.state import State
+        st = State()
+        st.record_run({"ok": True})
+        first = st.data["watch_started"]
+        assert first
+        st.record_run({"ok": True})
+        assert st.data["watch_started"] == first
+
+    def test_an_old_state_with_no_marker_falls_back_to_the_log(self):
+        from autotrader.state import State
+        st = State({"version": 2, "runs": [{"at": ago(9)}, {"at": ago(1)}]})
+        assert st.watch_started == ago(9)
+
+    def test_a_rolled_over_log_does_not_move_the_start(self):
+        from autotrader.state import State
+        st = State({"version": 2, "watch_started": ago(400),
+                    "runs": [{"at": ago(1)}]})
+        out = insight.market([car(1, first=1)], now=NOW, runs=st.runs,
+                             since=st.watch_started)
+        assert out["still_listed_days"]["watching_days"] == 400
+        assert out["still_listed_days"]["censored"] is False
+        assert out["velocity"]["window_is_the_watch"] is False
+
+    def test_without_the_marker_the_same_state_would_have_lied(self):
+        """The regression, stated as the difference it makes."""
+        out = insight.market([car(1, first=1)], now=NOW, runs=[{"at": ago(1)}])
+        assert out["still_listed_days"]["watching_days"] == 1

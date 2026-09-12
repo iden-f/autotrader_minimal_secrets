@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-09-12T08:36:48+00:00",
+ "generated_at": "2026-09-12T08:51:54+00:00",
  "notify": {
   "ntfy_topic": "autotrader-2q592ak9gnx7sqrere5r",
   "ntfy_url": "https://ntfy.sh/autotrader-2q592ak9gnx7sqrere5r",
@@ -12466,30 +12466,30 @@
     "text": "within 250 km of V6N 3B5"
    },
    "shape": {
+    "bytes": "lots",
+    "listing_count": 19,
+    "markers": {
+     "data_listing_id": "none",
+     "initial_state": "none",
+     "json_ld": "few",
+     "legacy_links": "none",
+     "next_data": "few",
+     "offer_links": "many",
+     "vehicle_cdn": "lots"
+    },
+    "scores": {
+     "anchors": 12,
+     "embedded_json": 19,
+     "jsonld": 12,
+     "regex": 19
+    },
     "strategy": "embedded_json",
     "working": [
      "anchors",
      "embedded_json",
      "jsonld",
      "regex"
-    ],
-    "scores": {
-     "jsonld": 12,
-     "embedded_json": 19,
-     "anchors": 12,
-     "regex": 19
-    },
-    "listing_count": 19,
-    "markers": {
-     "json_ld": "few",
-     "next_data": "few",
-     "initial_state": "none",
-     "offer_links": "many",
-     "legacy_links": "none",
-     "data_listing_id": "none",
-     "vehicle_cdn": "lots"
-    },
-    "bytes": "lots"
+    ]
    }
   },
   {
@@ -12550,30 +12550,30 @@
    },
    "area": null,
    "shape": {
+    "bytes": "lots",
+    "listing_count": 191,
+    "markers": {
+     "data_listing_id": "none",
+     "initial_state": "none",
+     "json_ld": "few",
+     "legacy_links": "none",
+     "next_data": "few",
+     "offer_links": "many",
+     "vehicle_cdn": "lots"
+    },
+    "scores": {
+     "anchors": 20,
+     "embedded_json": 20,
+     "jsonld": 20,
+     "regex": 20
+    },
     "strategy": "jsonld",
     "working": [
      "anchors",
      "embedded_json",
      "jsonld",
      "regex"
-    ],
-    "scores": {
-     "jsonld": 20,
-     "embedded_json": 20,
-     "anchors": 20,
-     "regex": 20
-    },
-    "listing_count": 191,
-    "markers": {
-     "json_ld": "few",
-     "next_data": "few",
-     "initial_state": "none",
-     "offer_links": "many",
-     "legacy_links": "none",
-     "data_listing_id": "none",
-     "vehicle_cdn": "lots"
-    },
-    "bytes": "lots"
+    ]
    }
   }
  ],
@@ -12637,7 +12637,10 @@
     "GMAIL_APP_PASSWORD"
    ],
    "setting": false,
-   "missing": [],
+   "missing": [
+    "GMAIL_USER",
+    "GMAIL_APP_PASSWORD"
+   ],
    "active": false
   },
   "webhook": {
@@ -12662,7 +12665,12 @@
     "TWILIO_TO"
    ],
    "setting": false,
-   "missing": [],
+   "missing": [
+    "TWILIO_SID",
+    "TWILIO_TOKEN",
+    "TWILIO_FROM",
+    "TWILIO_TO"
+   ],
    "active": false
   }
  },
@@ -12728,103 +12736,103 @@
  "runs": [
   {
    "at": "2026-09-12T08:36:48+00:00",
-   "ok": true,
+   "baselines": [],
+   "budget_exhausted": false,
+   "diagnostics": [],
+   "disabled_channels": [],
+   "dry_run": false,
    "duration_s": 71.0,
-   "searches_run": 2,
-   "searches_failed": 0,
+   "empty_parses": [],
+   "errors": [],
+   "filtered_out": 125,
+   "first_run": false,
+   "hidden_events": {},
+   "invariants": [],
    "listings_seen": 210,
+   "missed_by": 0,
    "new": 0,
+   "notified": [],
+   "ok": true,
+   "photos": {
+    "bytes": 159506,
+    "failed": 0,
+    "fetched": 24,
+    "kept": 24,
+    "pruned": 0,
+    "samples": [
+     {
+      "bytes": 5052,
+      "h": 187,
+      "status": 200,
+      "type": "image/webp",
+      "url": "https://prod.pictures.autoscout24.net/listing-images/0518b35e-d26d-45a1-b92b-5e32f2e992b5_335b91d5-53f2-4bd1-80fa-a96cb1",
+      "w": 250
+     },
+     {
+      "bytes": 7772,
+      "h": 187,
+      "status": 200,
+      "type": "image/webp",
+      "url": "https://prod.pictures.autoscout24.net/listing-images/0d995e07-1ec8-47ef-aef7-0cbb117e04d1_cb508237-2c41-4b4d-8e58-8db9ee",
+      "w": 250
+     },
+     {
+      "bytes": 8656,
+      "h": 187,
+      "status": 200,
+      "type": "image/webp",
+      "url": "https://prod.pictures.autoscout24.net/listing-images/16b9cd20-c564-4628-adce-7a40d3ab3b7f_5c1cb5aa-19e0-41a9-8960-f671f3",
+      "w": 250
+     },
+     {
+      "bytes": 5400,
+      "h": 187,
+      "status": 200,
+      "type": "image/webp",
+      "url": "https://prod.pictures.autoscout24.net/listing-images/1e0e9810-9aaf-463b-8d51-184a51a59ca3_120cc91a-96dd-4a08-8bad-d28086",
+      "w": 250
+     },
+     {
+      "bytes": 8732,
+      "h": 187,
+      "status": 200,
+      "type": "image/webp",
+      "url": "https://prod.pictures.autoscout24.net/listing-images/28174c41-6b21-4e04-b457-55284de2b7be_019cd28c-b1cb-4869-a2f1-b66fcc",
+      "w": 250
+     },
+     {
+      "bytes": 6366,
+      "h": 187,
+      "status": 200,
+      "type": "image/webp",
+      "url": "https://prod.pictures.autoscout24.net/listing-images/2a2e28df-a6c8-46c4-9ef4-8736a3956d89_196995bf-df17-459b-a872-ae092d",
+      "w": 250
+     }
+    ]
+   },
    "price_drops": 0,
    "price_rises": 0,
-   "removed": 0,
-   "filtered_out": 125,
-   "unpriced": 1,
    "priced": 0,
+   "quiet": false,
    "relisted": 0,
-   "baselines": [],
-   "invariants": [],
+   "removed": 0,
+   "requests_made": 37,
+   "searches_failed": 0,
+   "searches_run": 2,
+   "shape_drift": [],
    "shut_out": [
     "2021-2023 BMW M5"
    ],
-   "hidden_events": {},
    "skipped": false,
-   "missed_by": 0,
-   "requests_made": 37,
-   "budget_exhausted": false,
-   "empty_parses": [],
-   "diagnostics": [],
-   "shape_drift": [],
-   "disabled_channels": [],
-   "first_run": false,
-   "validation_ok": true,
-   "notified": [],
-   "errors": [],
-   "warnings": [
-    "2021-2023 BMW M5: read 19 listing(s) and none passed your rules for it (12 too far away, 7 outside the year range). It is working - it just has nothing to show you."
-   ],
    "strategies": {
     "2021-2023-bmw-m5-310324": "embedded_json",
     "bmw-m5-bargains-any-year-f2f097": "jsonld"
    },
-   "quiet": false,
-   "dry_run": false,
-   "photos": {
-    "kept": 24,
-    "fetched": 24,
-    "failed": 0,
-    "pruned": 0,
-    "bytes": 159506,
-    "samples": [
-     {
-      "url": "https://prod.pictures.autoscout24.net/listing-images/0518b35e-d26d-45a1-b92b-5e32f2e992b5_335b91d5-53f2-4bd1-80fa-a96cb1",
-      "status": 200,
-      "type": "image/webp",
-      "bytes": 5052,
-      "w": 250,
-      "h": 187
-     },
-     {
-      "url": "https://prod.pictures.autoscout24.net/listing-images/0d995e07-1ec8-47ef-aef7-0cbb117e04d1_cb508237-2c41-4b4d-8e58-8db9ee",
-      "status": 200,
-      "type": "image/webp",
-      "bytes": 7772,
-      "w": 250,
-      "h": 187
-     },
-     {
-      "url": "https://prod.pictures.autoscout24.net/listing-images/16b9cd20-c564-4628-adce-7a40d3ab3b7f_5c1cb5aa-19e0-41a9-8960-f671f3",
-      "status": 200,
-      "type": "image/webp",
-      "bytes": 8656,
-      "w": 250,
-      "h": 187
-     },
-     {
-      "url": "https://prod.pictures.autoscout24.net/listing-images/1e0e9810-9aaf-463b-8d51-184a51a59ca3_120cc91a-96dd-4a08-8bad-d28086",
-      "status": 200,
-      "type": "image/webp",
-      "bytes": 5400,
-      "w": 250,
-      "h": 187
-     },
-     {
-      "url": "https://prod.pictures.autoscout24.net/listing-images/28174c41-6b21-4e04-b457-55284de2b7be_019cd28c-b1cb-4869-a2f1-b66fcc",
-      "status": 200,
-      "type": "image/webp",
-      "bytes": 8732,
-      "w": 250,
-      "h": 187
-     },
-     {
-      "url": "https://prod.pictures.autoscout24.net/listing-images/2a2e28df-a6c8-46c4-9ef4-8736a3956d89_196995bf-df17-459b-a872-ae092d",
-      "status": 200,
-      "type": "image/webp",
-      "bytes": 6366,
-      "w": 250,
-      "h": 187
-     }
-    ]
-   },
+   "unpriced": 1,
+   "validation_ok": true,
+   "warnings": [
+    "2021-2023 BMW M5: read 19 listing(s) and none passed your rules for it (12 too far away, 7 outside the year range). It is working - it just has nothing to show you."
+   ],
    "your_call": 0
   },
   {
@@ -14254,103 +14262,103 @@
  },
  "last_run": {
   "at": "2026-09-12T08:36:48+00:00",
-  "ok": true,
+  "baselines": [],
+  "budget_exhausted": false,
+  "diagnostics": [],
+  "disabled_channels": [],
+  "dry_run": false,
   "duration_s": 71.0,
-  "searches_run": 2,
-  "searches_failed": 0,
+  "empty_parses": [],
+  "errors": [],
+  "filtered_out": 125,
+  "first_run": false,
+  "hidden_events": {},
+  "invariants": [],
   "listings_seen": 210,
+  "missed_by": 0,
   "new": 0,
+  "notified": [],
+  "ok": true,
+  "photos": {
+   "bytes": 159506,
+   "failed": 0,
+   "fetched": 24,
+   "kept": 24,
+   "pruned": 0,
+   "samples": [
+    {
+     "bytes": 5052,
+     "h": 187,
+     "status": 200,
+     "type": "image/webp",
+     "url": "https://prod.pictures.autoscout24.net/listing-images/0518b35e-d26d-45a1-b92b-5e32f2e992b5_335b91d5-53f2-4bd1-80fa-a96cb1",
+     "w": 250
+    },
+    {
+     "bytes": 7772,
+     "h": 187,
+     "status": 200,
+     "type": "image/webp",
+     "url": "https://prod.pictures.autoscout24.net/listing-images/0d995e07-1ec8-47ef-aef7-0cbb117e04d1_cb508237-2c41-4b4d-8e58-8db9ee",
+     "w": 250
+    },
+    {
+     "bytes": 8656,
+     "h": 187,
+     "status": 200,
+     "type": "image/webp",
+     "url": "https://prod.pictures.autoscout24.net/listing-images/16b9cd20-c564-4628-adce-7a40d3ab3b7f_5c1cb5aa-19e0-41a9-8960-f671f3",
+     "w": 250
+    },
+    {
+     "bytes": 5400,
+     "h": 187,
+     "status": 200,
+     "type": "image/webp",
+     "url": "https://prod.pictures.autoscout24.net/listing-images/1e0e9810-9aaf-463b-8d51-184a51a59ca3_120cc91a-96dd-4a08-8bad-d28086",
+     "w": 250
+    },
+    {
+     "bytes": 8732,
+     "h": 187,
+     "status": 200,
+     "type": "image/webp",
+     "url": "https://prod.pictures.autoscout24.net/listing-images/28174c41-6b21-4e04-b457-55284de2b7be_019cd28c-b1cb-4869-a2f1-b66fcc",
+     "w": 250
+    },
+    {
+     "bytes": 6366,
+     "h": 187,
+     "status": 200,
+     "type": "image/webp",
+     "url": "https://prod.pictures.autoscout24.net/listing-images/2a2e28df-a6c8-46c4-9ef4-8736a3956d89_196995bf-df17-459b-a872-ae092d",
+     "w": 250
+    }
+   ]
+  },
   "price_drops": 0,
   "price_rises": 0,
-  "removed": 0,
-  "filtered_out": 125,
-  "unpriced": 1,
   "priced": 0,
+  "quiet": false,
   "relisted": 0,
-  "baselines": [],
-  "invariants": [],
+  "removed": 0,
+  "requests_made": 37,
+  "searches_failed": 0,
+  "searches_run": 2,
+  "shape_drift": [],
   "shut_out": [
    "2021-2023 BMW M5"
   ],
-  "hidden_events": {},
   "skipped": false,
-  "missed_by": 0,
-  "requests_made": 37,
-  "budget_exhausted": false,
-  "empty_parses": [],
-  "diagnostics": [],
-  "shape_drift": [],
-  "disabled_channels": [],
-  "first_run": false,
-  "validation_ok": true,
-  "notified": [],
-  "errors": [],
-  "warnings": [
-   "2021-2023 BMW M5: read 19 listing(s) and none passed your rules for it (12 too far away, 7 outside the year range). It is working - it just has nothing to show you."
-  ],
   "strategies": {
    "2021-2023-bmw-m5-310324": "embedded_json",
    "bmw-m5-bargains-any-year-f2f097": "jsonld"
   },
-  "quiet": false,
-  "dry_run": false,
-  "photos": {
-   "kept": 24,
-   "fetched": 24,
-   "failed": 0,
-   "pruned": 0,
-   "bytes": 159506,
-   "samples": [
-    {
-     "url": "https://prod.pictures.autoscout24.net/listing-images/0518b35e-d26d-45a1-b92b-5e32f2e992b5_335b91d5-53f2-4bd1-80fa-a96cb1",
-     "status": 200,
-     "type": "image/webp",
-     "bytes": 5052,
-     "w": 250,
-     "h": 187
-    },
-    {
-     "url": "https://prod.pictures.autoscout24.net/listing-images/0d995e07-1ec8-47ef-aef7-0cbb117e04d1_cb508237-2c41-4b4d-8e58-8db9ee",
-     "status": 200,
-     "type": "image/webp",
-     "bytes": 7772,
-     "w": 250,
-     "h": 187
-    },
-    {
-     "url": "https://prod.pictures.autoscout24.net/listing-images/16b9cd20-c564-4628-adce-7a40d3ab3b7f_5c1cb5aa-19e0-41a9-8960-f671f3",
-     "status": 200,
-     "type": "image/webp",
-     "bytes": 8656,
-     "w": 250,
-     "h": 187
-    },
-    {
-     "url": "https://prod.pictures.autoscout24.net/listing-images/1e0e9810-9aaf-463b-8d51-184a51a59ca3_120cc91a-96dd-4a08-8bad-d28086",
-     "status": 200,
-     "type": "image/webp",
-     "bytes": 5400,
-     "w": 250,
-     "h": 187
-    },
-    {
-     "url": "https://prod.pictures.autoscout24.net/listing-images/28174c41-6b21-4e04-b457-55284de2b7be_019cd28c-b1cb-4869-a2f1-b66fcc",
-     "status": 200,
-     "type": "image/webp",
-     "bytes": 8732,
-     "w": 250,
-     "h": 187
-    },
-    {
-     "url": "https://prod.pictures.autoscout24.net/listing-images/2a2e28df-a6c8-46c4-9ef4-8736a3956d89_196995bf-df17-459b-a872-ae092d",
-     "status": 200,
-     "type": "image/webp",
-     "bytes": 6366,
-     "w": 250,
-     "h": 187
-    }
-   ]
-  },
+  "unpriced": 1,
+  "validation_ok": true,
+  "warnings": [
+   "2021-2023 BMW M5: read 19 listing(s) and none passed your rules for it (12 too far away, 7 outside the year range). It is working - it just has nothing to show you."
+  ],
   "your_call": 0
  },
  "health": {
@@ -14372,9 +14380,9 @@
     "name": "2021-2023 BMW M5",
     "winner": "embedded_json",
     "scores": {
-     "jsonld": 12,
-     "embedded_json": 19,
      "anchors": 12,
+     "embedded_json": 19,
+     "jsonld": 12,
      "regex": 19
     },
     "working": [
@@ -14391,12 +14399,12 @@
      "regex"
     ],
     "markers": {
-     "json_ld": "few",
-     "next_data": "few",
-     "initial_state": "none",
-     "offer_links": "many",
-     "legacy_links": "none",
      "data_listing_id": "none",
+     "initial_state": "none",
+     "json_ld": "few",
+     "legacy_links": "none",
+     "next_data": "few",
+     "offer_links": "many",
      "vehicle_cdn": "lots"
     }
    },
@@ -14404,9 +14412,9 @@
     "name": "BMW M5 bargains (any year)",
     "winner": "jsonld",
     "scores": {
-     "jsonld": 20,
-     "embedded_json": 20,
      "anchors": 20,
+     "embedded_json": 20,
+     "jsonld": 20,
      "regex": 20
     },
     "working": [
@@ -14423,12 +14431,12 @@
      "regex"
     ],
     "markers": {
-     "json_ld": "few",
-     "next_data": "few",
-     "initial_state": "none",
-     "offer_links": "many",
-     "legacy_links": "none",
      "data_listing_id": "none",
+     "initial_state": "none",
+     "json_ld": "few",
+     "legacy_links": "none",
+     "next_data": "few",
+     "offer_links": "many",
      "vehicle_cdn": "lots"
     }
    }
@@ -19721,10 +19729,10 @@
   "checks": 20,
   "successful": 10,
   "pct": 20.8,
-  "longest_gap_minutes": 1014.8,
+  "longest_gap_minutes": 999.7,
   "expected_interval_minutes": 30,
   "truncated": false,
-  "since": "2026-09-11T08:36:48+00:00"
+  "since": "2026-09-11T08:51:54+00:00"
  },
  "cost": {
   "checks": 20,
@@ -19733,13 +19741,13 @@
   "window_hours": 24
  },
  "market": {
-  "at": "2026-09-12T08:36:48+00:00",
+  "at": "2026-09-12T08:51:54+00:00",
   "window": {
    "ids_span_days": 2,
    "watching_days": 2,
    "cars_with_two_prices": 10,
    "thin": true,
-   "note": "10 of 201 cars have been priced more than once, over 2 day(s) of watching. Anything below described as a trend is really a snapshot until that number grows."
+   "note": "10 of 201 cars have been priced more than once, over 2 days of watching. Anything below described as a trend is really a snapshot until that number grows."
   },
   "live": 192,
   "gone": 9,
@@ -19840,16 +19848,21 @@
    "median": 0,
    "p10": null,
    "p90": null,
-   "note": "how long a car was listed before it came down - not how long it took to sell, which a listing cannot tell you"
+   "note": "how long a car was listed before it came down - not how long it took to sell, which a listing cannot tell you",
+   "biased_short": true,
+   "watching_days": 2
   },
   "still_listed_days": {
    "n": 192,
    "median": 2,
-   "longest": 2
+   "longest": 2,
+   "censored": true,
+   "watching_days": 2
   },
   "velocity": {
    "arrived_7d": 201,
-   "left_7d": 9
+   "left_7d": 9,
+   "window_is_the_watch": true
   },
   "discounting": {
    "cars": 6,

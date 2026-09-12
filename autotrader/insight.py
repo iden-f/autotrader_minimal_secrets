@@ -402,8 +402,14 @@ def _trim_of(entry: dict[str, Any]) -> str:
     return "base"
 
 
-def market(entries: Iterable[dict[str, Any]], *, now: datetime | None = None
-           ) -> dict[str, Any]:
+def _days(n: int) -> str:
+    """"2 day(s)" is a programmer talking to themselves in public."""
+    return "1 day" if n == 1 else f"{n} days"
+
+
+def market(entries: Iterable[dict[str, Any]], *, now: datetime | None = None,
+           runs: Iterable[dict[str, Any]] | None = None,
+           since: str | None = None) -> dict[str, Any]:
     """What the whole dataset says, rather than what one car says.
 
     Two hundred listings and a few months of history is not a research
@@ -490,17 +496,29 @@ def market(entries: Iterable[dict[str, Any]], *, now: datetime | None = None
     tracked = [e for e in entries if len(e.get("price_history") or []) > 1]
     span_days = (now - seen[0]).days if seen else 0
     watched = sorted(t for t in (_dt(e.get("first_seen")) for e in live) if t)
-    real_days = (now - watched[0]).days if watched else 0
+
+    # When the watch itself began, which is not the same as when the oldest
+    # car was first seen - every car alive on the first run was "first seen"
+    # that day whether it went up that morning or two years ago. Without this
+    # the censoring test below compares a number against itself and passes
+    # vacuously, which is exactly how it was written the first time.
+    started = sorted(t for t in (_dt(r.get("at")) for r in (runs or [])) if t)
+    # ``since`` is the state's own written-once record. The run log is a
+    # rolling window, so falling back to it alone makes a bot that has watched
+    # for a year report that it has watched for three days, forever.
+    watch_began = (_dt(since) or (started[0] if started else None)
+                   or (watched[0] if watched else now))
+    watch_days = max(0, (now - watch_began).days)
 
     return {
         "at": now.isoformat(timespec="seconds"),
         "window": {
             "ids_span_days": span_days,
-            "watching_days": real_days,
+            "watching_days": watch_days,
             "cars_with_two_prices": len(tracked),
-            "thin": len(tracked) < 20 or real_days < 14,
+            "thin": len(tracked) < 20 or watch_days < 14,
             "note": (f"{len(tracked)} of {len(entries)} cars have been priced "
-                     f"more than once, over {real_days} day(s) of watching. "
+                     f"more than once, over {_days(watch_days)} of watching. "
                      f"Anything below described as a trend is really a "
                      f"snapshot until that number grows."),
         },
@@ -518,13 +536,33 @@ def market(entries: Iterable[dict[str, Any]], *, now: datetime | None = None
             # thing, and the difference matters to anyone reading this.
             "note": "how long a car was listed before it came down - not how "
                     "long it took to sell, which a listing cannot tell you",
+            # Only a listing that both arrived and left inside the watch can
+            # be measured, so a short watch can only ever see short lives.
+            # The number is real and the sample is biased, which is worse
+            # than either alone if nobody says it.
+            "biased_short": watch_days < 30,
+            "watching_days": watch_days,
         },
         "still_listed_days": {
             "n": len(standing),
             "median": standing[len(standing) // 2] if standing else None,
             "longest": standing[-1] if standing else None,
+            # Right-censored: a car first seen on the day the watch started
+            # has been listed for *at least* that long, and nothing here can
+            # say how much longer. Reporting the floor as the figure is how a
+            # two-day-old bot claims the market turns over every two days.
+            # A car first seen on the first run has been listed for *at
+            # least* this long; how much longer is not knowable from here.
+            "censored": bool(standing and watched
+                             and watched[0] <= watch_began + timedelta(hours=6)),
+            "watching_days": watch_days,
         },
-        "velocity": {"arrived_7d": arrivals, "left_7d": departures},
+        "velocity": {"arrived_7d": arrivals, "left_7d": departures,
+                     # A bot that started watching on Tuesday reports that
+                     # every car on the market "arrived this week". True, and
+                     # useless. The reader needs to know the window is the
+                     # watch, not the week.
+                     "window_is_the_watch": watch_days < 7},
         "discounting": {"cars": cut_cars, "total": cut_total,
                         "mean": int(cut_total / cut_cars) if cut_cars else None},
     }
