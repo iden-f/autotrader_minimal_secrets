@@ -7,10 +7,17 @@
 #
 # GitHub will not fire a schedule reliably, but it will let a job that is
 # already running ask for work. So when one of these firings is served, it
-# holds a runner for an hour and dispatches the watcher on a real timer,
-# turning one delivered slot into an hour of checks that actually happen on
-# time. It does not extend itself: when the hour is up it stops, and the next
-# one starts only when GitHub serves another firing.
+# holds a runner and dispatches the watcher on a real timer, turning one
+# delivered slot into a stretch of checks that actually happen on time. It
+# does not extend itself: when its shift is up it stops, and the next one
+# starts only when GitHub serves another firing.
+#
+# The shift is sized against the measured service rate. Three slots are asked
+# for each hour and roughly one in ten is served, so a firing arrives about
+# every three hours; a shift of three hours means the next one is usually due
+# about when this one ends. It is a runner held for most of the day, which is
+# the price of a clock here and is only affordable because the repository is
+# public.
 #
 # TO STOP IT: commit a file called PACEMAKER-OFF at the top of the repository.
 # The loop checks for it before every dispatch, so it stops within one
@@ -41,16 +48,18 @@ jobs:
     runs-on: ubuntu-latest
     # Its own deadline is SHIFT_MINUTES; this is the backstop behind it, not
     # the thing being relied on.
-    timeout-minutes: 75
+    timeout-minutes: 200
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # How often the watcher should actually check.
       INTERVAL_MINUTES: 30
-      # How long one firing keeps time for. Deliberately short: this holds a
-      # runner for the whole of it, and a firing that covers the hour after it
-      # is worth an hour of runner, where one that never ends is a different
-      # kind of thing entirely.
-      SHIFT_MINUTES: 60
+      # How long one firing keeps time for. Long enough that the next served
+      # firing is usually due as this one ends, short enough to stay a shift
+      # rather than a process that never stops. Note the last interval is not
+      # started if it would run past the deadline, so a 180-minute shift beats
+      # at 0, 30, 60, 90, 120 and 150 and then exits - six checks, two and a
+      # half hours of cover.
+      SHIFT_MINUTES: 180
       # Consecutive failed dispatches before it stops rather than carrying on
       # pretending to be a clock.
       STRIKES: 3
@@ -101,5 +110,5 @@ jobs:
             echo "## Pacemaker"
             echo "Asked for $beats check(s), one every $INTERVAL_MINUTES minutes."
             echo "This firing is done. The next one happens when GitHub serves"
-            echo "one of the scheduled slots."
+            echo "one of the scheduled slots - about every three hours, measured."
           } >> "$GITHUB_STEP_SUMMARY"
