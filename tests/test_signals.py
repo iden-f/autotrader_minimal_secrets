@@ -225,3 +225,35 @@ class TestTheFeedShowsTheNewKinds:
         emitted = set(re.findall(r'add\("(\w+)"', Path("autotrader/insight.py")
                                  .read_text()))
         assert emitted <= known, emitted - known
+
+
+class TestADigestCannotBeLostToAMalformedChange:
+    """describe() has to produce a sentence for anything it is handed.
+
+    A TypeError inside digest rendering does not lose one alert, it loses
+    every alert in the batch - and the whole point of holding undelivered
+    alerts in state is that one is never lost.
+    """
+
+    @classmethod
+    def every_kind(cls):
+        return [v for k, v in vars(Change).items()
+                if k.isupper() and isinstance(v, str)]
+
+    def test_with_no_prices_at_all(self):
+        for kind in self.every_kind():
+            text = Change(kind, listing(price=None)).describe()
+            assert text and isinstance(text, str), kind
+
+    def test_with_only_one_of_the_two(self):
+        for kind in self.every_kind():
+            assert Change(kind, listing(), old_price=90000).describe()
+            assert Change(kind, listing(), new_price=90000).describe()
+
+    def test_the_digest_survives_one(self):
+        from autotrader import render
+        changes = [Change(Change.PRICE_DROP, listing(), old_price=90000,
+                          new_price=86000),
+                   Change(Change.PRICE_DROP, listing())]      # malformed
+        assert render.headline(changes)
+        assert render.as_text(changes)

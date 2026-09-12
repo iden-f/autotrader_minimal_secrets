@@ -85,11 +85,18 @@ class Change:
             delta = self.delta or 0
             arrow = "down" if delta < 0 else "up"
             pct = self.delta_pct or 0.0
+            # A price change is constructed with both figures; if one is
+            # somehow missing this still has to produce a sentence. The
+            # alternative is a TypeError inside digest rendering, which loses
+            # every alert in the batch - not just this one - and the whole
+            # design here is that an alert is never lost.
+            if self.old_price is None or self.new_price is None:
+                return f"Price {arrow}" + (f" ${abs(delta):,}" if delta else "")
             return (f"Price {arrow} ${abs(delta):,} ({abs(pct):.1f}%) - "
                     f"${self.old_price:,} to ${self.new_price:,}")
         if self.kind == Change.PRICED:
             return (f"Price published - ${self.new_price:,}"
-                    if self.new_price else "Price published")
+                    if isinstance(self.new_price, int) else "Price published")
         if self.kind == Change.REMOVED:
             return "Listing removed"
         if self.kind == Change.RELISTED:
