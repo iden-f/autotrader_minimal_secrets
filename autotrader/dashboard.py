@@ -16,7 +16,7 @@ from typing import Any
 import re
 
 from .archive import size_report
-from . import geo, insight
+from . import geo, insight, thumbs
 from .config import CHANNEL_SECRETS, Config
 from .parser import STRATEGIES
 from .state import State
@@ -89,6 +89,8 @@ def build_payload(cfg: Config, state: State, env: dict[str, str] | None = None
             references[search.id] = point
             reference_names[search.id] = near
 
+    photo_index = thumbs._load_index()
+
     listings: list[dict[str, Any]] = []
     for entry in state.listings.values():
         if entry.get("imported_from"):
@@ -114,6 +116,12 @@ def build_payload(cfg: Config, state: State, env: dict[str, str] | None = None
         # The signals a person actually compares on, computed once here rather
         # than in the browser from data the browser does not have.
         item["photo_count"] = len(entry.get("images") or [])
+        # Our own copy, when we have one. The remote URL stays as a fallback:
+        # a photo we failed to fetch is still better than a grey box, and the
+        # page tries local first so it works with no network at all.
+        local = thumbs.local_for(entry.get("id"), photo_index)
+        if local:
+            item["thumb"] = local
         item["per_1000km"] = insight.per_1000km(entry.get("price"),
                                                 entry.get("mileage_km"))
         first = entry.get("first_seen")

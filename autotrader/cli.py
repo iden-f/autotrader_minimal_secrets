@@ -64,6 +64,23 @@ def cmd_run(args: argparse.Namespace) -> int:
         print(_bad(error))
     for line in report.notified:
         print(f"   {line}")
+    # What the photo CDN actually said. This is the only place anyone can see
+    # it: the machine that renders the screenshots for this project cannot
+    # reach autoscout24, so the first real evidence about these URLs comes
+    # from a run on a runner with an unrestricted network.
+    if report.photos:
+        shots = report.photos
+        print(f"   photos: {shots['kept']} kept ({shots['bytes'] / 1e6:.1f} MB), "
+              f"{shots['fetched']} new, {shots['failed']} failed, "
+              f"{shots['pruned']} pruned")
+        for sample in shots.get("samples", []):
+            detail = (f"{sample.get('status')} {sample.get('type') or '?'} "
+                      f"{sample.get('bytes', 0)}B "
+                      f"{sample.get('w', '?')}x{sample.get('h', '?')}")
+            if sample.get("error"):
+                print(f"   {DIM}  {detail} - {sample['error']}{RESET}")
+            else:
+                print(f"   {DIM}  {detail}{RESET}")
     if not args.dry_run:
         written = dashboard.write(cfg, state)
         if written:

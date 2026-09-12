@@ -19,6 +19,7 @@ from pathlib import Path
 from typing import Any
 
 from . import archive as archive_mod
+from . import thumbs as thumbs_mod
 from . import dashboard, diagnose, filters, invariants, notifiers
 from . import provision, shape, validate
 from .config import Config
@@ -61,6 +62,8 @@ class RunReport:
     # Searches that established a starting point this run instead of alerting.
     baselines: list[str] = field(default_factory=list)
     invariants: list[str] = field(default_factory=list)
+    # What the run did about photographs. Nothing here can fail a check.
+    photos: dict[str, Any] = field(default_factory=dict)
     # Searches that read the site fine and kept nothing after your rules.
     shut_out: list[str] = field(default_factory=list)
     # Changes on cars your rules hide: real, deliberately unannounced, counted.
@@ -1042,6 +1045,23 @@ def run(cfg: Config | None = None, state: State | None = None, *,
             if pruned:
                 report.warnings.append(f"pruned {len(pruned)} old archive folder(s)")
             state.prune()
+
+            # Our own copy of the photos, so the page works offline and a
+            # delisted car still has a picture. Uses the same fetcher, so it
+            # queues behind the same rate limit and the same budget; never
+            # raises, because a photo is a nicety and a check is the job.
+            if cfg.get("dashboard.photos", True):
+                try:
+                    shots = thumbs_mod.sync(state.listings.values(), fetcher)
+                    report.photos = {
+                        "kept": shots.kept, "fetched": shots.fetched,
+                        "failed": shots.failed, "pruned": shots.pruned,
+                        "bytes": shots.total_bytes, "samples": shots.samples[:6],
+                    }
+                    for note in shots.notes:
+                        report.warnings.append(note)
+                except Exception as exc:  # noqa: BLE001
+                    log.warning("photo sync failed: %s", exc)
 
         # ---- does the bookkeeping still make sense? ------------------
         # Every serious bug in this rebuild has been silently wrong state

@@ -562,7 +562,10 @@ function emptyState(title, body) {
 
 function shot(l, cls) {
   const box = el('div', cls || 'card__shot');
-  const src = (l.images || [])[0];
+  // Ours first. The seller's CDN is a fallback rather than the source: it is
+  // unreachable offline, unreachable from the installed app on a plane, and
+  // it drops the picture the day the car is delisted.
+  const src = l.thumb || (l.images || [])[0];
   const fallback = () => {
     box.innerHTML = `<div class="shot__fallback">${CAR_GLYPH}
         <span>${l.filtered ? 'not kept for hidden cars' : 'no photo'}</span>
@@ -947,7 +950,7 @@ function sheetBody(l) {
   const cmp = app.data.comparables?.[String(l.id)];
 
   const gal = el('div', 'gallery');
-  const imgs = (l.images || []).slice(0, 8);
+  const imgs = [l.thumb, ...(l.images || [])].filter(Boolean).slice(0, 8);
   if (imgs.length) {
     for (const src of imgs) {
       const box = el('div', 'shotbox');

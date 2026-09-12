@@ -171,7 +171,7 @@ jobs:
           # coming back - it was removed on disk every run and restored by the
           # next checkout, re-capturing the page forever. A path git already
           # tracks is staged whether it is still there or not.
-          for path in state.json docs/data.json archives config.json \
+          for path in state.json docs/data.json docs/thumbs archives config.json \
                       NOTIFY.md diagnostics validation-report.md .capture-raw; do
             if [ -e "$path" ] || [ -n "$(git ls-files -- "$path")" ]; then
               git add -A -- "$path"

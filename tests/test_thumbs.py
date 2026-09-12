@@ -1,0 +1,225 @@
+"""Our own copy of the photos, and everything a CDN can do to us.
+
+The sandbox this was built in cannot reach autoscout24 at all, so every
+screenshot taken during the rebuild showed the fallback and nobody had ever
+seen a real card. That is the reason this module exists, and it is also the
+reason it is tested this thoroughly rather than "verified" by looking: the
+first time it runs against the real CDN is on a runner nobody is watching.
+
+A photo may never fail a check. Every case below ends with the run intact.
+"""
+
+from __future__ import annotations
+
+import json
+import struct
+from pathlib import Path
+
+import pytest
+
+from autotrader import thumbs
+
+
+def webp(width: int = 250, height: int = 188, pad: int = 900) -> bytes:
+    """A minimal but genuinely parseable VP8X WebP."""
+    body = (b"VP8X" + struct.pack("<I", 10) + b"\x00\x00\x00\x00"
+            + (width - 1).to_bytes(3, "little") + (height - 1).to_bytes(3, "little")
+            + b"\x00" * pad)
+    return b"RIFF" + struct.pack("<I", len(body) + 4) + b"WEBP" + body
+
+
+def png(width: int = 250, height: int = 188) -> bytes:
+    return (b"\x89PNG\r\n\x1a\n" + b"\x00" * 8
+            + struct.pack(">II", width, height) + b"\x00" * 400)
+
+
+class Response:
+    def __init__(self, content=b"", status_code=200, content_type="image/webp"):
+        self.content = content
+        self.status_code = status_code
+        self.headers = {"Content-Type": content_type}
+        self.text = ""
+
+
+class CDN:
+    """A stand-in that can misbehave in every way a real one does."""
+
+    def __init__(self, **behaviour):
+        self.behaviour = behaviour
+        self.calls: list[str] = []
+
+    def get(self, url, referer=None, allow_block=False):
+        self.calls.append(url)
+        act = self.behaviour.get("mode", "ok")
+        if act == "raise":
+            raise ConnectionError("connection reset by peer")
+        if act == "404":
+            return Response(b"not found", 404, "text/plain")
+        if act == "html":
+            return Response(b"<html>login</html>", 200, "text/html")
+        if act == "huge":
+            return Response(webp(pad=200_000), 200, "image/webp")
+        if act == "lying":
+            return Response(b"not an image at all", 200, "image/webp")
+        return Response(webp(), 200, "image/webp")
+
+
+def car(i: int, *, filtered=False, status="active", images=True) -> dict:
+    return {
+        "id": f"{i:08d}-0000-0000-0000-000000000000",
+        "status": status, "filtered": filtered,
+        "images": [f"https://cdn.test/{i}.webp"] if images else [],
+    }
+
+
+@pytest.fixture(autouse=True)
+def here(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(thumbs, "THUMB_DIR", tmp_path / "docs/thumbs")
+    monkeypatch.setattr(thumbs, "INDEX", tmp_path / "docs/thumbs/index.json")
+    return tmp_path
+
+
+class TestReadingAnImageWithoutAnImageLibrary:
+    """Dimensions come out of the file header. No Pillow in a 30-minute job."""
+
+    def test_webp(self):
+        assert thumbs._dimensions(webp(250, 188)) == (250, 188)
+
+    def test_png(self):
+        assert thumbs._dimensions(png(320, 240)) == (320, 240)
+
+    def test_a_jpeg_header(self):
+        """SOI carries no length. Treating the next two bytes as one walks
+        the reader straight off the end of the file."""
+        blob = (b"\xff\xd8"
+                + b"\xff\xe0" + struct.pack(">H", 16) + b"JFIF\x00" + b"\x00" * 9
+                + b"\xff\xc0" + struct.pack(">H", 17) + b"\x08"
+                + struct.pack(">HH", 188, 250) + b"\x03" + b"\x00" * 9)
+        assert thumbs._dimensions(blob) == (250, 188)
+
+    def test_a_jpeg_with_restart_markers_before_the_frame(self):
+        blob = (b"\xff\xd8" + b"\xff\xd0" + b"\xff\xd1"
+                + b"\xff\xc2" + struct.pack(">H", 17) + b"\x08"
+                + struct.pack(">HH", 600, 800) + b"\x03" + b"\x00" * 9)
+        assert thumbs._dimensions(blob) == (800, 600)
+
+    def test_something_that_is_not_an_image(self):
+        assert thumbs._dimensions(b"<html>hello</html>") is None
+
+    def test_a_truncated_file_does_not_explode(self):
+        assert thumbs._dimensions(webp()[:9]) is None
+
+
+class TestFetching:
+    def test_a_good_photo_is_kept_and_measured(self, here):
+        report = thumbs.sync([car(1)], CDN())
+        assert report.fetched == 1 and report.failed == 0
+        assert report.kept == 1
+        saved = list((here / "docs/thumbs").glob("*.webp"))
+        assert len(saved) == 1 and saved[0].stat().st_size > 0
+        assert report.samples[0]["w"] == 250 and report.samples[0]["h"] == 188
+
+    def test_the_index_records_where_it_went(self, here):
+        thumbs.sync([car(1)], CDN())
+        index = json.loads((here / "docs/thumbs/index.json").read_text())
+        assert thumbs.local_for(car(1)["id"], index).startswith("thumbs/")
+
+    def test_it_does_not_fetch_the_same_photo_twice(self, here):
+        cdn = CDN()
+        thumbs.sync([car(1)], cdn)
+        thumbs.sync([car(1)], cdn)
+        assert len(cdn.calls) == 1
+
+    def test_hidden_and_gone_cars_are_not_worth_the_bytes(self, here):
+        cdn = CDN()
+        thumbs.sync([car(1, filtered=True), car(2, status="gone")], cdn)
+        assert cdn.calls == []
+
+    def test_a_car_with_no_photo_is_simply_skipped(self, here):
+        cdn = CDN()
+        assert thumbs.sync([car(1, images=False)], cdn).fetched == 0
+        assert cdn.calls == []
+
+
+class TestEverythingTheCdnCanDo:
+    """Each of these ends with the run intact and the reason recorded."""
+
+    @pytest.mark.parametrize("mode,why", [
+        ("raise", "connection reset"),
+        ("404", "HTTP 404"),
+        ("html", "not an image"),
+        ("lying", "does not parse"),
+        ("huge", "over the"),
+    ])
+    def test_it_fails_softly_and_says_why(self, here, mode, why):
+        report = thumbs.sync([car(1)], CDN(mode=mode))
+        assert report.failed == 1 and report.fetched == 0
+        assert not list((here / "docs/thumbs").glob("*.webp"))
+        if mode != "raise":
+            assert any(why in str(s.get("error", "")) for s in report.samples), report.samples
+
+    def test_a_dead_cdn_does_not_stop_the_next_run_trying(self, here):
+        thumbs.sync([car(1)], CDN(mode="404"))
+        report = thumbs.sync([car(1)], CDN())
+        assert report.fetched == 1
+
+
+class TestStayingSmall:
+    def test_a_run_only_fetches_so_many(self, here):
+        cdn = CDN()
+        report = thumbs.sync([car(i) for i in range(40)], cdn, limit=5)
+        assert report.fetched == 5 and len(cdn.calls) == 5
+        assert report.skipped == 35
+
+    def test_no_budget_means_no_photos(self, here):
+        report = thumbs.sync([car(i) for i in range(10)], CDN(), budget=0)
+        assert report.fetched == 0
+        assert any("budget" in n for n in report.notes), report.notes
+
+    def test_it_stops_before_it_can_overrun_and_says_so(self, here):
+        """Headroom for one more of the largest allowed image, then stop.
+
+        A photo's size is not known until it has been fetched, so a budget
+        checked only against what is already on disk always lets one more
+        through - and "one more" at the per-file cap is 60 KB of repository
+        nobody asked for. Reserving that cap is the honest version: several
+        small photos fit, and the total can never cross the line.
+        """
+        budget = thumbs.MAX_BYTES_EACH + 2500
+        report = thumbs.sync([car(i) for i in range(20)], CDN(), budget=budget)
+        assert 0 < report.fetched < 20
+        assert report.total_bytes <= budget
+        assert any("budget" in n for n in report.notes), report.notes
+
+    def test_a_car_that_leaves_takes_its_photo_with_it(self, here):
+        thumbs.sync([car(1), car(2)], CDN())
+        assert len((here / "docs/thumbs").glob("*.webp") and
+                   list((here / "docs/thumbs").glob("*.webp"))) == 2
+
+        report = thumbs.sync([car(1)], CDN())
+        assert report.pruned == 1
+        assert len(list((here / "docs/thumbs").glob("*.webp"))) == 1
+        assert report.kept == 1
+
+    def test_pruning_frees_room_for_a_live_car(self, here):
+        """The budget is for cars you are watching, not cars you watched."""
+        thumbs.sync([car(i) for i in range(4)], CDN())
+        before = thumbs.Report(total_bytes=0)
+        report = thumbs.sync([car(9)], CDN())
+        assert report.pruned == 4 and report.fetched == 1
+        assert before is not None
+
+
+class TestNotWritingWhereItShouldNot:
+    def test_a_listing_id_that_is_a_path_is_refused(self, here):
+        nasty = dict(car(1), id="../../etc/passwd")
+        report = thumbs.sync([nasty], CDN())
+        assert report.fetched == 0 and report.failed == 1
+        assert not (here / "etc").exists()
+
+    def test_a_dry_run_writes_nothing(self, here):
+        report = thumbs.sync([car(1)], CDN(), dry_run=True)
+        assert report.fetched == 1
+        assert not (here / "docs/thumbs").exists() or \
+               not list((here / "docs/thumbs").glob("*.webp"))
