@@ -40,8 +40,20 @@ on:
 # takes over as this one ends, and three staggered schedules make "next" much
 # sooner than one. Nothing here starts a successor - if no firing is served,
 # it all stops.
+# Its own group, not a shared one.
+#
+# All three sat in a single "autotrader-pacemaker" group, which is the exact
+# opposite of the reason there are three. GitHub keeps at most ONE pending run
+# per concurrency group, so every firing that arrived while a shift was
+# running displaced the previously queued one - and the three spent the day
+# cancelling each other. Measured over nine hours: firings served at 12:15,
+# 12:20, 13:10, 15:38, 15:46, 17:50 and 17:58; one ran, six were cancelled
+# before starting. Three workflows behaving as one, with extra steps.
+#
+# Per-workflow groups let all three hold a runner at once. Each still
+# collapses its own queue, so one workflow is still one shift at a time.
 concurrency:
-  group: autotrader-pacemaker
+  group: autotrader-pacemaker-b
   cancel-in-progress: false
 
 permissions:

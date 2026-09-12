@@ -131,7 +131,12 @@ be listed and sold inside a three-hour gap.
 
 **Levers, in order of how much they help:**
 
-1. Keep all three pacemakers enabled.
+1. Keep all three pacemakers enabled, and keep them in **separate
+   concurrency groups**. Sharing one makes them cancel each other's queued
+   runs - GitHub keeps a single pending run per group - so three workflows
+   behave as one and most served firings never start. If you see pacemaker
+   runs with conclusion "cancelled" a few minutes after they were created,
+   that is this.
 2. Keep `poke-the-watcher.yml` in `iden-f/autotrader_notifier` running — it
    needs a `WATCHER_DISPATCH_TOKEN` secret with `contents: write` on this
    repository. The workflow fails loudly with setup instructions if it is

@@ -168,8 +168,20 @@ DEFAULTS: dict[str, Any] = {
         # at all, so the bot compares against this rather than trusting that a
         # run happening means a run was due.
         "expected_interval_minutes": 30,
-        # Two checks closer together than this tell you the same thing twice.
-        "min_interval_minutes": 8,
+        # Two checks closer together than this tell you the same thing twice,
+        # so a scheduled one arriving inside the window is skipped without
+        # touching the site.
+        #
+        # It was 8, which was fine when one pacemaker was keeping time. Three
+        # of them running concurrently - which they now do, having previously
+        # cancelled each other - dispatch on nine offset minutes, and an
+        # 8-minute floor would have turned a check every 30 minutes into one
+        # every 10. That is three times the load on somebody else's site to
+        # learn the same thing, which is not a trade this project gets to
+        # make quietly. At 24 the redundancy buys resilience instead: if one
+        # pacemaker dies, another's dispatch lands in the same window and the
+        # check still happens on time.
+        "min_interval_minutes": 24,
         # No successful check for this long and the bot is not watching
         # anything, whatever the reason.
         "silent_after_hours": 3,

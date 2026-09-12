@@ -160,3 +160,49 @@ class TestNoticingItsOwnSilence:
 
         bench.run()                                  # it is back
         assert events.silence(bench.cfg, bench.state(), record) is None
+
+
+class TestThreePacemakersDoNotMeanThreeTimesTheScraping:
+    """They run concurrently now; before, they cancelled each other.
+
+    All three sat in one concurrency group. GitHub keeps at most one pending
+    run per group, so each firing displaced the previously queued one and the
+    three behaved as one workflow. Per-workflow groups fixed that - and made
+    the dedupe floor load-bearing, because nine offset dispatch minutes with
+    an 8-minute floor is a check every 10 minutes rather than every 30.
+    """
+
+    def test_the_floor_is_most_of_the_interval(self):
+        from autotrader.config import Config
+        health = Config.defaults().get("health", {})
+        floor = health["min_interval_minutes"]
+        expected = health["expected_interval_minutes"]
+        assert floor >= expected * 0.6, (
+            f"a {floor}-minute floor under a {expected}-minute schedule lets "
+            f"concurrent pacemakers check {expected // floor}x as often as "
+            f"asked - that is somebody else's site")
+        assert floor < expected, (
+            "a floor at or above the interval would skip the checks the "
+            "schedule actually asked for")
+
+    def test_each_pacemaker_has_its_own_group(self):
+        import re
+        from pathlib import Path
+        groups = []
+        for name in ("pacemaker.yml", "pacemaker-b.yml", "pacemaker-c.yml"):
+            source = (Path(".github/workflows") / name).read_text()
+            body = "\n".join(l for l in source.splitlines()
+                             if not l.lstrip().startswith("#"))
+            found = re.search(r"concurrency:\s*\n\s*group:\s*(\S+)", body)
+            assert found, name
+            groups.append(found.group(1))
+        assert len(set(groups)) == 3, (
+            f"the pacemakers share a concurrency group ({groups}) - GitHub "
+            f"keeps one pending run per group, so they cancel each other and "
+            f"three workflows behave as one")
+
+    def test_they_still_do_not_cancel_a_shift_in_progress(self):
+        from pathlib import Path
+        for name in ("pacemaker.yml", "pacemaker-b.yml", "pacemaker-c.yml"):
+            source = (Path(".github/workflows") / name).read_text()
+            assert "cancel-in-progress: false" in source, name

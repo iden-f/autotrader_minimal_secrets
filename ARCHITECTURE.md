@@ -197,8 +197,22 @@ gaps of several hours are normal. That is the single biggest limit on this
 bot and no amount of code fixes it.
 
 What helps: **more independent chances to be served.** Three pacemaker
-workflows sit on three unrelated sets of minutes. Each one that *is* served
-holds a runner for a bounded period and dispatches the watcher on a timer.
+workflows sit on three unrelated sets of minutes, each in **its own
+concurrency group**. Each one that *is* served holds a runner for a bounded
+period and dispatches the watcher on a timer.
+
+The separate groups are the whole point and were once missing. All three sat
+in a single group, and GitHub keeps at most one pending run per group - so
+every firing arriving while a shift ran displaced the previously queued one.
+Measured over nine hours: seven firings served, one ran, six cancelled before
+starting. Three workflows behaving as one, with extra steps.
+
+That also makes `health.min_interval_minutes` load-bearing. Nine offset
+dispatch minutes against an 8-minute floor is a check every 10 minutes rather
+than every 30 - three times the load on somebody else's site to learn the
+same thing. At 24 the redundancy buys resilience instead: if one pacemaker
+dies, another's dispatch lands in the same window and the check still happens
+on time.
 
 One served firing holds a runner for 330 minutes and dispatches a check every
 30 - eleven checks, five hours of cover. That number is measured, not read: a
