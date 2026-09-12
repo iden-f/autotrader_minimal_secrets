@@ -1,0 +1,156 @@
+"""The handoff documents, checked against the thing they describe.
+
+Documentation rots silently, and a runbook that names a command that no longer
+exists is worse than no runbook: it is read under pressure, by someone who has
+forgotten everything, and it sends them somewhere that does not exist.
+
+These are not style checks. Every assertion here is "this document claims X;
+is X still true".
+"""
+
+from __future__ import annotations
+
+import json
+import re
+from pathlib import Path
+
+import pytest
+
+ROOT = Path(".")
+DOCS = {name: (ROOT / name).read_text(encoding="utf-8")
+        for name in ("README.md", "ARCHITECTURE.md", "RUNBOOK.md", "DESIGN.md")}
+ALL = "\n".join(DOCS.values())
+
+
+class TestEveryCommandTheDocsTellYouToRun:
+    def test_each_subcommand_exists(self):
+        from autotrader import cli
+        import argparse
+
+        parser = cli.build_parser() if hasattr(cli, "build_parser") else None
+        if parser is None:
+            source = (ROOT / "autotrader/cli.py").read_text()
+            known = set(re.findall(r'sub\.add_parser\(\s*"([\w-]+)"', source))
+        else:
+            known = {a for action in parser._actions
+                     if isinstance(action, argparse._SubParsersAction)
+                     for a in action.choices}
+        assert known, "could not work out which subcommands exist"
+
+        named = set(re.findall(r"python -m autotrader ([\w-]+)", ALL))
+        named -= {"--no-colour"}
+        missing = named - known
+        assert not missing, f"the docs name commands that do not exist: {missing}"
+
+    def test_the_flags_they_name_exist(self):
+        source = (ROOT / "autotrader/cli.py").read_text()
+        for flag in re.findall(r"python -m autotrader [\w-]+ (--[\w-]+)", ALL):
+            assert f'"{flag}"' in source, flag
+
+
+class TestEveryFileAndWorkflowTheDocsPointAt:
+    @pytest.mark.parametrize("doc", sorted(DOCS))
+    def test_the_workflows_named_exist(self, doc):
+        here = Path(".github/workflows")
+        gone = {
+            # Named as history, not as a pointer. v1's workflow was renamed
+            # because GitHub remembers "disabled" against a file path.
+            "run_bot.yml",
+            "poke-the-watcher.yml",   # lives in the sibling repository
+        }
+        for name in set(re.findall(r"`?([\w-]+\.yml)`?", DOCS[doc])) - gone:
+            assert (here / name).exists(), f"{doc} names {name}"
+
+    def test_the_modules_named_exist(self):
+        for name in set(re.findall(r"\*\*`(\w+)`\*\*", DOCS["ARCHITECTURE.md"])):
+            assert (ROOT / f"autotrader/{name}.py").exists(), name
+
+    def test_the_paths_named_exist(self):
+        for path in set(re.findall(r"`(docs/[\w./*-]+)`", ALL)):
+            if "*" in path:
+                assert list(Path(path).parent.glob(Path(path).name)), path
+            else:
+                assert Path(path).exists(), path
+
+    def test_the_sibling_documents_exist(self):
+        # \b at the front, or <name>.REJECTED.md matches as REJECTED.md.
+        for name in set(re.findall(r"(?:^|[\s`(])([A-Z]+\.md)\b", ALL)):
+            assert (ROOT / name).exists(), name
+
+
+class TestTheMechanismsTheRunbookReliesOn:
+    """Each of these is a sentence in RUNBOOK.md that has to stay true."""
+
+    def test_the_capture_marker_is_the_one_the_workflow_looks_for(self):
+        assert ".capture-raw" in DOCS["RUNBOOK.md"]
+        assert ".capture-raw" in Path(".github/workflows/watch.yml").read_text()
+
+    def test_the_kill_switch_is_the_one_the_pacemakers_read(self):
+        assert "PACEMAKER-OFF" in DOCS["RUNBOOK.md"]
+        for name in ("pacemaker.yml", "pacemaker-b.yml", "pacemaker-c.yml"):
+            assert "PACEMAKER-OFF" in Path(f".github/workflows/{name}").read_text(), name
+
+    def test_the_corrupt_state_file_is_named_correctly(self):
+        from autotrader import state
+        assert "state.corrupt.json" in DOCS["RUNBOOK.md"]
+        assert "corrupt" in Path("autotrader/state.py").read_text()
+
+    def test_the_control_actions_it_lists_are_the_real_ones(self):
+        from autotrader import control
+        listed = set(re.findall(r"`([a-z-]+)`",
+                                DOCS["RUNBOOK.md"].split("Valid actions:")[1]
+                                .split("\n\n")[0]))
+        assert listed == set(control.ACTIONS), (
+            f"runbook lists {sorted(listed)}, module has "
+            f"{sorted(control.ACTIONS)}")
+
+    def test_the_example_control_file_would_actually_apply(self):
+        """The snippet a person copies at 11pm has to be valid."""
+        from autotrader import control
+        block = re.search(r"```json\n(.*?)```", DOCS["RUNBOOK.md"], re.S).group(1)
+        items = control.parse(block)
+        assert items and items[0]["action"] in control.ACTIONS
+
+    def test_the_dispatch_call_names_this_repository_and_a_real_event(self):
+        for doc in ("ARCHITECTURE.md", "RUNBOOK.md"):
+            call = re.search(r'"event_type":"(\w+)"', DOCS[doc])
+            assert call, doc
+            watch = Path(".github/workflows/watch.yml").read_text()
+            assert call.group(1) in watch, f"{doc}: watch.yml has no such type"
+
+    def test_the_photo_fallback_wordings_are_the_ones_the_page_uses(self):
+        app = Path("docs/app.js").read_text()
+        for phrase in ("no photo", "photo not copied yet",
+                       "not kept for hidden cars"):
+            assert phrase in DOCS["RUNBOOK.md"], phrase
+            assert phrase in app, f"the page no longer says {phrase!r}"
+
+    def test_the_unstamped_worker_check_it_promises_exists(self):
+        assert "__BUILD__" in DOCS["RUNBOOK.md"]
+        assert "__BUILD__" in Path("tests/test_offline.py").read_text()
+
+    def test_the_per_run_photo_cap_it_quotes_is_the_real_one(self):
+        from autotrader import thumbs
+        assert f"at most {thumbs.MAX_PER_RUN} new photos" in DOCS["RUNBOOK.md"]
+
+    def test_the_request_budget_it_quotes_is_the_real_default(self):
+        from autotrader.config import Config
+        budget = Config.defaults().get("scraping.request_budget")
+        assert f"({budget} by default)" in DOCS["ARCHITECTURE.md"]
+
+    def test_the_run_history_depth_it_quotes_is_the_real_one(self):
+        from autotrader.state import MAX_RUN_HISTORY
+        assert f"last {MAX_RUN_HISTORY} run" in DOCS["ARCHITECTURE.md"]
+
+
+class TestTheClaimsAboutBehaviour:
+    def test_hidden_cars_really_are_kept_and_explained(self):
+        assert "kept and explained" in ALL
+        data = json.loads(Path("docs/data.json").read_text())
+        hidden = [l for l in data["listings"] if l.get("filtered")]
+        assert hidden and all(l.get("filter_reason") for l in hidden[:20])
+
+    def test_the_secret_scan_really_runs_before_the_write(self):
+        source = Path("autotrader/dashboard.py").read_text()
+        body = source.split("def write(")[1]
+        assert body.index("find_secrets") < body.index("tmp.replace(path)")

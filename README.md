@@ -10,9 +10,9 @@ email — all free and unlimited.
 
 ```
 ┌── you ──────────────┐   ┌── GitHub Actions ────────┐   ┌── your phone ───┐
-│ paste a search link │──▶│ every 30 min: scrape,    │──▶│ Telegram        │
-│ (UI, CLI or the     │   │ compare, notify, publish │   │ Discord / ntfy  │
-│  Actions form)      │   │ the dashboard            │   │ Slack / email   │
+│ paste a search link │──▶│ checks, compares,        │──▶│ Telegram        │
+│ from the page, the  │   │ notifies, publishes      │   │ Discord / ntfy  │
+│ CLI, or Actions     │   │ the dashboard            │   │ Slack / email   │
 └─────────────────────┘   └──────────────────────────┘   └─────────────────┘
 ```
 
@@ -21,11 +21,21 @@ email — all free and unlimited.
 - **New listings** — tells you once, in one message, however many turn up.
 - **Price drops** — the thing that actually saves money. Every car's price is
   tracked over time, so a car you saw last week tells you when it drops.
+- **Back inside your rules** — a car your price ceiling was hiding that has
+  come down into range. Usually the only time you will ever hear about it.
+- **Back on the market, cheaper** — a seller who withdrew a car and relisted
+  it $4,000 lower has told you something a price edit has not.
 - **Removals** — optional, for spotting what sold and how fast.
 - **Tells you when it breaks.** If autotrader.ca stops loading, you get a
   message. The previous version failed silently for a month.
-- **A dashboard** with every car, its price history, and the health of each
-  search.
+- **A dashboard** — every car with its photo and price history, what the whole
+  market says together, and whether the bot itself is healthy. Installs to a
+  phone home screen and works offline, with the age of what you are looking at
+  written on it.
+- **Changeable from a phone**, with no token and no terminal: the page opens a
+  prefilled commit and a workflow applies it, whole or not at all.
+- **Your own marks** — shortlist a car, mute one, dismiss one, leave yourself
+  a note. Alerts respect all of it.
 
 ## It already works
 
@@ -45,6 +55,17 @@ Open that in a browser, or install the ntfy app and subscribe to the topic
 > Slack or email secret and it takes over automatically — see [SETUP.md](SETUP.md).
 
 Everything below is optional.
+
+## The other documents
+
+| | |
+|---|---|
+| [SETUP.md](SETUP.md) | The click paths: secrets, Pages, the schedule. |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | How it works, module by module, and why. |
+| [RUNBOOK.md](RUNBOOK.md) | Something is wrong. Start here. |
+| [DESIGN.md](DESIGN.md) | The dashboard's design rules and vocabulary. |
+| [NOTIFY.md](NOTIFY.md) | Getting the alerts onto your phone. |
+| [EVENTS.md](EVENTS.md) | The standing record of market firsts. |
 
 ## Setup
 
@@ -86,9 +107,17 @@ Run your search on autotrader.ca, copy the address bar, then pick one:
 
 ### 4. Turn on Actions
 
-Actions → *I understand my workflows, go ahead and enable them*. From then on
-it checks every 30 minutes. To run it right away: Actions → **Check AutoTrader**
-→ *Run workflow*.
+Actions → *I understand my workflows, go ahead and enable them*. To run it
+right away: Actions → **Check AutoTrader** → *Run workflow*.
+
+It asks to check every 30 minutes. **It will not get every one.** GitHub drops
+scheduled runs under load, and measured here it serves roughly one slot in
+seven, with gaps of a few hours being normal. The Status tab shows exactly
+which half-hours were covered and which were not, because that gap is what
+decides whether a car can be listed and sold without you hearing about it.
+Three staggered pacemaker workflows exist to get more independent chances at
+a runner; [ARCHITECTURE.md](ARCHITECTURE.md) explains how, and why none of
+them re-triggers itself.
 
 > **If it goes quiet for months, check the Actions tab.** GitHub disables
 > scheduled workflows on a repository with no activity for 60 days, and a
