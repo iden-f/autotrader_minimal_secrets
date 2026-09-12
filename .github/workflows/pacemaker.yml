@@ -52,8 +52,11 @@ jobs:
   beat:
     runs-on: ubuntu-latest
     # Its own deadline is SHIFT_MINUTES; this is the backstop behind it, not
-    # the thing being relied on.
-    timeout-minutes: 200
+    # the thing being relied on. Kept under the runner's real ceiling, which
+    # was measured rather than read: a probe job counted out loud to minute
+    # 361 before GitHub cancelled it, so 360 is the wall and 350 leaves the
+    # shift room to finish and write its summary before hitting it.
+    timeout-minutes: 350
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # How often the watcher should actually check.
@@ -61,10 +64,15 @@ jobs:
       # How long one firing keeps time for. Long enough that the next served
       # firing is usually due as this one ends, short enough to stay a shift
       # rather than a process that never stops. Note the last interval is not
-      # started if it would run past the deadline, so a 180-minute shift beats
-      # at 0, 30, 60, 90, 120 and 150 and then exits - six checks, two and a
-      # half hours of cover.
-      SHIFT_MINUTES: 180
+      # started if it would run past the deadline, so a 330-minute shift beats
+      # at 0, 30, ... 300 and then exits - eleven checks, five hours of cover.
+      #
+      # It was 180, which was half of what the runner actually allows: that
+      # number came from what the documentation says a job may run for, and
+      # the probe that measured it counted to 361. A firing is served about
+      # every three hours, so a 2.5-hour shift left a gap after most of them;
+      # five hours of cover from a three-hourly firing should not.
+      SHIFT_MINUTES: 330
       # Consecutive failed dispatches before it stops rather than carrying on
       # pretending to be a clock.
       STRIKES: 3
