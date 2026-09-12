@@ -2,6 +2,8 @@
 import json
 import re
 
+import argparse
+
 import pytest
 
 from autotrader.config import Config
@@ -147,3 +149,51 @@ class TestBootstrap:
         result = bootstrap(cfg, {"TELEGRAM_BOT_TOKEN": "t", "TELEGRAM_CHAT_ID": "1"})
         assert result["channels"] == ["telegram"]
         assert not (tmp_path / "NOTIFY.md").exists()
+
+
+class TestEverySetupStepCanBePrinted:
+    """Setup runs before everything, so a crash in it is the bot down.
+
+    It was. A step added later reported itself with "detail" where its
+    siblings use "reason", the printer indexed with [] rather than .get, and
+    every scheduled check failed on a KeyError for an hour before anybody
+    looked at a log. Two things were wrong and both are worth a test: the
+    step's shape, and the printer's tolerance of a shape it did not expect.
+    """
+
+    def test_every_step_carries_a_reason(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        cfg = Config.defaults(tmp_path / "config.json")
+        cfg.add_search("https://www.autotrader.ca/cars/bmw/m5/?rcp=25", "M5")
+        cfg.save()
+        result = bootstrap(cfg, {}, write_files=False)
+
+        assert result["steps"], "bootstrap reported no steps at all"
+        for step in result["steps"]:
+            assert "step" in step, step
+            assert step.get("reason"), f"{step.get('step')} has no reason: {step}"
+            assert isinstance(step["reason"], str) and step["reason"].strip()
+
+    def test_a_step_in_an_unexpected_shape_does_not_kill_the_run(
+            self, tmp_path, monkeypatch, capsys):
+        """The printer is the last place that should be able to stop a check."""
+        from autotrader import cli, provision as prov
+
+        monkeypatch.chdir(tmp_path)
+        cfg = Config.defaults(tmp_path / "config.json")
+        cfg.add_search("https://www.autotrader.ca/cars/bmw/m5/?rcp=25", "M5")
+        cfg.save()
+        monkeypatch.setattr(prov, "bootstrap", lambda *a, **k: {
+            "changed": False,
+            "steps": [{"step": "odd"}],           # no reason, no detail
+            "subscribe_url": "", "channels": [],
+        })
+        # Built by the real parser rather than by hand, so this keeps working
+        # when `setup` grows another flag - and proves the command runs with
+        # exactly the arguments the CLI gives it.
+        args = cli.build_parser().parse_args(
+            ["--config", str(tmp_path / "config.json"),
+             "--state", str(tmp_path / "state.json"),
+             "setup", "--non-interactive"])
+        assert cli.cmd_setup(args) == 0
+        assert "odd" in capsys.readouterr().out

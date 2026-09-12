@@ -706,6 +706,36 @@ def cmd_events(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_control(args: argparse.Namespace) -> int:
+    """Apply a configuration change that arrived as a GitHub issue.
+
+    Prints what it did on stdout for the workflow to post back as a comment,
+    and exits non-zero when nothing was applied, so a refused instruction
+    shows as a failed run rather than a green tick over an unchanged file.
+    """
+    from . import control
+
+    body = Path(args.body).read_text(encoding="utf-8") if args.body != "-" \
+        else sys.stdin.read()
+    cfg = Config.load(args.config)
+    state = State.load(args.state)
+
+    try:
+        items = control.parse(body)
+    except control.Rejected as exc:
+        print(str(exc))
+        return 1
+
+    outcome = control.apply(cfg, state, items)
+    print(outcome.comment())
+    if not outcome.changed:
+        return 1
+    if not args.dry_run:
+        cfg.save()
+        state.save()
+    return 0
+
+
 def cmd_weekly(args: argparse.Namespace) -> int:
     """What the market did this week, rather than what the bot did.
 
@@ -793,7 +823,13 @@ def cmd_setup(args: argparse.Namespace) -> int:
     result = provision.bootstrap(cfg, dict(os.environ))
     for step in result["steps"]:
         mark = _ok if step.get("changed") else _warn
-        print(mark(f"{step['step']}: {step['reason']}"))
+        # .get, not [], deliberately. A step that returns its reason under a
+        # different key is a small bug in that step; a KeyError here is the
+        # whole bot down, which is what happened - every check failed for an
+        # hour because a new step said "detail" where its siblings say
+        # "reason", and setup runs before anything else.
+        why = step.get("reason") or step.get("detail") or "done"
+        print(mark(f"{step.get('step', '?')}: {why}"))
 
     if result["subscribe_url"]:
         print()
@@ -915,6 +951,13 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--days", type=int, default=7,
                    help="how many days to summarise (default 7)")
     p.set_defaults(func=cmd_weekly)
+
+    p = sub.add_parser("control",
+                       help="apply a change that arrived as a GitHub issue")
+    p.add_argument("body", help="file holding the issue body, or - for stdin")
+    p.add_argument("--dry-run", action="store_true",
+                   help="say what would change without writing anything")
+    p.set_defaults(func=cmd_control)
 
     p = sub.add_parser("migrate", help="import v1 data (seen_listings.json + archives)")
     p.add_argument("--dry-run", action="store_true")

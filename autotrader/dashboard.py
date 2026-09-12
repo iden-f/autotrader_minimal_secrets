@@ -42,6 +42,9 @@ LISTING_FIELDS = (
     # Why you did or did not hear about this car. The whole point of keeping
     # them is that "we never told you" is always a decision you can read back.
     "notified_at", "quiet_reason",
+    # Your marks on a car: shortlisted, dismissed, muted, a note. Written
+    # through the issue channel, because a static page cannot write.
+    "you",
 )
 
 
@@ -274,7 +277,11 @@ def build_payload(cfg: Config, state: State, env: dict[str, str] | None = None
             "ntfy_url": f"{server}/{topic}" if topic else "",
             "active": [n for n, c in channels.items() if c["active"]],
         },
-        "version": 2,
+        "version": 3,
+        # Where a change from the dashboard goes. Issues are the only write
+        # channel a static page on Pages has, and the only one a phone can
+        # use without carrying a token.
+        "repo": _repo_slug(env),
         "stats": state.stats(),
         "listings": listings,
         "searches": searches,
@@ -344,6 +351,22 @@ def find_secrets(node: Any, path: str = "") -> list[str]:
                 found.append(f"{path} looks like a credential")
                 break
     return found
+
+
+def _repo_slug(env: dict[str, str] | None) -> str:
+    """owner/name for this repository, if it can be worked out."""
+    env = env or {}
+    slug = str(env.get("GITHUB_REPOSITORY") or "").strip()
+    if slug:
+        return slug
+    try:
+        import subprocess
+        url = subprocess.run(["git", "remote", "get-url", "origin"],
+                             capture_output=True, text=True, timeout=5).stdout
+    except (OSError, Exception):  # noqa: BLE001 - absence is an answer
+        return ""
+    match = re.search(r"github\.com[:/]([^/]+/[^/.\s]+)", url or "")
+    return match.group(1) if match else ""
 
 
 def _safe_config(cfg: Config) -> dict[str, Any]:

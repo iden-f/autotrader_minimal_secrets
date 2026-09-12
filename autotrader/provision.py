@@ -196,12 +196,13 @@ def ensure_dashboard_url(cfg: Config, env: dict[str, str] | None = None
                          ) -> dict[str, Any]:
     """Fill in where the dashboard lives, once, without overwriting a choice."""
     if str(cfg.get("notifications.dashboard_url") or "").strip():
-        return {"changed": False, "detail": "already set"}
+        return {"changed": False, "reason": "the dashboard address is already set"}
     found = find_dashboard_url(env)
     if not found:
-        return {"changed": False, "detail": "no git remote to work it out from"}
+        return {"changed": False,
+                "reason": "no git remote to work the dashboard address out from"}
     cfg.set("notifications.dashboard_url", found)
-    return {"changed": True, "detail": found}
+    return {"changed": True, "reason": f"alerts will link to {found}"}
 
 
 def bootstrap(cfg: Config, env: dict[str, str] | None = None,

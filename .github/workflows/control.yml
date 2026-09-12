@@ -1,0 +1,111 @@
+# Changing the configuration from a phone.
+#
+# The dashboard is a static file and cannot write to this repository, so a
+# change made there opens a GitHub issue instead - a write channel a phone
+# already has, with no token to carry and no terminal to find.
+#
+# This reads the issue, applies it whole or refuses it whole, says what it did
+# in a comment, closes it, and asks for a check so the result is visible
+# straight away. A refusal leaves the issue open with the reason on it.
+#
+# Only the repository owner may drive it. An issue is a thing any stranger can
+# open, and this one writes config.json.
+
+name: Apply a change
+
+on:
+  issues:
+    types: [opened, edited, reopened]
+
+permissions:
+  contents: write
+  issues: write
+  actions: write          # to ask for a check once the change has landed
+
+concurrency:
+  group: autotrader-control
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    # Cheap filters first so a normal issue costs nothing: the marker the
+    # dashboard writes, and the one person allowed to change the config.
+    if: >-
+      contains(github.event.issue.body, '```autotrader') &&
+      github.event.issue.user.login == github.repository_owner
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: main }
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - run: pip install -r requirements.txt
+
+      - name: Read the issue
+        env:
+          BODY: ${{ github.event.issue.body }}
+        run: |
+          # Through the environment and a file, never interpolated into the
+          # script: the body is text a person typed on a phone and may contain
+          # anything at all.
+          printf '%s' "$BODY" > /tmp/issue.md
+          wc -c /tmp/issue.md
+
+      - name: Apply it
+        id: apply
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          python -m autotrader --no-colour control /tmp/issue.md \
+            | tee /tmp/result.txt
+
+      - name: Commit the change
+        if: steps.apply.outcome == 'success'
+        run: |
+          set -u
+          git config user.name  "autotrader-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A -- config.json state.json
+          if git diff --cached --quiet; then
+            echo "nothing actually changed on disk"
+            exit 0
+          fi
+          git commit -m "Apply the change from #${{ github.event.issue.number }} [skip ci]"
+          for attempt in 1 2 3; do
+            git pull --rebase -X theirs origin main && git push origin main && exit 0
+            git rebase --abort 2>/dev/null || true
+            sleep $((attempt * 5))
+          done
+          echo "::error::could not push the change"
+          exit 1
+
+      - name: Say what happened
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -u
+          body=$(cat /tmp/result.txt 2>/dev/null || echo "Nothing was read from the issue.")
+          if [ "${{ steps.apply.outcome }}" = "success" ]; then
+            printf '%s\n\n_Applied and committed. A check is running now._\n' "$body" > /tmp/comment.md
+          else
+            printf '%s\n\n_Nothing was changed. Edit this issue to correct it - I read it again on every edit._\n' "$body" > /tmp/comment.md
+          fi
+          gh issue comment "${{ github.event.issue.number }}" \
+            --repo "${{ github.repository }}" --body-file /tmp/comment.md
+          if [ "${{ steps.apply.outcome }}" = "success" ]; then
+            gh issue close "${{ github.event.issue.number }}" \
+              --repo "${{ github.repository }}" --reason completed
+          fi
+
+      - name: Check straight away
+        if: steps.apply.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run watch.yml --ref main -f automatic=true

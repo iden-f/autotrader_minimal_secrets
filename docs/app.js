@@ -709,6 +709,10 @@ function rulesEditor(s) {
           placeholder="${hint}" value="${value ?? ''}"></span></label>`).join('')}
     </div>
     <p class="why" id="pv-${id}"></p>`;
+  const ask = el('div', 'bar');
+  ask.style.marginTop = 'var(--s3)';
+  box.appendChild(ask);
+
   const preview = () => {
     const v = k => {
       const n = box.querySelector('#' + k + '-' + id).value.trim();
@@ -731,6 +735,20 @@ function rulesEditor(s) {
       ? `<b>${kept.length}</b> of the ${pool.length} cars this search currently holds would pass` +
         (changed ? ' under the rule above.' : ' under the rule as saved.')
       : 'This search is not holding any cars to test the rule against.';
+
+    ask.innerHTML = '';
+    if (!changed) return;
+    const instructions = Object.entries(rule)
+      .filter(([k, v]) => v !== (f[k] ?? null))
+      .map(([k, v]) => ({ action: 'set-rule', search: s.id, rule: k, value: v }));
+    if (!instructions.length) return;
+    ask.appendChild(askButton(
+      `Apply this to ${s.name}`,
+      `Change the rules on ${s.name}`, instructions,
+      `Rules for ${s.name}. On today's ${pool.length} cars this would keep ${kept.length}.`));
+    ask.appendChild(el('span', 'note',
+      'Opens a GitHub issue with the change in it. A workflow applies it, says '
+      + 'what it did, and runs a check — usually inside a minute.'));
   };
   box.addEventListener('input', preview);
   preview();
@@ -906,6 +924,57 @@ function renderStatus() {
   void rows;
 }
 
+/* -------------------------------------------------------------- the ask
+   A static page cannot write to the repository, and a phone should not have
+   to carry a token. An issue is a write channel both of them already have:
+   this composes one, prefilled, and a workflow on the other side applies it
+   whole or refuses it whole and says why. */
+function askUrl(title, instructions, prose) {
+  const repo = app.data?.repo;
+  if (!repo) return null;
+  const body = [
+    prose || 'Opened from the dashboard.', '',
+    '```autotrader',
+    JSON.stringify(instructions, null, 1),
+    '```',
+  ].join('\n');
+  return `https://github.com/${repo}/issues/new?title=${encodeURIComponent(title)}`
+       + `&body=${encodeURIComponent(body)}`;
+}
+
+function askButton(label, title, instructions, prose) {
+  const url = askUrl(title, instructions, prose);
+  if (!url) {
+    const dead = el('button', 'btn', label);
+    dead.type = 'button';
+    dead.disabled = true;
+    dead.title = 'This page does not know which repository it belongs to.';
+    return dead;
+  }
+  const a = el('a', 'btn', label);
+  a.href = url; a.target = '_blank'; a.rel = 'noopener';
+  a.style.cssText = 'display:inline-flex;align-items:center;text-decoration:none';
+  return a;
+}
+
+/* Your marks on a car. Kept in the browser for instant feedback and in the
+   repository for permanence - the browser copy is what makes a tap feel like
+   a tap, the repository copy is what survives a new phone. */
+const marks = {
+  all() { return store.get('marks', {}); },
+  of(id) {
+    const local = this.all()[String(id)] || {};
+    const remote = (byId(id) || {}).you || {};
+    return { ...remote, ...local };
+  },
+  set(id, patch) {
+    const all = this.all();
+    all[String(id)] = { ...(all[String(id)] || {}), ...patch };
+    for (const [k, v] of Object.entries(patch)) if (!v) delete all[String(id)][k];
+    store.set('marks', all);
+  },
+};
+
 /* ----------------------------------------------------------------- sheet */
 let lastFocus = null;
 
@@ -1056,8 +1125,36 @@ function sheetBody(l) {
     host_append(s, frag);
   }
 
+  const yours = el('div', 'bar');
+  yours.style.marginTop = 'var(--s6)';
+  const mine = marks.of(l.id);
+  const name = carName(l);
+  for (const [key, on, off, action, undo] of [
+    ['shortlisted', 'On your shortlist', 'Shortlist', 'shortlist', 'unshortlist'],
+    ['muted', 'Muted', 'Mute this car', 'mute-listing', 'unmute-listing'],
+    ['dismissed', 'Dismissed', 'Not interested', 'dismiss', 'unshortlist'],
+  ]) {
+    const active = !!mine[key];
+    const b = el('button', 'chip', active ? on : off);
+    b.type = 'button';
+    b.setAttribute('aria-pressed', String(active));
+    b.addEventListener('click', () => {
+      marks.set(l.id, { [key]: !active });
+      // Instant here, permanent there: the tap lands now and the issue makes
+      // it survive a new phone.
+      const url = askUrl(
+        `${active ? undo : action}: ${name}`,
+        [{ action: active ? undo : action, listing: String(l.id) }],
+        `${active ? undo : action} for ${name} — opened from the dashboard.`);
+      if (url) window.open(url, '_blank', 'noopener');
+      openSheet(l.id);
+    });
+    yours.appendChild(b);
+  }
+  frag.appendChild(yours);
+
   const go = el('div', 'bar');
-  go.style.marginTop = 'var(--s6)';
+  go.style.marginTop = 'var(--s3)';
   const a = el('a', 'btn btn--primary', 'Open on autotrader.ca');
   a.href = l.url; a.rel = 'noopener'; a.target = '_blank';
   a.style.cssText = 'display:inline-flex;align-items:center;text-decoration:none';

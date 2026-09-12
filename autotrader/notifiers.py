@@ -266,7 +266,17 @@ class NtfyNotifier(Notifier):
              Change.PRICE_RISE: "chart_with_upwards_trend", Change.REMOVED: "ghost"}
 
     def _lead(self, changes: list[Change]) -> Change:
-        """The change the notification is about, when it is about one thing."""
+        """The change the notification is about, when it is about one thing.
+
+        A car you shortlisted comes first whatever else is in the digest: you
+        have already told the bot which cars matter, and an alert that buries
+        one of them under four routine arrivals is ignoring you.
+        """
+        yours = [c for c in changes
+                 if (getattr(c.listing, "shortlisted", False))]
+        if yours:
+            drops = [c for c in yours if c.kind == Change.PRICE_DROP]
+            return min(drops, key=lambda c: c.delta or 0) if drops else yours[0]
         drops = [c for c in changes if c.kind == Change.PRICE_DROP]
         if drops:
             return min(drops, key=lambda c: c.delta or 0)

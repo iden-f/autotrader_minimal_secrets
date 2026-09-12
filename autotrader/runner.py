@@ -64,6 +64,8 @@ class RunReport:
     invariants: list[str] = field(default_factory=list)
     # What the run did about photographs. Nothing here can fail a check.
     photos: dict[str, Any] = field(default_factory=dict)
+    # Changes held back because you said you did not want them.
+    your_call: int = 0
     # Searches that read the site fine and kept nothing after your rules.
     shut_out: list[str] = field(default_factory=list)
     # Changes on cars your rules hide: real, deliberately unannounced, counted.
@@ -481,7 +483,20 @@ def run(cfg: Config | None = None, state: State | None = None, *,
         Writing the intent to state straight away means an interrupt between
         here and the notification (an archive failure, a killed CI job) costs
         nothing: the next run finds it still pending and delivers it.
+
+        A car you have muted or dismissed is the one thing that stops here.
+        You said you did not want to hear about it, and a watcher that keeps
+        telling you anyway is one you stop reading - so it is recorded, kept
+        on the dashboard, and deliberately quiet with your own instruction as
+        the reason.
         """
+        entry = state.listings.get(change.listing.id) or {}
+        yours = entry.get("you") or {}
+        if yours.get("muted") or yours.get("dismissed"):
+            word = "muted" if yours.get("muted") else "dismissed"
+            report.your_call += 1
+            silence(change.listing.id, f"you {word} this car")
+            return
         changes.append(change)
         if not dry_run:
             state.defer([change])

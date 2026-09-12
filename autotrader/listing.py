@@ -43,6 +43,9 @@ class Listing:
     engine: str = ""
     vin: str = ""
     images: list[str] = field(default_factory=list)
+    # Your mark on this car, carried onto the Listing so the notifier can see
+    # it without reaching back into state.
+    shortlisted: bool = False
     search_id: str = ""
     search_name: str = ""
     source: str = ""          # which parser strategy produced this

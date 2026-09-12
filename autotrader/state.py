@@ -272,6 +272,9 @@ class State:
         old_price = existing.get("price")
         merged = Listing.from_dict(existing)
         merged.merge(listing)
+        # Your own mark travels with the car, so a notifier can lead with a
+        # shortlisted one without reaching back into state to ask.
+        merged.shortlisted = bool((existing.get("you") or {}).get("shortlisted"))
         for field in ("price", "mileage_km", "title", "url", "images", "search_id",
                       "search_name", "source", "enriched", "card_price"):
             value = getattr(listing, field)
