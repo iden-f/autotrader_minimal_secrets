@@ -230,28 +230,43 @@ def sync(entries: Iterable[dict[str, Any]], fetcher: Any,
 
 def _fetch_one(url: str | None, fetcher: Any
                ) -> tuple[bytes | None, str, dict[str, Any]] | None:
-    """One photo, with everything worth reporting about it."""
+    """One photo, with everything worth reporting about it.
+
+    Goes through the fetcher's binary path. The ordinary get() decodes to
+    text, which turns a WebP into mojibake and loses the content-type, and
+    that is exactly the mistake this made the first time it ran for real:
+    sixty-six photos, none fetched, and the report said "not an image".
+    """
     if not url:
         return None
     note: dict[str, Any] = {"url": url[:120]}
-    try:
-        response = fetcher.get(url)
-    except Exception as exc:  # noqa: BLE001 - a photo may never fail a check
-        note.update(status=None, error=str(exc)[:120])
-        return None, "", note
 
-    status = getattr(response, "status_code", None) or getattr(response, "status", None)
-    headers = getattr(response, "headers", {}) or {}
-    content_type = str(headers.get("Content-Type") or
-                       headers.get("content-type") or "").split(";")[0].strip()
-    blob = getattr(response, "content", None)
-    if blob is None:
-        text = getattr(response, "text", "") or ""
-        blob = text.encode("utf-8", "replace")
-    note.update(status=status, type=content_type, bytes=len(blob))
+    if hasattr(fetcher, "get_asset"):
+        got = fetcher.get_asset(url)
+    else:
+        # A stand-in in a test, or an older fetcher. Read whatever it gives.
+        try:
+            response = fetcher.get(url)
+        except Exception as exc:  # noqa: BLE001 - a photo may never fail a check
+            note.update(status=None, error=str(exc)[:120])
+            return None, "", note
+        headers = getattr(response, "headers", {}) or {}
+        got = {
+            "status": getattr(response, "status_code", None)
+                      or getattr(response, "status", None),
+            "type": str(headers.get("Content-Type")
+                        or headers.get("content-type") or "").split(";")[0].strip(),
+            "content": getattr(response, "content", b"") or b"",
+        }
+        if got["status"] and int(got["status"]) >= 400:
+            got["error"] = f"HTTP {got['status']}"
 
-    if status and int(status) >= 400:
-        note["error"] = f"HTTP {status}"
+    content_type = str(got.get("type") or "")
+    blob = got.get("content") or b""
+    note.update(status=got.get("status"), type=content_type, bytes=len(blob))
+
+    if got.get("error"):
+        note["error"] = got["error"]
         return None, content_type, note
     if content_type not in OK_TYPES:
         note["error"] = f"not an image ({content_type or 'no content-type'})"

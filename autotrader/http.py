@@ -12,6 +12,7 @@ import logging
 import random
 import re
 import time
+from typing import Any
 from dataclasses import dataclass
 
 import requests
@@ -225,6 +226,40 @@ class Fetcher:
         except requests.RequestException as exc:
             log.debug("asset fetch failed for %s: %s", url, exc)
         return None
+
+    def get_asset(self, url: str, *, referer: str | None = None) -> dict[str, Any]:
+        """Fetch a binary asset and say what came back.
+
+        get_bytes answers "did I get it", which is enough for an archive. It
+        is not enough for anything that has to explain itself: a photo that
+        did not arrive because the CDN returned an HTML login page and a photo
+        that did not arrive because the budget is spent need different things
+        done about them, and neither is visible in a None.
+
+        Never raises. Always returns a dict with at least ``error`` or
+        ``content``.
+        """
+        out: dict[str, Any] = {"url": url}
+        try:
+            self._spend()
+            self._pace()
+            headers = {"Accept": "image/avif,image/webp,image/*,*/*;q=0.8",
+                       "Sec-Fetch-Dest": "image", "Sec-Fetch-Mode": "no-cors"}
+            if referer:
+                headers["Referer"] = referer
+            raw = self.session.get(url, timeout=self.timeout, headers=headers)
+            self._last_request_at = time.monotonic()
+            self.stats["requests"] += 1
+            out["status"] = raw.status_code
+            out["type"] = str(raw.headers.get("Content-Type") or "").split(";")[0].strip()
+            out["content"] = raw.content if raw.ok else b""
+            if not raw.ok:
+                out["error"] = f"HTTP {raw.status_code}"
+        except BudgetExhausted:
+            out["error"] = "request budget spent"
+        except requests.RequestException as exc:
+            out["error"] = str(exc)[:140]
+        return out
 
     def close(self) -> None:
         try:

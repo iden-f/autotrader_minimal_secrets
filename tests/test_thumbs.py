@@ -223,3 +223,44 @@ class TestNotWritingWhereItShouldNot:
         assert report.fetched == 1
         assert not (here / "docs/thumbs").exists() or \
                not list((here / "docs/thumbs").glob("*.webp"))
+
+
+class TestAgainstTheFetcherWeActuallyHave:
+    """The first live run fetched nothing, and the stub said it would work.
+
+    The test double had `.content` and `.headers` because that is what
+    `requests` returns. The bot's own Fetcher returns a dataclass with `text`
+    and `status` and neither of those, so every photo read as "not an image"
+    and the report was confidently wrong about why. A stub shaped like the
+    convenient thing rather than the real thing is worse than no stub.
+    """
+
+    def test_it_uses_the_binary_path_when_the_fetcher_has_one(self, here):
+        seen = {}
+
+        class RealShaped:
+            """What autotrader.http.Fetcher actually offers."""
+            def get(self, url, referer=None, allow_block=False):
+                raise AssertionError("a photo must not go through the text path")
+
+            def get_asset(self, url, referer=None):
+                seen["url"] = url
+                return {"status": 200, "type": "image/webp", "content": webp()}
+
+        report = thumbs.sync([car(1)], RealShaped())
+        assert report.fetched == 1, report.samples
+        assert seen["url"].endswith(".webp")
+
+    def test_the_real_fetcher_has_the_method_this_relies_on(self):
+        """A rename on the other side would break this silently otherwise."""
+        from autotrader.http import Fetcher
+        assert hasattr(Fetcher, "get_asset")
+
+    def test_a_budget_exhausted_asset_is_explained_not_guessed_at(self, here):
+        class Spent:
+            def get_asset(self, url, referer=None):
+                return {"error": "request budget spent", "status": None}
+
+        report = thumbs.sync([car(1)], Spent())
+        assert report.failed == 1
+        assert "budget" in report.samples[0]["error"]

@@ -112,6 +112,7 @@ class RunReport:
             "notified": self.notified, "errors": self.errors[:10],
             "warnings": self.warnings[:10], "strategies": self.strategies,
             "quiet": self.quiet, "dry_run": self.dry_run,
+            "photos": self.photos, "your_call": self.your_call,
         }
 
     def summary(self) -> str:
