@@ -322,6 +322,17 @@ def _minutes_since_last_ok(state: State) -> float | None:
     return None
 
 
+def _minutes_since_any_run(state: State) -> float | None:
+    """How long since a run happened at all, working or not."""
+    for run in (state.data.get("runs") or []):
+        try:
+            when = datetime.fromisoformat(str(run.get("at")).replace("Z", "+00:00"))
+        except (TypeError, ValueError):
+            continue
+        return max(0.0, (datetime.now(timezone.utc) - when).total_seconds() / 60.0)
+    return None
+
+
 def _price_disagrees(listing: Listing, state: State) -> bool:
     """True when the results card has changed its mind about the price.
 
@@ -411,10 +422,24 @@ def run(cfg: Config | None = None, state: State | None = None, *,
             return report
         if gap > expected * 2:
             report.missed_by = round(gap)
-            report.warnings.append(
-                f"the last successful check was {gap / 60:.1f} hour(s) ago, not "
-                f"{expected} minute(s) - the schedule dropped "
-                f"{int(gap // expected) - 1} run(s). Catching up now.")
+            # Two different faults look identical from the last *successful*
+            # run alone, and for thirty-two hours this said the wrong one:
+            # runs were happening every couple of hours and failing on a
+            # bookkeeping check, while the warning blamed a schedule that had
+            # supposedly dropped fifty-nine firings. Ask when a run last
+            # happened at all before blaming the thing that starts them.
+            since_any = _minutes_since_any_run(state)
+            if since_any is not None and since_any < gap - expected:
+                report.warnings.append(
+                    f"no check has succeeded for {gap / 60:.1f} hour(s), but "
+                    f"the last one ran {since_any:.0f} minute(s) ago - so the "
+                    f"bot is being started and is failing, which is not the "
+                    f"same as not being started.")
+            else:
+                report.warnings.append(
+                    f"the last successful check was {gap / 60:.1f} hour(s) ago, not "
+                    f"{expected} minute(s) - the schedule dropped "
+                    f"{int(gap // expected) - 1} run(s). Catching up now.")
 
     settings = cfg.get("notifications", {}) or {}
     notify_on = settings.get("notify_on", {}) or {}

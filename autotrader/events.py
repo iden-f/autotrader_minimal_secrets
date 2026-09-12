@@ -231,10 +231,18 @@ def silence(cfg, state, record: dict[str, Any],
         return None
     now = now or datetime.now(timezone.utc)
 
+    runs = state.data.get("runs") or []
     last_ok = ""
-    for run in (state.data.get("runs") or []):
-        if run.get("ok") and str(run.get("at") or "") > last_ok:
-            last_ok = str(run["at"])
+    last_any = ""
+    last_error = ""
+    for run in runs:
+        at = str(run.get("at") or "")
+        if run.get("ok") and at > last_ok:
+            last_ok = at
+        if at > last_any:
+            last_any = at
+            errors = run.get("errors") or []
+            last_error = str(errors[0]) if errors else ""
     if not last_ok:
         return None            # it has never worked; that is a different alarm
 
@@ -249,16 +257,40 @@ def silence(cfg, state, record: dict[str, Any],
     # Say it once per silence, not once an hour for the length of it.
     if str(record.get("silence_reported") or "") == last_ok:
         return None
+    every = (cfg.get("health", {}) or {}).get("expected_interval_minutes", 30)
+
+    # "Gone quiet" and "running and failing every time" need different things
+    # done about them, and telling them apart is just a matter of asking when
+    # a run last happened at all. Said the wrong one for thirty-two hours: the
+    # watcher was being started every couple of hours and failing a
+    # bookkeeping check, and the alert reported it as silence.
+    running = bool(last_any) and last_any > last_ok
+    if running:
+        detail = f"\n\nThe most recent one said: {last_error}" if last_error else ""
+        return {
+            "since": last_ok,
+            "hours": round(quiet_for, 1),
+            "failing": True,
+            "subject": "AutoTrader watcher is running and failing",
+            "body": (f"No check has succeeded for {quiet_for:.1f} hours "
+                     f"(since {last_ok}), but the bot is still being started - "
+                     f"the most recent attempt was at {last_any}.\n\nSo this is "
+                     f"not a schedule problem. Something is wrong with the run "
+                     f"itself, and the Actions log for the last one will say "
+                     f"what.{detail}"),
+        }
+
     return {
         "since": last_ok,
         "hours": round(quiet_for, 1),
+        "failing": False,
         "subject": "AutoTrader watcher has gone quiet",
         "body": (f"The last successful check was {quiet_for:.1f} hours ago "
                  f"({last_ok}), and it is supposed to run every "
-                 f"{(cfg.get('health', {}) or {}).get('expected_interval_minutes', 30)} "
-                 f"minutes.\n\nNothing is being watched while this is true. "
-                 f"Check the Actions tab: GitHub disables scheduled workflows "
-                 f"on repositories with 60 days of no activity, and drops "
+                 f"{every} minutes. Nothing has been started since, either.\n\n"
+                 f"Nothing is being watched while this is true. Check the "
+                 f"Actions tab: GitHub disables scheduled workflows on "
+                 f"repositories with 60 days of no activity, and drops "
                  f"scheduled runs under load."),
     }
 

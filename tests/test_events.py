@@ -288,3 +288,52 @@ class TestASayingItWasAGuessWhenItWasNot:
 
         state.upgrade()
         assert state.listings["1"]["notified_at_backfilled"] is True
+
+
+class TestSilenceAndFailureAreDifferentFaults:
+    """Live: 32 hours of "the watcher has gone quiet" while it was running.
+
+    It was started every couple of hours the whole time and failed a
+    bookkeeping check on every attempt. Both faults leave the same trace in
+    "when did a check last succeed", and they need completely different things
+    done about them - one is GitHub's schedule, the other is the bot. Asking
+    when a run last *happened* separates them.
+    """
+
+    def _cfg(self):
+        return {"health": {"silent_after_hours": 3, "expected_interval_minutes": 30}}
+
+    def _state(self, tmp_path, runs):
+        state = State(path=tmp_path / "s.json")
+        state.data["runs"] = runs
+        return state
+
+    def _ago(self, hours):
+        from datetime import datetime, timedelta, timezone
+        return (datetime.now(timezone.utc)
+                - timedelta(hours=hours)).isoformat(timespec="seconds")
+
+    def test_running_and_failing_is_not_reported_as_silence(self, tmp_path):
+        state = self._state(tmp_path, [
+            {"at": self._ago(0.2), "ok": False, "errors": ["the bot's own bookkeeping is inconsistent"]},
+            {"at": self._ago(2.0), "ok": False, "errors": ["the bot's own bookkeeping is inconsistent"]},
+            {"at": self._ago(30.0), "ok": True},
+        ])
+        said = events.silence(self._cfg(), state, {})
+
+        assert said and said["failing"] is True
+        assert "running and failing" in said["subject"]
+        assert "not a schedule problem" in said["body"]
+        assert "bookkeeping" in said["body"], "say what it actually said"
+
+    def test_nothing_running_at_all_is_still_reported_as_silence(self, tmp_path):
+        state = self._state(tmp_path, [{"at": self._ago(30.0), "ok": True}])
+        said = events.silence(self._cfg(), state, {})
+
+        assert said and said["failing"] is False
+        assert "gone quiet" in said["subject"]
+        assert "Nothing has been started since" in said["body"]
+
+    def test_a_recent_success_says_nothing_either_way(self, tmp_path):
+        state = self._state(tmp_path, [{"at": self._ago(0.5), "ok": True}])
+        assert events.silence(self._cfg(), state, {}) is None
