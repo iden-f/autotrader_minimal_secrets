@@ -49,6 +49,10 @@ on:
         description: 'Report what would happen without sending anything'
         type: boolean
         default: false
+      automatic:
+        description: 'Set by the pacemaker. A check nobody typed by hand.'
+        type: boolean
+        default: false
 
 # Two runs pushing to the same branch collide, so scheduled runs queue behind
 # each other. The soak deliberately does NOT share this group: it holds a
@@ -141,7 +145,8 @@ jobs:
           # all, and two checks minutes apart cost requests to tell you the
           # same thing.
           AUTOTRADER_SCHEDULED: ${{ (github.event_name == 'schedule'
-            || github.event_name == 'workflow_run') && '1' || '' }}
+            || github.event_name == 'workflow_run'
+            || inputs.automatic) && '1' || '' }}
         run: |
           set -o pipefail
           python -m autotrader --no-colour run ${{ inputs.dry_run && '--dry-run' || '' }} | tee run.log

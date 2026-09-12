@@ -1,0 +1,105 @@
+# A clock, for as long as one firing of it lasts.
+#
+# Measured on this repository over 24 hours: the watcher asked for 48
+# scheduled runs and was served 11, in gaps of two to four and a half hours.
+# Moving to off-peak minutes did not help. Nothing is switched off - both
+# workflows report state: active - the firings are simply dropped.
+#
+# GitHub will not fire a schedule reliably, but it will let a job that is
+# already running ask for work. So when one of these firings is served, it
+# holds a runner for an hour and dispatches the watcher on a real timer,
+# turning one delivered slot into an hour of checks that actually happen on
+# time. It does not extend itself: when the hour is up it stops, and the next
+# one starts only when GitHub serves another firing.
+#
+# TO STOP IT: commit a file called PACEMAKER-OFF at the top of the repository.
+# The loop checks for it before every dispatch, so it stops within one
+# interval and no future firing will do anything until the file is deleted.
+# Disabling this workflow in the Actions tab works too, and is immediate.
+
+name: Pacemaker
+
+on:
+  # Several slots an hour, none of them on a contended minute. Most will be
+  # dropped; each one that is served covers the hour after it.
+  schedule:
+    - cron: '9,29,49 * * * *'
+  workflow_dispatch:
+
+# One at a time. Two overlapping pacemakers would ask for the same checks
+# twice, and the watcher would stand down on the duplicates anyway.
+concurrency:
+  group: autotrader-pacemaker
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  actions: write          # to ask the watcher to run
+
+jobs:
+  beat:
+    runs-on: ubuntu-latest
+    # Its own deadline is SHIFT_MINUTES; this is the backstop behind it, not
+    # the thing being relied on.
+    timeout-minutes: 75
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # How often the watcher should actually check.
+      INTERVAL_MINUTES: 30
+      # How long one firing keeps time for. Deliberately short: this holds a
+      # runner for the whole of it, and a firing that covers the hour after it
+      # is worth an hour of runner, where one that never ends is a different
+      # kind of thing entirely.
+      SHIFT_MINUTES: 60
+      # Consecutive failed dispatches before it stops rather than carrying on
+      # pretending to be a clock.
+      STRIKES: 3
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Keep time
+        run: |
+          set -uo pipefail
+          ends=$(( $(date +%s) + SHIFT_MINUTES * 60 ))
+          strikes=0
+          beats=0
+
+          while :; do
+            if [ -f PACEMAKER-OFF ]; then
+              echo "PACEMAKER-OFF is present. Stopping."
+              break
+            fi
+
+            if gh workflow run watch.yml --ref main -f automatic=true; then
+              beats=$(( beats + 1 ))
+              strikes=0
+              echo "$(date -u +%H:%M:%S) - asked for a check (beat $beats)"
+            else
+              strikes=$(( strikes + 1 ))
+              echo "::warning::could not dispatch the watcher ($strikes in a row)"
+              if [ "$strikes" -ge "$STRIKES" ]; then
+                echo "::error::$strikes dispatches failed in a row. Stopping."
+                {
+                  echo "## Pacemaker"
+                  echo "Stopped: $strikes dispatches failed in a row. A clock"
+                  echo "that cannot tell anything the time is not a clock."
+                  echo "Most likely the repository's workflow permissions are"
+                  echo "read-only, so this job's token cannot start a run."
+                } >> "$GITHUB_STEP_SUMMARY"
+                exit 1
+              fi
+            fi
+
+            # Stop rather than start an interval this firing cannot finish.
+            if [ $(( $(date +%s) + INTERVAL_MINUTES * 60 )) -ge "$ends" ]; then
+              break
+            fi
+            sleep $(( INTERVAL_MINUTES * 60 ))
+          done
+
+          {
+            echo "## Pacemaker"
+            echo "Asked for $beats check(s), one every $INTERVAL_MINUTES minutes."
+            echo "This firing is done. The next one happens when GitHub serves"
+            echo "one of the scheduled slots."
+          } >> "$GITHUB_STEP_SUMMARY"
