@@ -372,3 +372,33 @@ class TestTheRuleAPersonIsMostLikelyToChange:
         unbounded = [n for n, k in control.RULE_TYPES.items()
                      if k in (int, float) and n not in control.RULE_BOUNDS]
         assert not unbounded, unbounded
+
+
+class TestWhatItSaysBack:
+    def test_a_refusal_does_not_assume_which_channel_it_came_through(self):
+        """It is committed as a file as often as it is posted on an issue."""
+        cfg, st = cfg_with(), state_with()
+        out = control.apply(cfg, st, [{"action": "set-rule",
+                                       "rule": "nonsense", "value": 1}])
+        assert "issue" not in out.comment().lower(), out.comment()
+
+    def test_an_applied_change_lists_what_it_did(self):
+        cfg, st = cfg_with(), state_with()
+        out = control.apply(cfg, st, [{"action": "set-rule", "search": "Alpha",
+                                       "rule": "max_price", "value": 120000}])
+        text = out.comment()
+        assert "Applied" in text and "120000" in text and "Alpha" in text
+
+    def test_a_refusal_names_the_input_not_just_the_failure(self):
+        cfg, st = cfg_with(), state_with()
+        out = control.apply(cfg, st, [{"action": "set-rule",
+                                       "rule": "max_price", "value": 99_000_000}])
+        assert "99,000,000" in out.comment()
+
+    def test_no_number_in_a_refusal_is_in_scientific_notation(self):
+        """"between 1 and 1e+07" is a message for a debugger, read on a phone."""
+        cfg, st = cfg_with(), state_with()
+        for rule in control.RULE_BOUNDS:
+            out = control.apply(cfg, st, [{"action": "set-rule", "rule": rule,
+                                           "value": 99_000_000}])
+            assert "e+" not in out.comment(), (rule, out.comment())

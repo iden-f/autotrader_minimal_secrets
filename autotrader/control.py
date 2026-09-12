@@ -74,7 +74,13 @@ class Outcome:
     changed: bool = False
 
     def comment(self) -> str:
-        """What the bot says back on the issue before closing it."""
+        """What the bot says back about the change.
+
+        Transport-neutral on purpose: this text is posted as an issue comment
+        on one path and committed as a file on the other, and the caller adds
+        the sentence about how to correct it. Saying "edit the issue" from
+        here put that instruction in front of someone who never opened one.
+        """
         lines = []
         if self.applied:
             lines.append("Applied:")
@@ -88,8 +94,7 @@ class Outcome:
             lines.append("Nothing to do: the instruction was empty.")
         if self.rejected and not self.applied:
             lines.append("")
-            lines.append("Nothing was written. Edit the issue and reopen it, "
-                         "or open a new one from the dashboard.")
+            lines.append("Nothing was written - not one of these, not partly.")
         return "\n".join(lines)
 
 
@@ -154,9 +159,19 @@ def _number(value: Any, name: str, kind: type) -> Any:
         raise Rejected(f"{name} needs a number; got {value!r}.") from None
     low, high = RULE_BOUNDS.get(name, (float("-inf"), float("inf")))
     if not low <= out <= high:
-        raise Rejected(f"{name} has to be between {low:g} and {high:g}; "
-                       f"got {out:g}.")
+        # Not :g. "max_price has to be between 1 and 1e+07" is a message
+        # written for a debugger, being read on a phone.
+        raise Rejected(f"{name} has to be between {_figure(low)} and "
+                       f"{_figure(high)}; got {_figure(out)}.")
     return out
+
+
+def _figure(value: Any) -> str:
+    """A number the way a person writes it."""
+    number = float(value)
+    if number == int(number):
+        return f"{int(number):,}"
+    return f"{number:,.2f}".rstrip("0").rstrip(".")
 
 
 def _rule_value(name: str, value: Any) -> Any:
