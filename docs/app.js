@@ -222,7 +222,11 @@ function trustState() {
       text: `Checked ${when(run.at)}`,
       alarm: {
         level: 'warn',
-        text: `Only ${cov.pct}% of the expected checks happened in the last ${cov.window_hours} hours — ${cov.successful} of ${cov.expected}. A car can be listed and sold between checks at this rate.`,
+        // slots_covered, to agree with the Status card and the strip. Using
+        // the raw check count here said "22 of 48" beside a card reading
+        // "17 of 48", which is one number too many for a page whose whole
+        // argument is that its numbers can be trusted.
+        text: `Only ${cov.pct}% of the last ${cov.window_hours} hours were watched — ${cov.slots_covered ?? cov.successful} of ${cov.expected} half-hours had a check. A car can be listed and sold between checks at this rate.`,
         detail: cov.longest_gap_minutes
           ? `Longest gap: ${(cov.longest_gap_minutes / 60).toFixed(1)} hours.` : '',
       },
@@ -1120,7 +1124,9 @@ function renderStatus() {
   stats.innerHTML = `
     <div class="stat" data-tone="${covTone}"><dt>Coverage, ${cov.window_hours || 24}h</dt>
       <dd class="num">${cov.pct ?? '—'}%</dd>
-      <dd class="stat__note">${cov.successful ?? 0} good checks of ${cov.expected ?? 0} expected</dd></div>
+      <dd class="stat__note">${cov.slots_covered ?? cov.successful ?? 0} of
+        ${cov.expected ?? 0} half-hours${cov.complained
+          ? ` · ${cov.complained} of ${cov.successful} checks complained` : ''}</dd></div>
     <div class="stat"><dt>Last good check</dt><dd>${when(run.at)}</dd>
       <dd class="stat__note">${stamp(run.at)}</dd></div>
     <div class="stat" data-tone="${cov.longest_gap_minutes > 180 ? 'warn' : ''}"><dt>Longest gap</dt>
@@ -1134,6 +1140,40 @@ function renderStatus() {
       <dd class="num">${h.accounted?.unexplained ?? 0}</dd>
       <dd class="stat__note">${h.accounted?.delivered ?? 0} told, ${h.accounted?.quiet ?? 0} deliberately quiet</dd></div>`;
   host.appendChild(stats);
+
+  // When the checks happened, not just how many. A percentage cannot tell a
+  // schedule that is thin everywhere from one that is absent for six hours
+  // and then fine, and only the second one loses you a car.
+  if ((cov.slots || []).length) {
+    const sec = el('section', 'section measure');
+    sec.innerHTML = `<div class="section__head"><h2>When it checked</h2>
+      <span class="count num">${cov.slots_covered ?? 0}/${cov.expected ?? 0}</span></div>`;
+    const strip = el('div', 'slots');
+    strip.setAttribute('role', 'img');
+    strip.setAttribute('aria-label',
+      `${cov.slots_covered ?? 0} of ${cov.expected ?? 0} half-hour slots in the `
+      + `last ${cov.window_hours ?? 24} hours had a check. `
+      + `Longest gap ${Math.round((cov.longest_gap_minutes || 0) / 6) / 10} hours.`);
+    const begin = Date.parse(cov.since);
+    const step = (cov.expected_interval_minutes || 30) * 60000;
+    cov.slots.forEach((v, i) => {
+      const cell = el('i', 'slot');
+      cell.dataset.state = v === 0 ? 'miss' : v === 1 ? 'ok' : 'warn';
+      const at = new Date(begin + i * step);
+      cell.title = `${at.toLocaleString([], { weekday: 'short', hour: '2-digit',
+        minute: '2-digit' })} — ` + (v === 0 ? 'no check'
+          : v === 1 ? 'checked' : 'checked, reported a problem');
+      strip.appendChild(cell);
+    });
+    sec.appendChild(strip);
+    const ends = el('div', 'slots__ends');
+    ends.innerHTML = `<span>${when(cov.since)}</span><span>now</span>`;
+    sec.appendChild(ends);
+    sec.appendChild(el('p', 'note',
+      `Each mark is ${cov.expected_interval_minutes || 30} minutes. `
+      + `Longest gap ${Math.round((cov.longest_gap_minutes || 0) / 6) / 10} hours.`));
+    host.appendChild(sec);
+  }
 
   if ((run.invariants || []).length) {
     const s = el('section', 'section');

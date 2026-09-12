@@ -193,6 +193,25 @@ def events(entries: Iterable[dict[str, Any]], limit: int = 400
 
 # ---------------------------------------------------------------- coverage
 
+def _read_the_site(run: dict[str, Any]) -> bool:
+    """Did this run actually look at the searches?
+
+    That, not the exit code, is what decides whether a slot was covered. A
+    run that was skipped (another one held the lock, or it was too soon) never
+    looked; one whose searches all failed to load never looked either. Every
+    other run did, whatever it thought of its own bookkeeping afterwards.
+    """
+    if run.get("skipped"):
+        return False
+    ran = int(run.get("searches_run") or 0)
+    failed = int(run.get("searches_failed") or 0)
+    if ran:
+        return failed < ran
+    # An older run record from before these counters existed. Fall back to the
+    # exit code rather than crediting a slot nothing is known about.
+    return bool(run.get("ok"))
+
+
 def coverage(runs: list[dict[str, Any]], expected_minutes: int = 30,
              window_hours: int = 24, now: datetime | None = None
              ) -> dict[str, Any]:
@@ -210,12 +229,39 @@ def coverage(runs: list[dict[str, Any]], expected_minutes: int = 30,
 
     stamps = sorted(t for t in (_dt(r.get("at")) for r in runs)
                     if t is not None and t >= start)
+
+    # Covered, not ok.
+    #
+    # This counted runs whose exit code was zero, and those are different
+    # questions. A run that fetched both searches, read two hundred listings
+    # and wrote them all down, then exited 1 because a bookkeeping invariant
+    # tripped, covered its slot completely: no car came or went unseen. For a
+    # day and a half one such invariant was failing on every run, and this
+    # figure read 18.8% while the site was being read every time a check ran.
+    # It said the market was unwatched. It meant the ledger was inconsistent.
+    #
+    # The question the number claims to answer is "could the car I want have
+    # come and gone between checks", and only a search that failed to load
+    # leaves that hole. A run that read the site and then complained about
+    # itself is a separate fault, reported separately, and the Status view
+    # shows both.
+    read_stamps = sorted(
+        t for t in (_dt(r.get("at")) for r in runs if _read_the_site(r))
+        if t is not None and t >= start)
     ok_stamps = sorted(t for t in (_dt(r.get("at")) for r in runs
                                    if r.get("ok"))
                        if t is not None and t >= start)
 
+    # Distinct slots, not checks. Two checks in the same half hour cover one
+    # half hour; counting them as two lets a burst of manual runs report
+    # coverage the schedule never delivered - which is exactly what a day of
+    # working on this repository looks like from the inside.
+    slot = max(1, expected_minutes) * 60
+    covered = {int((t - start).total_seconds() // slot) for t in read_stamps}
+    covered = {i for i in covered if 0 <= i < expected}
+
     gaps: list[float] = []
-    edge = [start] + ok_stamps + [now]
+    edge = [start] + read_stamps + [now]
     for before, after in zip(edge, edge[1:]):
         gaps.append(_hours_between(after, before) * 60.0)
 
@@ -229,13 +275,36 @@ def coverage(runs: list[dict[str, Any]], expected_minutes: int = 30,
         "window_hours": window_hours,
         "expected": expected,
         "checks": len(stamps),
-        "successful": len(ok_stamps),
-        "pct": round(min(100.0, len(ok_stamps) / expected * 100.0), 1),
+        "successful": len(read_stamps),
+        "slots_covered": len(covered),
+        # Runs that read the site but reported a problem about themselves.
+        # Shown next to the coverage figure rather than folded into it.
+        "complained": len(read_stamps) - len(ok_stamps),
+        "clean": len(ok_stamps),
+        "pct": round(min(100.0, len(covered) / expected * 100.0), 1),
         "longest_gap_minutes": round(max(gaps), 1) if gaps else None,
         "expected_interval_minutes": expected_minutes,
         "truncated": truncated,
         "since": start.isoformat(timespec="seconds"),
+        # One entry per expected slot, oldest first: 0 for a half hour with
+        # no check, 1 for one, 2 for one that also complained about itself.
+        # A percentage says how much; this says when, and the shape is what
+        # tells you whether the schedule is thin or simply absent for hours.
+        "slots": _slot_row(runs, start, slot, expected),
     }
+
+
+def _slot_row(runs: list[dict[str, Any]], start: datetime, slot: int,
+              expected: int) -> list[int]:
+    row = [0] * expected
+    for run in runs:
+        when = _dt(run.get("at"))
+        if when is None or when < start or not _read_the_site(run):
+            continue
+        index = int((when - start).total_seconds() // slot)
+        if 0 <= index < expected:
+            row[index] = max(row[index], 1 if run.get("ok") else 2)
+    return row
 
 
 def minutes_spent(runs: list[dict[str, Any]], window_hours: int = 24,

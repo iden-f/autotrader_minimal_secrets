@@ -489,6 +489,21 @@ select:hover,.btn:hover{ background:var(--surface-2); }
 .chip .n{ font-variant-numeric:tabular-nums; color:var(--text-3); margin-left:var(--s1); }
 .chip[aria-pressed="true"] .n{ color:inherit; opacity:.72; }
 
+/* When it checked: one cell per expected slot. Cells rather than a chart
+   because the question is "was there a hole", which is a shape, not a value. */
+.slots{
+  display:flex; gap:2px; align-items:stretch; height:34px; margin-top:var(--s3);
+}
+.slot{
+  flex:1 1 0; min-width:2px; border-radius:1px; background:var(--surface-3);
+}
+.slot[data-state="ok"]{ background:var(--good); }
+.slot[data-state="warn"]{ background:var(--warn); }
+.slots__ends{
+  display:flex; justify-content:space-between; margin-top:var(--s1);
+  font-size:var(--t-micro); color:var(--text-3);
+}
+
 /* "A newer version is ready." Bottom-anchored above the phone tab bar, and
    out of the way of the content rather than on top of it. */
 .newver{

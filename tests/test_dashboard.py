@@ -188,3 +188,33 @@ class TestTheBotsOwnState:
         published = build_payload(cfg, state, env={})["listings"]
         assert len(published) == 2
         assert all(not l["filtered"] for l in published)
+
+
+class TestTheCallersThatPassNoEnvironment:
+    """`python -m autotrader dashboard` and the local `ui` server both do.
+
+    Adding one env lookup that did not guard for it crashed both commands with
+    an AttributeError, and nothing in the suite noticed because every test
+    passed a dict.
+    """
+
+    def test_build_payload_without_an_environment(self):
+        from autotrader import dashboard
+        from autotrader.config import Config
+        from autotrader.state import State
+        cfg = Config({"version": 2, "searches": [], "filters": {},
+                      "notifications": {"channels": {}},
+                      "dashboard": {"enabled": True}})
+        state = State({"version": 2, "listings": {}, "searches": {}, "runs": []})
+        payload = dashboard.build_payload(cfg, state)
+        assert payload["repo_issues"] is False
+
+    def test_write_without_an_environment(self, tmp_path):
+        from autotrader import dashboard
+        from autotrader.config import Config
+        from autotrader.state import State
+        cfg = Config({"version": 2, "searches": [], "filters": {},
+                      "notifications": {"channels": {}},
+                      "dashboard": {"enabled": True}})
+        state = State({"version": 2, "listings": {}, "searches": {}, "runs": []})
+        assert dashboard.write(cfg, state, path=tmp_path / "docs/data.json")

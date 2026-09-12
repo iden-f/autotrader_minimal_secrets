@@ -78,6 +78,11 @@ def _area_of(filters: dict[str, Any]) -> dict[str, Any] | None:
 def build_payload(cfg: Config, state: State, env: dict[str, str] | None = None
                   ) -> dict[str, Any]:
     """Assemble everything the dashboard needs, with nothing secret in it."""
+    # Normalised once, here. Two callers pass None - the local `ui` server and
+    # `python -m autotrader dashboard` - and every use of env below has to
+    # remember that. One of them did not, and both commands crashed with an
+    # AttributeError until a render caught it.
+    env = env or {}
     limit = int(cfg.get("dashboard.max_listings", 500) or 500)
 
     # Where "how far away is it" is measured from, per search. A search with
