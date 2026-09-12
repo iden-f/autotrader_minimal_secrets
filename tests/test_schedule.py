@@ -97,7 +97,7 @@ class TestAMissedWindow:
         assert not report.skipped
         assert report.missed_by == pytest.approx(286, abs=2)
         warning = next(w for w in report.warnings if "dropped" in w)
-        assert "4.8 hour(s)" in warning and "run(s)" in warning
+        assert "4.8 hours" in warning and "runs" in warning
 
     def test_an_ordinary_gap_says_nothing(self, bench):
         bench.run()

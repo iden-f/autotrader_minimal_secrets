@@ -395,19 +395,21 @@ def weekly_text(summary: dict[str, Any]) -> str:
     """The week as something worth reading on a phone."""
     lines = [f"The last {summary['days']} days on your searches", ""]
     if summary["new"]:
-        lines.append(f"{summary['new']} new listing(s) appeared.")
+        lines.append(f"{_count(summary['new'], 'new listing')} appeared.")
     if summary["drops"]:
         total = f"${summary['cut_total']:,}"
-        lines.append(f"{summary['drops']} price drop(s), {total} off in total.")
+        lines.append(f"{_count(summary['drops'], 'price drop')}, "
+                     f"{total} off in total.")
         best = summary.get("biggest_drop")
         if best:
             lines.append(f"  Biggest: {best.get('title') or 'a listing'} "
                          f"${abs(best.get('delta') or 0):,} off, now "
                          f"${(best.get('new_price') or 0):,}.")
     if summary["rises"]:
-        lines.append(f"{summary['rises']} price increase(s).")
+        lines.append(f"{_count(summary['rises'], 'price increase')}.")
     if summary["priced"]:
-        lines.append(f"{summary['priced']} call-for-price car(s) named a figure.")
+        lines.append(f"{_count(summary['priced'], 'call-for-price car')} "
+                     f"named a figure.")
     if summary["gone"]:
         lines.append(f"{summary['gone']} left the market.")
     if summary["back"]:
@@ -427,7 +429,8 @@ def weekly_text(summary: dict[str, Any]) -> str:
             line += (f" - {way} ${abs(move):,} on a week ago, though a median moves "
                      f"as much on which cars are listed as on what they cost")
         lines.append(line + ".")
-    lines.append(f"Built from {summary['checks']} successful check(s) this week.")
+    lines.append(f"Built from {_count(summary['checks'], 'successful check')} "
+                 f"this week.")
     return "\n".join(lines)
 
 
@@ -485,8 +488,17 @@ def _trim_of(entry: dict[str, Any]) -> str:
     return "base"
 
 
+def _count(n: int, word: str, plural: str = "") -> str:
+    """Three price drops, or one price drop. Not one price drop with an (s).
+
+    The weekly digest is the one thing here a person reads end to end, and
+    every count in it had the parenthesis.
+    """
+    return f"{n} {word if n == 1 else (plural or word + 's')}"
+
+
 def _days(n: int) -> str:
-    """"2 day(s)" is a programmer talking to themselves in public."""
+    """Two days, or one day. Never one day with an (s) after it."""
     return "1 day" if n == 1 else f"{n} days"
 
 

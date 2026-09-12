@@ -33,6 +33,15 @@ from .urls import normalise_search_url, page_url
 log = logging.getLogger(__name__)
 
 
+def _many(count, one: str, more: str = "") -> str:
+    """Three requests, or one request. Never one request with an (s) after it.
+
+    This line is the first thing anyone reads in an Actions log and it is
+    quoted verbatim into the watchdog's alert, so it is copy.
+    """
+    return f"{count} {one if count == 1 else (more or one + 's')}"
+
+
 @dataclass
 class RunReport:
     started_at: float = field(default_factory=time.time)
@@ -118,28 +127,40 @@ class RunReport:
         }
 
     def summary(self) -> str:
-        """One line. Everything that happened, nothing that did not."""
-        bits = [f"{self.searches_run} search(es)", f"{self.listings_seen} listing(s)"]
-        for count, label in ((self.new, "new"),
-                             (self.price_drops, "price drop(s)"),
-                             (self.price_rises, "price rise(s)"),
-                             (self.priced, "price(s) published"),
-                             (self.removed, "removed"),
-                             (self.relisted, "back on sale"),
-                             (self.qualified, "back inside your rules"),
-                             (self.unpriced, "call for price"),
-                             (self.filtered_out, "hidden by your rules"),
-                             (self.searches_failed, "failed")):
+        """One line. Everything that happened, nothing that did not.
+
+        This line is the first thing anyone reads in an Actions log and it is
+        quoted into the watchdog's alert, so it is copy. Every count in it
+        used to carry an (s).
+        """
+        def many(count: int, one: str, more: str = "") -> str:
+            return f"{count} {one if count == 1 else (more or one + 's')}"
+
+        bits = [many(self.searches_run, "search", "searches"),
+                many(self.listings_seen, "listing")]
+        for count, one, more in ((self.new, "new", "new"),
+                                 (self.price_drops, "price drop", ""),
+                                 (self.price_rises, "price rise", ""),
+                                 (self.priced, "price published", "prices published"),
+                                 (self.removed, "removed", "removed"),
+                                 (self.relisted, "back on sale", "back on sale"),
+                                 (self.qualified, "back inside your rules",
+                                  "back inside your rules"),
+                                 (self.unpriced, "call for price", "call for price"),
+                                 (self.filtered_out, "hidden by your rules",
+                                  "hidden by your rules"),
+                                 (self.searches_failed, "failed", "failed")):
             if count:
-                bits.append(f"{count} {label}")
+                bits.append(many(count, one, more))
         if self.baselines:
             bits.append(f"{len(self.baselines)} baselined")
         for kind, count in sorted(self.hidden_events.items()):
-            bits.append(f"{count} {kind.replace('_', ' ')} on hidden car(s)")
+            bits.append(f"{count} {kind.replace('_', ' ')} on "
+                        + ("a hidden car" if count == 1 else "hidden cars"))
         if len(bits) == 2:
             bits.append("nothing changed")
         return (", ".join(bits)
-                + f" - {self.requests_made} request(s) in {self.duration_s}s")
+                + f" - {_many(self.requests_made, 'request')} in {self.duration_s}s")
 
 
 # Below this a search is too small for "half of last time" to mean anything.
@@ -424,7 +445,7 @@ def run(cfg: Config | None = None, state: State | None = None, *,
             not in ("", "0", "false", "no")
         if gap < floor and on_a_schedule and not force:
             report.warnings.append(
-                f"the last successful check was {gap:.0f} minute(s) ago and the "
+                f"the last successful check was {_many(round(gap), 'minute')} ago and the "
                 f"schedule asks for one every {expected} - skipping this one "
                 f"rather than checking the site twice for the same answer.")
             report.skipped = True
@@ -440,15 +461,16 @@ def run(cfg: Config | None = None, state: State | None = None, *,
             since_any = _minutes_since_any_run(state)
             if since_any is not None and since_any < gap - expected:
                 report.warnings.append(
-                    f"no check has succeeded for {gap / 60:.1f} hour(s), but "
-                    f"the last one ran {since_any:.0f} minute(s) ago - so the "
+                    f"no check has succeeded for {gap / 60:.1f} hours, but "
+                    f"the last one ran {_many(round(since_any), 'minute')} ago - so the "
                     f"bot is being started and is failing, which is not the "
                     f"same as not being started.")
             else:
                 report.warnings.append(
-                    f"the last successful check was {gap / 60:.1f} hour(s) ago, not "
-                    f"{expected} minute(s) - the schedule dropped "
-                    f"{int(gap // expected) - 1} run(s). Catching up now.")
+                    f"the last successful check was {gap / 60:.1f} hours ago, "
+                    f"not {_many(expected, 'minute')} - the schedule dropped "
+                    f"{_many(int(gap // expected) - 1, 'run')}. "
+                    f"Catching up now.")
 
     settings = cfg.get("notifications", {}) or {}
     notify_on = settings.get("notify_on", {}) or {}
@@ -728,7 +750,7 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                 why = _why_none_survived(dropped)
                 report.shut_out.append(search.name)
                 report.warnings.append(
-                    f"{search.name}: read {len(listings)} listing(s) and none "
+                    f"{search.name}: read {_many(len(listings), 'listing')} and none "
                     f"passed your rules for it ({why}). It is working - it just "
                     f"has nothing to show you.")
                 state.search_health(search.id)["shut_out"] = why
@@ -1009,7 +1031,7 @@ def run(cfg: Config | None = None, state: State | None = None, *,
             already = {c.listing.id for c in changes}
             held = [c for c in state.pending_changes() if c.listing.id not in already]
             if held:
-                report.warnings.append(f"re-sending {len(held)} held alert(s)")
+                report.warnings.append(f"re-sending {_many(len(held), 'held alert')}")
                 changes = held + changes
 
         report.quiet = notifiers.in_quiet_hours(settings)
@@ -1028,7 +1050,7 @@ def run(cfg: Config | None = None, state: State | None = None, *,
         elif changes and not dry_run and (report.quiet or not notify):
             state.defer(changes)
             report.warnings.append(
-                f"{len(changes)} change(s) held"
+                _many(len(changes), "change") + " held"
                 + (" until quiet hours end." if report.quiet else "."))
         elif changes and dry_run:
             report.notified = ["dry run: nothing sent"]
@@ -1104,7 +1126,7 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                     f"forgot {len(forgotten)} search(es) no longer configured")
             pruned = archive_mod.prune(archive_conf)
             if pruned:
-                report.warnings.append(f"pruned {len(pruned)} old archive folder(s)")
+                report.warnings.append(f"pruned {_many(len(pruned), 'old archive folder')}")
             state.prune()
 
             # Our own copy of the photos, so the page works offline and a

@@ -716,20 +716,21 @@ function card(l) {
   if (l.per_1000km) facts.push(`<span class="num">$${Math.round(l.per_1000km)}<u> /1000km</u></span>`);
   if (l.distance_km !== undefined && l.distance_km !== null) facts.push(`<span class="num">${km(l.distance_km)}<u> km away</u></span>`);
   if (l.location) facts.push(`<span>${esc(l.location)}</span>`);
-  // Dealer or private. Different negotiation, different paperwork, and the
-  // first thing a person filters on - which is why it being parsed, published
-  // and invisible for the whole project was worth fixing at both ends.
-  if (l.seller_type) facts.push(`<span>${esc(sellerWord(l.seller_type))}</span>`);
 
   const foot = [];
   if (cmp?.pct !== undefined && cmp.notable) {
     foot.push(`<span class="${cmp.pct < 0 ? 'drop' : ''}">${Math.round(Math.abs(cmp.pct))}% ${cmp.pct < 0 ? 'under' : 'over'} median of ${cmp.sample}</span>`);
   }
   if (l.days_listed !== undefined) foot.push(`<span class="num">${daysListed(l.days_listed)}</span>`);
-  if (l.photo_count) foot.push(`<span class="num">${l.photo_count} photos</span>`);
+  if (l.photo_count) foot.push(`<span class="num">${l.photo_count} photo${
+    l.photo_count === 1 ? '' : 's'}</span>`);
   // Said, not implied. A greyed price is a de-emphasis; it does not tell you
   // that alerts about this car are switched off, which is the thing you would
   // want to know before wondering why it has gone quiet.
+  // Dealer or private, on the metadata line rather than among the facts.
+  // A fourth item pushed the facts row over the card's width and orphaned
+  // "dealer" onto a line of its own on every single card.
+  if (l.seller_type) foot.push(`<span>${esc(sellerWord(l.seller_type))}</span>`);
   const yourMarks = marks.of(l.id);
   if (yourMarks.muted) foot.push('<span>muted — no alerts</span>');
   if (yourMarks.dismissed) foot.push('<span>not interested</span>');
@@ -843,7 +844,8 @@ function renderMarket() {
   if (years.length) {
     const sec = el('section', 'section measure');
     sec.innerHTML = `<div class="section__head"><h2>Asking price by year</h2>
-      <span class="count num">${years.length} years with enough cars</span></div>`;
+      <span class="count num">${years.length} year${years.length === 1 ? '' : 's'}
+        with enough cars</span></div>`;
     sec.appendChild(rangeChart(years));
     host.appendChild(sec);
   }
@@ -980,7 +982,8 @@ function renderSearches() {
          · <a href="${esc(s.url)}" rel="noopener" target="_blank">open on autotrader.ca</a></dd>` +
       (area ? `<dt>Area</dt><dd>${esc(area)} <span class="note" style="margin:0">— enforced here, because the site ignores it</span></dd>` : '') +
       `<dt>Last read</dt><dd>${h.last_ok ? stamp(h.last_ok) : '—'}${h.last_count !== undefined ? ` · ${h.last_count} listings` : ''}</dd>` +
-      (bad ? `<dt>Trouble</dt><dd class="err">${h.consecutive_failures} failures in a row — ${esc(h.last_error || '')}</dd>` : '') +
+      (bad ? `<dt>Trouble</dt><dd class="err">${h.consecutive_failures} failure${
+        h.consecutive_failures === 1 ? '' : 's'} in a row — ${esc(h.last_error || '')}</dd>` : '') +
       (shutOut ? `<dt>Note</dt><dd class="warnt">Reads fine, keeps nothing: ${esc(shutOut)}</dd>` : '');
     sec.appendChild(kv);
     sec.appendChild(rulesEditor(s));
@@ -1240,7 +1243,7 @@ function renderStatus() {
         const lad = order.map(n => `<i data-on="${(v.working || []).includes(n) ? 1 : 0}" title="${esc(n)}"></i>`).join('');
         const scores = order.map(n => `${n} ${v.scores?.[n] ?? 0}`).join(' · ');
         return `<tr><td>${esc(v.name)}</td><td class="mono">${esc(v.winner || '—')}</td>
-          <td><span class="ladder" role="img" aria-label="${(v.working || []).length} of ${v.of} strategies working">${lad}</span></td>
+          <td><span class="ladder" role="img" aria-label="${(v.working || []).length} of ${v.of} strateg${v.of === 1 ? 'y' : 'ies'} working">${lad}</span></td>
           <td class="r mono" style="font-size:var(--t-micro)">${esc(scores)}</td></tr>`;
       }).join('') + `</tbody>`;
     s.appendChild(t);
@@ -1261,7 +1264,7 @@ function renderStatus() {
       const ch = (d.channel_health || {})[name] || {};
       const fails = ch.consecutive_failures || 0;
       return `<tr><td>${esc(d.channels?.[name]?.label || name)}</td>
-        <td class="${fails ? 'err' : 'ok'}">${fails ? `${fails} failures in a row` : 'delivering'}</td>
+        <td class="${fails ? 'err' : 'ok'}">${fails ? `${fails} failure${fails === 1 ? '' : 's'} in a row` : 'delivering'}</td>
         <td class="num">${ch.last_ok ? when(ch.last_ok) : '—'}</td></tr>`;
     }).join('') : `<tr><td colspan="3">No channel is switched on, so nothing is being sent.</td></tr>`) +
     `</tbody>`;
@@ -1405,7 +1408,8 @@ function sheetBody(l) {
       gal.appendChild(box);
     }
     gal.setAttribute('role', 'group');
-    gal.setAttribute('aria-label', `${imgs.length} photos`);
+    gal.setAttribute('aria-label',
+      `${imgs.length} photo${imgs.length === 1 ? '' : 's'}`);
     frag.appendChild(gal);
   } else {
     const box = el('div', 'shotbox');
@@ -1451,7 +1455,7 @@ function sheetBody(l) {
   if (hist.length >= 2) {
     const s = el('section', 'section');
     s.innerHTML = `<div class="section__head"><h2>Asking price</h2>
-      <span class="count num">${hist.length} observations</span></div>`;
+      <span class="count num">${hist.length} observation${hist.length === 1 ? '' : 's'}</span></div>`;
     s.appendChild(sparkline(hist));
     host_append(s, frag);
   }
@@ -1592,7 +1596,7 @@ function sparkline(hist) {
   const svg = el('div');
   svg.innerHTML =
     `<svg class="hist" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" role="img"
-       aria-label="Asking price from ${money(prices[0])} to ${money(prices[prices.length - 1])} over ${prices.length} observations">
+       aria-label="Asking price from ${money(prices[0])} to ${money(prices[prices.length - 1])} over ${prices.length} observation${prices.length === 1 ? '' : 's'}">
       <path class="area" d="${area}"/><path d="${d}"/>
       <circle cx="${pts[pts.length - 1][0].toFixed(1)}" cy="${pts[pts.length - 1][1].toFixed(1)}" r="1.8"/>
     </svg>

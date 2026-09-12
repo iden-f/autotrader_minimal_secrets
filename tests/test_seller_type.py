@@ -98,3 +98,39 @@ class TestItReachesThePerson:
         js = Path("docs/app.js").read_text()
         assert "seller_type" in js, (
             "parsed, published, and still invisible is where this started")
+
+
+class TestPlaceNamesArriveShouted:
+    """"NORTH YORK" is how the addresses come. "North york" is how the page
+    spelled it back, for the life of the project: capitalize() on the whole
+    string capitalises the first letter and lowercases everything else."""
+
+    @pytest.mark.parametrize("given,want", [
+        ("NORTH YORK", "North York"),
+        ("MONTREAL", "Montreal"),
+        ("ST CATHARINES", "St. Catharines"),
+        ("TROIS-RIVIERES", "Trois-Rivieres"),
+        ("SAINT-JEAN-SUR-RICHELIEU", "Saint-Jean-sur-Richelieu"),
+        ("L'ANCIENNE-LORETTE", "L'Ancienne-Lorette"),
+        # The province codes used to live in the exact-case table, which made
+        # this one "Niagara-ON-the-Lake".
+        ("NIAGARA-ON-THE-LAKE", "Niagara-on-the-Lake"),
+        ("LAC-DES-ILES", "Lac-des-Iles"),
+    ])
+    def test_every_word_not_just_the_first(self, given, want):
+        from autotrader.parser import _titlecase_place
+        assert _titlecase_place(given) == want
+
+    @pytest.mark.parametrize("given", ["Richmond Hill", "North York", "Milton"])
+    def test_a_name_that_is_already_cased_is_left_alone(self, given):
+        from autotrader.parser import _titlecase_place
+        assert _titlecase_place(given) == given
+
+    def test_the_province_field_does_not_go_through_it(self):
+        """It titlecases a city; "ON" in one is the word "on"."""
+        from autotrader.parser import parse_search_page
+        out = parse_search_page(
+            (FIXTURES / "search_next_data.html").read_text(errors="ignore"), BASE)
+        provinces = {l.province for l in out.listings if l.province}
+        assert provinces and all(p == p.upper() or len(p) > 2 for p in provinces), \
+            provinces

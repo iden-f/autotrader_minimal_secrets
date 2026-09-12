@@ -238,12 +238,45 @@ def _seller_word(text: str) -> str:
     return ""
 
 
+# Words that stay lowercase inside a place name, and ones that do not
+# capitalise the way .capitalize() thinks they do.
+_PLACE_SMALL = {"de", "des", "du", "la", "le", "les", "sur", "aux",
+                "of", "the", "on", "in", "at", "by", "and", "et"}
+# Deliberately no province codes. This titlecases a *city*, and "ON" inside
+# one is the word "on": with the codes in here, Niagara-on-the-Lake came out
+# as "Niagara-ON-the-Lake". The province field is carried separately and is
+# not passed through this at all.
+_PLACE_EXACT = {"st": "St.", "ste": "Ste.", "st.": "St.", "ste.": "Ste.",
+                "mt": "Mt.", "ft": "Ft."}
+
+
 def _titlecase_place(text: str) -> str:
-    """Dealer addresses arrive shouted ("MONTREAL", "TORONTO")."""
+    """Dealer addresses arrive shouted ("MONTREAL", "NORTH YORK").
+
+    Every word, not just the first. capitalize() on the whole string gives
+    "North york", which is how the dashboard spelled a Toronto borough on
+    every card for the life of the project.
+    """
     text = _clean(text)
-    if text and text == text.upper():
-        return "-".join(part.capitalize() for part in text.split("-"))
-    return text
+    if not text or text != text.upper():
+        return text
+
+    def word(part: str, first: bool) -> str:
+        low = part.lower()
+        if low in _PLACE_EXACT:
+            return _PLACE_EXACT[low]
+        if low in _PLACE_SMALL and not first:
+            return low
+        # Hyphenated and apostrophe'd names capitalise on each piece:
+        # Trois-Rivieres, Saint-Jean, L'Ancienne-Lorette, O'Leary.
+        for sep in ("-", "'", "\u2019"):
+            if sep in part:
+                return sep.join(word(bit, first and i == 0)
+                                for i, bit in enumerate(part.split(sep)))
+        return part.capitalize()
+
+    return " ".join(word(part, i == 0)
+                    for i, part in enumerate(text.split()) if part)
 
 
 # Child objects a listing keeps its facts inside. The 2026 platform nests

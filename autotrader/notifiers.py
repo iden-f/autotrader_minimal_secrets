@@ -63,6 +63,15 @@ class Result:
         return f"{self.channel}: {mark}{' - ' + self.detail if self.detail else ''}"
 
 
+def _count(n: int, word: str, plural: str = "") -> str:
+    """Three changes, or one change. Never one change with an (s) after it.
+
+    These strings end up in the run log and on the Status view beside each
+    channel, which makes them copy - and six of them had the parenthesis.
+    """
+    return f"{n} {word if n == 1 else (plural or word + 's')}"
+
+
 class Notifier:
     """Base class.  Subclasses implement ``_send``."""
 
@@ -153,14 +162,17 @@ class TelegramNotifier(Notifier):
                     self._api("sendMessage", {
                         "chat_id": chat_id, "text": text, "parse_mode": "HTML",
                         "disable_web_page_preview": True})
-                return Result(self.name, True, f"{len(changes)} change(s) with photos")
+                count = len(changes)
+                return Result(self.name, True,
+                              f"{count} change{'' if count == 1 else 's'} "
+                              f"with photos")
             except Exception as exc:  # noqa: BLE001
                 log.info("telegram photo group failed (%s); sending text", exc)
 
         self._api("sendMessage", {"chat_id": chat_id, "text": text,
                                   "parse_mode": "HTML",
                                   "disable_web_page_preview": len(changes) > 1})
-        return Result(self.name, True, f"{len(changes)} change(s)")
+        return Result(self.name, True, _count(len(changes), "change"))
 
     def _send_text(self, subject: str, body: str) -> Result:
         self._api("sendMessage", {"chat_id": self.env["TELEGRAM_CHAT_ID"],
@@ -199,7 +211,7 @@ class DiscordNotifier(Notifier):
         if len(changes) > len(embeds):
             self._post({"content": f"...and {len(changes) - len(embeds)} more.",
                         "allowed_mentions": {"parse": []}})
-        return Result(self.name, True, f"{len(embeds)} embed(s)")
+        return Result(self.name, True, _count(len(embeds), "embed"))
 
     def _send_text(self, subject: str, body: str) -> Result:
         self._post({"content": f"**{subject}**\n{body}"[:1900],
@@ -291,7 +303,7 @@ class NtfyNotifier(Notifier):
 
     def _send(self, changes: list[Change], run: dict[str, Any]) -> Result:
         if not changes:
-            return Result(self.name, True, "0 change(s)")
+            return Result(self.name, True, _count(0, "change"))
         lead = self._lead(changes)
         listing = lead.listing
         # Straight to that car on the dashboard when there is one to go to -
@@ -307,7 +319,7 @@ class NtfyNotifier(Notifier):
                    tags=self._TAGS.get(lead.kind, "car"),
                    priority=self._PRIORITY.get(lead.kind, "default"),
                    attach=photo)
-        return Result(self.name, True, f"{len(changes)} change(s)")
+        return Result(self.name, True, _count(len(changes), "change"))
 
     def _send_text(self, subject: str, body: str) -> Result:
         self._post(subject, body, tags="warning", priority="high")
@@ -343,7 +355,7 @@ class SlackNotifier(Notifier):
                     "blocks": [{"type": "section",
                                 "text": {"type": "mrkdwn",
                                          "text": render.as_markdown(changes, limit=self.limit)[:2900]}}]})
-        return Result(self.name, True, f"{len(changes)} change(s)")
+        return Result(self.name, True, _count(len(changes), "change"))
 
     def _send_text(self, subject: str, body: str) -> Result:
         self._post({"text": f"*{subject}*\n{body}"[:2900]})
@@ -383,7 +395,7 @@ class EmailNotifier(Notifier):
             render.as_email_html(changes, limit=limit,
                                  dashboard_url=str(self.settings.get("dashboard_url") or "")),
         )
-        return Result(self.name, True, f"{len(changes)} change(s)")
+        return Result(self.name, True, _count(len(changes), "change"))
 
     def _send_text(self, subject: str, body: str) -> Result:
         self._deliver(subject, body, None)
@@ -418,7 +430,7 @@ class WebhookNotifier(Notifier):
                                  timeout=TIMEOUT)
         if not response.ok:
             raise RuntimeError(f"HTTP {response.status_code}")
-        return Result(self.name, True, f"{len(changes)} change(s)")
+        return Result(self.name, True, _count(len(changes), "change"))
 
     def _send_text(self, subject: str, body: str) -> Result:
         url = str(self.config.get("url") or "").strip()
@@ -456,7 +468,7 @@ class TwilioNotifier(Notifier):
 
     def _send(self, changes: list[Change], run: dict[str, Any]) -> Result:
         self._post(render.as_sms(changes))
-        return Result(self.name, True, f"{len(changes)} change(s)")
+        return Result(self.name, True, _count(len(changes), "change"))
 
     def _send_text(self, subject: str, body: str) -> Result:
         self._post(f"{subject}\n{body}")

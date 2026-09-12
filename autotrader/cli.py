@@ -44,6 +44,15 @@ def _warn(text: str) -> str:
 # ----------------------------------------------------------------- commands
 
 
+def _many(count, one: str, more: str = "") -> str:
+    """Three listings, or one listing. Never one listing with an (s) after it.
+
+    Terminal output is the thing this whole project spent a session not
+    looking like, and every count in it carried the parenthesis.
+    """
+    return f"{count} {one if count == 1 else (more or one + 's')}"
+
+
 def cmd_run(args: argparse.Namespace) -> int:
     from .lock import AlreadyRunning, run_lock
     from .runner import run as run_once
@@ -119,8 +128,8 @@ def cmd_list(args: argparse.Namespace) -> int:
         health = (state.data.get("searches") or {}).get(search.id, {})
         mark = f"{GREEN}on {RESET}" if search.enabled else f"{DIM}off{RESET}"
         fails = health.get("consecutive_failures", 0)
-        status = (f"{RED}{fails} failed run(s){RESET}" if fails
-                  else f"{health.get('last_count', 0)} listing(s) last run")
+        status = (f"{RED}{_many(fails, 'failed run')}{RESET}" if fails
+                  else f"{_many(health.get('last_count', 0), 'listing')} last run")
         print(f"{mark} {BOLD}{search.name}{RESET}  {DIM}[{search.id}]{RESET}")
         print(f"     {' | '.join(describe_search(search.url).describe()) or 'no filters'}")
         own = []
@@ -301,7 +310,7 @@ def cmd_doctor(args: argparse.Namespace) -> int:
     # ---- stored data -------------------------------------------------
     print(f"\n{BOLD}Stored data{RESET}")
     stats = state.stats()
-    print(_ok(f"{stats['total']} listing(s) tracked, {stats['active']} live, "
+    print(_ok(f"{_many(stats['total'], 'listing')} tracked, {stats['active']} live, "
               f"{stats['gone']} gone"))
     if stats["median_price"]:
         print(f"   {DIM}prices ${stats['min_price']:,} - ${stats['max_price']:,} "
@@ -311,7 +320,7 @@ def cmd_doctor(args: argparse.Namespace) -> int:
         warnings += 1
     held = len(state.pending_changes())
     if held:
-        print(_warn(f"{held} alert(s) waiting to be delivered"))
+        print(_warn(f"{_many(held, 'alert')} waiting to be delivered"))
     last = state.last_run
     if last:
         mark = _ok if last.get("ok") else _bad
@@ -343,7 +352,7 @@ def cmd_doctor(args: argparse.Namespace) -> int:
     # ---- disk --------------------------------------------------------
     print(f"\n{BOLD}Archive{RESET}")
     report = size_report()
-    print(f"   {report['folders']} folder(s), {report['bytes'] / 1048576:.1f} MB "
+    print(f"   {_many(report['folders'], 'folder')}, {report['bytes'] / 1048576:.1f} MB "
           f"({report['html_bytes'] / 1048576:.1f} MB saved pages)")
     if report["html_bytes"] > 20 * 1048576:
         print(_warn("saved pages are large; set archive.mode to 'metadata' and run: "
@@ -362,9 +371,9 @@ def cmd_doctor(args: argparse.Namespace) -> int:
 
     print()
     if problems:
-        print(_bad(f"{problems} problem(s) need attention"))
+        print(_bad(f"{_many(problems, 'problem')} need attention"))
     elif warnings:
-        print(_warn(f"usable, with {warnings} thing(s) worth a look"))
+        print(_warn(f"usable, with {_many(warnings, 'thing')} worth a look"))
     else:
         print(_ok("everything checks out"))
     if not args.live:
@@ -409,7 +418,8 @@ def _live_check(cfg: Config, sample: bool = True) -> int:
             for name, count in result.candidates.items():
                 won = " <-- used" if name == result.strategy else ""
                 mark = GREEN if count else DIM
-                print(f"    {mark}{name:<16}{RESET} {count:>3} listing(s){BOLD}{won}{RESET}")
+                print(f"    {mark}{name:<16}{RESET} {count:>3} listing"
+              f"{'' if count == 1 else 's'}{BOLD}{won}{RESET}")
 
             if not result.listings:
                 print(_bad("  the page loaded but NO listings were parsed."))
@@ -419,7 +429,7 @@ def _live_check(cfg: Config, sample: bool = True) -> int:
                 problems += 1
                 continue
 
-            print(_ok(f"  {len(result.listings)} listing(s) via '{result.strategy}'"))
+            print(_ok(f"  {_many(len(result.listings), 'listing')} via '{result.strategy}'"))
             if not sample:
                 continue
 
@@ -512,9 +522,9 @@ def cmd_prune(args: argparse.Namespace) -> int:
         result = compact(dry_run=args.dry_run, keep_images=args.keep_images)
         verb = "would free" if args.dry_run else "freed"
         print(_ok(f"{verb} {result['bytes_freed'] / 1048576:.1f} MB across "
-                  f"{result['folders']} v1 folder(s)"))
+                  f"{result['folders']} v1 folder" + ("" if result['folders'] == 1 else "s")))
         print(f"   {DIM}{result['upgraded']} rewritten as metadata, "
-              f"{len(result['removed'])} file(s) removed{RESET}")
+              f"{_many(len(result['removed']), 'file')} removed{RESET}")
         if result["failed"]:
             # Nothing is deleted from a folder we could not read, so this is a
             # report, not a loss.
@@ -528,7 +538,7 @@ def cmd_prune(args: argparse.Namespace) -> int:
         conf["keep_days"] = args.keep_days
     removed = prune_archives(conf, dry_run=args.dry_run)
     verb = "would remove" if args.dry_run else "removed"
-    print(_ok(f"{verb} {len(removed)} archive folder(s)"))
+    print(_ok(f"{verb} {len(removed)} archive folder" + ("" if len(removed) == 1 else "s")))
     if removed[:10]:
         print(f"   {DIM}{', '.join(removed[:10])}{'...' if len(removed) > 10 else ''}{RESET}")
     return 0
@@ -575,7 +585,7 @@ def cmd_capture(args: argparse.Namespace) -> int:
                                 response.elapsed_ms, search.name)
         slug = search.id if args.page == 1 else f"{search.id}-p{args.page}"
         written = diagnose.write(data, slug)
-        print(_ok(f"{search.name}: {data['listings_found']} listing(s), "
+        print(_ok(f"{search.name}: {_many(data['listings_found'], 'listing')}, "
                   f"strategy {data['strategy_used']}, scores {data['strategy_scores']}"))
         print(f"   {DIM}{written}{RESET}")
         if args.raw:
@@ -640,7 +650,7 @@ def cmd_soak_note(args: argparse.Namespace) -> int:
         handle.write(row)
 
     print(f"cycle {args.cycle}/{args.total}: {len(live)} live, "
-          f"{last.get('new', 0)} new, {last.get('price_drops', 0)} drop(s), "
+          f"{last.get('new', 0)} new, {_many(last.get('price_drops', 0), 'drop')}, "
           f"{last.get('removed', 0)} removed, ok={last.get('ok')}")
     return 0
 
@@ -664,7 +674,7 @@ def cmd_events(args: argparse.Namespace) -> int:
     # schedule and reads only the state file, does it instead.
     quiet = events.silence(cfg, state, record)
     if quiet:
-        print(_bad(f"no successful check for {quiet['hours']} hour(s) "
+        print(_bad(f"no successful check for {_many(quiet['hours'], 'hour')} "
                    f"(since {quiet['since']})"))
         if args.notify:
             results = notifiers.alert(cfg, quiet["subject"], quiet["body"],

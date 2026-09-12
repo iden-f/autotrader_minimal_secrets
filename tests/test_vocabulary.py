@@ -167,3 +167,60 @@ class TestOneNameForEachThing:
             words = [w for w in heading.split() if w.isalpha() and len(w) > 3]
             capped = [w for w in words[1:] if w[0].isupper()]
             assert len(capped) <= 1, f"Title Case: {heading!r}"
+
+
+class TestOneIsNotPlural:
+    """"1 photos" on a card, "2 day(s)" in a note. Small, and the kind of
+    small that makes a page read like output rather than like writing."""
+
+    def test_the_page_never_hardcodes_a_plural_after_a_count(self):
+        js = Path("docs/app.js").read_text()
+        js = re.sub(r"/\*.*?\*/", "", js, flags=re.S)
+        js = re.sub(r"^\s*//.*$", "", js, flags=re.M)
+        # A ${…} immediately followed by a space and a word ending in s, with
+        # no conditional suffix anywhere in the same template piece.
+        for match in re.finditer(r"\$\{[^{}]{1,60}\}\s(\w+s)\b(?!\s*\$\{)", js):
+            word = match.group(1)
+            if word in ("is", "was", "has", "as", "its", "this", "says",
+                        "checks", "hours", "days", "minutes", "cars", "rules",
+                        "searches", "listings", "photos", "half",
+                        # A car with exactly one kilometre on it does not
+                        # happen, and the reader of this string is a screen
+                        # reader announcing an odometer.
+                        "kilometres"):
+                continue        # counted elsewhere, or not a count at all
+            raise AssertionError(f"possible hardcoded plural: {match.group(0)!r}")
+
+    def test_the_counts_that_can_be_one_are_conditional(self):
+        js = Path("docs/app.js").read_text()
+        for phrase in ("photo${", "day${", "search${"):
+            assert phrase in js, f"{phrase} is not pluralised conditionally"
+
+    def test_no_programmer_pluralisation_in_the_documents(self):
+        """"2 day(s)" is a programmer talking to themselves in public."""
+        for name in ("README.md", "ARCHITECTURE.md", "RUNBOOK.md", "DESIGN.md"):
+            assert "(s)" not in Path(name).read_text(), name
+
+    def test_none_in_the_message_strings_either(self):
+        """Deliberately not applied to docs/app.js.
+
+        The page's copy lives in backtick template literals that span code,
+        so the string extractor at the top of this file cannot separate a
+        sentence from the JavaScript around it - and a rule of "no (s)"
+        flagged esc(s) and appendChild(s), which are calls. The page is
+        covered by the conditional-plural test above instead, which checks the
+        counts rather than the characters.
+        """
+        for where, text in message_copy():
+            assert "(s)" not in text, (where, text[:90])
+
+    def test_none_in_the_terminal_output_either(self):
+        """A terminal is where "3 listing(s)" is most at home and least
+        excusable - it is exactly the script's-output look this was meant to
+        stop having."""
+        import re as _re
+        for name in ("autotrader/cli.py", "autotrader/runner.py"):
+            source = Path(name).read_text()
+            source = _re.sub(r'"""[\s\S]*?"""', "", source)
+            source = _re.sub(r"^\s*#.*$", "", source, flags=_re.M)
+            assert "(s)" not in source, name
