@@ -1,0 +1,49 @@
+# How long is a job actually allowed to run here?
+#
+# The pacemaker's shift is sized against that number, and until now the number
+# was "six hours, because that is what the documentation says". Documentation
+# is not this account, this runner pool, or this month. One job, run once by
+# hand, that sleeps until something stops it and writes down how far it got.
+#
+# It is not on a schedule. Run it from the Actions tab when the answer needs
+# re-checking, which is roughly never.
+
+name: Probe the job limit
+
+on:
+  workflow_dispatch:
+    inputs:
+      minutes:
+        description: 'How long to try for'
+        type: string
+        default: '370'
+
+permissions:
+  contents: read
+
+jobs:
+  how-long:
+    runs-on: ubuntu-latest
+    # Deliberately above the documented ceiling: the point is to find where
+    # the real one is, and a timeout below it would only measure this number.
+    timeout-minutes: 400
+    steps:
+      - name: Count
+        run: |
+          set -u
+          want=${{ inputs.minutes }}
+          started=$(date +%s)
+          # A mark a minute, flushed, so the log says how far it got even when
+          # the job is killed rather than finishing.
+          for i in $(seq 1 "$want"); do
+            printf '%s minute %d\n' "$(date -u +%H:%M:%S)" "$i"
+            sleep 60
+          done
+          echo "reached $want minutes without being stopped"
+      - name: Say how far it got
+        if: always()
+        run: |
+          echo "## Job limit probe" >> "$GITHUB_STEP_SUMMARY"
+          echo "Asked for ${{ inputs.minutes }} minutes." >> "$GITHUB_STEP_SUMMARY"
+          echo "Read the last 'minute N' line in the log above: that is where" >> "$GITHUB_STEP_SUMMARY"
+          echo "this account's real ceiling is." >> "$GITHUB_STEP_SUMMARY"

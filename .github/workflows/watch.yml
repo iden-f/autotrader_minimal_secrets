@@ -43,6 +43,13 @@ on:
     workflows: ['Record market events']
     types: [completed]
 
+  # Anything outside Actions can ask for a check with one authenticated POST.
+  # This is the lever that does not depend on GitHub's scheduler at all: a
+  # phone shortcut, a cron on any machine that is already on, a webhook from
+  # something else entirely. See RUNBOOK.md for the exact call.
+  repository_dispatch:
+    types: [check]
+
   workflow_dispatch:
     inputs:
       dry_run:
@@ -146,6 +153,7 @@ jobs:
           # same thing.
           AUTOTRADER_SCHEDULED: ${{ (github.event_name == 'schedule'
             || github.event_name == 'workflow_run'
+            || github.event_name == 'repository_dispatch'
             || inputs.automatic) && '1' || '' }}
         run: |
           set -o pipefail

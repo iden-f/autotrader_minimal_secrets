@@ -24,13 +24,13 @@
 # interval and no future firing will do anything until the file is deleted.
 # Disabling this workflow in the Actions tab works too, and is immediate.
 
-name: Pacemaker
+name: Pacemaker C
 
 on:
   # Several slots an hour, none of them on a contended minute. Most will be
   # dropped; each one that is served covers the hour after it.
   schedule:
-    - cron: '9,29,49 * * * *'
+    - cron: '16,36,56 * * * *'
   workflow_dispatch:
 
 # One at a time. Two overlapping pacemakers would ask for the same checks
