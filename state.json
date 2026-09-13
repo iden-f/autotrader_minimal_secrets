@@ -1,10 +1,14 @@
 {
  "actions": {
   "days": {
-   "2026-09-13": 11.0
+   "2026-09-13": {
+    "drawing": 0.0,
+    "exempt": 1.0,
+    "unknown": 11.0
+   }
   },
   "month": "2026-09",
-  "runs": 9
+  "runs": 10
  },
  "channels": {
   "email": {
@@ -39,7 +43,7 @@
    "fuel": "Gasoline",
    "id": "00ce8bfe-45d5-4b17-94a8-1ecbfcdc034c",
    "images": [],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Etobicoke",
    "make": "BMW",
    "mileage_km": 24114,
@@ -95,7 +99,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/01108a1a-2812-475d-b800-be530145cf6f_f9d3f96e-4280-4f6f-a004-467b8d010d45.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/01108a1a-2812-475d-b800-be530145cf6f_804bb554-7ac3-4ead-8dd6-d4d53a7d4a4f.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Aurora",
    "make": "BMW",
    "mileage_km": 21743,
@@ -150,7 +154,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/03b47c25-ee9f-4c06-942b-7c2c097a26ae_9fee07a1-254b-4def-a2de-978d5b7f7a09.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/03b47c25-ee9f-4c06-942b-7c2c097a26ae_28001f9a-5103-4d24-888c-43f3ca17e5b8.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:29:58+00:00",
+   "last_seen": "2026-09-13T20:47:04+00:00",
    "location": "Richmond",
    "make": "BMW",
    "mileage_km": 112297,
@@ -197,7 +201,7 @@
    "fuel": "Gasoline",
    "id": "0475c405-70ee-459b-9732-227ffc321365",
    "images": [],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Trois-Rivières",
    "make": "BMW",
    "mileage_km": 8912,
@@ -249,7 +253,7 @@
    "location": "Montréal",
    "make": "BMW",
    "mileage_km": 90,
-   "misses": 0,
+   "misses": 1,
    "model": "X3",
    "notified": true,
    "price": 66367,
@@ -305,7 +309,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/09fcb038-7b24-465c-b2d8-333d1df4b6dd_1ac6855d-c7b1-44e2-af90-f37aff037247.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/09fcb038-7b24-465c-b2d8-333d1df4b6dd_31ed5fc6-a44b-4bb2-a6be-d467b4edee8a.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "North York",
    "make": "BMW",
    "mileage_km": 103000,
@@ -365,7 +369,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/0ba28d75-33e8-4d4d-aab6-a4c2b2220df0_2c194b52-cef4-4da1-84e7-fcf34f7c8dbd.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/0ba28d75-33e8-4d4d-aab6-a4c2b2220df0_550cdc6f-b4a3-45ff-a688-d5fea69c859b.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Vaughan",
    "make": "BMW",
    "mileage_km": 99800,
@@ -425,7 +429,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/0cc94ec6-e3f9-4c7f-9ca0-253021a4f7e1_beef1f49-1d64-4938-bd09-1ce9229660ad.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/0cc94ec6-e3f9-4c7f-9ca0-253021a4f7e1_ce8a1001-37e1-4274-beb1-1a3071c74f39.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Kitchener",
    "make": "BMW",
    "mileage_km": 5575,
@@ -479,7 +483,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/0d25fa38-6268-4745-9877-8913890077ee_3204f86b-5247-41aa-a36b-c005b8795ec5.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/0d25fa38-6268-4745-9877-8913890077ee_b2a78328-13ba-4e5c-b740-32948b614051.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:29:55+00:00",
+   "last_seen": "2026-09-13T20:47:00+00:00",
    "location": "Burnaby",
    "make": "BMW",
    "mileage_km": 137241,
@@ -539,7 +543,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/0d366980-3df9-4db7-bb63-a21cf832d4fa_460502ab-f57b-46e4-ab8b-8887ed98f382.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/0d366980-3df9-4db7-bb63-a21cf832d4fa_7fd27fa8-6b00-4d8f-afaa-97ce39d6261a.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:29:55+00:00",
+   "last_seen": "2026-09-13T20:47:00+00:00",
    "location": "Calgary",
    "make": "BMW",
    "mileage_km": 69861,
@@ -588,7 +592,7 @@
    "images": [
     "https://prod.pictures.autoscout24.net/listing-images/0d8eb0ce-b0ac-4030-b8fb-c80d1887b242_2edcf039-2c77-4a62-bf40-e3209f2176f9.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Toronto",
    "make": "BMW",
    "mileage_km": 41994,
@@ -642,7 +646,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/0e9e916e-f428-48a7-9668-9c5dda14981a_49f3f434-6003-4be8-812b-f8f66c17d3a3.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/0e9e916e-f428-48a7-9668-9c5dda14981a_43fd3dd8-893b-4415-8e40-2fe1dcec71a3.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "London",
    "make": "BMW",
    "mileage_km": 82700,
@@ -702,7 +706,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/126cca4a-9df1-4d06-a592-8edd4fe86151_cb28e2be-6894-4ed0-beca-50100c82ecc9.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/126cca4a-9df1-4d06-a592-8edd4fe86151_b6e9466c-b41e-40be-b45a-d29cde76312b.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:29:55+00:00",
+   "last_seen": "2026-09-13T20:47:00+00:00",
    "location": "Airdrie",
    "make": "BMW",
    "mileage_km": 53907,
@@ -762,7 +766,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/162df21f-fac8-439c-9dbc-8ffea8fc6cf9_4e8bb1ec-7d33-422e-8aa3-9aacf4251e8a.png/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/162df21f-fac8-439c-9dbc-8ffea8fc6cf9_6b3eff9d-6164-4314-a56f-e721e2e6b6e8.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Montréal",
    "make": "BMW",
    "mileage_km": 303,
@@ -814,7 +818,7 @@
    "location": "Montréal",
    "make": "BMW",
    "mileage_km": 90,
-   "misses": 0,
+   "misses": 1,
    "model": "X3",
    "notified": true,
    "price": 76717,
@@ -863,7 +867,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/18843a07-1972-4c44-b3f5-dedc77433375_86cb3dfc-65e0-4462-8c4d-f9532b3b1219.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/18843a07-1972-4c44-b3f5-dedc77433375_35dd0404-6ce6-4c8f-a88c-d55843e7cd14.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Toronto",
    "make": "BMW",
    "mileage_km": 23309,
@@ -910,7 +914,7 @@
    "fuel": "Gasoline",
    "id": "1db574f8-8916-49c7-a46a-bcb5fb2133c8",
    "images": [],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Trois-Rivières",
    "make": "BMW",
    "mileage_km": 59953,
@@ -970,7 +974,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/1e7a3fcd-0b9a-4a3b-9be7-d7c8ec3b088c_8e3456cb-2fdc-42ac-a525-b82032b92e3e.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/1e7a3fcd-0b9a-4a3b-9be7-d7c8ec3b088c_fbfa913a-d212-4f8c-9c62-62e5f2154e8b.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Montréal",
    "make": "BMW",
    "mileage_km": 90,
@@ -1030,7 +1034,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/23a95a08-4472-4fb9-ab02-321917710f0c_8a97b503-e66c-4543-88f0-bffbecbe2c2f.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/23a95a08-4472-4fb9-ab02-321917710f0c_26f59aa8-a7c8-4f31-bbc1-83167a60ceba.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:29:55+00:00",
+   "last_seen": "2026-09-13T20:47:00+00:00",
    "location": "North Vancouver",
    "make": "BMW",
    "mileage_km": 122400,
@@ -1090,7 +1094,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/29729a93-570e-4b0e-8450-42fbee57d52d_4fe351a8-1a48-480f-8587-263308c577e9.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/29729a93-570e-4b0e-8450-42fbee57d52d_ef7e2049-4d44-485d-8788-9c6e37366d58.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:29:55+00:00",
+   "last_seen": "2026-09-13T20:47:00+00:00",
    "location": "Richmond",
    "make": "BMW",
    "mileage_km": 61820,
@@ -1150,7 +1154,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/2a44590d-7547-4eec-9f6b-bea1cf16d3b5_3d9adb4a-27a2-4f87-94c8-d003aff10502.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/2a44590d-7547-4eec-9f6b-bea1cf16d3b5_5be78f23-3337-4b74-8e24-09dbe866b923.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Toronto",
    "make": "BMW",
    "mileage_km": 71711,
@@ -1197,7 +1201,7 @@
    "fuel": "Gasoline",
    "id": "2a953f1d-272f-4527-be5d-7be5779ab4e1",
    "images": [],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Brampton",
    "make": "BMW",
    "mileage_km": 90,
@@ -1257,7 +1261,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/2aacdf32-fb81-4602-abb6-c805903a0ec8_63b0c623-8530-4c83-aad6-4b3d38838537.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/2aacdf32-fb81-4602-abb6-c805903a0ec8_8ce10d40-40a8-41b1-a05d-ea18c9e99b05.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:29:55+00:00",
+   "last_seen": "2026-09-13T20:47:00+00:00",
    "location": "Richmond",
    "make": "BMW",
    "mileage_km": 127365,
@@ -1315,7 +1319,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/2c651165-5340-4940-aa23-25edcc7e04d7_fdd15d8c-77ed-4726-a1b2-a82b69feabce.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/2c651165-5340-4940-aa23-25edcc7e04d7_4d1f22d5-79d8-4a49-a795-02ad8ad81297.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Ottawa",
    "make": "BMW",
    "mileage_km": 100000,
@@ -1369,7 +1373,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/2da00439-ff06-445e-8b7a-2709810a672b_58fec0fd-547a-4754-a7ac-954270e8da0e.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/2da00439-ff06-445e-8b7a-2709810a672b_dafe64a6-a21e-495c-b840-115e5d62c4ec.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Edmonton",
    "make": "BMW",
    "mileage_km": 123000,
@@ -1429,7 +1433,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/3ae69fb7-f6f7-47ed-952e-8784cb844a3a_2c06e30e-69e2-4d25-b39d-751a656f602c.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/3ae69fb7-f6f7-47ed-952e-8784cb844a3a_ce5e77fa-eb1b-4931-83d9-423ccfaf2713.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Maple",
    "make": "BMW",
    "mileage_km": 154000,
@@ -1488,7 +1492,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/3ebded39-f77e-4e6d-a7f0-af4f7ced0749_a6b623c6-437f-424d-b088-55de8882af85.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/3ebded39-f77e-4e6d-a7f0-af4f7ced0749_35d6f9dc-6287-42d7-9d53-cf63f1fb6368.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Woodbridge",
    "make": "BMW",
    "mileage_km": 13357,
@@ -1548,7 +1552,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/3f8fb04e-1ad8-488e-9447-bd57d25e24a6_44b8a1ce-2433-4369-90ce-72f0232e21d9.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/3f8fb04e-1ad8-488e-9447-bd57d25e24a6_fcf645e8-eb2e-4e1e-85fc-24c0f2c4008d.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Calgary",
    "make": "BMW",
    "mileage_km": 269112,
@@ -1608,7 +1612,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/40dcb7a8-94c2-4894-b796-05fb54ea8fb5_003a9c85-8188-42d2-a75c-d8c4d65f8617.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/40dcb7a8-94c2-4894-b796-05fb54ea8fb5_ff8dad14-148e-4bb2-8bb5-b245f5428dba.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Thornhill",
    "make": "BMW",
    "mileage_km": 91630,
@@ -1668,7 +1672,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/4535f746-a354-47a8-a3f8-d2ea883eb2de_f60dfaa0-9f42-49e7-b36f-2a34f0f45f31.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/4535f746-a354-47a8-a3f8-d2ea883eb2de_07d1ea2f-708a-40e9-9e91-535b4eefba47.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Edmonton",
    "make": "BMW",
    "mileage_km": 118614,
@@ -1728,7 +1732,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/4c387207-f15e-4b8b-a7c9-4081a6122251_b4596f26-92c7-4728-8189-2463c225a5e7.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/4c387207-f15e-4b8b-a7c9-4081a6122251_cc4fc48c-9c79-4f67-a16b-d8a3946555cc.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Richmond Hill",
    "make": "BMW",
    "mileage_km": 11550,
@@ -1788,7 +1792,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/4c857c77-395b-4217-b9a0-1112fb7904fb_d0adc4fe-8b1e-42bf-80dc-43342b8803ad.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/4c857c77-395b-4217-b9a0-1112fb7904fb_7bfa39cd-9e4d-453d-b147-1b5338d1fb47.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:29:55+00:00",
+   "last_seen": "2026-09-13T20:47:00+00:00",
    "location": "Richmond",
    "make": "BMW",
    "mileage_km": 54691,
@@ -1848,7 +1852,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/55bad2fc-e07e-4fc4-91d5-ddedea6f3dda_90e3a538-db4d-4bbe-b974-8d2253c1be37.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/55bad2fc-e07e-4fc4-91d5-ddedea6f3dda_52a6855b-56a0-42a1-88bb-83e27f260249.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Toronto",
    "make": "BMW",
    "mileage_km": 90,
@@ -1908,7 +1912,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/5c4b2bca-b01b-48b7-a9ac-511647ca007a_8a8bb1e3-8dee-45ad-9d69-f4d2554ea82f.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/5c4b2bca-b01b-48b7-a9ac-511647ca007a_82c12c7c-8806-4b48-b517-9b03024a015c.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:29:55+00:00",
+   "last_seen": "2026-09-13T20:47:00+00:00",
    "location": "Calgary",
    "make": "BMW",
    "mileage_km": 75106,
@@ -1955,7 +1959,7 @@
    "fuel": "Gasoline",
    "id": "60afbe64-8024-41e8-9fcb-79fe330d24d9",
    "images": [],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Maple Ridge",
    "make": "BMW",
    "mileage_km": 25000,
@@ -1998,7 +2002,7 @@
    "fuel": "Gasoline",
    "id": "62962857-839d-47ed-8bdd-ceb3dc6bd648",
    "images": [],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Calgary",
    "make": "BMW",
    "mileage_km": 197576,
@@ -2050,7 +2054,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/63f4a3a4-4b63-4a95-95d8-901493ac7f67_18f3091b-9ac2-42fb-9abf-074042154792.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/63f4a3a4-4b63-4a95-95d8-901493ac7f67_5e7ec906-a83c-4bb4-9c2c-c01c2536779b.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Verdun",
    "make": "BMW",
    "mileage_km": 88000,
@@ -2110,7 +2114,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/65822f57-41b3-47bc-9fb1-772f48335e5a_835f8dad-ad76-40eb-a481-1f9ec7c7c3c7.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/65822f57-41b3-47bc-9fb1-772f48335e5a_98fef097-0570-48a0-886b-076e014d5710.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Coquitlam",
    "make": "BMW",
    "mileage_km": 60515,
@@ -2170,7 +2174,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/65bf42c7-57c9-44a1-b13a-1782a78d07a9_122509f0-35ed-4c67-b8fc-4a4eb8e589ba.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/65bf42c7-57c9-44a1-b13a-1782a78d07a9_ba084493-1041-4385-9648-4754f1782678.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:29:55+00:00",
+   "last_seen": "2026-09-13T20:47:00+00:00",
    "location": "Edmonton",
    "make": "BMW",
    "mileage_km": 72273,
@@ -2233,7 +2237,7 @@
    "location": "Kelowna",
    "make": "BMW",
    "mileage_km": 16366,
-   "misses": 0,
+   "misses": 1,
    "model": "X3",
    "notified": true,
    "price": 69999,
@@ -2288,7 +2292,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/67929fda-dc37-434e-8bb9-890c4e28b21b_15ddfdfb-01b8-40a0-8071-1a3032669e8b.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/67929fda-dc37-434e-8bb9-890c4e28b21b_c10a43ef-d9d1-480d-bdc0-3e4227d79d9f.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Calgary",
    "make": "BMW",
    "mileage_km": 82658,
@@ -2347,7 +2351,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/6a1ea4ec-2585-4f93-9e94-922a3fd656a5_166b2610-afd2-4271-bbeb-6ec2b68d8717.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/6a1ea4ec-2585-4f93-9e94-922a3fd656a5_cea3636a-6599-49a8-b400-5675cc436f9e.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Hamilton",
    "make": "BMW",
    "mileage_km": 90,
@@ -2399,7 +2403,7 @@
    "location": "Montréal",
    "make": "BMW",
    "mileage_km": 90,
-   "misses": 0,
+   "misses": 1,
    "model": "X3",
    "notified": true,
    "price": 80967,
@@ -2455,7 +2459,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/702ed827-8ace-4f5f-8433-12c34895bb84_7a64641e-bbb7-4508-ba92-ae9a31695edc.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/702ed827-8ace-4f5f-8433-12c34895bb84_c84631b5-f1ad-4368-91e5-f722667b7b75.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:29:58+00:00",
+   "last_seen": "2026-09-13T20:47:04+00:00",
    "location": "Vancouver",
    "make": "BMW",
    "mileage_km": 42240,
@@ -2515,7 +2519,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/71babb0c-5055-40c5-80ae-23082a97961e_93f55de2-b759-4c4d-b19d-44aa7ec0b9a4.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/71babb0c-5055-40c5-80ae-23082a97961e_f56934d1-1224-4a42-b12e-545ac3d2762d.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Kitchener",
    "make": "BMW",
    "mileage_km": 22999,
@@ -2562,7 +2566,7 @@
    "fuel": "Gasoline",
    "id": "725203ec-e010-47f9-a43d-f309a69c4c0f",
    "images": [],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Vancouver",
    "make": "BMW",
    "mileage_km": 132986,
@@ -2618,7 +2622,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/7458e16d-dfe4-4a98-b9aa-998a944a7f70_73904eff-b4b3-40d8-a977-47e6d8d5f09c.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/7458e16d-dfe4-4a98-b9aa-998a944a7f70_44a39f8e-bd21-42e8-a767-9bf2c603094a.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:29:55+00:00",
+   "last_seen": "2026-09-13T20:47:00+00:00",
    "location": "Burnaby",
    "make": "BMW",
    "mileage_km": 50122,
@@ -2665,7 +2669,7 @@
    "fuel": "Gasoline",
    "id": "753e1f13-0ef3-405e-b34b-6789c398406c",
    "images": [],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Vancouver",
    "make": "BMW",
    "mileage_km": 74000,
@@ -2718,7 +2722,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/7708d9f2-74b3-40cf-ab8a-9dba0e93b15e_335a41d8-b24e-4153-a287-7653fbc911ec.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/7708d9f2-74b3-40cf-ab8a-9dba0e93b15e_495d0177-c56e-4565-b1f4-85d85f143ddd.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:29:55+00:00",
+   "last_seen": "2026-09-13T20:47:00+00:00",
    "location": "Richmond",
    "make": "BMW",
    "mileage_km": 25000,
@@ -2765,7 +2769,7 @@
    "fuel": "Electric",
    "id": "7ec6475a-10ad-4cce-9666-a87eabb915f9",
    "images": [],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Victoria",
    "make": "BMW",
    "mileage_km": 61345,
@@ -2823,7 +2827,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/87d49039-2e71-4324-b0fd-25b410334dcb_2ab3c589-eb8f-42b7-bdb3-a22d88cb6888.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/87d49039-2e71-4324-b0fd-25b410334dcb_20743bea-10ae-4fc6-969a-7c50fcba3bd7.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Etobicoke",
    "make": "BMW",
    "mileage_km": 191000,
@@ -2873,7 +2877,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/8a83c152-efbb-485f-a022-b82c0acfd94e_216bdcfa-1ee4-4728-9cf3-7d8d995c89ae.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/8a83c152-efbb-485f-a022-b82c0acfd94e_3228f91b-901a-4812-8929-8d33d775b1f6.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Kelowna",
    "make": "BMW",
    "mileage_km": 3366,
@@ -2920,7 +2924,7 @@
    "fuel": "Gasoline",
    "id": "8acef1b9-1f72-44c3-9c9c-f424f69e67dc",
    "images": [],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Vancouver",
    "make": "BMW",
    "mileage_km": 96032,
@@ -2976,7 +2980,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/8b4d47fe-975f-4bf3-affb-c92a5dc4a75a_79fcf7c9-4916-4f43-8618-ffcdfbc239b5.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/8b4d47fe-975f-4bf3-affb-c92a5dc4a75a_10d56ead-0e5a-4869-b329-dc2d6370c422.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:29:55+00:00",
+   "last_seen": "2026-09-13T20:47:00+00:00",
    "location": "Calgary",
    "make": "BMW",
    "mileage_km": 88000,
@@ -3025,11 +3029,11 @@
    "images": [
     "https://prod.pictures.autoscout24.net/listing-images/8bb8cc16-026b-442c-8e2e-1c13ac98f584_dca26f2d-8e69-4d9f-a66d-de2c8566e85e.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T18:55:55+00:00",
+   "last_seen": "2026-09-13T20:47:12+00:00",
    "location": "Montréal",
    "make": "BMW",
    "mileage_km": 90,
-   "misses": 1,
+   "misses": 0,
    "model": "X3",
    "notified": true,
    "price": 71617,
@@ -3072,7 +3076,7 @@
    "fuel": "Gasoline",
    "id": "8fd65ae8-8cdc-47a6-b65a-f1dfa54b0560",
    "images": [],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Saskatoon",
    "make": "BMW",
    "mileage_km": 118265,
@@ -3185,7 +3189,7 @@
    "location": "Montréal",
    "make": "BMW",
    "mileage_km": 90,
-   "misses": 0,
+   "misses": 1,
    "model": "X3",
    "notified": true,
    "price": 80967,
@@ -3228,7 +3232,7 @@
    "fuel": "Gasoline",
    "id": "96440500-dee5-48e0-a248-1a30f0e17eae",
    "images": [],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Kitchener",
    "make": "BMW",
    "mileage_km": 24354,
@@ -3290,7 +3294,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/9b0f9a08-672f-4e62-984d-f6354babcb15_18380d5b-15ff-4063-8798-f3490c919dcb.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/9b0f9a08-672f-4e62-984d-f6354babcb15_3d1f648e-6d36-4dca-bacb-43e7ccec7a50.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Ottawa",
    "make": "BMW",
    "mileage_km": 90,
@@ -3350,7 +3354,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/9f07ac7e-4830-4858-8f1e-50f45a327b67_e0fef666-b724-4fa9-bcb4-2c7a2b70ce01.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/9f07ac7e-4830-4858-8f1e-50f45a327b67_22fd3f18-f113-49c4-bca2-b32cd7d57802.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Markham",
    "make": "BMW",
    "mileage_km": 5882,
@@ -3410,7 +3414,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/ac01f1ee-9ccc-4818-833e-cedad78a646d_af47f67d-4b6a-497a-8b6d-b5a2574b663e.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/ac01f1ee-9ccc-4818-833e-cedad78a646d_28bb1530-4c68-47ca-b525-f4ac67c2024b.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:29:55+00:00",
+   "last_seen": "2026-09-13T20:47:00+00:00",
    "location": "Burnaby",
    "make": "BMW",
    "mileage_km": 78151,
@@ -3470,7 +3474,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/ae11e1e9-d599-4069-b0d5-b7e6e4734af3_2e9bf68c-be29-472c-9a6e-10128c8589b2.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/ae11e1e9-d599-4069-b0d5-b7e6e4734af3_90e6c377-fe36-4801-bd31-37c2ec69f5ec.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Brossard",
    "make": "BMW",
    "mileage_km": 52416,
@@ -3519,7 +3523,7 @@
    "images": [
     "https://prod.pictures.autoscout24.net/listing-images/afb69c99-f976-4932-a721-195acb6e0c23_f95e3c16-83a6-4365-80f2-e4187cabb8d4.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Terrebonne",
    "make": "BMW",
    "mileage_km": 21910,
@@ -3579,7 +3583,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/b13950f2-45c0-4eaa-8801-8530b208afbd_ff59c432-863e-4353-8141-05b9b5bb3add.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/b13950f2-45c0-4eaa-8801-8530b208afbd_cd313c6b-236a-4ed4-bbcb-9524996dfa2a.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Calgary",
    "make": "BMW",
    "mileage_km": 126908,
@@ -3627,11 +3631,11 @@
    "images": [
     "https://prod.pictures.autoscout24.net/listing-images/b305e462-9202-46cc-8caa-a7945a81702f_a2bcaec3-afc1-4120-b1bb-002bf0888621.jpg/1920x1080.jpg"
    ],
-   "last_seen": "2026-09-13T18:55:53+00:00",
+   "last_seen": "2026-09-13T20:47:10+00:00",
    "location": "Vancouver",
    "make": "BMW",
    "mileage_km": 15015,
-   "misses": 1,
+   "misses": 0,
    "model": "M3",
    "notified": true,
    "price": 87900,
@@ -3687,7 +3691,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/b63c09c8-302b-4033-b94e-defc6cd0a109_3d3fc38a-9288-497f-a322-311c7f7d91b1.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/b63c09c8-302b-4033-b94e-defc6cd0a109_aec08a1b-e371-4ae0-a989-81b5d8ac19b2.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Saskatoon",
    "make": "BMW",
    "mileage_km": 70629,
@@ -3736,7 +3740,7 @@
    "images": [
     "https://prod.pictures.autoscout24.net/listing-images/b8092996-cd07-47fc-b34e-88e21c33739a_d6fb9c58-626e-4cec-a52c-93f84aa0f3f2.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Toronto",
    "make": "BMW",
    "mileage_km": 42872,
@@ -3796,7 +3800,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/c39aad61-a0db-4412-87e9-c0dfc4e8d103_f2d47f78-0852-4a60-a29f-9a2e6c00dee1.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/c39aad61-a0db-4412-87e9-c0dfc4e8d103_cd3bfa7a-607a-4361-8b1b-fc2cd2c34ddc.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Calgary",
    "make": "BMW",
    "mileage_km": 62000,
@@ -3856,7 +3860,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/d0cc46ba-e7ba-408e-84fa-1979266f44c1_808202f6-dc89-4413-990a-ec7d08c15250.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/d0cc46ba-e7ba-408e-84fa-1979266f44c1_dc5f9d86-6e6c-4cfa-8eb3-729e8ffd02ce.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Toronto",
    "make": "BMW",
    "mileage_km": 910,
@@ -3916,7 +3920,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/d173bbff-487c-4204-a8e9-7d9ec5b0e745_90004335-976b-435d-bf72-7b121c385358.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/d173bbff-487c-4204-a8e9-7d9ec5b0e745_695180f4-0727-4c3c-852d-b52b3592615b.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:29:58+00:00",
+   "last_seen": "2026-09-13T20:47:04+00:00",
    "location": "Burnaby",
    "make": "BMW",
    "mileage_km": 87500,
@@ -3976,7 +3980,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/d2af069f-4a9e-4fc1-88e0-e285eed4915e_076c7710-f9bc-4409-a727-5e1b0f078cfc.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/d2af069f-4a9e-4fc1-88e0-e285eed4915e_b1e2f3d6-f0a0-464e-ba96-149aa3732ccb.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Newmarket",
    "make": "BMW",
    "mileage_km": 111433,
@@ -4025,7 +4029,7 @@
    "images": [
     "https://prod.pictures.autoscout24.net/listing-images/d8a78d46-6518-46c4-acc7-2265861c1ec6_94b0f439-4290-49f0-97eb-6f1d05fdbcaa.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Mirabel",
    "make": "BMW",
    "mileage_km": 11210,
@@ -4078,7 +4082,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/dbc1a859-f9e3-465c-9659-ce28547df7ff_15a16239-6154-4985-9f32-03d9d95b6a98.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/dbc1a859-f9e3-465c-9659-ce28547df7ff_9d3f889c-8583-468b-87ef-603b8c748524.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:29:58+00:00",
+   "last_seen": "2026-09-13T20:47:04+00:00",
    "location": "Calgary",
    "make": "BMW",
    "mileage_km": 72000,
@@ -4138,7 +4142,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/ddfb39df-6ed7-4649-9936-f942a25e726e_13a3e19f-0c30-4ddc-bc7e-25870f2dda90.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/ddfb39df-6ed7-4649-9936-f942a25e726e_45d531ce-d395-4ac3-b7cc-6bfe5bbb18aa.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Toronto",
    "make": "BMW",
    "mileage_km": 61277,
@@ -4185,7 +4189,7 @@
    "fuel": "Gasoline",
    "id": "de2ee923-e389-468e-8113-30add3d8b77a",
    "images": [],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Edmonton",
    "make": "BMW",
    "mileage_km": 86769,
@@ -4226,14 +4230,25 @@
    "engine": "",
    "enriched": true,
    "filter_reason": "year 2023 above maximum 2020",
+   "filter_rule": "max_year",
    "filtered": true,
    "first_seen": "2026-09-13T05:45:04+00:00",
    "fuel": "Gasoline",
    "id": "e3677b17-8f46-4347-b803-0ff234236b5e",
    "images": [
-    "https://prod.pictures.autoscout24.net/listing-images/e3677b17-8f46-4347-b803-0ff234236b5e_9426b1d1-15f7-4999-b2a5-acea00d1f27b.jpg/1920x1080.jpg"
+    "https://prod.pictures.autoscout24.net/listing-images/e3677b17-8f46-4347-b803-0ff234236b5e_9426b1d1-15f7-4999-b2a5-acea00d1f27b.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/e3677b17-8f46-4347-b803-0ff234236b5e_93785332-ef87-4e56-93a6-aa9c08c5221a.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/e3677b17-8f46-4347-b803-0ff234236b5e_57a5220d-b940-4785-bd74-568dfd9413e6.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/e3677b17-8f46-4347-b803-0ff234236b5e_10a8ed6f-6b69-4555-b72c-02e5cf5f494b.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/e3677b17-8f46-4347-b803-0ff234236b5e_9b55bc6c-0158-4258-a90d-4a56a60a6107.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/e3677b17-8f46-4347-b803-0ff234236b5e_a9b4cbdd-d0e8-4bd5-9f88-16fefe3ddffc.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/e3677b17-8f46-4347-b803-0ff234236b5e_b0e08346-0c00-4598-a9cb-02ea464dc779.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/e3677b17-8f46-4347-b803-0ff234236b5e_22c987d9-a88e-4846-9516-fc56801f3e84.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/e3677b17-8f46-4347-b803-0ff234236b5e_1d54b3b1-974f-4802-9573-a6044ab98afe.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/e3677b17-8f46-4347-b803-0ff234236b5e_e431bd61-aa57-46d5-85c0-b62ee55785d7.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/e3677b17-8f46-4347-b803-0ff234236b5e_45a0c30d-bee0-4458-93ab-cfb6f6366e41.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:12+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Vancouver",
    "make": "BMW",
    "mileage_km": 32000,
@@ -4257,7 +4272,7 @@
    "shortlisted": false,
    "source": "embedded_json",
    "status": "active",
-   "title": "BMW X3",
+   "title": "AutoTrader listing e3677b17-8f46-4347-b803-0ff234236b5e",
    "transmission": "Automatic",
    "trim": "xDrive30i - Premium Enhanced Package, No Accidents",
    "unpriced": false,
@@ -4293,7 +4308,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/e72e211c-4381-42b2-adf1-26a481d8f445_351d08ad-3deb-43b5-8fe8-c80ed2effbff.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/e72e211c-4381-42b2-adf1-26a481d8f445_b34c946a-5427-4443-a6d3-8e393475aee4.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Edmonton",
    "make": "BMW",
    "mileage_km": 23054,
@@ -4353,7 +4368,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/e85a4397-e4e8-4643-ac35-67934e47d639_7c32f6a1-3888-4999-bcf6-0f16c9de2f40.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/e85a4397-e4e8-4643-ac35-67934e47d639_52dbc9ef-2893-4329-92c9-9c0e878a1b3f.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Scarborough",
    "make": "BMW",
    "mileage_km": 35226,
@@ -4413,7 +4428,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/e896a563-135e-46ca-94a2-7ede541c1510_389e501f-5222-4ccc-9e90-97ff131b815e.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/e896a563-135e-46ca-94a2-7ede541c1510_50105ef0-0061-4035-9711-ae27c0d3113a.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:29:55+00:00",
+   "last_seen": "2026-09-13T20:47:00+00:00",
    "location": "Calgary",
    "make": "BMW",
    "mileage_km": 64516,
@@ -4464,7 +4479,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/eabce0ca-e8c9-4f38-9671-0785293e8dfe_521752b9-9e2a-427e-ad71-d3560e6daadf.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/eabce0ca-e8c9-4f38-9671-0785293e8dfe_3f42bb0f-d781-4ceb-a5f3-296dc7cd8716.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Dorval",
    "make": "BMW",
    "mileage_km": 90,
@@ -4513,7 +4528,7 @@
    "images": [
     "https://prod.pictures.autoscout24.net/listing-images/ece4e94d-0931-4b26-85cf-03d9eea108b2_47d07eb4-511a-47d4-978b-2d8895bd5f37.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Toronto",
    "make": "BMW",
    "mileage_km": 65661,
@@ -4562,7 +4577,7 @@
    "images": [
     "https://prod.pictures.autoscout24.net/listing-images/ed984c47-9932-4c81-b30f-b7951d7b4b27_8a259762-efeb-4837-aecd-f42d26864831.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "St. Catharines",
    "make": "BMW",
    "mileage_km": 43620,
@@ -4611,7 +4626,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/f049e449-390d-4298-999a-afa12e07cbc5_7d1456c2-13cb-4139-86c2-60587198ecef.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/f049e449-390d-4298-999a-afa12e07cbc5_aed7567c-510c-41be-b244-cca553f6e366.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:29:55+00:00",
+   "last_seen": "2026-09-13T20:47:00+00:00",
    "location": "Calgary",
    "make": "BMW",
    "mileage_km": 49000,
@@ -4658,7 +4673,7 @@
    "fuel": "Gasoline",
    "id": "f172f1da-8e74-43e7-a94e-63a31651abb1",
    "images": [],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Edmonton",
    "make": "BMW",
    "mileage_km": 18,
@@ -4718,7 +4733,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/f3c155d2-e6bc-4031-af60-67cf771be01b_ad53820a-15fa-4c12-a0f6-025007d6f78f.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/f3c155d2-e6bc-4031-af60-67cf771be01b_7888ceaa-c5ca-46be-8181-c6a645b0d142.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Cambridge",
    "make": "BMW",
    "mileage_km": 125800,
@@ -4781,7 +4796,7 @@
    "location": "Ottawa",
    "make": "BMW",
    "mileage_km": 90,
-   "misses": 0,
+   "misses": 1,
    "model": "M4",
    "notified": true,
    "price": 143410,
@@ -4826,7 +4841,7 @@
    "images": [
     "https://prod.pictures.autoscout24.net/listing-images/fd3d3102-426e-478f-8067-a4597043af59_1a4ad5e9-e853-413f-a839-7a809111171a.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Montréal",
    "make": "BMW",
    "mileage_km": 5475,
@@ -4886,7 +4901,7 @@
     "https://prod.pictures.autoscout24.net/listing-images/fda32959-1658-4085-8a83-7edcf9c2d7c3_d5a79b15-6892-46eb-a283-7cdfea1c4bf9.jpg/250x188.webp",
     "https://prod.pictures.autoscout24.net/listing-images/fda32959-1658-4085-8a83-7edcf9c2d7c3_69dfbc18-c81b-4d06-a6c4-f18e084e0459.jpg/250x188.webp"
    ],
-   "last_seen": "2026-09-13T20:29:58+00:00",
+   "last_seen": "2026-09-13T20:47:04+00:00",
    "location": "Vancouver",
    "make": "BMW",
    "mileage_km": 48090,
@@ -4933,7 +4948,7 @@
    "fuel": "Gasoline",
    "id": "fdd8d29e-5a6d-4964-a4a6-03db3cb9192b",
    "images": [],
-   "last_seen": "2026-09-13T20:30:02+00:00",
+   "last_seen": "2026-09-13T20:47:08+00:00",
    "location": "Ottawa",
    "make": "BMW",
    "mileage_km": 47646,
@@ -4964,9 +4979,63 @@
  },
  "ntfy_topic": "autotrader-2q592ak9gnx7sqrere5r",
  "repo": {
+  "runner": "ubuntu-latest",
   "visibility": "public"
  },
  "runs": [
+  {
+   "at": "2026-09-13T20:47:12+00:00",
+   "baselines": [],
+   "budget_exhausted": false,
+   "diagnostics": [],
+   "disabled_channels": [],
+   "dry_run": false,
+   "duration_s": 14.0,
+   "empty_parses": [],
+   "errors": [],
+   "filtered_out": 53,
+   "first_run": false,
+   "hidden_events": {},
+   "invariants": [],
+   "listings_seen": 81,
+   "minutes": 1.0,
+   "minutes_label": "exempt",
+   "missed_by": 0,
+   "new": 0,
+   "notified": [],
+   "ok": true,
+   "photos": {
+    "bytes": 1352158,
+    "failed": 0,
+    "fetched": 0,
+    "kept": 25,
+    "pruned": 0,
+    "samples": []
+   },
+   "price_drops": 0,
+   "price_rises": 0,
+   "priced": 0,
+   "qualified": 0,
+   "quiet": false,
+   "relisted": 0,
+   "removed": 0,
+   "requests_made": 8,
+   "searches_failed": 0,
+   "searches_run": 3,
+   "shape_drift": [],
+   "shut_out": [],
+   "skipped": false,
+   "strategies": {
+    "bmw-m3-2015-2020-f80-7e1845": "embedded_json",
+    "bmw-m4-up-to-2020-f82-fc136e": "embedded_json",
+    "bmw-x3-m-up-to-2020-f97-7d9aaf": "embedded_json"
+   },
+   "trigger": "push",
+   "unpriced": 0,
+   "validation_ok": true,
+   "warnings": [],
+   "your_call": 0
+  },
   {
    "at": "2026-09-13T20:30:12+00:00",
    "baselines": [],
@@ -8441,109 +8510,6 @@
     "BMW M5 bargains (any year): what this search covers has changed, so what it finds now is being recorded as a starting point rather than announced as new."
    ],
    "your_call": 0
-  },
-  {
-   "at": "2026-09-12T09:03:26+00:00",
-   "baselines": [],
-   "budget_exhausted": false,
-   "diagnostics": [],
-   "disabled_channels": [],
-   "dry_run": false,
-   "duration_s": 70.5,
-   "empty_parses": [],
-   "errors": [],
-   "filtered_out": 125,
-   "first_run": false,
-   "hidden_events": {},
-   "invariants": [],
-   "listings_seen": 210,
-   "missed_by": 0,
-   "new": 0,
-   "notified": [
-    "ntfy: sent - 1 change(s)"
-   ],
-   "ok": true,
-   "photos": {
-    "bytes": 298322,
-    "failed": 0,
-    "fetched": 24,
-    "kept": 48,
-    "pruned": 0,
-    "samples": [
-     {
-      "bytes": 5730,
-      "h": 166,
-      "status": 200,
-      "type": "image/webp",
-      "url": "https://prod.pictures.autoscout24.net/listing-images/6dc0a009-ffac-4b3b-865e-eb307a562d16_2a44dff2-9c46-4293-8173-4b2682",
-      "w": 250
-     },
-     {
-      "bytes": 7950,
-      "h": 187,
-      "status": 200,
-      "type": "image/webp",
-      "url": "https://prod.pictures.autoscout24.net/listing-images/74607df9-6cd7-486d-8107-1487b52b4adb_a38c55d8-54c8-4970-94fd-692162",
-      "w": 250
-     },
-     {
-      "bytes": 8208,
-      "h": 187,
-      "status": 200,
-      "type": "image/webp",
-      "url": "https://prod.pictures.autoscout24.net/listing-images/7552233c-e1bf-4db1-94bd-f1b1c2c29fbc_88b49356-9679-4269-a0f9-ec12cb",
-      "w": 250
-     },
-     {
-      "bytes": 8278,
-      "h": 187,
-      "status": 200,
-      "type": "image/webp",
-      "url": "https://prod.pictures.autoscout24.net/listing-images/7f457c20-0e09-48ec-ac50-460f74afa50f_b4504f8c-cbb6-4fbf-8954-3d8a02",
-      "w": 250
-     },
-     {
-      "bytes": 6504,
-      "h": 187,
-      "status": 200,
-      "type": "image/webp",
-      "url": "https://prod.pictures.autoscout24.net/listing-images/8020672f-eb12-4565-88c5-2b3fb7164c3c_142d3e83-8120-4bc2-b48c-4763b6",
-      "w": 250
-     },
-     {
-      "bytes": 4336,
-      "h": 187,
-      "status": 200,
-      "type": "image/webp",
-      "url": "https://prod.pictures.autoscout24.net/listing-images/86638d47-8aea-479d-abaa-0222ea7f5f7a_a8741409-8c42-4fb4-a0e5-ee5796",
-      "w": 250
-     }
-    ]
-   },
-   "price_drops": 0,
-   "price_rises": 0,
-   "priced": 0,
-   "quiet": false,
-   "relisted": 0,
-   "removed": 1,
-   "requests_made": 37,
-   "searches_failed": 0,
-   "searches_run": 2,
-   "shape_drift": [],
-   "shut_out": [
-    "2021-2023 BMW M5"
-   ],
-   "skipped": false,
-   "strategies": {
-    "2021-2023-bmw-m5-310324": "embedded_json",
-    "bmw-m5-bargains-any-year-f2f097": "jsonld"
-   },
-   "unpriced": 1,
-   "validation_ok": true,
-   "warnings": [
-    "2021-2023 BMW M5: read 19 listing(s) and none passed your rules for it (12 too far away, 7 outside the year range). It is working - it just has nothing to show you."
-   ],
-   "your_call": 0
   }
  ],
  "schedule": {
@@ -8557,7 +8523,7 @@
    "first_ok": "2026-09-13T05:40:00+00:00",
    "last_count": 24,
    "last_error": null,
-   "last_ok": "2026-09-13T20:29:58+00:00",
+   "last_ok": "2026-09-13T20:47:04+00:00",
    "last_strategy": "embedded_json",
    "scope": "1602cd96f862abe2",
    "shape": {
@@ -8592,7 +8558,7 @@
    "first_ok": "2026-09-13T05:40:00+00:00",
    "last_count": 32,
    "last_error": null,
-   "last_ok": "2026-09-13T20:29:55+00:00",
+   "last_ok": "2026-09-13T20:47:00+00:00",
    "last_strategy": "embedded_json",
    "scope": "06b2f067d2f6203c",
    "shape": {
@@ -8627,7 +8593,7 @@
    "first_ok": "2026-09-13T05:40:00+00:00",
    "last_count": 25,
    "last_error": null,
-   "last_ok": "2026-09-13T20:30:02+00:00",
+   "last_ok": "2026-09-13T20:47:08+00:00",
    "last_strategy": "embedded_json",
    "scope": "a96edd25d87f323c",
    "shape": {
@@ -8658,7 +8624,7 @@
    }
   }
  },
- "updated_at": "2026-09-13T20:30:12+00:00",
+ "updated_at": "2026-09-13T20:47:12+00:00",
  "version": 2,
  "watch_started": "2026-09-09T20:55:29+00:00"
 }
