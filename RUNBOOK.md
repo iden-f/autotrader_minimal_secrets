@@ -126,8 +126,12 @@ a narrow search. The warning says which.
 **How you know**: Status says something like "35% — 17 of 48 half-hours had a
 check", and "When it checked" is mostly grey.
 
-This is the normal state of affairs, not a fault. It matters because a car can
-be listed and sold inside a three-hour gap.
+**This is no longer normal, and it used to be.** With the three pacemakers
+running in separate concurrency groups, measured coverage is 100% — every
+half-hour slot served, longest gap 34 minutes. If you are seeing thin
+coverage, something below is wrong rather than "GitHub being GitHub".
+
+It matters because a car can be listed and sold inside a three-hour gap.
 
 **Levers, in order of how much they help:**
 
@@ -143,7 +147,13 @@ be listed and sold inside a three-hour gap.
    missing.
 3. Push to the repository occasionally. GitHub deprioritises schedules in
    quiet repositories and eventually disables them.
-4. Accept it. This is free compute on someone else's machines.
+4. Check `health.min_interval_minutes` in **config.json**, not just the
+   default in `config.py`. config.json is written once at setup and then owns
+   its own copy, so changing the default does nothing to a bot that is
+   already running. If it is much lower than `expected_interval_minutes`, the
+   pacemakers will check far more often than you asked - which is load on
+   somebody else's site, not just yours.
+5. Accept what is left. This is free compute on someone else's machines.
 
 ---
 

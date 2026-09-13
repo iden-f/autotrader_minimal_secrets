@@ -193,8 +193,14 @@ and it works.
 
 GitHub drops scheduled runs under load — heavily. A `*/30` cron does not run
 every thirty minutes; measured here, roughly one slot in seven is served, and
-gaps of several hours are normal. That is the single biggest limit on this
-bot and no amount of code fixes it.
+gaps of several hours are normal.
+
+That was the single biggest limit on this bot, and the pacemakers now work
+around it almost completely: measured over the six hours after they were
+fixed, **every one of 48 half-hour slots was served, longest gap 34 minutes**,
+against 41.7% before. The cron slots are still being dropped at the same rate;
+what changed is that a firing which *is* served now buys five hours of
+timekeeping instead of being cancelled by its siblings.
 
 What helps: **more independent chances to be served.** Three pacemaker
 workflows sit on three unrelated sets of minutes, each in **its own
