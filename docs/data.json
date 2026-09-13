@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-09-13T08:52:01+00:00",
+ "generated_at": "2026-09-13T08:54:46+00:00",
  "notify": {
   "ntfy_topic": "autotrader-2q592ak9gnx7sqrere5r",
   "ntfy_url": "https://ntfy.sh/autotrader-2q592ak9gnx7sqrere5r",
@@ -44,7 +44,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-13T08:36:17+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [],
    "price_source": "",
@@ -86,7 +86,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-13T08:36:17+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [],
    "price_source": "",
@@ -128,7 +128,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -188,7 +188,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -208,7 +208,9 @@
    "photo_count": 12,
    "thumb": "thumbs/c39aad61-a0db-4412-87e9-c0dfc4e8d103.webp",
    "thumbs": [
-    "thumbs/c39aad61-a0db-4412-87e9-c0dfc4e8d103.webp"
+    "thumbs/c39aad61-a0db-4412-87e9-c0dfc4e8d103.webp",
+    "thumbs/c39aad61-a0db-4412-87e9-c0dfc4e8d103-1.webp",
+    "thumbs/c39aad61-a0db-4412-87e9-c0dfc4e8d103-2.webp"
    ],
    "per_1000km": 1112.9,
    "days_listed": 0,
@@ -252,7 +254,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -272,7 +274,9 @@
    "photo_count": 12,
    "thumb": "thumbs/b13950f2-45c0-4eaa-8801-8530b208afbd.webp",
    "thumbs": [
-    "thumbs/b13950f2-45c0-4eaa-8801-8530b208afbd.webp"
+    "thumbs/b13950f2-45c0-4eaa-8801-8530b208afbd.webp",
+    "thumbs/b13950f2-45c0-4eaa-8801-8530b208afbd-1.webp",
+    "thumbs/b13950f2-45c0-4eaa-8801-8530b208afbd-2.webp"
    ],
    "per_1000km": 375.1,
    "days_listed": 0,
@@ -316,7 +320,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -382,7 +386,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -442,7 +446,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -508,7 +512,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T05:39:11+00:00",
-   "last_seen": "2026-09-13T08:36:04+00:00",
+   "last_seen": "2026-09-13T08:53:47+00:00",
    "status": "active",
    "price_history": [
     {
@@ -565,7 +569,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T05:39:11+00:00",
-   "last_seen": "2026-09-13T08:36:04+00:00",
+   "last_seen": "2026-09-13T08:53:47+00:00",
    "status": "active",
    "price_history": [
     {
@@ -585,7 +589,9 @@
    "photo_count": 5,
    "thumb": "thumbs/dbc1a859-f9e3-465c-9659-ce28547df7ff.webp",
    "thumbs": [
-    "thumbs/dbc1a859-f9e3-465c-9659-ce28547df7ff.webp"
+    "thumbs/dbc1a859-f9e3-465c-9659-ce28547df7ff.webp",
+    "thumbs/dbc1a859-f9e3-465c-9659-ce28547df7ff-1.webp",
+    "thumbs/dbc1a859-f9e3-465c-9659-ce28547df7ff-2.webp"
    ],
    "per_1000km": 1041.7,
    "days_listed": 0,
@@ -629,7 +635,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T05:39:11+00:00",
-   "last_seen": "2026-09-13T08:36:04+00:00",
+   "last_seen": "2026-09-13T08:53:47+00:00",
    "status": "active",
    "price_history": [
     {
@@ -649,7 +655,9 @@
    "photo_count": 12,
    "thumb": "thumbs/d173bbff-487c-4204-a8e9-7d9ec5b0e745.webp",
    "thumbs": [
-    "thumbs/d173bbff-487c-4204-a8e9-7d9ec5b0e745.webp"
+    "thumbs/d173bbff-487c-4204-a8e9-7d9ec5b0e745.webp",
+    "thumbs/d173bbff-487c-4204-a8e9-7d9ec5b0e745-1.webp",
+    "thumbs/d173bbff-487c-4204-a8e9-7d9ec5b0e745-2.webp"
    ],
    "per_1000km": 604.6,
    "days_listed": 0,
@@ -693,7 +701,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T05:39:11+00:00",
-   "last_seen": "2026-09-13T08:36:04+00:00",
+   "last_seen": "2026-09-13T08:53:47+00:00",
    "status": "active",
    "price_history": [
     {
@@ -713,7 +721,9 @@
    "photo_count": 12,
    "thumb": "thumbs/702ed827-8ace-4f5f-8433-12c34895bb84.webp",
    "thumbs": [
-    "thumbs/702ed827-8ace-4f5f-8433-12c34895bb84.webp"
+    "thumbs/702ed827-8ace-4f5f-8433-12c34895bb84.webp",
+    "thumbs/702ed827-8ace-4f5f-8433-12c34895bb84-1.webp",
+    "thumbs/702ed827-8ace-4f5f-8433-12c34895bb84-2.webp"
    ],
    "per_1000km": 2232.5,
    "days_listed": 0,
@@ -752,7 +762,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T05:39:11+00:00",
-   "last_seen": "2026-09-13T08:36:04+00:00",
+   "last_seen": "2026-09-13T08:53:47+00:00",
    "status": "active",
    "price_history": [
     {
@@ -811,7 +821,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:38:24+00:00",
-   "last_seen": "2026-09-13T08:35:58+00:00",
+   "last_seen": "2026-09-13T08:53:43+00:00",
    "status": "active",
    "price_history": [
     {
@@ -831,7 +841,9 @@
    "photo_count": 5,
    "thumb": "thumbs/f049e449-390d-4298-999a-afa12e07cbc5.webp",
    "thumbs": [
-    "thumbs/f049e449-390d-4298-999a-afa12e07cbc5.webp"
+    "thumbs/f049e449-390d-4298-999a-afa12e07cbc5.webp",
+    "thumbs/f049e449-390d-4298-999a-afa12e07cbc5-1.webp",
+    "thumbs/f049e449-390d-4298-999a-afa12e07cbc5-2.webp"
    ],
    "per_1000km": 1408.2,
    "days_listed": 0,
@@ -875,7 +887,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:38:24+00:00",
-   "last_seen": "2026-09-13T08:35:58+00:00",
+   "last_seen": "2026-09-13T08:53:43+00:00",
    "status": "active",
    "price_history": [
     {
@@ -895,7 +907,9 @@
    "photo_count": 12,
    "thumb": "thumbs/e896a563-135e-46ca-94a2-7ede541c1510.webp",
    "thumbs": [
-    "thumbs/e896a563-135e-46ca-94a2-7ede541c1510.webp"
+    "thumbs/e896a563-135e-46ca-94a2-7ede541c1510.webp",
+    "thumbs/e896a563-135e-46ca-94a2-7ede541c1510-1.webp",
+    "thumbs/e896a563-135e-46ca-94a2-7ede541c1510-2.webp"
    ],
    "per_1000km": 728.4,
    "days_listed": 0,
@@ -939,7 +953,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:38:24+00:00",
-   "last_seen": "2026-09-13T08:35:58+00:00",
+   "last_seen": "2026-09-13T08:53:43+00:00",
    "status": "active",
    "price_history": [
     {
@@ -959,7 +973,9 @@
    "photo_count": 12,
    "thumb": "thumbs/ac01f1ee-9ccc-4818-833e-cedad78a646d.webp",
    "thumbs": [
-    "thumbs/ac01f1ee-9ccc-4818-833e-cedad78a646d.webp"
+    "thumbs/ac01f1ee-9ccc-4818-833e-cedad78a646d.webp",
+    "thumbs/ac01f1ee-9ccc-4818-833e-cedad78a646d-1.webp",
+    "thumbs/ac01f1ee-9ccc-4818-833e-cedad78a646d-2.webp"
    ],
    "per_1000km": 625.6,
    "days_listed": 0,
@@ -1003,7 +1019,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:38:24+00:00",
-   "last_seen": "2026-09-13T08:35:58+00:00",
+   "last_seen": "2026-09-13T08:53:43+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1023,7 +1039,9 @@
    "photo_count": 12,
    "thumb": "thumbs/8b4d47fe-975f-4bf3-affb-c92a5dc4a75a.webp",
    "thumbs": [
-    "thumbs/8b4d47fe-975f-4bf3-affb-c92a5dc4a75a.webp"
+    "thumbs/8b4d47fe-975f-4bf3-affb-c92a5dc4a75a.webp",
+    "thumbs/8b4d47fe-975f-4bf3-affb-c92a5dc4a75a-1.webp",
+    "thumbs/8b4d47fe-975f-4bf3-affb-c92a5dc4a75a-2.webp"
    ],
    "per_1000km": 545.5,
    "days_listed": 0,
@@ -1064,7 +1082,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:38:24+00:00",
-   "last_seen": "2026-09-13T08:35:58+00:00",
+   "last_seen": "2026-09-13T08:53:43+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1084,7 +1102,9 @@
    "photo_count": 9,
    "thumb": "thumbs/7708d9f2-74b3-40cf-ab8a-9dba0e93b15e.webp",
    "thumbs": [
-    "thumbs/7708d9f2-74b3-40cf-ab8a-9dba0e93b15e.webp"
+    "thumbs/7708d9f2-74b3-40cf-ab8a-9dba0e93b15e.webp",
+    "thumbs/7708d9f2-74b3-40cf-ab8a-9dba0e93b15e-1.webp",
+    "thumbs/7708d9f2-74b3-40cf-ab8a-9dba0e93b15e-2.webp"
    ],
    "per_1000km": 2396.0,
    "days_listed": 0,
@@ -1128,7 +1148,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:38:24+00:00",
-   "last_seen": "2026-09-13T08:35:58+00:00",
+   "last_seen": "2026-09-13T08:53:43+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1148,7 +1168,9 @@
    "photo_count": 12,
    "thumb": "thumbs/7458e16d-dfe4-4a98-b9aa-998a944a7f70.webp",
    "thumbs": [
-    "thumbs/7458e16d-dfe4-4a98-b9aa-998a944a7f70.webp"
+    "thumbs/7458e16d-dfe4-4a98-b9aa-998a944a7f70.webp",
+    "thumbs/7458e16d-dfe4-4a98-b9aa-998a944a7f70-1.webp",
+    "thumbs/7458e16d-dfe4-4a98-b9aa-998a944a7f70-2.webp"
    ],
    "per_1000km": 1286.8,
    "days_listed": 0,
@@ -1192,7 +1214,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:38:24+00:00",
-   "last_seen": "2026-09-13T08:35:58+00:00",
+   "last_seen": "2026-09-13T08:53:43+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1212,7 +1234,9 @@
    "photo_count": 12,
    "thumb": "thumbs/65bf42c7-57c9-44a1-b13a-1782a78d07a9.webp",
    "thumbs": [
-    "thumbs/65bf42c7-57c9-44a1-b13a-1782a78d07a9.webp"
+    "thumbs/65bf42c7-57c9-44a1-b13a-1782a78d07a9.webp",
+    "thumbs/65bf42c7-57c9-44a1-b13a-1782a78d07a9-1.webp",
+    "thumbs/65bf42c7-57c9-44a1-b13a-1782a78d07a9-2.webp"
    ],
    "per_1000km": 1008.8,
    "days_listed": 0,
@@ -1256,7 +1280,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:38:24+00:00",
-   "last_seen": "2026-09-13T08:35:58+00:00",
+   "last_seen": "2026-09-13T08:53:43+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1322,7 +1346,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:38:24+00:00",
-   "last_seen": "2026-09-13T08:35:58+00:00",
+   "last_seen": "2026-09-13T08:53:43+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1388,7 +1412,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:38:24+00:00",
-   "last_seen": "2026-09-13T08:35:58+00:00",
+   "last_seen": "2026-09-13T08:53:43+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1454,7 +1478,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:38:24+00:00",
-   "last_seen": "2026-09-13T08:35:58+00:00",
+   "last_seen": "2026-09-13T08:53:43+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1520,7 +1544,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:38:24+00:00",
-   "last_seen": "2026-09-13T08:35:58+00:00",
+   "last_seen": "2026-09-13T08:53:43+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1586,7 +1610,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:38:24+00:00",
-   "last_seen": "2026-09-13T08:35:58+00:00",
+   "last_seen": "2026-09-13T08:53:43+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1652,7 +1676,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:38:24+00:00",
-   "last_seen": "2026-09-13T08:35:58+00:00",
+   "last_seen": "2026-09-13T08:53:43+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1712,7 +1736,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:38:24+00:00",
-   "last_seen": "2026-09-13T08:35:58+00:00",
+   "last_seen": "2026-09-13T08:53:43+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1764,7 +1788,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-13T08:36:17+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [],
    "price_source": "",
@@ -1785,7 +1809,7 @@
   {
    "id": "8a83c152-efbb-485f-a022-b82c0acfd94e",
    "url": "https://www.autotrader.ca/offers/bmw-m4-competition-gasoline-blue-cat_ma13gr202608va306mt13041tr17955-8a83c152-efbb-485f-a022-b82c0acfd94e",
-   "title": "2026 BMW M4",
+   "title": "2026 BMW M4 Competition",
    "year": 2026,
    "make": "BMW",
    "model": "M4",
@@ -1805,7 +1829,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T08:36:17+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1822,7 +1846,7 @@
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
-   "photo_count": 1,
+   "photo_count": 2,
    "per_1000km": null,
    "days_listed": 0,
    "distance_km": 270,
@@ -1831,7 +1855,7 @@
   {
    "id": "3ae69fb7-f6f7-47ed-952e-8784cb844a3a",
    "url": "https://www.autotrader.ca/offers/bmw-m3-one-owner-fully-dealer-serviced-paid-future-maint-gasoline-blue-cat_ma13gr202607va3047-3ae69fb7-f6f7-47ed-952e-8784cb844a3a",
-   "title": "2016 BMW M3",
+   "title": "2016 BMW M3 one owner fully dealer serviced",
    "year": 2016,
    "make": "BMW",
    "model": "M3",
@@ -1851,7 +1875,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T08:36:17+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1868,7 +1892,7 @@
    "seller_type": "private",
    "quiet_reason": "hidden by your rules: Maple, ON is beyond the 1,000 km you asked for around Vancouver, BC",
    "is_new": false,
-   "photo_count": 1,
+   "photo_count": 12,
    "per_1000km": 289.0,
    "days_listed": 0
   },
@@ -1895,7 +1919,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-13T08:36:17+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [],
    "price_source": "",
@@ -1949,7 +1973,7 @@
    "filter_reason": "year 2024 above maximum 2020",
    "unpriced": false,
    "enriched": true,
-   "misses": 0,
+   "misses": 1,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2024 above maximum 2020",
    "is_new": false,
@@ -1982,7 +2006,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-13T05:45:04+00:00",
-   "last_seen": "2026-09-13T06:40:23+00:00",
+   "last_seen": "2026-09-13T08:54:09+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1995,7 +2019,7 @@
    "filter_reason": "year 2023 above maximum 2020",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 0,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2023 above maximum 2020",
    "is_new": false,
@@ -2028,7 +2052,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [],
    "price_source": "",
@@ -2069,7 +2093,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2115,7 +2139,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T06:40:21+00:00",
+   "last_seen": "2026-09-13T08:53:58+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2128,7 +2152,7 @@
    "filter_reason": "year 2027 above maximum 2020",
    "unpriced": false,
    "enriched": false,
-   "misses": 1,
+   "misses": 0,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2027 above maximum 2020",
    "is_new": false,
@@ -2161,7 +2185,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2207,7 +2231,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2253,7 +2277,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [],
    "price_source": "",
@@ -2294,7 +2318,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2340,7 +2364,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2386,7 +2410,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2432,7 +2456,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T06:40:21+00:00",
+   "last_seen": "2026-09-13T08:54:00+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2445,7 +2469,7 @@
    "filter_reason": "year 2024 above maximum 2020",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 0,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2024 above maximum 2020",
    "is_new": false,
@@ -2478,7 +2502,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2524,7 +2548,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2570,7 +2594,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2616,7 +2640,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2662,7 +2686,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2708,7 +2732,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2754,7 +2778,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2800,7 +2824,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2846,7 +2870,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2892,7 +2916,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2938,7 +2962,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2985,7 +3009,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T06:40:21+00:00",
+   "last_seen": "2026-09-13T08:54:07+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2998,7 +3022,7 @@
    "filter_reason": "year 2026 above maximum 2020",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 0,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
@@ -3031,7 +3055,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3077,7 +3101,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3123,7 +3147,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3169,7 +3193,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3215,7 +3239,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3261,7 +3285,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [],
    "price_source": "",
@@ -3302,7 +3326,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3348,7 +3372,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T06:40:21+00:00",
+   "last_seen": "2026-09-13T08:54:06+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3361,7 +3385,7 @@
    "filter_reason": "year 2026 above maximum 2020",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 0,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
@@ -3394,7 +3418,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3440,7 +3464,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3486,7 +3510,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3532,7 +3556,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3578,7 +3602,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3622,7 +3646,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [],
    "price_source": "",
@@ -3663,7 +3687,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3709,7 +3733,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3755,7 +3779,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3801,7 +3825,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3847,7 +3871,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3893,7 +3917,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3939,7 +3963,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3985,7 +4009,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -4031,7 +4055,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -4077,7 +4101,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T06:40:21+00:00",
+   "last_seen": "2026-09-13T08:54:04+00:00",
    "status": "active",
    "price_history": [
     {
@@ -4090,7 +4114,7 @@
    "filter_reason": "year 2026 above maximum 2020",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 0,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
@@ -4123,7 +4147,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -4169,7 +4193,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -4215,7 +4239,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -4261,7 +4285,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -4307,7 +4331,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -4353,7 +4377,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -4399,7 +4423,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T06:40:21+00:00",
+   "last_seen": "2026-09-13T08:54:02+00:00",
    "status": "active",
    "price_history": [
     {
@@ -4412,7 +4436,7 @@
    "filter_reason": "year 2026 above maximum 2020",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 0,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
@@ -4445,7 +4469,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -4491,7 +4515,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-13T08:36:17+00:00",
+   "last_seen": "2026-09-13T08:53:57+00:00",
    "status": "active",
    "price_history": [
     {
@@ -4548,7 +4572,7 @@
     ]
    },
    "health": {
-    "last_ok": "2026-09-13T08:35:56+00:00",
+    "last_ok": "2026-09-13T08:53:43+00:00",
     "last_error": null,
     "last_count": 32,
     "last_strategy": "embedded_json",
@@ -4584,30 +4608,30 @@
     "text": "within 1,000 km of Vancouver, BC"
    },
    "shape": {
-    "bytes": "lots",
-    "listing_count": 32,
-    "markers": {
-     "data_listing_id": "none",
-     "initial_state": "none",
-     "json_ld": "few",
-     "legacy_links": "none",
-     "next_data": "few",
-     "offer_links": "many",
-     "vehicle_cdn": "lots"
-    },
-    "scores": {
-     "anchors": 15,
-     "embedded_json": 32,
-     "jsonld": 15,
-     "regex": 32
-    },
     "strategy": "embedded_json",
     "working": [
      "anchors",
      "embedded_json",
      "jsonld",
      "regex"
-    ]
+    ],
+    "scores": {
+     "jsonld": 15,
+     "embedded_json": 32,
+     "anchors": 15,
+     "regex": 32
+    },
+    "listing_count": 32,
+    "markers": {
+     "json_ld": "few",
+     "next_data": "few",
+     "initial_state": "none",
+     "offer_links": "many",
+     "legacy_links": "none",
+     "data_listing_id": "none",
+     "vehicle_cdn": "lots"
+    },
+    "bytes": "lots"
    }
   },
   {
@@ -4641,7 +4665,7 @@
     ]
    },
    "health": {
-    "last_ok": "2026-09-13T08:36:02+00:00",
+    "last_ok": "2026-09-13T08:53:47+00:00",
     "last_error": null,
     "last_count": 24,
     "last_strategy": "embedded_json",
@@ -4678,30 +4702,30 @@
     "text": "within 1,000 km of Vancouver, BC"
    },
    "shape": {
-    "bytes": "lots",
-    "listing_count": 24,
-    "markers": {
-     "data_listing_id": "none",
-     "initial_state": "none",
-     "json_ld": "few",
-     "legacy_links": "none",
-     "next_data": "few",
-     "offer_links": "many",
-     "vehicle_cdn": "lots"
-    },
-    "scores": {
-     "anchors": 6,
-     "embedded_json": 24,
-     "jsonld": 6,
-     "regex": 24
-    },
     "strategy": "embedded_json",
     "working": [
      "anchors",
      "embedded_json",
      "jsonld",
      "regex"
-    ]
+    ],
+    "scores": {
+     "jsonld": 6,
+     "embedded_json": 24,
+     "anchors": 6,
+     "regex": 24
+    },
+    "listing_count": 24,
+    "markers": {
+     "json_ld": "few",
+     "next_data": "few",
+     "initial_state": "none",
+     "offer_links": "many",
+     "legacy_links": "none",
+     "data_listing_id": "none",
+     "vehicle_cdn": "lots"
+    },
+    "bytes": "lots"
    }
   },
   {
@@ -4735,7 +4759,7 @@
     ]
    },
    "health": {
-    "last_ok": "2026-09-13T08:36:09+00:00",
+    "last_ok": "2026-09-13T08:53:50+00:00",
     "last_error": null,
     "last_count": 25,
     "last_strategy": "embedded_json",
@@ -4771,30 +4795,30 @@
     "text": "within 1,000 km of Vancouver, BC"
    },
    "shape": {
-    "bytes": "lots",
-    "listing_count": 25,
-    "markers": {
-     "data_listing_id": "none",
-     "initial_state": "none",
-     "json_ld": "few",
-     "legacy_links": "none",
-     "next_data": "few",
-     "offer_links": "many",
-     "vehicle_cdn": "lots"
-    },
-    "scores": {
-     "anchors": 5,
-     "embedded_json": 25,
-     "jsonld": 5,
-     "regex": 25
-    },
     "strategy": "embedded_json",
     "working": [
      "anchors",
      "embedded_json",
      "jsonld",
      "regex"
-    ]
+    ],
+    "scores": {
+     "jsonld": 5,
+     "embedded_json": 25,
+     "anchors": 5,
+     "regex": 25
+    },
+    "listing_count": 25,
+    "markers": {
+     "json_ld": "few",
+     "next_data": "few",
+     "initial_state": "none",
+     "offer_links": "many",
+     "legacy_links": "none",
+     "data_listing_id": "none",
+     "vehicle_cdn": "lots"
+    },
+    "bytes": "lots"
    }
   }
  ],
@@ -4955,6 +4979,106 @@
   }
  },
  "runs": [
+  {
+   "at": "2026-09-13T08:54:46+00:00",
+   "ok": true,
+   "duration_s": 66.4,
+   "searches_run": 3,
+   "searches_failed": 0,
+   "listings_seen": 81,
+   "new": 0,
+   "price_drops": 0,
+   "price_rises": 0,
+   "removed": 0,
+   "filtered_out": 53,
+   "unpriced": 0,
+   "priced": 0,
+   "relisted": 0,
+   "qualified": 0,
+   "baselines": [],
+   "invariants": [],
+   "shut_out": [],
+   "hidden_events": {},
+   "skipped": false,
+   "missed_by": 0,
+   "requests_made": 41,
+   "budget_exhausted": false,
+   "empty_parses": [],
+   "diagnostics": [],
+   "shape_drift": [],
+   "disabled_channels": [],
+   "first_run": false,
+   "validation_ok": true,
+   "notified": [],
+   "errors": [],
+   "warnings": [],
+   "strategies": {
+    "bmw-m4-up-to-2020-f82-fc136e": "embedded_json",
+    "bmw-m3-2015-2020-f80-7e1845": "embedded_json",
+    "bmw-x3-m-up-to-2020-f97-7d9aaf": "embedded_json"
+   },
+   "quiet": false,
+   "dry_run": false,
+   "photos": {
+    "kept": 25,
+    "fetched": 24,
+    "failed": 0,
+    "pruned": 0,
+    "bytes": 1293656,
+    "samples": [
+     {
+      "url": "https://prod.pictures.autoscout24.net/listing-images/65bf42c7-57c9-44a1-b13a-1782a78d07a9_a09e5cf3-5d2e-4889-ac39-4e4949",
+      "status": 200,
+      "type": "image/webp",
+      "bytes": 11966,
+      "w": 480,
+      "h": 360
+     },
+     {
+      "url": "https://prod.pictures.autoscout24.net/listing-images/65bf42c7-57c9-44a1-b13a-1782a78d07a9_3c5bfb75-f350-42d4-8efa-c009be",
+      "status": 200,
+      "type": "image/webp",
+      "bytes": 11410,
+      "w": 480,
+      "h": 360
+     },
+     {
+      "url": "https://prod.pictures.autoscout24.net/listing-images/702ed827-8ace-4f5f-8433-12c34895bb84_0c5b7865-3f84-43e7-9924-1dd244",
+      "status": 200,
+      "type": "image/webp",
+      "bytes": 6148,
+      "w": 480,
+      "h": 360
+     },
+     {
+      "url": "https://prod.pictures.autoscout24.net/listing-images/702ed827-8ace-4f5f-8433-12c34895bb84_0d9c7037-735a-40c1-bd96-84eabb",
+      "status": 200,
+      "type": "image/webp",
+      "bytes": 6818,
+      "w": 480,
+      "h": 360
+     },
+     {
+      "url": "https://prod.pictures.autoscout24.net/listing-images/7458e16d-dfe4-4a98-b9aa-998a944a7f70_52fb7048-186d-4c49-947a-19ed3d",
+      "status": 200,
+      "type": "image/webp",
+      "bytes": 19968,
+      "w": 480,
+      "h": 360
+     },
+     {
+      "url": "https://prod.pictures.autoscout24.net/listing-images/7458e16d-dfe4-4a98-b9aa-998a944a7f70_60e040c0-06c4-47b3-8887-cfa298",
+      "status": 200,
+      "type": "image/webp",
+      "bytes": 20482,
+      "w": 480,
+      "h": 360
+     }
+    ]
+   },
+   "your_call": 0,
+   "minutes": 2.0
+  },
   {
    "at": "2026-09-13T08:36:58+00:00",
    "baselines": [],
@@ -6699,59 +6823,6 @@
     "2021-2023 BMW M5: read 19 listings and none passed your rules for it (12 too far away, 7 outside the year range). It is working - it just has nothing to show you."
    ],
    "your_call": 0
-  },
-  {
-   "at": "2026-09-12T18:45:51+00:00",
-   "baselines": [],
-   "budget_exhausted": false,
-   "diagnostics": [],
-   "disabled_channels": [],
-   "dry_run": false,
-   "duration_s": 28.8,
-   "empty_parses": [],
-   "errors": [],
-   "filtered_out": 122,
-   "first_run": false,
-   "hidden_events": {},
-   "invariants": [],
-   "listings_seen": 213,
-   "missed_by": 0,
-   "new": 0,
-   "notified": [],
-   "ok": true,
-   "photos": {
-    "bytes": 413434,
-    "failed": 0,
-    "fetched": 0,
-    "kept": 71,
-    "pruned": 0,
-    "samples": []
-   },
-   "price_drops": 0,
-   "price_rises": 0,
-   "priced": 0,
-   "qualified": 0,
-   "quiet": false,
-   "relisted": 0,
-   "removed": 0,
-   "requests_made": 12,
-   "searches_failed": 0,
-   "searches_run": 2,
-   "shape_drift": [],
-   "shut_out": [
-    "2021-2023 BMW M5"
-   ],
-   "skipped": false,
-   "strategies": {
-    "2021-2023-bmw-m5-310324": "embedded_json",
-    "bmw-m5-bargains-any-year-f2f097": "jsonld"
-   },
-   "unpriced": 1,
-   "validation_ok": true,
-   "warnings": [
-    "2021-2023 BMW M5: read 19 listings and none passed your rules for it (12 too far away, 7 outside the year range). It is working - it just has nothing to show you."
-   ],
-   "your_call": 0
   }
  ],
  "channel_health": {
@@ -6769,106 +6840,104 @@
   }
  },
  "last_run": {
-  "at": "2026-09-13T08:36:58+00:00",
-  "baselines": [],
-  "budget_exhausted": false,
-  "diagnostics": [],
-  "disabled_channels": [],
-  "dry_run": false,
-  "duration_s": 66.1,
-  "empty_parses": [],
-  "errors": [],
-  "filtered_out": 53,
-  "first_run": false,
-  "hidden_events": {},
-  "invariants": [],
-  "listings_seen": 81,
-  "minutes": 2.0,
-  "missed_by": 0,
-  "new": 2,
-  "notified": [
-   "ntfy: sent - 2 changes"
-  ],
+  "at": "2026-09-13T08:54:46+00:00",
   "ok": true,
+  "duration_s": 66.4,
+  "searches_run": 3,
+  "searches_failed": 0,
+  "listings_seen": 81,
+  "new": 0,
+  "price_drops": 0,
+  "price_rises": 0,
+  "removed": 0,
+  "filtered_out": 53,
+  "unpriced": 0,
+  "priced": 0,
+  "relisted": 0,
+  "qualified": 0,
+  "baselines": [],
+  "invariants": [],
+  "shut_out": [],
+  "hidden_events": {},
+  "skipped": false,
+  "missed_by": 0,
+  "requests_made": 41,
+  "budget_exhausted": false,
+  "empty_parses": [],
+  "diagnostics": [],
+  "shape_drift": [],
+  "disabled_channels": [],
+  "first_run": false,
+  "validation_ok": true,
+  "notified": [],
+  "errors": [],
+  "warnings": [],
+  "strategies": {
+   "bmw-m4-up-to-2020-f82-fc136e": "embedded_json",
+   "bmw-m3-2015-2020-f80-7e1845": "embedded_json",
+   "bmw-x3-m-up-to-2020-f97-7d9aaf": "embedded_json"
+  },
+  "quiet": false,
+  "dry_run": false,
   "photos": {
-   "bytes": 860248,
-   "failed": 0,
-   "fetched": 24,
    "kept": 25,
+   "fetched": 24,
+   "failed": 0,
    "pruned": 0,
+   "bytes": 1293656,
    "samples": [
     {
-     "bytes": 16402,
-     "h": 360,
+     "url": "https://prod.pictures.autoscout24.net/listing-images/65bf42c7-57c9-44a1-b13a-1782a78d07a9_a09e5cf3-5d2e-4889-ac39-4e4949",
      "status": 200,
      "type": "image/webp",
-     "url": "https://prod.pictures.autoscout24.net/listing-images/03b47c25-ee9f-4c06-942b-7c2c097a26ae_29af56f9-51f6-49f9-bfb5-a44467",
-     "w": 480
+     "bytes": 11966,
+     "w": 480,
+     "h": 360
     },
     {
-     "bytes": 17518,
-     "h": 360,
+     "url": "https://prod.pictures.autoscout24.net/listing-images/65bf42c7-57c9-44a1-b13a-1782a78d07a9_3c5bfb75-f350-42d4-8efa-c009be",
      "status": 200,
      "type": "image/webp",
-     "url": "https://prod.pictures.autoscout24.net/listing-images/03b47c25-ee9f-4c06-942b-7c2c097a26ae_fae3f1c5-2bed-4b9d-802b-f4389e",
-     "w": 480
+     "bytes": 11410,
+     "w": 480,
+     "h": 360
     },
     {
-     "bytes": 11616,
-     "h": 261,
+     "url": "https://prod.pictures.autoscout24.net/listing-images/702ed827-8ace-4f5f-8433-12c34895bb84_0c5b7865-3f84-43e7-9924-1dd244",
      "status": 200,
      "type": "image/webp",
-     "url": "https://prod.pictures.autoscout24.net/listing-images/0d25fa38-6268-4745-9877-8913890077ee_8112ebdd-d963-4e82-ac58-ece518",
-     "w": 480
+     "bytes": 6148,
+     "w": 480,
+     "h": 360
     },
     {
-     "bytes": 12122,
-     "h": 204,
+     "url": "https://prod.pictures.autoscout24.net/listing-images/702ed827-8ace-4f5f-8433-12c34895bb84_0d9c7037-735a-40c1-bd96-84eabb",
      "status": 200,
      "type": "image/webp",
-     "url": "https://prod.pictures.autoscout24.net/listing-images/0d25fa38-6268-4745-9877-8913890077ee_639f21e7-c815-431e-8b39-21a49a",
-     "w": 480
+     "bytes": 6818,
+     "w": 480,
+     "h": 360
     },
     {
-     "bytes": 5670,
-     "h": 320,
+     "url": "https://prod.pictures.autoscout24.net/listing-images/7458e16d-dfe4-4a98-b9aa-998a944a7f70_52fb7048-186d-4c49-947a-19ed3d",
      "status": 200,
      "type": "image/webp",
-     "url": "https://prod.pictures.autoscout24.net/listing-images/0d366980-3df9-4db7-bb63-a21cf832d4fa_b5707dcb-440e-47e8-9bf7-7a12e7",
-     "w": 480
+     "bytes": 19968,
+     "w": 480,
+     "h": 360
     },
     {
-     "bytes": 7806,
-     "h": 320,
+     "url": "https://prod.pictures.autoscout24.net/listing-images/7458e16d-dfe4-4a98-b9aa-998a944a7f70_60e040c0-06c4-47b3-8887-cfa298",
      "status": 200,
      "type": "image/webp",
-     "url": "https://prod.pictures.autoscout24.net/listing-images/0d366980-3df9-4db7-bb63-a21cf832d4fa_17ea8506-4680-4cb7-b252-b2c334",
-     "w": 480
+     "bytes": 20482,
+     "w": 480,
+     "h": 360
     }
    ]
   },
-  "price_drops": 0,
-  "price_rises": 0,
-  "priced": 0,
-  "qualified": 0,
-  "quiet": false,
-  "relisted": 0,
-  "removed": 0,
-  "requests_made": 37,
-  "searches_failed": 0,
-  "searches_run": 3,
-  "shape_drift": [],
-  "shut_out": [],
-  "skipped": false,
-  "strategies": {
-   "bmw-m3-2015-2020-f80-7e1845": "embedded_json",
-   "bmw-m4-up-to-2020-f82-fc136e": "embedded_json",
-   "bmw-x3-m-up-to-2020-f97-7d9aaf": "embedded_json"
-  },
-  "unpriced": 0,
-  "validation_ok": true,
-  "warnings": [],
-  "your_call": 0
+  "your_call": 0,
+  "minutes": 2.0
  },
  "health": {
   "counts": {
@@ -6889,9 +6958,9 @@
     "name": "BMW M4 up to 2020 (F82)",
     "winner": "embedded_json",
     "scores": {
-     "anchors": 15,
-     "embedded_json": 32,
      "jsonld": 15,
+     "embedded_json": 32,
+     "anchors": 15,
      "regex": 32
     },
     "working": [
@@ -6908,12 +6977,12 @@
      "regex"
     ],
     "markers": {
-     "data_listing_id": "none",
-     "initial_state": "none",
      "json_ld": "few",
-     "legacy_links": "none",
      "next_data": "few",
+     "initial_state": "none",
      "offer_links": "many",
+     "legacy_links": "none",
+     "data_listing_id": "none",
      "vehicle_cdn": "lots"
     }
    },
@@ -6921,9 +6990,9 @@
     "name": "BMW M3 2015-2020 (F80)",
     "winner": "embedded_json",
     "scores": {
-     "anchors": 6,
-     "embedded_json": 24,
      "jsonld": 6,
+     "embedded_json": 24,
+     "anchors": 6,
      "regex": 24
     },
     "working": [
@@ -6940,12 +7009,12 @@
      "regex"
     ],
     "markers": {
-     "data_listing_id": "none",
-     "initial_state": "none",
      "json_ld": "few",
-     "legacy_links": "none",
      "next_data": "few",
+     "initial_state": "none",
      "offer_links": "many",
+     "legacy_links": "none",
+     "data_listing_id": "none",
      "vehicle_cdn": "lots"
     }
    },
@@ -6953,9 +7022,9 @@
     "name": "BMW X3 M up to 2020 (F97)",
     "winner": "embedded_json",
     "scores": {
-     "anchors": 5,
-     "embedded_json": 25,
      "jsonld": 5,
+     "embedded_json": 25,
+     "anchors": 5,
      "regex": 25
     },
     "working": [
@@ -6972,12 +7041,12 @@
      "regex"
     ],
     "markers": {
-     "data_listing_id": "none",
-     "initial_state": "none",
      "json_ld": "few",
-     "legacy_links": "none",
      "next_data": "few",
+     "initial_state": "none",
      "offer_links": "many",
+     "legacy_links": "none",
+     "data_listing_id": "none",
      "vehicle_cdn": "lots"
     }
    }
@@ -6986,7 +7055,7 @@
   "ok_streak": 60,
   "runs_kept": 60,
   "budget": {
-   "used": 37,
+   "used": 41,
    "limit": 250,
    "exhausted": false
   },
@@ -7014,7 +7083,7 @@
    "kind": "new",
    "at": "2026-09-13T08:36:17+00:00",
    "listing_id": "3ae69fb7-f6f7-47ed-952e-8784cb844a3a",
-   "title": "2016 BMW M3",
+   "title": "2016 BMW M3 one owner fully dealer serviced",
    "year": 2016,
    "make": "BMW",
    "model": "M3",
@@ -7064,7 +7133,7 @@
    "kind": "new",
    "at": "2026-09-13T08:36:17+00:00",
    "listing_id": "8a83c152-efbb-485f-a022-b82c0acfd94e",
-   "title": "2026 BMW M4",
+   "title": "2026 BMW M4 Competition",
    "year": 2026,
    "make": "BMW",
    "model": "M4",
@@ -8639,11 +8708,11 @@
   "too_short": true,
   "since_change": "2026-09-13T06:30:00+00:00",
   "expected": 1,
-  "checks": 2,
-  "successful": 2,
+  "checks": 3,
+  "successful": 3,
   "slots_covered": 1,
   "complained": 0,
-  "clean": 2,
+  "clean": 3,
   "pct": 100.0,
   "longest_gap_minutes": 116.6,
   "expected_interval_minutes": 120,
@@ -8654,28 +8723,28 @@
   ]
  },
  "cost": {
-  "checks": 53,
-  "minutes": 28.8,
-  "billed_minutes": 63,
-  "mean_seconds": 32.7,
+  "checks": 54,
+  "minutes": 30.0,
+  "billed_minutes": 65,
+  "mean_seconds": 33.3,
   "window_hours": 24
  },
  "budget": {
   "month": "2026-09",
-  "used": 3.0,
-  "runs": 2,
-  "per_day": 3.0,
+  "used": 5.0,
+  "runs": 3,
+  "per_day": 5.0,
   "days_elapsed": 1,
   "projected": null,
   "allowance": 3000,
   "ceiling": 2550.0,
   "charged": false,
   "state": "exempt",
-  "text": "3 runner minutes this month. None of it draws on the allowance: GitHub does not charge Actions on a public repository.",
+  "text": "5 runner minutes this month. None of it draws on the allowance: GitHub does not charge Actions on a public repository.",
   "should_stop": false
  },
  "market": {
-  "at": "2026-09-13T08:52:01+00:00",
+  "at": "2026-09-13T08:54:46+00:00",
   "window": {
    "ids_span_days": 0,
    "watching_days": 3,
