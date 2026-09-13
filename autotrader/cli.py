@@ -572,7 +572,10 @@ def cmd_verify(args: argparse.Namespace) -> int:
     through the same rate-limited client, and the answer is per car rather
     than a summary you have to trust.
     """
-    from .http import FetchError, Fetcher
+    # FetchError only. Fetcher is imported at module scope, and a local
+    # import here shadows it - which made the command unpatchable, so
+    # its first test dialled autotrader.ca for real and hung.
+    from .http import FetchError
 
     cfg = Config.load(args.config)
     state = State.load(args.state)
@@ -587,7 +590,15 @@ def cmd_verify(args: argparse.Namespace) -> int:
         return 0
 
     print(f"Checking {_many(len(watched), 'car')} against the site.\n")
-    fetcher = Fetcher(cfg)
+    scraping = cfg.get("scraping", {}) or {}
+    fetcher = Fetcher(
+        timeout=int(scraping.get("timeout_seconds", 30)),
+        retries=int(scraping.get("retries", 3)),
+        delay_ms=int(scraping.get("delay_ms", 1200)),
+        user_agent=str(scraping.get("user_agent", "auto")),
+        # One request per car plus a little room, rather than the whole run's
+        # budget: this is a question being asked, not a check.
+        budget=len(watched) + 10)
     agreed = moved = vanished = unreadable = 0
     try:
         for entry in watched:
