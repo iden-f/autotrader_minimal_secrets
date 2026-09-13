@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-09-13T09:39:09+00:00",
+ "generated_at": "2026-09-13T10:06:04+00:00",
  "notify": {
   "ntfy_topic": "autotrader-2q592ak9gnx7sqrere5r",
   "ntfy_url": "https://ntfy.sh/autotrader-2q592ak9gnx7sqrere5r",
@@ -58,6 +58,7 @@
    "is_new": false,
    "photo_count": 0,
    "per_1000km": null,
+   "per_1000km_why": "no asking price",
    "days_listed": 0,
    "distance_km": 0,
    "distance_from": "Vancouver, BC"
@@ -100,6 +101,7 @@
    "is_new": false,
    "photo_count": 0,
    "per_1000km": null,
+   "per_1000km_why": "no asking price",
    "days_listed": 0,
    "distance_km": 674,
    "distance_from": "Vancouver, BC"
@@ -147,6 +149,7 @@
    "is_new": false,
    "photo_count": 0,
    "per_1000km": 655.8,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 818,
    "distance_from": "Vancouver, BC"
@@ -213,6 +216,7 @@
     "thumbs/c39aad61-a0db-4412-87e9-c0dfc4e8d103-2.webp"
    ],
    "per_1000km": 1112.9,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 674,
    "distance_from": "Vancouver, BC"
@@ -279,6 +283,7 @@
     "thumbs/b13950f2-45c0-4eaa-8801-8530b208afbd-2.webp"
    ],
    "per_1000km": 375.1,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 674,
    "distance_from": "Vancouver, BC"
@@ -345,6 +350,7 @@
     "thumbs/4535f746-a354-47a8-a3f8-d2ea883eb2de-2.webp"
    ],
    "per_1000km": 404.0,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 818,
    "distance_from": "Vancouver, BC"
@@ -410,7 +416,8 @@
     "thumbs/3f8fb04e-1ad8-488e-9447-bd57d25e24a6-1.webp",
     "thumbs/3f8fb04e-1ad8-488e-9447-bd57d25e24a6-2.webp"
    ],
-   "per_1000km": 8.0,
+   "per_1000km": null,
+   "per_1000km_why": "at 269,112 km the asking price tracks condition rather than kilometres, so the ratio stops meaning anything",
    "days_listed": 0,
    "distance_km": 674,
    "distance_from": "Vancouver, BC"
@@ -471,6 +478,7 @@
     "thumbs/2da00439-ff06-445e-8b7a-2709810a672b-2.webp"
    ],
    "per_1000km": 471.5,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 818,
    "distance_from": "Vancouver, BC"
@@ -535,6 +543,7 @@
     "thumbs/fda32959-1658-4085-8a83-7edcf9c2d7c3.webp"
    ],
    "per_1000km": 1310.0,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 0,
    "distance_from": "Vancouver, BC"
@@ -594,6 +603,7 @@
     "thumbs/dbc1a859-f9e3-465c-9659-ce28547df7ff-2.webp"
    ],
    "per_1000km": 1041.7,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 674,
    "distance_from": "Vancouver, BC"
@@ -660,6 +670,7 @@
     "thumbs/d173bbff-487c-4204-a8e9-7d9ec5b0e745-2.webp"
    ],
    "per_1000km": 604.6,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 11,
    "distance_from": "Vancouver, BC"
@@ -726,6 +737,7 @@
     "thumbs/702ed827-8ace-4f5f-8433-12c34895bb84-2.webp"
    ],
    "per_1000km": 2232.5,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 0,
    "distance_from": "Vancouver, BC"
@@ -787,6 +799,7 @@
     "thumbs/03b47c25-ee9f-4c06-942b-7c2c097a26ae-2.webp"
    ],
    "per_1000km": 507.1,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 13,
    "distance_from": "Vancouver, BC"
@@ -846,6 +859,7 @@
     "thumbs/f049e449-390d-4298-999a-afa12e07cbc5-2.webp"
    ],
    "per_1000km": 1408.2,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 674,
    "distance_from": "Vancouver, BC"
@@ -912,6 +926,7 @@
     "thumbs/e896a563-135e-46ca-94a2-7ede541c1510-2.webp"
    ],
    "per_1000km": 728.4,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 674,
    "distance_from": "Vancouver, BC"
@@ -978,6 +993,7 @@
     "thumbs/ac01f1ee-9ccc-4818-833e-cedad78a646d-2.webp"
    ],
    "per_1000km": 625.6,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 11,
    "distance_from": "Vancouver, BC"
@@ -1044,6 +1060,7 @@
     "thumbs/8b4d47fe-975f-4bf3-affb-c92a5dc4a75a-2.webp"
    ],
    "per_1000km": 545.5,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 674,
    "distance_from": "Vancouver, BC"
@@ -1107,6 +1124,7 @@
     "thumbs/7708d9f2-74b3-40cf-ab8a-9dba0e93b15e-2.webp"
    ],
    "per_1000km": 2396.0,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 13,
    "distance_from": "Vancouver, BC"
@@ -1173,6 +1191,7 @@
     "thumbs/7458e16d-dfe4-4a98-b9aa-998a944a7f70-2.webp"
    ],
    "per_1000km": 1286.8,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 11,
    "distance_from": "Vancouver, BC"
@@ -1239,6 +1258,7 @@
     "thumbs/65bf42c7-57c9-44a1-b13a-1782a78d07a9-2.webp"
    ],
    "per_1000km": 1008.8,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 818,
    "distance_from": "Vancouver, BC"
@@ -1305,6 +1325,7 @@
     "thumbs/5c4b2bca-b01b-48b7-a9ac-511647ca007a-2.webp"
    ],
    "per_1000km": 932.0,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 674,
    "distance_from": "Vancouver, BC"
@@ -1371,6 +1392,7 @@
     "thumbs/4c857c77-395b-4217-b9a0-1112fb7904fb-2.webp"
    ],
    "per_1000km": 1203.1,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 13,
    "distance_from": "Vancouver, BC"
@@ -1437,6 +1459,7 @@
     "thumbs/2aacdf32-fb81-4602-abb6-c805903a0ec8-2.webp"
    ],
    "per_1000km": 376.0,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 13,
    "distance_from": "Vancouver, BC"
@@ -1503,6 +1526,7 @@
     "thumbs/29729a93-570e-4b0e-8450-42fbee57d52d-2.webp"
    ],
    "per_1000km": 1132.2,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 13,
    "distance_from": "Vancouver, BC"
@@ -1569,6 +1593,7 @@
     "thumbs/23a95a08-4472-4fb9-ab02-321917710f0c-2.webp"
    ],
    "per_1000km": 408.3,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 5,
    "distance_from": "Vancouver, BC"
@@ -1635,6 +1660,7 @@
     "thumbs/126cca4a-9df1-4d06-a592-8edd4fe86151-2.webp"
    ],
    "per_1000km": 1044.5,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 684,
    "distance_from": "Vancouver, BC"
@@ -1701,6 +1727,7 @@
     "thumbs/0d366980-3df9-4db7-bb63-a21cf832d4fa-2.webp"
    ],
    "per_1000km": 687.0,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 674,
    "distance_from": "Vancouver, BC"
@@ -1761,6 +1788,7 @@
     "thumbs/0d25fa38-6268-4745-9877-8913890077ee-2.webp"
    ],
    "per_1000km": 429.9,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 11,
    "distance_from": "Vancouver, BC"
@@ -1802,6 +1830,7 @@
    "is_new": false,
    "photo_count": 0,
    "per_1000km": null,
+   "per_1000km_why": "no asking price",
    "days_listed": 0,
    "distance_km": 0,
    "distance_from": "Vancouver, BC"
@@ -1848,6 +1877,7 @@
    "is_new": false,
    "photo_count": 2,
    "per_1000km": null,
+   "per_1000km_why": "only 3,366 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
    "distance_km": 270,
    "distance_from": "Vancouver, BC"
@@ -1894,6 +1924,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": 289.0,
+   "per_1000km_why": null,
    "days_listed": 0
   },
   {
@@ -1933,6 +1964,7 @@
    "is_new": false,
    "photo_count": 0,
    "per_1000km": null,
+   "per_1000km_why": "no asking price",
    "days_listed": 0,
    "distance_km": 3346,
    "distance_from": "Vancouver, BC"
@@ -1978,7 +2010,8 @@
    "quiet_reason": "hidden by your rules: year 2024 above maximum 2020",
    "is_new": false,
    "photo_count": 1,
-   "per_1000km": 5854.1,
+   "per_1000km": null,
+   "per_1000km_why": "only 15,015 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
    "distance_km": 0,
    "distance_from": "Vancouver, BC"
@@ -2025,6 +2058,7 @@
    "is_new": false,
    "photo_count": 1,
    "per_1000km": 1434.4,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 0,
    "distance_from": "Vancouver, BC"
@@ -2066,6 +2100,7 @@
    "is_new": false,
    "photo_count": 0,
    "per_1000km": null,
+   "per_1000km_why": "no asking price",
    "days_listed": 0,
    "distance_km": 3539,
    "distance_from": "Vancouver, BC"
@@ -2111,7 +2146,8 @@
    "quiet_reason": "hidden by your rules: year 2025 above maximum 2020",
    "is_new": false,
    "photo_count": 1,
-   "per_1000km": 21966.9,
+   "per_1000km": null,
+   "per_1000km_why": "only 5,475 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
    "distance_km": 3686,
    "distance_from": "Vancouver, BC"
@@ -2158,6 +2194,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": null,
+   "per_1000km_why": "only 90 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
    "distance_km": 3539,
    "distance_from": "Vancouver, BC"
@@ -2204,6 +2241,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": 293.2,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 3306,
    "distance_from": "Vancouver, BC"
@@ -2250,6 +2288,7 @@
    "is_new": false,
    "photo_count": 0,
    "per_1000km": null,
+   "per_1000km_why": "only 18 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
    "distance_km": 818,
    "distance_from": "Vancouver, BC"
@@ -2291,6 +2330,7 @@
    "is_new": false,
    "photo_count": 1,
    "per_1000km": null,
+   "per_1000km_why": "no asking price",
    "days_listed": 0,
    "distance_km": 3393,
    "distance_from": "Vancouver, BC"
@@ -2337,6 +2377,7 @@
    "is_new": false,
    "photo_count": 1,
    "per_1000km": 1460.3,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 3359,
    "distance_from": "Vancouver, BC"
@@ -2383,6 +2424,7 @@
    "is_new": false,
    "photo_count": 3,
    "per_1000km": null,
+   "per_1000km_why": "only 90 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
    "distance_km": 3676,
    "distance_from": "Vancouver, BC"
@@ -2429,6 +2471,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": 2917.6,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 3362,
    "distance_from": "Vancouver, BC"
@@ -2475,6 +2518,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": 6810.1,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 818,
    "distance_from": "Vancouver, BC"
@@ -2521,6 +2565,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": 489.4,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 3359,
    "distance_from": "Vancouver, BC"
@@ -2566,7 +2611,8 @@
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
    "photo_count": 1,
-   "per_1000km": 10070.9,
+   "per_1000km": null,
+   "per_1000km_why": "only 11,210 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
    "distance_km": 3643,
    "distance_from": "Vancouver, BC"
@@ -2613,6 +2659,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": 143.4,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 3334,
    "distance_from": "Vancouver, BC"
@@ -2659,6 +2706,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": null,
+   "per_1000km_why": "only 910 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
    "distance_km": 3359,
    "distance_from": "Vancouver, BC"
@@ -2705,6 +2753,7 @@
    "is_new": false,
    "photo_count": 1,
    "per_1000km": 2143.3,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 3359,
    "distance_from": "Vancouver, BC"
@@ -2751,6 +2800,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": 1075.9,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 1200,
    "distance_from": "Vancouver, BC"
@@ -2797,6 +2847,7 @@
    "is_new": false,
    "photo_count": 1,
    "per_1000km": 5426.7,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 3672,
    "distance_from": "Vancouver, BC"
@@ -2843,6 +2894,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": 1907.8,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 3696,
    "distance_from": "Vancouver, BC"
@@ -2888,7 +2940,8 @@
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
    "photo_count": 12,
-   "per_1000km": 21234.3,
+   "per_1000km": null,
+   "per_1000km_why": "only 5,882 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
    "distance_km": 3352,
    "distance_from": "Vancouver, BC"
@@ -2935,6 +2988,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": null,
+   "per_1000km_why": "only 90 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
    "distance_km": 3539,
    "distance_from": "Vancouver, BC"
@@ -2982,6 +3036,7 @@
    "is_new": false,
    "photo_count": 0,
    "per_1000km": 2175.9,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 3289,
    "distance_from": "Vancouver, BC"
@@ -3028,6 +3083,7 @@
    "is_new": false,
    "photo_count": 1,
    "per_1000km": null,
+   "per_1000km_why": "only 90 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
    "distance_km": 3686,
    "distance_from": "Vancouver, BC"
@@ -3073,7 +3129,8 @@
    "quiet_reason": "hidden by your rules: year 2025 above maximum 2020",
    "is_new": false,
    "photo_count": 12,
-   "per_1000km": 23380.0,
+   "per_1000km": null,
+   "per_1000km_why": "only 5,000 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
    "distance_km": 3341,
    "distance_from": "Vancouver, BC"
@@ -3120,6 +3177,7 @@
    "is_new": false,
    "photo_count": 0,
    "per_1000km": 282.4,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 1200,
    "distance_from": "Vancouver, BC"
@@ -3166,6 +3224,7 @@
    "is_new": false,
    "photo_count": 1,
    "per_1000km": null,
+   "per_1000km_why": "only 90 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
    "distance_km": 3686,
    "distance_from": "Vancouver, BC"
@@ -3212,6 +3271,7 @@
    "is_new": false,
    "photo_count": 10,
    "per_1000km": 201.6,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 3346,
    "distance_from": "Vancouver, BC"
@@ -3258,6 +3318,7 @@
    "is_new": false,
    "photo_count": 0,
    "per_1000km": 586.8,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 97,
    "distance_from": "Vancouver, BC"
@@ -3299,6 +3360,7 @@
    "is_new": false,
    "photo_count": 0,
    "per_1000km": null,
+   "per_1000km_why": "no asking price",
    "days_listed": 0,
    "distance_km": 0,
    "distance_from": "Vancouver, BC"
@@ -3345,6 +3407,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": 4755.2,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 3289,
    "distance_from": "Vancouver, BC"
@@ -3391,6 +3454,7 @@
    "is_new": false,
    "photo_count": 1,
    "per_1000km": null,
+   "per_1000km_why": "only 90 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
    "distance_km": 3686,
    "distance_from": "Vancouver, BC"
@@ -3437,6 +3501,7 @@
    "is_new": false,
    "photo_count": 11,
    "per_1000km": null,
+   "per_1000km_why": "only 90 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
    "distance_km": 3343,
    "distance_from": "Vancouver, BC"
@@ -3483,6 +3548,7 @@
    "is_new": false,
    "photo_count": 11,
    "per_1000km": 423.4,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 674,
    "distance_from": "Vancouver, BC"
@@ -3528,7 +3594,8 @@
    "quiet_reason": "hidden by your rules: year 2024 above maximum 2020",
    "is_new": false,
    "photo_count": 11,
-   "per_1000km": 4277.1,
+   "per_1000km": null,
+   "per_1000km_why": "only 16,366 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
    "distance_km": 270,
    "distance_from": "Vancouver, BC"
@@ -3575,6 +3642,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": 1516.9,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 24,
    "distance_from": "Vancouver, BC"
@@ -3621,6 +3689,7 @@
    "is_new": false,
    "photo_count": 8,
    "per_1000km": 488.6,
+   "per_1000km_why": null,
    "days_listed": 0
   },
   {
@@ -3660,6 +3729,7 @@
    "is_new": false,
    "photo_count": 0,
    "per_1000km": null,
+   "per_1000km_why": "no asking price",
    "days_listed": 0,
    "distance_km": 38,
    "distance_from": "Vancouver, BC"
@@ -3706,6 +3776,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": null,
+   "per_1000km_why": "only 90 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
    "distance_km": 3359,
    "distance_from": "Vancouver, BC"
@@ -3751,7 +3822,8 @@
    "quiet_reason": "hidden by your rules: year 2023 above maximum 2020",
    "is_new": false,
    "photo_count": 12,
-   "per_1000km": 9263.6,
+   "per_1000km": null,
+   "per_1000km_why": "only 11,550 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
    "distance_km": 3344,
    "distance_from": "Vancouver, BC"
@@ -3798,6 +3870,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": 240.1,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 3348,
    "distance_from": "Vancouver, BC"
@@ -3843,7 +3916,8 @@
    "quiet_reason": "hidden by your rules: year 2024 above maximum 2020",
    "is_new": false,
    "photo_count": 11,
-   "per_1000km": 3817.8,
+   "per_1000km": null,
+   "per_1000km_why": "only 13,357 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
    "distance_km": 3337,
    "distance_from": "Vancouver, BC"
@@ -3890,6 +3964,7 @@
    "is_new": false,
    "photo_count": 0,
    "per_1000km": null,
+   "per_1000km_why": "only 90 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
    "distance_km": 3328,
    "distance_from": "Vancouver, BC"
@@ -3936,6 +4011,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": 878.5,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 3359,
    "distance_from": "Vancouver, BC"
@@ -3982,6 +4058,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": null,
+   "per_1000km_why": "only 90 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
    "distance_km": 3686,
    "distance_from": "Vancouver, BC"
@@ -4028,6 +4105,7 @@
    "is_new": false,
    "photo_count": 0,
    "per_1000km": 1434.4,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 3720,
    "distance_from": "Vancouver, BC"
@@ -4074,6 +4152,7 @@
    "is_new": false,
    "photo_count": 5,
    "per_1000km": 2251.8,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 3359,
    "distance_from": "Vancouver, BC"
@@ -4120,6 +4199,7 @@
    "is_new": false,
    "photo_count": 1,
    "per_1000km": null,
+   "per_1000km_why": "only 90 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
    "distance_km": 3686,
    "distance_from": "Vancouver, BC"
@@ -4166,6 +4246,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": null,
+   "per_1000km_why": "only 303 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
    "distance_km": 3686,
    "distance_from": "Vancouver, BC"
@@ -4212,6 +4293,7 @@
    "is_new": false,
    "photo_count": 6,
    "per_1000km": 664.9,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 3258,
    "distance_from": "Vancouver, BC"
@@ -4258,6 +4340,7 @@
    "is_new": false,
    "photo_count": 1,
    "per_1000km": 1071.0,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 3359,
    "distance_from": "Vancouver, BC"
@@ -4303,7 +4386,8 @@
    "quiet_reason": "hidden by your rules: year 2027 above maximum 2020",
    "is_new": false,
    "photo_count": 12,
-   "per_1000km": 22946.2,
+   "per_1000km": null,
+   "per_1000km_why": "only 5,575 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
    "distance_km": 3289,
    "distance_from": "Vancouver, BC"
@@ -4350,6 +4434,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": 390.7,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 3341,
    "distance_from": "Vancouver, BC"
@@ -4396,6 +4481,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": 201.7,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 3351,
    "distance_from": "Vancouver, BC"
@@ -4442,6 +4528,7 @@
    "is_new": false,
    "photo_count": 1,
    "per_1000km": null,
+   "per_1000km_why": "only 90 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
    "distance_km": 3686,
    "distance_from": "Vancouver, BC"
@@ -4487,7 +4574,8 @@
    "quiet_reason": "hidden by your rules: year 2025 above maximum 2020",
    "is_new": false,
    "photo_count": 0,
-   "per_1000km": 13352.2,
+   "per_1000km": null,
+   "per_1000km_why": "only 8,912 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
    "distance_km": 3720,
    "distance_from": "Vancouver, BC"
@@ -4534,6 +4622,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": 5013.1,
+   "per_1000km_why": null,
    "days_listed": 0,
    "distance_km": 3336,
    "distance_from": "Vancouver, BC"
@@ -8535,174 +8624,418 @@
  ],
  "comparables": {
   "03b47c25-ee9f-4c06-942b-7c2c097a26ae": {
-   "sample": 3,
+   "sample": 1,
    "band": 1,
-   "why_not": "only 3 other BMW M3 within a year of 2017 to compare against - not enough to call it cheap or dear"
+   "cohort": "BMW M3 2016-2018",
+   "why_not": "1 comparable close enough on age and mileage to judge it against. Another 2 are listed with very different kilometres on them. Not scored."
   },
   "0d25fa38-6268-4745-9877-8913890077ee": {
-   "sample": 8,
+   "sample": 0,
    "band": 1,
-   "median": 65149,
-   "delta": -6150,
-   "pct": -9.4,
-   "notable": true,
-   "cheaper_than": 5
+   "cohort": "BMW M4 2017-2019",
+   "why_not": "0 comparables close enough on age and mileage to judge it against. Another 8 are listed with very different kilometres on them. Not scored."
   },
   "0d366980-3df9-4db7-bb63-a21cf832d4fa": {
-   "sample": 4,
+   "sample": 0,
    "band": 1,
-   "why_not": "only 4 other BMW M4 within a year of 2015 to compare against - not enough to call it cheap or dear"
+   "cohort": "BMW M4 2014-2016",
+   "why_not": "0 comparables close enough on age and mileage to judge it against. Another 2 are listed with very different kilometres on them. Not scored."
   },
   "126cca4a-9df1-4d06-a592-8edd4fe86151": {
-   "sample": 8,
+   "sample": 5,
    "band": 1,
-   "median": 65149,
-   "delta": -8841,
-   "pct": -13.6,
-   "notable": true,
-   "cheaper_than": 6
+   "cohort": "BMW M4 2017-2019",
+   "why_not": "5 comparables close enough on age and mileage to judge it against. Another 3 are listed with very different kilometres on them. Not scored."
   },
   "23a95a08-4472-4fb9-ab02-321917710f0c": {
-   "sample": 4,
+   "sample": 1,
    "band": 1,
-   "why_not": "only 4 other BMW M4 within a year of 2015 to compare against - not enough to call it cheap or dear"
+   "cohort": "BMW M4 2014-2016",
+   "why_not": "1 comparable close enough on age and mileage to judge it against. One more is listed with very different kilometres on it. Not scored."
   },
   "29729a93-570e-4b0e-8450-42fbee57d52d": {
-   "sample": 8,
+   "sample": 2,
    "band": 1,
-   "median": 65149,
-   "delta": 4846,
-   "pct": 7.4,
-   "notable": false,
-   "cheaper_than": 2
+   "cohort": "BMW M4 2018-2020",
+   "why_not": "2 comparables to compare it against - fewer than the 6 this needs. Not scored."
   },
   "2aacdf32-fb81-4602-abb6-c805903a0ec8": {
-   "sample": 4,
+   "sample": 1,
    "band": 1,
-   "why_not": "only 4 other BMW M4 within a year of 2015 to compare against - not enough to call it cheap or dear"
+   "cohort": "BMW M4 2014-2016",
+   "why_not": "1 comparable close enough on age and mileage to judge it against. One more is listed with very different kilometres on it. Not scored."
   },
   "2da00439-ff06-445e-8b7a-2709810a672b": {
-   "sample": 4,
+   "sample": 3,
    "band": 1,
-   "why_not": "only 4 other BMW X3 M within a year of 2020 to compare against - not enough to call it cheap or dear"
+   "cohort": "BMW X3 M 2019-2021",
+   "why_not": "3 comparables close enough on age and mileage to judge it against. One more is listed with very different kilometres on it. Not scored."
   },
   "3f8fb04e-1ad8-488e-9447-bd57d25e24a6": {
    "sample": 0,
    "band": 1,
-   "why_not": "only 0 other BMW X3 within a year of 2010 to compare against - not enough to call it cheap or dear"
+   "cohort": "BMW X3 2009-2011",
+   "why_not": "nothing else here is a BMW X3 2009-2011 - this car has no market on this dashboard to be judged against"
   },
   "4535f746-a354-47a8-a3f8-d2ea883eb2de": {
-   "sample": 4,
+   "sample": 3,
    "band": 1,
-   "why_not": "only 4 other BMW X3 M within a year of 2020 to compare against - not enough to call it cheap or dear"
+   "cohort": "BMW X3 M 2019-2021",
+   "why_not": "3 comparables close enough on age and mileage to judge it against. One more is listed with very different kilometres on it. Not scored."
   },
   "4c857c77-395b-4217-b9a0-1112fb7904fb": {
-   "sample": 8,
+   "sample": 5,
    "band": 1,
-   "median": 61749,
-   "delta": 4051,
-   "pct": 6.6,
-   "notable": false,
-   "cheaper_than": 3
+   "cohort": "BMW M4 2017-2019",
+   "why_not": "5 comparables close enough on age and mileage to judge it against. Another 3 are listed with very different kilometres on them. Not scored."
   },
   "5c4b2bca-b01b-48b7-a9ac-511647ca007a": {
    "sample": 2,
    "band": 1,
-   "why_not": "only 2 other BMW M4 within a year of 2020 to compare against - not enough to call it cheap or dear"
+   "cohort": "BMW M4 2019-2021",
+   "why_not": "2 comparables to compare it against - fewer than the 6 this needs. Not scored."
   },
   "65bf42c7-57c9-44a1-b13a-1782a78d07a9": {
-   "sample": 8,
-   "band": 1,
-   "median": 65149,
-   "delta": 7761,
-   "pct": 11.9,
-   "notable": true,
-   "cheaper_than": 0
-  },
-  "702ed827-8ace-4f5f-8433-12c34895bb84": {
    "sample": 2,
    "band": 1,
-   "why_not": "only 2 other BMW M3 within a year of 2018 to compare against - not enough to call it cheap or dear"
+   "cohort": "BMW M4 2018-2020",
+   "why_not": "2 comparables to compare it against - fewer than the 6 this needs. Not scored."
   },
-  "7458e16d-dfe4-4a98-b9aa-998a944a7f70": {
-   "sample": 8,
-   "band": 1,
-   "median": 62399,
-   "delta": 2100,
-   "pct": 3.4,
-   "notable": false,
-   "cheaper_than": 4
-  },
-  "7708d9f2-74b3-40cf-ab8a-9dba0e93b15e": {
-   "sample": 5,
-   "band": 1,
-   "why_not": "only 5 other BMW M4 within a year of 2016 to compare against - not enough to call it cheap or dear"
-  },
-  "8b4d47fe-975f-4bf3-affb-c92a5dc4a75a": {
-   "sample": 5,
-   "band": 1,
-   "why_not": "only 5 other BMW M4 within a year of 2016 to compare against - not enough to call it cheap or dear"
-  },
-  "ac01f1ee-9ccc-4818-833e-cedad78a646d": {
-   "sample": 8,
-   "band": 1,
-   "median": 65149,
-   "delta": -16261,
-   "pct": -25.0,
-   "notable": true,
-   "cheaper_than": 7
-  },
-  "b13950f2-45c0-4eaa-8801-8530b208afbd": {
-   "sample": 4,
-   "band": 1,
-   "why_not": "only 4 other BMW X3 M within a year of 2020 to compare against - not enough to call it cheap or dear"
-  },
-  "c39aad61-a0db-4412-87e9-c0dfc4e8d103": {
-   "sample": 4,
-   "band": 1,
-   "why_not": "only 4 other BMW X3 M within a year of 2020 to compare against - not enough to call it cheap or dear"
-  },
-  "d173bbff-487c-4204-a8e9-7d9ec5b0e745": {
-   "sample": 3,
-   "band": 1,
-   "why_not": "only 3 other BMW M3 within a year of 2016 to compare against - not enough to call it cheap or dear"
-  },
-  "dbc1a859-f9e3-465c-9659-ce28547df7ff": {
+  "702ed827-8ace-4f5f-8433-12c34895bb84": {
    "sample": 1,
    "band": 1,
-   "why_not": "only 1 other BMW M3 within a year of 2015 to compare against - not enough to call it cheap or dear"
+   "cohort": "BMW M3 2017-2019",
+   "why_not": "1 comparable close enough on age and mileage to judge it against. Another 2 are listed with very different kilometres on them. Not scored."
+  },
+  "7458e16d-dfe4-4a98-b9aa-998a944a7f70": {
+   "sample": 4,
+   "band": 1,
+   "cohort": "BMW M4 2017-2019",
+   "why_not": "4 comparables close enough on age and mileage to judge it against. Another 4 are listed with very different kilometres on them. Not scored."
+  },
+  "7708d9f2-74b3-40cf-ab8a-9dba0e93b15e": {
+   "sample": 0,
+   "band": 1,
+   "cohort": "BMW M4 2015-2017",
+   "why_not": "0 comparables close enough on age and mileage to judge it against. Another 8 are listed with very different kilometres on them. Not scored."
+  },
+  "8b4d47fe-975f-4bf3-affb-c92a5dc4a75a": {
+   "sample": 2,
+   "band": 1,
+   "cohort": "BMW M4 2015-2017",
+   "why_not": "2 comparables close enough on age and mileage to judge it against. Another 6 are listed with very different kilometres on them. Not scored."
+  },
+  "ac01f1ee-9ccc-4818-833e-cedad78a646d": {
+   "sample": 4,
+   "band": 1,
+   "cohort": "BMW M4 2017-2019",
+   "why_not": "4 comparables close enough on age and mileage to judge it against. Another 4 are listed with very different kilometres on them. Not scored."
+  },
+  "b13950f2-45c0-4eaa-8801-8530b208afbd": {
+   "sample": 3,
+   "band": 1,
+   "cohort": "BMW X3 M 2019-2021",
+   "why_not": "3 comparables close enough on age and mileage to judge it against. One more is listed with very different kilometres on it. Not scored."
+  },
+  "c39aad61-a0db-4412-87e9-c0dfc4e8d103": {
+   "sample": 1,
+   "band": 1,
+   "cohort": "BMW X3 M 2019-2021",
+   "why_not": "1 comparable close enough on age and mileage to judge it against. Another 3 are listed with very different kilometres on them. Not scored."
+  },
+  "d173bbff-487c-4204-a8e9-7d9ec5b0e745": {
+   "sample": 1,
+   "band": 1,
+   "cohort": "BMW M3 2015-2017",
+   "why_not": "1 comparable close enough on age and mileage to judge it against. Another 2 are listed with very different kilometres on them. Not scored."
+  },
+  "dbc1a859-f9e3-465c-9659-ce28547df7ff": {
+   "sample": 0,
+   "band": 1,
+   "cohort": "BMW M3 2014-2016",
+   "why_not": "nothing else here is a BMW M3 2014-2016 - this car has no market on this dashboard to be judged against"
   },
   "de2ee923-e389-468e-8113-30add3d8b77a": {
    "sample": 4,
    "band": 1,
-   "why_not": "only 4 other BMW X3 M within a year of 2020 to compare against - not enough to call it cheap or dear"
+   "cohort": "BMW X3 M 2019-2021",
+   "why_not": "4 comparables to compare it against - fewer than the 6 this needs. Not scored."
   },
   "e896a563-135e-46ca-94a2-7ede541c1510": {
-   "sample": 8,
+   "sample": 6,
    "band": 1,
-   "median": 59449,
-   "delta": -12454,
-   "pct": -20.9,
-   "notable": true,
-   "cheaper_than": 8
+   "cohort": "BMW M4 2016-2018",
+   "rank": 1,
+   "of": 7,
+   "why_not": "1st cheapest of 7 BMW M4 2016-2018 here - too few to call it cheap or dear"
   },
   "f049e449-390d-4298-999a-afa12e07cbc5": {
-   "sample": 8,
+   "sample": 4,
    "band": 1,
-   "median": 61749,
-   "delta": 7251,
-   "pct": 11.7,
-   "notable": true,
-   "cheaper_than": 2
+   "cohort": "BMW M4 2017-2019",
+   "why_not": "4 comparables close enough on age and mileage to judge it against. Another 4 are listed with very different kilometres on them. Not scored."
   },
   "fda32959-1658-4085-8a83-7edcf9c2d7c3": {
-   "sample": 3,
+   "sample": 1,
    "band": 1,
-   "why_not": "only 3 other BMW M3 within a year of 2017 to compare against - not enough to call it cheap or dear"
+   "cohort": "BMW M3 2016-2018",
+   "why_not": "1 comparable close enough on age and mileage to judge it against. Another 2 are listed with very different kilometres on them. Not scored."
+  },
+  "00ce8bfe-45d5-4b17-94a8-1ecbfcdc034c": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "01108a1a-2812-475d-b800-be530145cf6f": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "0475c405-70ee-459b-9732-227ffc321365": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "06401c58-ee92-4104-adb1-ebc11a5b1796": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "09fcb038-7b24-465c-b2d8-333d1df4b6dd": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "0ba28d75-33e8-4d4d-aab6-a4c2b2220df0": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "0cc94ec6-e3f9-4c7f-9ca0-253021a4f7e1": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "0d8eb0ce-b0ac-4030-b8fb-c80d1887b242": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "0e9e916e-f428-48a7-9668-9c5dda14981a": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "162df21f-fac8-439c-9dbc-8ffea8fc6cf9": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "16b74448-be7b-407f-bd5a-5f82f10fc187": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "18843a07-1972-4c44-b3f5-dedc77433375": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "1db574f8-8916-49c7-a46a-bcb5fb2133c8": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "1e7a3fcd-0b9a-4a3b-9be7-d7c8ec3b088c": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "2a44590d-7547-4eec-9f6b-bea1cf16d3b5": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "2a953f1d-272f-4527-be5d-7be5779ab4e1": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "3ae69fb7-f6f7-47ed-952e-8784cb844a3a": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "3ebded39-f77e-4e6d-a7f0-af4f7ced0749": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "40dcb7a8-94c2-4894-b796-05fb54ea8fb5": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "4c387207-f15e-4b8b-a7c9-4081a6122251": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "55bad2fc-e07e-4fc4-91d5-ddedea6f3dda": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "60afbe64-8024-41e8-9fcb-79fe330d24d9": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "62962857-839d-47ed-8bdd-ceb3dc6bd648": {
+   "sample": 0,
+   "why_not": "it has no asking price, so there is nothing to compare"
+  },
+  "63f4a3a4-4b63-4a95-95d8-901493ac7f67": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "65822f57-41b3-47bc-9fb1-772f48335e5a": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "668a0936-d384-47e9-89c4-efccd1149eb6": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "67929fda-dc37-434e-8bb9-890c4e28b21b": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "6a1ea4ec-2585-4f93-9e94-922a3fd656a5": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "6a524bc0-2bd7-4cc5-b8ae-78fc0b25a614": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "71babb0c-5055-40c5-80ae-23082a97961e": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "725203ec-e010-47f9-a43d-f309a69c4c0f": {
+   "sample": 0,
+   "why_not": "it has no asking price, so there is nothing to compare"
+  },
+  "753e1f13-0ef3-405e-b34b-6789c398406c": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "7ec6475a-10ad-4cce-9666-a87eabb915f9": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "87d49039-2e71-4324-b0fd-25b410334dcb": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "8a83c152-efbb-485f-a022-b82c0acfd94e": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "8acef1b9-1f72-44c3-9c9c-f424f69e67dc": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "8bb8cc16-026b-442c-8e2e-1c13ac98f584": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "8fd65ae8-8cdc-47a6-b65a-f1dfa54b0560": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "93422cb3-4bec-480b-aeab-1c69458933b2": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "93d8f5b5-754b-4314-9e1a-55ea22ce7cf9": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "96440500-dee5-48e0-a248-1a30f0e17eae": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "9b0f9a08-672f-4e62-984d-f6354babcb15": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "9f07ac7e-4830-4858-8f1e-50f45a327b67": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "ae11e1e9-d599-4069-b0d5-b7e6e4734af3": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "afb69c99-f976-4932-a721-195acb6e0c23": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "b305e462-9202-46cc-8caa-a7945a81702f": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "b63c09c8-302b-4033-b94e-defc6cd0a109": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "b8092996-cd07-47fc-b34e-88e21c33739a": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "d0cc46ba-e7ba-408e-84fa-1979266f44c1": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "d2af069f-4a9e-4fc1-88e0-e285eed4915e": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "d8a78d46-6518-46c4-acc7-2265861c1ec6": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "ddfb39df-6ed7-4649-9936-f942a25e726e": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "e3677b17-8f46-4347-b803-0ff234236b5e": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "e72e211c-4381-42b2-adf1-26a481d8f445": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "e85a4397-e4e8-4643-ac35-67934e47d639": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "eabce0ca-e8c9-4f38-9671-0785293e8dfe": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "ece4e94d-0931-4b26-85cf-03d9eea108b2": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "ed984c47-9932-4c81-b30f-b7951d7b4b27": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "f172f1da-8e74-43e7-a94e-63a31651abb1": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "f3c155d2-e6bc-4031-af60-67cf771be01b": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "fc13fa44-ea9c-4579-ab2b-92e7e10ed1db": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "fd3d3102-426e-478f-8067-a4597043af59": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "fdd8d29e-5a6d-4964-a4a6-03db3cb9192b": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   }
  },
  "coverage": {
-  "window_hours": 3.2,
+  "window_hours": 3.6,
   "asked_window_hours": 24,
   "partial": true,
   "too_short": true,
@@ -8723,10 +9056,10 @@
   ]
  },
  "cost": {
-  "checks": 51,
-  "minutes": 27.4,
-  "billed_minutes": 60,
-  "mean_seconds": 32.2,
+  "checks": 50,
+  "minutes": 26.9,
+  "billed_minutes": 59,
+  "mean_seconds": 32.3,
   "window_hours": 24
  },
  "budget": {
@@ -8744,7 +9077,7 @@
   "should_stop": false
  },
  "market": {
-  "at": "2026-09-13T09:39:09+00:00",
+  "at": "2026-09-13T10:06:04+00:00",
   "window": {
    "ids_span_days": 0,
    "watching_days": 0,
