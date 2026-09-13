@@ -346,19 +346,54 @@ class TestNothingHoldsARunner:
     def test_the_schedule_asks_for_what_the_config_expects(self):
         """The interval in config.json has to be the one the cron produces,
         or every coverage number on the dashboard is measured against a
-        schedule that does not exist."""
+        schedule that does not exist.
+
+        More than one cron line is allowed, and is why this reads the HOUR
+        field rather than counting lines: GitHub served zero of the first two
+        two-hourly slots after this schedule went live, so there are two
+        offsets inside each window. They must all describe the same interval.
+        """
         import re, yaml
         from pathlib import Path
         from autotrader.config import Config
         doc = yaml.safe_load(Path(".github/workflows/watch.yml").read_text())
         on = doc[True] if True in doc else doc["on"]
-        (cron,) = [c["cron"] for c in on["schedule"]]
-        hours = re.match(r"^\S+\s+\S*\*/(\d+)", cron)
-        assert hours, f"cannot read an interval out of {cron!r}"
-        asked = int(hours.group(1)) * 60
+        crons = [c["cron"] for c in on["schedule"]]
+        assert crons, "the watcher has no schedule at all"
+        asked = set()
+        for cron in crons:
+            hours = re.match(r"^\S+\s+\S*\*/(\d+)", cron)
+            assert hours, f"cannot read an interval out of {cron!r}"
+            asked.add(int(hours.group(1)) * 60)
+        assert len(asked) == 1, f"the cron lines disagree about the interval: {crons}"
+        asked = asked.pop()
         for where in (Config.defaults(), Config.load("config.json")
                       if Path("config.json").exists() else Config.defaults()):
             expected = int(where.get("health.expected_interval_minutes"))
             assert expected == asked, (
                 f"the cron asks for a check every {asked} minutes and the "
                 f"config expects one every {expected}")
+
+    def test_a_second_offset_cannot_double_the_scraping(self):
+        """Two cron lines are insurance against a dropped firing, not a
+        shorter interval. They only stay insurance while every offset lands
+        inside the deduplication floor - past it, the second firing is a
+        second real check on somebody else's site."""
+        import re, yaml
+        from pathlib import Path
+        from autotrader.config import Config
+        doc = yaml.safe_load(Path(".github/workflows/watch.yml").read_text())
+        on = doc[True] if True in doc else doc["on"]
+        minutes = sorted({int(m) for c in on["schedule"]
+                          for m in re.split(r"[,/]", c["cron"].split()[0])
+                          if m.isdigit()})
+        if len(minutes) < 2:
+            return
+        cfg = (Config.load("config.json") if Path("config.json").exists()
+               else Config.defaults())
+        expected = int(cfg.get("health.expected_interval_minutes"))
+        floor = float(cfg.get("health.min_interval_minutes") or expected / 3.0)
+        spread = max(minutes) - min(minutes)
+        assert spread < floor, (
+            f"offsets {minutes} are {spread} minutes apart, past the "
+            f"{floor:.0f}-minute floor - the second one would scrape again")

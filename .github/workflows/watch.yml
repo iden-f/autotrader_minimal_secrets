@@ -24,7 +24,25 @@ on:
     # Twelve checks a day, one job each, is the whole schedule now. What that
     # costs and what it buys is measured in ARCHITECTURE.md rather than
     # asserted.
+    # Two offsets inside one window, not two windows.
+    #
+    # Measured: GitHub served ZERO of the first two two-hourly slots after
+    # this schedule went live, and the last scheduled firing before that was
+    # ten hours earlier. The checks that happened in between came from pushes
+    # and from hand dispatches - that is, from somebody working on the repo,
+    # which is not a schedule.
+    #
+    # 30 minutes apart is well inside the 90-minute deduplication floor, so
+    # if the first is served the second finds a check 30 minutes old and
+    # exits without touching the site: a job-minute, no requests. If the
+    # first is dropped, the second is the check. Twenty-four job-minutes a
+    # day at the very worst, against the thirty this schedule is allowed.
+    #
+    # Two offsets, NOT a shorter interval. The interval is what coverage is
+    # measured against, and config.json still says one check every 120
+    # minutes because that is still what this asks for.
     - cron: '11 */2 * * *'
+    - cron: '41 */2 * * *'
 
   # Check straight away when the watch list changes, instead of leaving someone
   # who just added a search waiting half an hour to find out whether it works.

@@ -128,11 +128,19 @@ class TestTheMechanismsTheRunbookReliesOn:
                     f"{timeout.group(1)} minutes")
 
     def test_the_schedules_are_the_ones_the_docs_quote(self):
+        """Read the crons out of the workflow and look for each of them in
+        the architecture note, rather than writing the list down here as
+        well. A second offset was added and this test failed for quoting a
+        schedule that had changed - which is the whole failure mode it exists
+        to catch, pointed the wrong way."""
         import yaml
         watch = yaml.safe_load(Path(".github/workflows/watch.yml").read_text())
         on = watch[True] if True in watch else watch["on"]
         crons = [c["cron"] for c in on["schedule"]]
-        assert crons == ["11 */2 * * *"], crons
+        assert crons, "the watcher has no schedule"
+        for cron in crons:
+            assert cron in DOCS["ARCHITECTURE.md"], (
+                f"{cron!r} is in watch.yml and not in ARCHITECTURE.md")
         assert "every two hours" in DOCS["RUNBOOK.md"].lower() or \
                "every **two hours**" in DOCS["RUNBOOK.md"]
         assert "Twelve checks a day" in DOCS["ARCHITECTURE.md"]

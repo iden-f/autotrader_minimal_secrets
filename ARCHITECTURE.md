@@ -189,8 +189,26 @@ and it works.
 
 ### The schedule, and what it costs
 
-Twelve checks a day, one job each, on `cron: '11 */2 * * *'`. That is the whole
-schedule. Everything below is why it is not more.
+Twelve checks a day, one job each, on `cron: '11 */2 * * *'` **and
+`'41 */2 * * *'`** - two offsets inside one two-hour window, not two windows.
+That is the whole schedule. Everything below is why it is not more.
+
+**Why two offsets.** Measured on 13 September: GitHub served *zero* of the
+first two two-hourly slots after this schedule went live, and the last
+scheduled firing before that was ten hours earlier. The checks in between came
+from pushes and hand dispatches - from somebody working on the repository,
+which is not a schedule. The second offset is 30 minutes after the first, well
+inside the 90-minute deduplication floor in `health.min_interval_minutes`: if
+the first firing is served, the second finds a check half an hour old and
+exits without touching the site, costing a job-minute and no requests. If the
+first is dropped, the second *is* the check. Twenty-four job-minutes a day at
+the very worst.
+
+The interval is unchanged at 120 minutes, and `config.json` still says so,
+because that is still what this asks for - two offsets are insurance against a
+dropped firing, not a shorter schedule. `tests/test_workflows.py` asserts every
+offset stays inside the floor, so a third one cannot quietly become a second
+scrape.
 
 **What GitHub charges.** Every *job* is rounded up to a whole minute. A check
 takes about 35 seconds, so it costs one minute; a check plus a separate
