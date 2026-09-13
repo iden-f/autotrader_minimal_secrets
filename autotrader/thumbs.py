@@ -10,8 +10,8 @@ cannot reach autoscout24.
 So the bot fetches them itself, on the runs that have a real network, and
 commits small copies alongside the data. The CDN already serves a 250px
 variant, so there is nothing to re-encode and no image library to install -
-the work is fetching, checking that what came back is actually an image, and
-staying inside a budget.
+the work is asking for that variant rather than the 1920px original, checking
+that what came back is actually an image, and staying inside a budget.
 
 Nothing here may fail a run. A photo is a nicety; a check is the job.
 """
@@ -43,6 +43,31 @@ EXT = {"image/webp": ".webp", "image/jpeg": ".jpg",
        "image/png": ".png", "image/avif": ".avif"}
 
 _ID_OK = re.compile(r"^[A-Za-z0-9_-]{6,64}$")
+
+# The CDN sizes a photo in its own path:
+#   .../listing-images/<id>_<id>.jpg/1920x1080.jpg
+# The page draws a card about 300px wide; the listing page hands out the
+# 1920px original. That is 90-200 KB of JPEG for a few KB of usefulness, and
+# every one of them is over the cap above - so the first check after the watch
+# changed fetched nothing at all, failed 25 photos in a row, and every card on
+# the dashboard said "photo not copied yet". It read as a CDN problem. It was
+# the bot asking for the wrong file.
+_SIZED = re.compile(r"/(\d{2,5})x(\d{2,5})\.(jpe?g|png|webp)$", re.I)
+# Big enough to hold up on a phone at 2x, small enough to live in a git
+# repository somebody has to clone. Tried in order, original last.
+THUMB_SIZES = ("480x360", "250x188")
+
+
+def variants(url: str) -> list[str]:
+    """The URLs to try for one photo, smallest useful first, original last."""
+    match = _SIZED.search(url or "")
+    if not match:
+        return [url] if url else []
+    have = f"{match.group(1)}x{match.group(2)}".lower()
+    out = [_SIZED.sub(f"/{size}.{match.group(3)}", url)
+           for size in THUMB_SIZES if size != have]
+    out.append(url)
+    return out
 
 
 @dataclass
@@ -192,12 +217,11 @@ def sync(entries: Iterable[dict[str, Any]], fetcher: Any,
             continue
 
         url = (entry.get("images") or [None])[0]
-        got = _fetch_one(url, fetcher)
+        got = _fetch_best(url, fetcher, report)
         if got is None:
             report.failed += 1
             continue
         blob, content_type, note = got
-        report.samples.append(note)
         if blob is None:
             report.failed += 1
             continue
@@ -226,6 +250,29 @@ def sync(entries: Iterable[dict[str, Any]], fetcher: Any,
     if not dry_run:
         _save_index(index)
     return report
+
+
+def _fetch_best(url: str | None, fetcher: Any, report: "Report"
+                ) -> tuple[bytes | None, str, dict[str, Any]] | None:
+    """The smallest variant of this photo that actually comes back.
+
+    One request in the normal case: the resizing CDN serves the size the path
+    asks for. The original is still tried last, so a URL shape nobody here has
+    seen costs an extra request rather than a missing photo.
+    """
+    last: tuple[bytes | None, str, dict[str, Any]] | None = None
+    for candidate in variants(url or ""):
+        got = _fetch_one(candidate, fetcher)
+        if got is None:
+            last = None
+            continue
+        last = got
+        if got[0] is not None:
+            report.samples.append(got[2])
+            return got
+    if last is not None:
+        report.samples.append(last[2])
+    return last
 
 
 def _fetch_one(url: str | None, fetcher: Any

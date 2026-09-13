@@ -264,3 +264,87 @@ class TestAgainstTheFetcherWeActuallyHave:
         report = thumbs.sync([car(1)], Spent())
         assert report.failed == 1
         assert "budget" in report.samples[0]["error"]
+
+
+class TestAskingForTheRightSize:
+    """The photo URL carries its own dimensions, and the bot took what it
+    was given.
+
+    A live check after the watched searches changed: 25 photos attempted, 25
+    failed, every one "over the 60000 cap" - because the listing pages now
+    hand out `.../<id>.jpg/1920x1080.jpg` and a 1920px JPEG is 90-200 KB. The
+    cap was right. The request was wrong.
+    """
+
+    BIG = "https://prod.pictures.autoscout24.net/listing-images/a_b.jpg/1920x1080.jpg"
+
+    def test_the_smallest_useful_variant_is_asked_for_first(self):
+        assert thumbs.variants(self.BIG)[0].endswith("/480x360.jpg")
+
+    def test_the_original_is_still_the_last_resort(self):
+        assert thumbs.variants(self.BIG)[-1] == self.BIG
+
+    def test_a_url_that_is_already_small_is_not_asked_for_twice(self):
+        small = "https://cdn.test/a.jpg/480x360.jpg"
+        assert small not in thumbs.variants(small)[:-1]
+        assert thumbs.variants(small)[-1] == small
+
+    def test_a_url_with_no_size_in_it_is_left_alone(self):
+        plain = "https://cdn.test/photo.webp"
+        assert thumbs.variants(plain) == [plain]
+
+    def test_the_extension_is_preserved(self):
+        webp_url = "https://cdn.test/a.webp/1920x1080.webp"
+        assert all(v.endswith(".webp") for v in thumbs.variants(webp_url))
+
+    def test_nothing_is_asked_for_when_there_is_no_url(self):
+        assert thumbs.variants("") == []
+
+    def test_a_big_original_no_longer_costs_the_photo(self, here):
+        """End to end: the CDN serves the size in the path, as the real one does."""
+
+        class Sizing:
+            def __init__(self):
+                self.calls = []
+
+            def get(self, url, referer=None, allow_block=False):
+                self.calls.append(url)
+                big = "1920x1080" in url
+                return Response(webp(pad=200_000 if big else 900), 200, "image/webp")
+
+        cdn = Sizing()
+        entry = dict(car(1))
+        entry["images"] = [self.BIG]
+        report = thumbs.sync([entry], cdn)
+        assert report.fetched == 1 and report.failed == 0, report.notes
+        assert cdn.calls == [self.BIG.replace("1920x1080", "480x360")], cdn.calls
+
+    def test_it_falls_back_rather_than_giving_up(self, here):
+        """A size the CDN does not serve costs a request, never the photo."""
+
+        class Picky:
+            def __init__(self):
+                self.calls = []
+
+            def get(self, url, referer=None, allow_block=False):
+                self.calls.append(url)
+                if "480x360" in url:
+                    return Response(b"not found", 404, "text/plain")
+                return Response(webp(), 200, "image/webp")
+
+        cdn = Picky()
+        entry = dict(car(1))
+        entry["images"] = [self.BIG]
+        report = thumbs.sync([entry], cdn)
+        assert report.fetched == 1 and report.failed == 0
+        assert len(cdn.calls) == 2 and "250x188" in cdn.calls[1]
+
+    def test_a_photo_that_is_too_big_at_every_size_still_reports_why(self, here):
+        cdn = CDN(mode="huge")
+        entry = dict(car(1))
+        entry["images"] = [self.BIG]
+        report = thumbs.sync([entry], cdn)
+        assert report.fetched == 0 and report.failed == 1
+        assert "over the" in report.samples[-1]["error"]
+        assert len(report.samples) == 1, "one car, one sample"
+
