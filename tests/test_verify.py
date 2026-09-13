@@ -54,8 +54,21 @@ class Site:
             exc.status = 404
             raise exc
         if lid in self.missing:
-            return "<html><body>This listing is no longer available</body></html>"
-        return PAGE % self.prices.get(lid, 60000)
+            return self._as_the_real_one_would(
+                url, "<html><body>This listing is no longer available</body></html>")
+        return self._as_the_real_one_would(url, PAGE % self.prices.get(lid, 60000))
+
+    @staticmethod
+    def _as_the_real_one_would(url, html):
+        """The real Response, not a string that reads like one.
+
+        This stand-in returned bare markup, every test passed, and the job
+        died on the runner handing a Response to a parser that takes markup.
+        A stand-in is only worth anything if it returns what the thing it
+        stands in for returns, so it builds the real class.
+        """
+        from autotrader.http import Response
+        return Response(url=url, status=200, text=html, elapsed_ms=1)
 
     def close(self):
         pass
@@ -85,6 +98,22 @@ def run(monkeypatch, site, *args):
 
 
 class TestItActuallyRuns:
+    def test_the_stand_in_returns_what_the_real_fetcher_returns(self):
+        """The second bug that shipped: a Response handed to a parser that
+        takes markup, because the stand-in returned a str and nothing here
+        compared the two.
+
+        Read from the real annotation rather than repeating it, so this stays
+        true if Fetcher.get ever returns something else.
+        """
+        import typing
+        from autotrader.http import Fetcher
+
+        want = typing.get_type_hints(Fetcher.get)["return"]
+        got = Site().get("https://www.autotrader.ca/a/bmw/m4/x/on/19_aaa_/")
+        assert isinstance(got, want), (type(got), want)
+        assert isinstance(got.text, str)
+
     def test_the_fetcher_is_built_the_way_the_fetcher_wants(self, bench, monkeypatch):
         """The bug that shipped: Fetcher(cfg), four seconds into a job."""
         seen = {}

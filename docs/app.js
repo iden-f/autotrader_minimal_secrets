@@ -38,19 +38,53 @@ const KIND = {
 const KIND_ORDER = ['price_drop', 'qualified', 'new', 'priced', 'price_rise',
                     'relisted', 'seller', 'photos', 'removed'];
 
+/* No sort ranks a missing value as the worst value.
+   `?? Infinity` put the two "call for price" cars at the bottom of a list
+   headed "cheapest", which is the page asserting something about them that
+   their own rows say it cannot know. Rows with nothing to rank are separated
+   out and labelled instead. */
 const SORTS = [
-  { id: 'newest',   label: 'Newest first',      get: l => -(Date.parse(l.first_seen) || 0) },
-  { id: 'price',    label: 'Asking, low first', get: l => l.price ?? Infinity },
-  { id: 'priced',   label: 'Asking, high first',get: l => -(l.price ?? -Infinity) },
-  // "Best" is a claim about value; this is asking price divided by odometer,
-  // which ranks a 2010 X3 with 269,000 km and $2,150 on it above every M4 in
-  // the watch. The arithmetic is right and the word was wrong.
-  { id: 'perkm',    label: 'Cheapest per 1,000 km', get: l => l.per_1000km ?? Infinity },
-  { id: 'year',     label: 'Newest year',       get: l => -(l.year || 0) },
-  { id: 'km',       label: 'Lowest odometer',   get: l => l.mileage_km ?? Infinity },
-  { id: 'distance', label: 'Closest',           get: l => l.distance_km ?? Infinity },
-  { id: 'days',     label: 'Longest listed',    get: l => -(l.days_listed ?? -1) },
+  { id: 'newest',   label: 'Newest first',       absent: 'no first-seen date',
+    get: l => { const t = Date.parse(l.first_seen); return Number.isFinite(t) ? -t : null; } },
+  { id: 'price',    label: 'Asking, low first',  absent: 'no asking price',
+    get: l => l.price ?? null },
+  { id: 'priced',   label: 'Asking, high first', absent: 'no asking price',
+    get: l => l.price == null ? null : -l.price },
+  // There was a "Best $/1000km" sort here, then a "Cheapest per 1,000 km"
+  // one. Both were an odometer sort with a dollar sign on it: measured over
+  // the 26 cars in this watch, its rank correlates 0.97 with "most
+  // kilometres first" and 0.73 with "cheapest first". It crowned a 269,000 km
+  // 2010 X3 at $2,150 and put the freshest M4 in the list last. No threshold
+  // fixes that - the metric is the odometer - so the sort is gone.
+  //
+  // A defensible replacement exists and is not offered yet: rank by
+  // comparables.pct, once enough cars carry one. On this dataset that is
+  // none, and a "best value" sort that can rank nothing is worse than no
+  // sort at all.
+  { id: 'year',     label: 'Newest year',        absent: 'no model year',
+    get: l => l.year ? -l.year : null },
+  { id: 'km',       label: 'Lowest odometer',    absent: 'no odometer reading',
+    get: l => l.mileage_km ?? null },
+  { id: 'distance', label: 'Closest',            absent: 'no distance from you',
+    get: l => l.distance_km ?? null },
+  { id: 'days',     label: 'Longest listed',     absent: 'no first-seen date',
+    get: l => l.days_listed == null ? null : -l.days_listed },
 ];
+
+/* Split, then sort. A row whose value the sort cannot read is not a row at the
+   bottom of the ranking - it is a row outside it, and the page says which.
+   The tail is ordered newest-first, which is the page's own default and makes
+   no claim about the metric that could not be read. */
+function ranked(rows, sort) {
+  const has = [], absent = [];
+  for (const l of rows) (sort.get(l) == null ? absent : has).push(l);
+  has.sort((a, b) => {
+    const x = sort.get(a), y = sort.get(b);
+    return x === y ? 0 : (x < y ? -1 : 1);
+  });
+  absent.sort((a, b) => (Date.parse(b.first_seen) || 0) - (Date.parse(a.first_seen) || 0));
+  return { has, absent };
+}
 
 const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
@@ -86,6 +120,10 @@ const km = n => (n === null || n === undefined) ? null : num(n);
    German phone. */
 const num = n => (n === null || n === undefined || n === '') ? '—'
   : Math.round(n).toLocaleString('en-CA');
+/* One pluraliser, for the same reason. There were two: one closed over inside
+   the market view and one open-coded in slotWord, and they disagreed about
+   whether the count was grouped - "1000 cars" beside "1,000 km". */
+const plural = (n, word) => `${num(n)} ${word}${n === 1 ? '' : 's'}`;
 
 function when(iso) {
   const t = Date.parse(iso);
@@ -118,6 +156,16 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
    The word was written into four separate strings when the schedule happened
    to be half-hourly, and stayed there when it stopped being. */
 /* "2.3h" and "24h" and "the last 24 hours" were three shapes for one idea. */
+/* "re-read about every 120 minutes" is not how anyone says it. One function
+   for a duration given in minutes, used wherever the schedule is described. */
+function every(minutes) {
+  const m = Number(minutes) || 0;
+  if (m < 60) return `${m} minutes`;
+  if (m % 60) return `${Math.round(m / 6) / 10} hours`;
+  const h = m / 60;
+  return h === 1 ? 'hour' : `${h} hours`;
+}
+
 function hours(n) {
   const h = Number(n) || 0;
   if (h < 1) return `${Math.round(h * 60)} minutes`;
@@ -125,14 +173,53 @@ function hours(n) {
   return `${rounded} hour${rounded === 1 ? '' : 's'}`;
 }
 
-function slotWord(cov, plural) {
+function slotWord(cov, one_only) {
   const mins = (cov && cov.expected_interval_minutes) || 30;
   const one = mins === 30 ? 'half-hour'
     : mins === 60 ? 'hour'
     : mins % 60 === 0 ? `${mins / 60}-hour slot`
     : `${mins}-minute slot`;
-  return plural === false ? one : one + 's';
+  return one_only === false ? one : one + 's';
 }
+
+/* One name for the ratio, and one gate on the comparison.
+
+   Both were written twice. The card said "/1000km" and the specification
+   table said "Per 1,000 km" for the same number; the card showed the
+   comparison only when `notable` was set and the sheet showed it whenever a
+   percentage existed, so a car could carry a figure in the sheet and nothing
+   on its card and the reader had no way to tell that from no figure at all.
+
+   `notable` is gone. A percentage now needs twelve comparables to exist, and
+   a figure that took twelve cars to earn is worth printing whether or not it
+   is dramatic. Silence on a card means one thing: this car has no cohort
+   big enough. The sheet says which. */
+const PER_KM = 'per 1,000 km';
+
+function comparableSays(cmp, l) {
+  if (!cmp) return null;
+  if (cmp.pct !== undefined) {
+    const under = cmp.pct < 0, n = Math.round(Math.abs(cmp.pct));
+    return {
+      tone: under ? 'drop' : '',
+      badge: `${n}% ${under ? 'under' : 'over'} the median of ${num(cmp.sample)}`,
+      sentence: `${n}% ${under ? 'under' : 'over'} the median ${money(cmp.median)} `
+        + `of ${plural(cmp.sample, 'comparable')} — ${esc(cmp.cohort || 'cars like it')}, `
+        + `each within a third of this car's odometer.`,
+    };
+  }
+  if (cmp.rank !== undefined) {
+    return {
+      tone: '',
+      badge: `${ordinal(cmp.rank)} cheapest of ${num(cmp.of)}`,
+      sentence: esc(cmp.why_not) + '.',
+    };
+  }
+  return { tone: '', badge: null, sentence: cmp.why_not ? esc(cmp.why_not) + '.' : null };
+}
+
+const ordinal = n => (n % 100 >= 10 && n % 100 <= 20) ? `${n}th`
+  : `${n}${ ({ 1: 'st', 2: 'nd', 3: 'rd' })[n % 10] || 'th' }`;
 
 function carName(l) {
   const head = String(l.title || '').split('|')[0].trim();
@@ -371,7 +458,7 @@ function welcome() {
   box.innerHTML = `
     <h2>This is watching ${searches.length} search${searches.length === 1 ? '' : 'es'} on autotrader.ca</h2>
     <p>${esc(andList(searches) || 'nothing yet')} — ${visible().length} cars live
-       right now, re-read about every ${cov.expected_interval_minutes || 30} minutes.</p>
+       right now, re-read about every ${every(cov.expected_interval_minutes || 30)}.</p>
     <p><b>Alerts</b> go to ${(d.notify?.active || []).join(', ') || 'nowhere yet — no channel is switched on'}.
        <b>Feed</b> is what changed since you last looked. <b>Status</b> says whether
        the bot itself is healthy, and the dot beside the title up there says it at a glance.</p>
@@ -498,6 +585,10 @@ function eventRow(e) {
     sub.push('was call for price');
   } else if (e.price) {
     fig = `<span class="ev__fig num">${money(e.price)}</span>`;
+  } else if (e.kind === 'new') {
+    // A car with no price is a dealer withholding one, and the row said
+    // nothing at all about it - a title and the word "alerted".
+    fig = '<span class="ev__fig">Call for price</span>';
   }
   if (e.filtered) sub.push(`<span>hidden — ${esc(e.filter_reason || 'a rule of yours')}</span>`);
   else if (e.delivery?.state === 'sent') sub.push('<span>alerted</span>');
@@ -555,10 +646,7 @@ function listingPool() {
       .filter(Boolean).join(' ').toLowerCase().includes(q));
   }
   const sort = SORTS.find(s => s.id === app.sort) || SORTS[0];
-  return rows.slice().sort((a, b) => {
-    const x = sort.get(a), y = sort.get(b);
-    return (x === y) ? 0 : (x < y ? -1 : 1);
-  });
+  return { sort, ...ranked(rows, sort) };
 }
 
 function renderListings() {
@@ -640,17 +728,28 @@ function renderListings() {
   }
   host.appendChild(chips);
 
-  const rows = listingPool();
-  if (!rows.length) {
+  const pool = listingPool();
+  const total = pool.has.length + pool.absent.length;
+  if (!total) {
     host.appendChild(noResults(counts));
     return;
   }
 
   const grid = el('div', 'grid');
-  for (const l of rows.slice(0, 300)) grid.appendChild(card(l));
+  let drawn = 0;
+  for (const l of pool.has.slice(0, 300)) { grid.appendChild(card(l)); drawn++; }
+  if (pool.absent.length && drawn < 300) {
+    // Not "unsortable" - the reader did not ask about sorting, they asked for
+    // the cheapest. This says which cars the question could not be asked of,
+    // in the words of the thing that is missing.
+    const split = el('p', 'grid__split');
+    split.textContent = `${plural(pool.absent.length, 'car')} with ${pool.sort.absent}`;
+    grid.appendChild(split);
+    for (const l of pool.absent.slice(0, 300 - drawn)) { grid.appendChild(card(l)); drawn++; }
+  }
   host.appendChild(grid);
-  if (rows.length > 300) {
-    host.appendChild(el('p', 'note', `Showing the first 300 of ${rows.length}.`));
+  if (total > drawn) {
+    host.appendChild(el('p', 'note', `Showing the first ${num(drawn)} of ${num(total)}.`));
   }
   bar.querySelector('#q').addEventListener('input', e => {
     app.q = e.target.value;
@@ -796,14 +895,18 @@ function card(l) {
   if (l.mileage_km) facts.push(`<span class="num">${km(l.mileage_km)}<u> km</u></span>`);
   // money(), not a bare $ and Math.round: "$1113" sat next to "$69,000" on
   // eleven of twenty-six cards, the same currency formatted two ways.
-  if (l.per_1000km) facts.push(`<span class="num">${money(l.per_1000km)}<u> /1000km</u></span>`);
-  if (l.distance_km !== undefined && l.distance_km !== null) facts.push(`<span class="num">${km(l.distance_km)}<u> km away</u></span>`);
+  if (l.per_1000km) facts.push(`<span class="num">${money(l.per_1000km)}<u> ${PER_KM}</u></span>`);
+  // "0 km away" reads as a missing value, not as "this one is in your city".
+  if (l.distance_km !== undefined && l.distance_km !== null) {
+    facts.push(l.distance_km < 1
+      ? '<span>right here</span>'
+      : `<span class="num">${km(l.distance_km)}<u> km away</u></span>`);
+  }
   if (l.location) facts.push(`<span>${esc(l.location)}</span>`);
 
   const foot = [];
-  if (cmp?.pct !== undefined && cmp.notable) {
-    foot.push(`<span class="${cmp.pct < 0 ? 'drop' : ''}">${Math.round(Math.abs(cmp.pct))}% ${cmp.pct < 0 ? 'under' : 'over'} median of ${cmp.sample}</span>`);
-  }
+  const says = comparableSays(cmp, l);
+  if (says?.badge) foot.push(`<span class="${says.tone}">${says.badge}</span>`);
   if (l.days_listed !== undefined) foot.push(`<span class="num">${daysListed(l.days_listed)}</span>`);
   if (l.photo_count) foot.push(`<span class="num">${l.photo_count} photo${
     l.photo_count === 1 ? '' : 's'}</span>`);
@@ -926,7 +1029,6 @@ function renderMarket() {
   const v = m.velocity || {}, d = m.discounting || {};
   const st = m.still_listed_days || {}, lt = m.listed_days || {};
   const days = n => `${n}<small style="display:inline"> day${n === 1 ? '' : 's'}</small>`;
-  const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
   // Three of these six are bounded by how long the bot has been watching
   // rather than by the market. Left unmarked, a two-day-old watch reports a
   // market that turns over in two days, which is a statement about the bot.
@@ -1303,7 +1405,7 @@ function renderStatus() {
       <dd class="num">${cov.too_short ? '—' : `${cov.pct ?? '—'}%`}</dd>
       <dd class="stat__note">${cov.too_short
         ? `measuring for ${hours(cov.window_hours)} so far, since the schedule `
-          + `changed to one check every ${cov.expected_interval_minutes} minutes. `
+          + `changed to one check every ${every(cov.expected_interval_minutes)}. `
           + `${cov.successful ?? 0} check${cov.successful === 1 ? '' : 's'} in that time.`
         : `${cov.slots_covered ?? cov.successful ?? 0} of ${cov.expected ?? 0} ${slotWord(cov)}`
           + `${cov.partial ? ` in the ${hours(cov.window_hours)} since the schedule changed` : ''}`
@@ -1562,6 +1664,7 @@ function sheetBody(l) {
   const frag = document.createDocumentFragment();
   const move = priceMove(l);
   const cmp = app.data.comparables?.[String(l.id)];
+  const says = comparableSays(cmp, l);
 
   const gal = el('div', 'gallery');
   // Only the photos we hold a copy of. This was [l.thumb, ...l.images], so
@@ -1612,11 +1715,7 @@ function sheetBody(l) {
       ${move ? `<span class="card__was num">${money(move.was)}</span>
         <span class="num ${move.delta < 0 ? 'drop' : 'rise'}" style="font-weight:520">${signed(move.delta)}</span>` : ''}
     </div>` +
-    (cmp?.pct !== undefined
-      ? `<p class="note">${Math.round(Math.abs(cmp.pct))}% ${cmp.pct < 0 ? 'under' : 'over'} the median
-          ${money(cmp.median)} of <b>${cmp.sample}</b> comparable ${esc(l.make || '')} ${esc(l.model || '')}
-          within ${cmp.band} year of ${l.year}.</p>`
-      : cmp?.why_not ? `<p class="note">${esc(cmp.why_not)}.</p>` : '');
+    (says?.sentence ? `<p class="note note--cmp">${says.sentence}</p>` : '');
   frag.appendChild(price);
 
   // Why you are seeing this, or why you did not hear about it.
@@ -1650,8 +1749,13 @@ function sheetBody(l) {
   const kv = el('dl', 'kv');
   const pairs = [
     ['Year', l.year], ['Odometer', l.mileage_km ? `${km(l.mileage_km)} km` : null],
-    ['Per 1,000 km', l.per_1000km ? money(l.per_1000km) : null],
-    ['Distance', (l.distance_km ?? null) !== null ? `${km(l.distance_km)} km from ${esc(l.distance_from || 'home')}` : null],
+    // The one row that explains its own blank, because the blank has three
+    // possible causes and two of them are about the ratio rather than the car.
+    [`Asking ${PER_KM}`, l.per_1000km ? money(l.per_1000km)
+      : l.per_1000km_why ? `not shown — ${l.per_1000km_why}` : null],
+    ['Distance', (l.distance_km ?? null) === null ? null
+      : l.distance_km < 1 ? `in ${esc(l.distance_from || 'your area')}`
+      : `${km(l.distance_km)} km from ${esc(l.distance_from || 'home')}`],
     ['On the market', l.days_listed === undefined ? null : daysListed(l.days_listed)], ['Colour', l.color], ['Body', l.body],
     ['Transmission', l.transmission], ['Drivetrain', l.drivetrain], ['Fuel', l.fuel],
     ['Location', [l.location, l.province].filter(Boolean).join(', ')],

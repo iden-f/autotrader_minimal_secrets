@@ -609,7 +609,10 @@ def cmd_verify(args: argparse.Namespace) -> int:
                 unreadable += 1
                 continue
             try:
-                html = fetcher.get(url)
+                # `response`, not `html` - every other call site in this
+                # package names it that, and calling it `html` is what let a
+                # Response object be handed to a parser that takes markup.
+                response = fetcher.get(url)
             except FetchError as exc:
                 # A 404 or a 410 is the site saying the car is gone, which is
                 # an answer rather than a failure.
@@ -625,6 +628,7 @@ def cmd_verify(args: argparse.Namespace) -> int:
 
             from .enrich import detail_from_html
             from .parser import looks_like_no_results
+            html = response.text
             fresh = detail_from_html(html, str(entry.get("id") or ""), url)
             if fresh is None:
                 if looks_like_no_results(html):

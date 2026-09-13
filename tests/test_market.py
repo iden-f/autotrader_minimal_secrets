@@ -434,3 +434,60 @@ class TestTheDenominatorCanMove:
                 + [self.watched_for(50 + i, 24 * 9, price=90000) for i in range(8)])
         out = insight.backtest(cars)
         assert out["called_cheap"] + out["called_dear"] > 0
+
+
+class TestEveryCarGetsAnAnswer:
+    """A blank meant five different things, and only one of them was
+    "we compared it and there was nothing to say".
+
+    comparables() used to key its result on the pool - priced, dated,
+    named, live, not hidden by a rule - so a car failing any of those
+    five had no row at all, and the page rendered the same nothing it
+    renders for a car with a cohort of two.
+    """
+
+    @staticmethod
+    def _out(*cars):
+        return insight.comparables(list(cars))
+
+    def test_a_car_with_no_price_says_so(self):
+        out = self._out(car(1, price=None, make="BMW", model="M4"))
+        row = out["00000001-0000-0000-0000-000000000000"]
+        assert "no asking price" in row["why_not"]
+
+    def test_a_car_that_has_left_says_so(self):
+        out = self._out(car(1, status="gone", make="BMW", model="M4"))
+        assert "left the market" in out[
+            "00000001-0000-0000-0000-000000000000"]["why_not"]
+
+    def test_a_car_a_rule_hides_says_so(self):
+        out = self._out(car(1, filtered=True, make="BMW", model="M4"))
+        assert "rule of yours" in out[
+            "00000001-0000-0000-0000-000000000000"]["why_not"]
+
+    def test_a_car_with_no_year_says_so(self):
+        out = self._out(car(1, year=None, make="BMW", model="M4"))
+        assert "model year" in out[
+            "00000001-0000-0000-0000-000000000000"]["why_not"]
+
+    def test_a_car_with_no_model_says_so(self):
+        out = self._out(car(1))
+        assert "make and model" in out[
+            "00000001-0000-0000-0000-000000000000"]["why_not"]
+
+    def test_every_car_in_a_mixed_list_carries_a_row(self):
+        cars = [car(1, make="BMW", model="M4"),
+                car(2, make="BMW", model="M4", price=None),
+                car(3, make="BMW", model="M4", status="gone"),
+                car(4, make="BMW", model="M4", filtered=True),
+                car(5, year=None, make="BMW", model="M4"),
+                car(6)]
+        out = insight.comparables(cars)
+        assert len(out) == len(cars)
+        for row in out.values():
+            assert row.get("why_not") or row.get("pct") is not None \
+                or row.get("rank") is not None
+
+    def test_a_generator_is_read_once_and_still_answers_everything(self):
+        cars = [car(i, make="BMW", model="M4") for i in range(4)]
+        assert len(insight.comparables(c for c in cars)) == len(cars)

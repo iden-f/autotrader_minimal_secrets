@@ -21,6 +21,9 @@ from .listing import name_of
 # percentage sign on it. Below this many comparables the dashboard says so
 # instead of scoring.
 MIN_COMPARABLES = 6
+# And this many before a PERCENTAGE, which is a claim about a market rather
+# than about the sample in hand. Between the two, a car gets its rank.
+MIN_FOR_A_PERCENTAGE = 12
 # How long a car must have been watched before "it did not cut its price"
 # means anything about the car rather than about the bot.
 BACKTEST_MIN_DAYS = 1
@@ -57,11 +60,30 @@ def _group_key(entry: dict[str, Any]) -> tuple[str, str] | None:
 def comparables(entries: Iterable[dict[str, Any]]) -> dict[str, dict[str, Any]]:
     """For each priced car, how it sits against others of its kind.
 
-    "Its kind" is the same make and model within a year either side. The
-    sample size travels with the answer everywhere it is shown, because the
-    honest reading of "14% under median" depends entirely on whether that is
-    fourteen cars or three.
+    Three answers, and which one a car gets depends only on how many peers it
+    has - never on how interesting the number would be:
+
+      n >= 12   a percentage against the cohort median
+      6..11     its RANK inside the cohort, and no percentage
+      below 6   why not, naming the bot's limit rather than the market's
+
+    The middle rule is the one that matters. A rank is a true statement about
+    the sample in hand; a percentage is a claim about a market. On the eight
+    peers this bot had when the rule was written, the inter-quartile range was
+    $14,796 - 22.7% of the median - so the 8% threshold used to decide a car
+    was worth pointing at fired inside a third of one IQR. Enumerating all 28
+    six-car subsets of that cohort, the same car read anywhere from "2% under"
+    to "13% under", and 18 of the 28 would have flagged it.
+
+    One median per cohort, quoted identically on every car in it. Nine cars
+    used to be given four different medians - $59,449, $61,749, $62,399,
+    $65,149 - for what reads as one market, a 9.6% spread, wider than the
+    threshold used to call a car cheap.
     """
+    # Read once. This is an Iterable, and the second pass below - the one
+    # that explains the cars the pool excluded - would see nothing at all if
+    # a caller handed in a generator.
+    entries = list(entries)
     # Cars your rules keep. A 2020 M4 judged against 2021 M4s - which the year
     # rule exists to exclude - is judged against a market you are not shopping
     # in, and reads as a bargain for being older.
@@ -69,46 +91,191 @@ def comparables(entries: Iterable[dict[str, Any]]) -> dict[str, dict[str, Any]]:
             if e.get("price") and e.get("year") and _group_key(e)
             and e.get("status") == "active" and not e.get("filtered")]
 
+    # One cohort per (make, model, year band), so every car in it is quoted
+    # the same median.
+    cohorts: dict[tuple, list[dict[str, Any]]] = {}
+    for entry in pool:
+        key = (_group_key(entry), int(entry["year"]) // (YEAR_BAND * 2 + 1))
+        cohorts.setdefault(key, []).append(entry)
+
     out: dict[str, dict[str, Any]] = {}
     for entry in pool:
-        key = _group_key(entry)
-        year = int(entry["year"])
-        peers = [p for p in pool
-                 if p["id"] != entry["id"] and _group_key(p) == key
-                 and abs(int(p["year"]) - year) <= YEAR_BAND]
+        key = (_group_key(entry), int(entry["year"]) // (YEAR_BAND * 2 + 1))
+        cohort = cohorts[key]
+        odo = entry.get("mileage_km")
+        # Peers must match on wear as well as on name. A 137,241 km M4 was
+        # being called "9% under the median" of eight cars whose median
+        # odometer was 58,256 - it carries 2.36 times the kilometres, and the
+        # $6,150 discount works out at 8 cents per extra kilometre.
+        peers = [p for p in cohort if p["id"] != entry["id"]
+                 and _similar_wear(odo, p.get("mileage_km"))]
         prices = sorted(int(p["price"]) for p in peers)
-        row: dict[str, Any] = {"sample": len(prices), "band": YEAR_BAND}
-        if len(prices) >= MIN_COMPARABLES:
-            median = statistics.median(prices)
+        row: dict[str, Any] = {"sample": len(prices), "band": YEAR_BAND,
+                               "cohort": _cohort_name(entry)}
+
+        if len(prices) >= MIN_FOR_A_PERCENTAGE:
+            everyone = sorted([int(p["price"]) for p in peers] + [int(entry["price"])])
+            median = statistics.median(everyone)
             row["median"] = int(median)
             row["delta"] = int(entry["price"]) - int(median)
             row["pct"] = round((entry["price"] - median) / median * 100.0, 1)
             row["notable"] = abs(row["pct"]) >= NOTABLE_PCT
             row["cheaper_than"] = sum(1 for p in prices if p > entry["price"])
-        else:
+            odos = [p.get("mileage_km") for p in peers if p.get("mileage_km")]
+            row["peer_median_km"] = int(statistics.median(odos)) if odos else None
+        elif len(prices) >= MIN_COMPARABLES:
+            # A rank, which is true of this sample, instead of a percentage,
+            # which would be a claim about a market this size cannot support.
+            everyone = sorted([int(p["price"]) for p in peers] + [int(entry["price"])])
+            row["rank"] = everyone.index(int(entry["price"])) + 1
+            row["of"] = len(everyone)
             row["why_not"] = (
-                f"only {len(prices)} other {entry.get('make','')} "
-                f"{entry.get('model','')} within a year of {year} to compare "
-                f"against - not enough to call it cheap or dear")
+                f"{_ordinal(row['rank'])} cheapest of {row['of']} "
+                f"{row['cohort']} here - too few to call it cheap or dear")
+        else:
+            row["why_not"] = _no_cohort(entry, len(prices), cohort)
         out[str(entry["id"])] = row
+
+    # And a row for every car that never reached the pool, saying which of
+    # the five preconditions it failed.
+    #
+    # Without this the page had one blank for five different situations: a
+    # car with no asking price, a car that has left the market, a car a rule
+    # hides, a car whose year did not parse, and a car with a cohort of two.
+    # Only the last of those was ever explained, so silence meant "we looked
+    # and there was nothing" on one card and "we never looked" on the next.
+    seen = {str(e["id"]) for e in pool}
+    for entry in entries:
+        key = str(entry.get("id") or "")
+        if not key or key in seen:
+            continue
+        out[key] = {"sample": 0, "why_not": _never_compared(entry)}
     return out
 
 
-def per_1000km(price: Any, km: Any) -> float | None:
-    """Asking price per thousand kilometres. Useful, and easy to mislead with.
+def _never_compared(entry: dict[str, Any]) -> str:
+    """Why a car was not put up against any other."""
+    if entry.get("status") != "active":
+        return ("it has left the market - the last price the bot saw is the "
+                "one recorded above, and it is not compared against cars "
+                "still for sale")
+    if entry.get("filtered"):
+        return ("a rule of yours hides it, and the comparison is made only "
+                "against the cars you are actually shopping")
+    if not entry.get("price"):
+        return "it has no asking price, so there is nothing to compare"
+    if not entry.get("year"):
+        return ("its model year did not parse, and the comparison is made "
+                "within a year band")
+    return ("its make and model did not parse, so it has no cohort on this "
+            "dashboard")
 
-    Meaningless under a few thousand km - a 900km car would read as an
-    enormous number that says nothing about value - so it is not computed
-    there rather than being computed and disclaimed.
+
+def _similar_wear(mine: Any, theirs: Any, tolerance: float = 0.35) -> bool:
+    """Close enough on the odometer to be the same kind of car.
+
+    A car with no reading is never excluded - the table of what we know is
+    the thing most likely to be incomplete, and dropping a peer for a missing
+    field shrinks the sample that decides whether there is a sample at all.
     """
+    try:
+        mine, theirs = int(mine), int(theirs)
+    except (TypeError, ValueError):
+        return True
+    if mine <= 0 or theirs <= 0:
+        return True
+    return abs(theirs - mine) <= max(mine, theirs) * tolerance
+
+
+def _cohort_name(entry: dict[str, Any]) -> str:
+    make = str(entry.get("make") or "").strip()
+    model = str(entry.get("model") or "").strip()
+    year = entry.get("year")
+    span = (f"{int(year) - YEAR_BAND}-{int(year) + YEAR_BAND}" if year else "")
+    return " ".join(p for p in (make, model, span) if p).strip() or "cars like it"
+
+
+def _ordinal(n: int) -> str:
+    if 10 <= n % 100 <= 20:
+        return f"{n}th"
+    return f"{n}{ {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th') }"
+
+
+def _no_cohort(entry: dict[str, Any], peers: int, cohort: list[dict[str, Any]]) -> str:
+    """Why this car is not scored, naming the bot's limit rather than the
+    market's.
+
+    "only 0 other BMW X3 within a year of 2010 to compare against" reads as
+    one short of a threshold. The truth was that the car has no market on this
+    dashboard at all - it is a stray result from a search for a different car.
+    """
+    name = _cohort_name(entry)
+    if not peers and len(cohort) <= 1:
+        return (f"nothing else here is a {name} - this car has no market on "
+                f"this dashboard to be judged against")
+    if peers < len(cohort) - 1:
+        held = len(cohort) - 1 - peers
+        return (f"{_count(peers, 'comparable')} close enough on age and "
+                f"mileage to judge it against. "
+                + ("One more is listed with very different kilometres on it."
+                   if held == 1 else
+                   f"Another {held} are listed with very different kilometres "
+                   f"on them.")
+                + " Not scored.")
+    return (f"{_count(peers, 'comparable')} to compare it against - fewer "
+            f"than the {MIN_COMPARABLES} this needs. Not scored.")
+
+
+# Where price per kilometre says anything at all.
+#
+# Below the floor the denominator is not wear, it is dealer stock: twelve live
+# cars in this watch read exactly 90 km and one reads 18, which is a car being
+# reversed off a transporter. The old guard was 5,000, and it was a cliff
+# rather than a floor - a real 2025 M3 with exactly 5,000 km on it cleared it
+# (5000 < 5000 is false) and printed "$23,380 /1000km", the largest number on
+# the site, 2,900 times the smallest.
+#
+# Above the ceiling the asking price has stopped tracking kilometres and
+# started tracking condition, and the ratio reads a quarter of a million
+# kilometres of wear as a quarter of a million units of value received.
+PER_KM_FLOOR = 20_000
+PER_KM_CEILING = 200_000
+
+
+def per_1000km(price: Any, km: Any) -> float | None:
+    """Asking price per thousand kilometres, where that means something."""
     try:
         price = int(price)
         km = int(km)
     except (TypeError, ValueError):
         return None
-    if price <= 0 or km < 5000:
+    if price <= 0 or not (PER_KM_FLOOR <= km <= PER_KM_CEILING):
         return None
     return round(price / (km / 1000.0), 1)
+
+
+def per_1000km_withheld(price: Any, km: Any) -> str | None:
+    """Why this car has no price-per-kilometre, when it has none.
+
+    Absence must never be the only signal: a blank reads identically to "this
+    car has no odometer", and the two are different things.
+    """
+    if per_1000km(price, km) is not None:
+        return None
+    try:
+        km = int(km)
+    except (TypeError, ValueError):
+        return "no odometer reading"
+    try:
+        if int(price) <= 0:
+            return "no asking price"
+    except (TypeError, ValueError):
+        return "no asking price"
+    if km < PER_KM_FLOOR:
+        return (f"only {km:,} km on it - that is delivery mileage, not wear, "
+                f"and the ratio would be meaningless")
+    return (f"at {km:,} km the asking price tracks condition rather than "
+            f"kilometres, so the ratio stops meaning anything")
 
 
 # ---------------------------------------------------------------- the feed

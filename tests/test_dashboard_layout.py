@@ -649,3 +649,129 @@ class TestVoiceControlCanSayWhatItSees:
         js = Path("docs/app.js").read_text()
         block = js.split("const b = el('button', 'ev'")[1].split("li.appendChild(b)")[0]
         assert 'class="sr"' in block and "KIND[e.kind].label" in block
+
+
+class TestNoMetricRanksWhatItCannotRead:
+    """Every one of these is a number the page used to state about a car
+    whose own row says it cannot be known.
+
+    The cheapest-first list put the two "Call for price" cars at the bottom,
+    which is a ranking; the specification table showed a blank where the
+    price-per-kilometre would be, which reads as "this car has no odometer"
+    whatever the actual reason; and the comparison to other cars appeared on
+    the sheet but not on the card, so a blank card meant either "no cohort"
+    or "a cohort, and an unremarkable answer".
+    """
+
+    @staticmethod
+    def _sorted_by(page, sort_id):
+        page.select_option("#sort", sort_id)
+        page.wait_for_timeout(200)
+        return page.evaluate("""() => [...document.querySelectorAll(
+            '.grid > .card, .grid > .grid__split')].map(n =>
+            n.classList.contains('grid__split')
+              ? {split: n.textContent.trim()}
+              : {car: n.innerText.replace(/\\n/g, ' ').slice(0, 80)})""")
+
+    def test_a_car_with_no_asking_price_is_not_the_dearest_car(self, browser, site):
+        ctx, page, _ = _page(browser, site, 1440, "light", view="listings")
+        try:
+            rows = self._sorted_by(page, "priced")
+            split = next((i for i, r in enumerate(rows) if "split" in r), None)
+            assert split is not None, "no divider above the unranked cars"
+            above = [r["car"] for r in rows[:split]]
+            below = [r["car"] for r in rows[split + 1:]]
+            assert any("Call for price" in c for c in below), below
+            assert not any("Call for price" in c for c in above), above
+        finally:
+            ctx.close()
+
+    def test_and_is_not_the_cheapest_car_either(self, browser, site):
+        """The same rows, the opposite sort. `?? Infinity` got this one
+        right by accident and `?? -Infinity` got it wrong, which is the
+        tell that neither was a decision."""
+        ctx, page, _ = _page(browser, site, 1440, "light", view="listings")
+        try:
+            rows = self._sorted_by(page, "price")
+            split = next((i for i, r in enumerate(rows) if "split" in r), None)
+            assert split is not None
+            assert not any("Call for price" in r["car"] for r in rows[:split])
+        finally:
+            ctx.close()
+
+    def test_the_divider_says_how_many_and_what_is_missing(self, browser, site):
+        ctx, page, _ = _page(browser, site, 1440, "light", view="listings")
+        try:
+            for sort_id, missing in (("price", "no asking price"),
+                                     ("km", "no odometer reading")):
+                rows = self._sorted_by(page, sort_id)
+                split = next((r["split"] for r in rows if "split" in r), None)
+                assert split, f"{sort_id}: no divider"
+                assert missing in split, (sort_id, split)
+                # "1 car", never "1 cars".
+                n = int(split.split()[0].replace(",", ""))
+                assert split.startswith(f"{n} car" + ("" if n == 1 else "s")), split
+        finally:
+            ctx.close()
+
+    def test_no_sort_leaves_a_car_out_of_the_list(self, browser, site):
+        """A partition that drops rows is worse than a bad ranking."""
+        ctx, page, _ = _page(browser, site, 1440, "light", view="listings")
+        try:
+            counts = set()
+            for sort_id in ("newest", "price", "priced", "year", "km",
+                            "distance", "days"):
+                rows = self._sorted_by(page, sort_id)
+                counts.add(sum(1 for r in rows if "car" in r))
+            assert len(counts) == 1, counts
+        finally:
+            ctx.close()
+
+    def test_the_ratio_explains_its_own_blank(self, browser, site):
+        """A car with 12,000 km on it has no price per 1,000 km, and the
+        reason is about the ratio rather than about the car."""
+        ctx, page, _ = _page(browser, site, 1440, "light", view="listings")
+        try:
+            page.click(".grid > .card")
+            page.wait_for_timeout(300)
+            rows = page.evaluate("""() => {
+              const kv = document.querySelector('.sheet .kv');
+              if (!kv) return [];
+              const out = [];
+              const kids = [...kv.children];
+              for (let i = 0; i < kids.length - 1; i += 2)
+                out.push([kids[i].textContent.trim(), kids[i + 1].textContent.trim()]);
+              return out;
+            }""")
+            assert rows, "no specification table"
+            ratio = [v for k, v in rows if "1,000 km" in k]
+            assert ratio, [k for k, _ in rows]
+            assert ratio[0] != "", "a blank with no reason"
+            assert ratio[0] != "—", ratio
+        finally:
+            ctx.close()
+
+    def test_the_comparison_is_gated_the_same_way_in_both_places(self, browser, site):
+        """One gate, read from the page rather than from the source: if a
+        card carries a comparison, its sheet carries the sentence, and if a
+        card carries none, the sheet says why rather than staying silent."""
+        ctx, page, _ = _page(browser, site, 1440, "light", view="listings")
+        try:
+            n = page.evaluate("() => document.querySelectorAll('.grid > .card').length")
+            for i in range(n):
+                page.wait_for_timeout(120)
+                page.evaluate(f"() => document.querySelectorAll('.grid > .card')[{i}].click()")
+                page.wait_for_timeout(250)
+                said = page.evaluate(
+                    "() => (document.querySelector('.sheet .note--cmp') || {})"
+                    ".textContent || ''").strip()
+                badge = page.evaluate(
+                    f"() => (document.querySelectorAll('.grid > .card')[{i}]"
+                    ".querySelector('.card__foot span') || {}).textContent || ''")
+                assert said, f"card {i}: the sheet says nothing about comparables"
+                if "%" in badge or "cheapest of" in badge:
+                    assert badge.split()[0] in said, (badge, said)
+                page.keyboard.press("Escape")
+                page.wait_for_timeout(200)
+        finally:
+            ctx.close()

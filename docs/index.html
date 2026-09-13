@@ -318,6 +318,17 @@ a{ color:var(--ev-new); text-underline-offset:2px; }
   grid-template-columns:repeat(auto-fill,minmax(232px,1fr));
 }
 @media (max-width:559px){ .grid{ grid-template-columns:1fr; gap:var(--s2); } }
+/* The line under a sorted run, above the cars the sort could not read. It
+   spans the whole grid or it looks like a card with no picture. */
+.grid__split{
+  grid-column:1/-1; margin:var(--s2) 0 0;
+  display:flex; align-items:center; gap:var(--s3);
+  font-size:var(--t-micro); font-weight:520; letter-spacing:.04em;
+  text-transform:uppercase; color:var(--text-3);
+}
+.grid__split::after{
+  content:""; height:1px; background:var(--line); flex:1;
+}
 
 .card{
   display:flex; flex-direction:column; text-align:left;

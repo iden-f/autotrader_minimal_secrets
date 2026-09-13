@@ -145,6 +145,12 @@ def build_payload(cfg: Config, state: State, env: dict[str, str] | None = None
             item["thumbs"] = kept
         item["per_1000km"] = insight.per_1000km(entry.get("price"),
                                                 entry.get("mileage_km"))
+        # And, when there is none, why there is none. A blank in the
+        # specification table is a statement about the car; these three
+        # reasons are statements about the ratio, and only one of them is
+        # "we do not know the mileage".
+        item["per_1000km_why"] = insight.per_1000km_withheld(
+            entry.get("price"), entry.get("mileage_km"))
         first = entry.get("first_seen")
         if first:
             try:
