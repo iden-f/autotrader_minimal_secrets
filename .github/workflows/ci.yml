@@ -3,7 +3,19 @@ name: Tests
 on:
   push:
     branches: ['**']
-    paths-ignore: ['state.json', 'docs/data.json', 'archives/**']
+    # Everything the bot writes for itself. None of it can change
+    # whether the tests pass, and a check every two hours that
+    # re-ran the suite would be the largest line in the budget.
+    paths-ignore:
+      - 'state.json'
+      - 'docs/data.json'
+      - 'docs/events.json'
+      - 'docs/thumbs/**'
+      - 'archives/**'
+      - 'EVENTS.md'
+      - 'NOTIFY.md'
+      - 'SOAK.md'
+      - 'diagnostics/**'
   pull_request:
   workflow_dispatch:
 

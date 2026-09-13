@@ -1195,7 +1195,15 @@ function renderStatus() {
     <div class="stat"><dt>Requests last check</dt><dd class="num">${run.requests_made ?? '—'}</dd>
       <dd class="stat__note">budget ${h.budget?.limit ?? '—'}</dd></div>
     <div class="stat"><dt>Check took</dt><dd class="num">${run.duration_s ?? '—'}s</dd>
-      <dd class="stat__note">${d.cost ? `${d.cost.minutes} min of runner in ${d.cost.window_hours}h` : ''}</dd></div>
+      <dd class="stat__note">${d.cost
+        ? `${d.cost.checks} checks · ${d.cost.billed_minutes ?? d.cost.minutes} billed minutes in ${d.cost.window_hours}h`
+        : ''}</dd></div>
+    ${d.budget ? `<div class="stat" data-tone="${
+        d.budget.state === 'stop' ? 'bad' : d.budget.state === 'over' ? 'warn' : 'good'}">
+      <dt>Runner minutes this month</dt>
+      <dd class="num">${Math.round(d.budget.used).toLocaleString()}<small style="display:inline">
+        / ${d.budget.allowance.toLocaleString()}</small></dd>
+      <dd class="stat__note">${esc(d.budget.text)}</dd></div>` : ''}
     <div class="stat" data-tone="${h.accounted?.unexplained ? 'bad' : 'good'}"><dt>Unaccounted cars</dt>
       <dd class="num">${h.accounted?.unexplained ?? 0}</dd>
       <dd class="stat__note">${h.accounted?.delivered ?? 0} told, ${h.accounted?.quiet ?? 0} deliberately quiet</dd></div>`;

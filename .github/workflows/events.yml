@@ -13,20 +13,18 @@
 name: Record market events
 
 on:
-  workflow_run:
-    workflows: ['Check AutoTrader']
-    types: [completed]
+  # Four times a day, on its own schedule.
+  #
+  # This is the only thing that can report the watcher's silence, so it must
+  # not share the watcher's fate - that is why it has a schedule of its own
+  # rather than only running after a check. It used to have BOTH: a run after
+  # every check AND its own cron every 30 minutes, which was 48 jobs a day to
+  # notice something whose whole point is that it takes hours to become true.
+  #
+  # Six-hourly is well inside "silent for three hours is worth saying".
   schedule:
-    # Twice an hour, on two unrelated slots. This job is the only thing that
-    # can report the watcher's silence, and it is scheduled by the same
-    # best-effort cron that produces the silence - measured on this repository
-    # today, the watcher's own */30 fired once in eleven hours and the rest of
-    # its runs came from pushes. Two phases means a single dropped firing does
-    # not double the time before the alarm. Running twice is free: it reads
-    # three files, and a silence is announced once per silence, not per run.
-    - cron: '7,37 * * * *'
-    # Monday 14:20 UTC - a weekday morning in Vancouver, which is where the
-    # person reading it is.
+    - cron: '41 1,7,13,19 * * *'
+    # The weekly digest, Monday morning.
     - cron: '20 14 * * 1'
   workflow_dispatch:
 

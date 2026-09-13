@@ -9,19 +9,22 @@ name: Check AutoTrader
 
 on:
   schedule:
-    # Every 30 minutes. GitHub queues scheduled jobs on a best-effort basis and
-    # drops them under load - asking for one every ten minutes this evening
-    # produced none at all for twenty minutes at a stretch - so a shorter
-    # interval buys nothing but a less predictable one. The old workflow asked
-    # for 96 runs a day and got far fewer, unevenly.
+    # Every two hours, on an off-peak minute.
     #
-    # But not */30. That asks for :00 and :30, the two most contended minutes of
-    # every hour on GitHub's shared scheduler, and asking for them has not
-    # been working: measured here, the schedule was served once in the twelve
-    # hours this workflow has existed, and every other check today came from a
-    # push. Off-peak minutes are the one lever available - the API cannot be
-    # asked to run a workflow with the token this repository has.
-    - cron: '13,43 * * * *'
+    # It was every 30 minutes, plus a ledger workflow on its own 30-minute
+    # schedule that chained into this one, plus three "pacemaker" workflows
+    # each holding a runner for five and a half hours to dispatch checks on a
+    # timer. That was up to sixteen hours of runner a day to watch a page that
+    # changes a few times a week, and it was justified by "the repository is
+    # public, so the minutes are free". The minutes ARE free - GitHub reports
+    # zero billable milliseconds against every one of these runs - but free
+    # compute on someone else's machines is still someone else's machines, and
+    # a bill one settings change away from being real.
+    #
+    # Twelve checks a day, one job each, is the whole schedule now. What that
+    # costs and what it buys is measured in ARCHITECTURE.md rather than
+    # asserted.
+    - cron: '11 */2 * * *'
 
   # Check straight away when the watch list changes, instead of leaving someone
   # who just added a search waiting half an hour to find out whether it works.
@@ -31,17 +34,6 @@ on:
     paths:
       - 'config.json'
       - '.github/workflows/watch.yml'
-
-  # And on the ledger's schedule as well as this one. Both are drawn from the
-  # same best-effort pool, but they are not dropped together: this morning the
-  # watcher's cron was served none of its eight slots in four hours while the
-  # ledger's was served one - and that one run is what noticed the silence.
-  # Riding on it too turns two unreliable schedules into one less unreliable
-  # one, which is the only lever available here. The API cannot be asked to
-  # start a run: this token has no actions: write.
-  workflow_run:
-    workflows: ['Record market events']
-    types: [completed]
 
   # Anything outside Actions can ask for a check with one authenticated POST.
   # This is the lever that does not depend on GitHub's scheduler at all: a
@@ -75,30 +67,50 @@ permissions:
 
 jobs:
   check:
-    # Only a ledger run that GitHub's scheduler started may start a check. The
-    # ledger also runs after every check, and letting that one start another
-    # check is two workflows taking turns forever with a runner each.
-    if: >-
-      github.event_name != 'workflow_run'
-      || github.event.workflow_run.event == 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
+      # The cost guard, before anything is installed or fetched.
+      #
+      # BUDGET-STOP is written by the bot itself when its own projection says
+      # this month's runner minutes are heading past the allowance. It is the
+      # same shape as the old PACEMAKER-OFF switch and can be deleted by hand,
+      # but nothing here writes it by hand: see autotrader/budget.py.
+      - name: Stop if this month's budget is spent
+        id: guard
+        run: |
+          if [ -f BUDGET-STOP ]; then
+            {
+              echo "## Stopped on budget"
+              echo ''
+              cat BUDGET-STOP
+              echo ''
+              echo 'Delete BUDGET-STOP at the top of the repository to resume.'
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::warning::BUDGET-STOP is present - not checking."
+            echo "stop=1" >> "$GITHUB_OUTPUT"
+          else
+            echo "stop=" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: actions/setup-python@v5
+        if: ${{ !steps.guard.outputs.stop }}
         with:
           python-version: '3.11'
           cache: pip
           cache-dependency-path: requirements.txt
 
       - name: Install dependencies
+        if: ${{ !steps.guard.outputs.stop }}
         run: pip install -r requirements.txt
 
       # Idempotent: on a fresh install this adopts the old SEARCH_URL secret
       # and sets up a private ntfy topic so the bot can reach you without any
       # token at all. On every run after that it prints the state and exits.
       - name: First-run setup
+        if: ${{ !steps.guard.outputs.stop }}
         env:
           SEARCH_URL: ${{ secrets.SEARCH_URL }}
         run: |
@@ -131,6 +143,7 @@ jobs:
 
       - name: Check for new listings
         id: bot
+        if: ${{ !steps.guard.outputs.stop }}
         env:
           # Whether this repository has the Issues feature on. The dashboard
           # has two ways to write a config change back - open an issue, or
@@ -157,7 +170,6 @@ jobs:
           # all, and two checks minutes apart cost requests to tell you the
           # same thing.
           AUTOTRADER_SCHEDULED: ${{ (github.event_name == 'schedule'
-            || github.event_name == 'workflow_run'
             || github.event_name == 'repository_dispatch'
             || inputs.automatic) && '1' || '' }}
         run: |
@@ -168,8 +180,20 @@ jobs:
         # end instead, after the results are safely stored.
         continue-on-error: true
 
+      # The market-events ledger, recorded here rather than in a workflow of
+      # its own that ran after every check. It reads what this run just wrote
+      # and never scrapes, so it costs seconds inside a job that is already
+      # running instead of a whole job-minute beside it. events.yml keeps its
+      # own schedule for the one thing this cannot do: notice that no check
+      # has happened at all.
+      - name: Record market events
+        if: ${{ !inputs.dry_run && !steps.guard.outputs.stop }}
+        continue-on-error: true
+        run: python -m autotrader --no-colour events --notify | tee -a "$GITHUB_STEP_SUMMARY"
+
       - name: Save results
-        if: ${{ !inputs.dry_run }}
+        id: save
+        if: ${{ !inputs.dry_run && !steps.guard.outputs.stop }}
         run: |
           set -u
           git config user.name  "autotrader-bot"
@@ -185,14 +209,30 @@ jobs:
           # next checkout, re-capturing the page forever. A path git already
           # tracks is staged whether it is still there or not.
           for path in state.json docs/data.json docs/thumbs archives config.json \
-                      NOTIFY.md diagnostics validation-report.md .capture-raw; do
+                      NOTIFY.md diagnostics validation-report.md .capture-raw \
+                      EVENTS.md docs/events.json BUDGET-STOP; do
             if [ -e "$path" ] || [ -n "$(git ls-files -- "$path")" ]; then
               git add -A -- "$path"
             fi
           done
           if git diff --cached --quiet; then
             echo "nothing changed"
+            echo "changed=" >> "$GITHUB_OUTPUT"
             exit 0
+          fi
+          echo "changed=1" >> "$GITHUB_OUTPUT"
+          # Whether the PAGE changed, as opposed to state bookkeeping. A check
+          # that found nothing new still rewrites generated_at in data.json,
+          # and republishing for a new timestamp is a job-minute for nothing.
+          if git diff --cached --stat -- docs/ | grep -q .; then
+            if git diff --cached -- docs/data.json \
+               | grep -E '^[+-]' | grep -vE '^[+-]{3}' \
+               | grep -vq '"generated_at"'; then
+              echo "page=1" >> "$GITHUB_OUTPUT"
+            else
+              echo "page=" >> "$GITHUB_OUTPUT"
+              echo "only the timestamp changed - not republishing"
+            fi
           fi
           git commit -m "Update listings [skip ci]"
           # Another run may have pushed while this one was scraping; rebase
@@ -234,6 +274,50 @@ jobs:
         if: always() && hashFiles('validation-report.md') != ''
         run: cat validation-report.md >> "$GITHUB_STEP_SUMMARY"
 
+      # Publishing used to be a second job, which called pages.yml, which
+      # checked the repository out again, installed Python again and rebuilt
+      # the data file this job had just written. GitHub rounds every JOB up to
+      # a whole minute, so that second job doubled the cost of a check to buy
+      # a duplicate of work already done.
+      #
+      # Here it is a step, it reuses what is already on disk, and it is skipped
+      # entirely when the only thing that changed in data.json was its own
+      # timestamp.
+      - name: Publish the dashboard
+        if: ${{ steps.save.outputs.page && !inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json, pathlib, sys
+          from autotrader.dashboard import find_secrets
+          data = json.loads(pathlib.Path("docs/data.json").read_text())
+          print(f"listings: {len(data['listings'])}, searches: {len(data['searches'])}")
+          if not data["listings"]:
+              print("::warning::the dashboard has no listings in it")
+          leaks = find_secrets(data)
+          if leaks:
+              sys.exit("refusing to publish, credential-shaped data at: "
+                       + "; ".join(leaks[:5]))
+          print("no credentials in the payload")
+          PY
+          site="$(mktemp -d)"
+          cp -r docs/. "$site/"
+          touch "$site/.nojekyll"
+          git config user.name  "autotrader-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan gh-pages-tmp
+          git rm -rf --cached . >/dev/null 2>&1 || true
+          find . -maxdepth 1 -mindepth 1 -not -name '.git' -exec rm -rf {} +
+          cp -r "$site/." .
+          git add -A
+          git commit -m "Publish dashboard from ${GITHUB_SHA::7}"
+          git push --force origin gh-pages-tmp:gh-pages
+          {
+            echo "### Dashboard published"
+            echo ""
+            echo "<https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/>"
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Report failure
         if: steps.bot.outcome == 'failure'
         run: |
@@ -244,14 +328,3 @@ jobs:
           tail -40 run.log || true
           exit 1
 
-  # Refresh the published dashboard with whatever the run just found.
-  publish:
-    needs: check
-    # always() runs this even when the check was skipped, which used to be
-    # harmless and is not any more: a run that publishes without checking
-    # still counts as this workflow completing, which starts the ledger,
-    # which starts this workflow. Nothing to publish when nothing ran.
-    if: ${{ always() && !inputs.dry_run && needs.check.result != 'skipped' }}
-    permissions:
-      contents: write
-    uses: ./.github/workflows/pages.yml

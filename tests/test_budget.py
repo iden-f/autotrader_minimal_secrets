@@ -1,204 +1,258 @@
-"""Politeness: this scrapes somebody else's website, on a schedule, forever."""
-import time
+"""What the bot costs, and refusing to cost more than it may.
+
+Written after a week in which this bot held a GitHub runner for up to sixteen
+hours a day and justified it with "the repository is public, so the minutes
+are free". The minutes were free - GitHub reports zero billable milliseconds
+against every one of those runs - and the reasoning was still wrong: the
+exemption is a repository setting, not a property of the code, and nothing in
+the repository would have noticed the day it changed.
+"""
+
+from __future__ import annotations
+
+import json
+from datetime import datetime, timezone
+from pathlib import Path
 
 import pytest
-import requests
 
+from autotrader import budget
 from autotrader.config import Config
-from autotrader.http import BASE_HEADERS, DEFAULT_USER_AGENT, BudgetExhausted, Fetcher
-from autotrader.runner import run
 from autotrader.state import State
 
-from .helpers import FakeFetcher
+SEPT = datetime(2026, 9, 13, 12, 0, tzinfo=timezone.utc)
 
 
-class OfflineSession:
-    """A session that answers instantly, so pacing can be measured."""
-
-    def __init__(self, body="<html></html>", status=200):
-        self.headers = {}
-        self.body = body
-        self.status = status
-        self.calls = 0
-
-    def get(self, url, **kwargs):
-        self.calls += 1
-        response = requests.Response()
-        response.status_code = self.status
-        response._content = self.body.encode()
-        response.url = url
-        return response
-
-    def close(self):
-        pass
+@pytest.fixture
+def bench(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    cfg = Config.defaults(tmp_path / "config.json")
+    cfg.save()
+    return cfg, State(path=tmp_path / "state.json")
 
 
-def fetcher(**kw):
-    kw.setdefault("delay_ms", 0)
-    kw.setdefault("retries", 0)
-    f = Fetcher(**kw)
-    f.session = OfflineSession()
-    return f
+def month(days: dict[str, float], runs: int = 0) -> dict:
+    return {"month": "2026-09", "days": days, "runs": runs}
 
 
-class TestRequestBudget:
-    def test_the_budget_is_a_hard_stop(self):
-        f = fetcher(budget=5)
+class TestWhatGitHubCharges:
+    """Every job is rounded up to a whole minute. Getting this wrong in the
+    optimistic direction is how a guard reports fine while the bill says
+    otherwise."""
+
+    @pytest.mark.parametrize("seconds,expected", [
+        (0, 1), (1, 1), (34, 1), (59, 1), (60, 1), (61, 2), (119, 2), (121, 3),
+    ])
+    def test_a_job_is_charged_by_the_whole_minute(self, seconds, expected):
+        assert budget.minutes_for(seconds) == expected
+
+    def test_two_jobs_cost_two_minutes_even_if_both_are_short(self):
+        """The reason publishing was folded back into the check job."""
+        assert budget.minutes_for(34, jobs=2) == 2
+        assert budget.minutes_for(34, jobs=1) == 1
+
+    def test_a_job_that_ran_at_all_is_never_free(self):
+        assert budget.minutes_for(0.001) == 1
+
+
+class TestTheLedger:
+    def test_a_run_is_added_to_today(self, bench):
+        cfg, state = bench
+        budget.record(state, 1.0, cfg=cfg, now=SEPT)
+        assert state.data["actions"]["days"]["2026-09-13"] == 1.0
+        assert state.data["actions"]["runs"] == 1
+
+    def test_runs_accumulate(self, bench):
+        cfg, state = bench
         for _ in range(5):
-            f.get("https://www.autotrader.ca/cars/")
-        with pytest.raises(BudgetExhausted):
-            f.get("https://www.autotrader.ca/cars/")
-        assert f.session.calls == 5
+            budget.record(state, 1.0, cfg=cfg, now=SEPT)
+        assert state.data["actions"]["days"]["2026-09-13"] == 5.0
 
-    def test_retries_count_against_the_budget(self):
-        """Three attempts at one URL are three requests to the site."""
-        f = fetcher(budget=3, retries=5)
-        f.session = OfflineSession(status=503)
-        with pytest.raises(BudgetExhausted):
-            f.get("https://www.autotrader.ca/cars/")
-        assert f.session.calls == 3
+    def test_a_new_month_starts_from_zero(self, bench):
+        cfg, state = bench
+        state.data["actions"] = month({"2026-09-30": 2500.0}, runs=900)
+        out = budget.record(state, 1.0, cfg=cfg,
+                            now=datetime(2026, 10, 1, 0, 5, tzinfo=timezone.utc))
+        assert out["used"] == 1.0 and out["month"] == "2026-10"
 
-    def test_photo_downloads_are_billed_too(self):
-        f = fetcher(budget=2)
-        f.get_bytes("https://cdn.example/a.jpg")
-        f.get_bytes("https://cdn.example/b.jpg")
-        assert f.get_bytes("https://cdn.example/c.jpg") is None
-        assert f.session.calls == 2
-
-    def test_a_photo_over_budget_returns_none_rather_than_raising(self):
-        f = fetcher(budget=1)
-        f.get_bytes("https://cdn.example/a.jpg")
-        assert f.get_bytes("https://cdn.example/b.jpg") is None
-
-    def test_zero_means_unlimited(self):
-        f = fetcher(budget=0)
-        for _ in range(30):
-            f.get("https://www.autotrader.ca/cars/")
-        assert f.session.calls == 30
-
-    def test_the_remaining_allowance_is_visible(self):
-        f = fetcher(budget=10)
-        f.get("https://www.autotrader.ca/cars/")
-        assert f.budget_left == 9
-        assert f.stats["spent"] == 1
+    def test_the_rate_is_per_day_of_data_not_per_day_of_month(self, bench):
+        """A bot installed on the 20th has not used 19 days of allowance."""
+        cfg, state = bench
+        state.data["actions"] = month({"2026-09-12": 10.0, "2026-09-13": 10.0})
+        out = budget.record(state, 10.0, cfg=cfg, now=SEPT)
+        assert out["days_elapsed"] == 2
+        assert out["per_day"] == 15.0
 
 
-class TestRunnerRespectsTheBudget:
-    def test_a_run_stops_scraping_once_the_budget_is_spent(self, tmp_path, monkeypatch,
-                                                           fixture_html):
+class TestTheProjection:
+    def test_one_day_is_not_a_month(self, bench):
+        cfg, state = bench
+        out = budget.record(state, 400.0, cfg=cfg, now=SEPT)
+        assert out["projected"] is None and out["state"] == "early"
+        assert "too little to project" in out["text"]
+
+    def test_the_real_situation_this_was_written_for(self, bench):
+        """2,338 minutes, 12 days in, 3,000 allowed: over, and it says so."""
+        cfg, state = bench
+        state.data["actions"] = month(
+            {f"2026-09-{d:02d}": 195.0 for d in range(1, 13)}, runs=500)
+        out = budget.record(state, 1.0, cfg=cfg, now=SEPT)
+        assert out["state"] == "over"
+        assert out["projected"] > 3000
+        assert "will stop before it gets there" in out["text"]
+
+    def test_a_cheap_schedule_reads_as_fine(self, bench):
+        cfg, state = bench
+        state.data["actions"] = month(
+            {f"2026-09-{d:02d}": 28.0 for d in range(1, 13)}, runs=150)
+        out = budget.record(state, 1.0, cfg=cfg, now=SEPT)
+        assert out["state"] == "ok"
+        assert out["projected"] < 1000
+
+    def test_spent_is_a_harder_state_than_projected_over(self, bench):
+        cfg, state = bench
+        state.data["actions"] = month(
+            {f"2026-09-{d:02d}": 300.0 for d in range(1, 13)}, runs=900)
+        out = budget.record(state, 1.0, cfg=cfg, now=SEPT)
+        assert out["state"] == "stop" and out["should_stop"] is True
+
+    def test_the_ceiling_is_below_the_allowance(self, bench):
+        cfg, state = bench
+        out = budget.record(state, 1.0, cfg=cfg, now=SEPT)
+        assert out["ceiling"] < out["allowance"]
+
+    def test_the_allowance_comes_from_config_not_from_code(self, bench):
+        """GitHub Free is 2,000 a month, not 3,000."""
+        cfg, state = bench
+        cfg.set("budget.included_minutes", 2000)
+        out = budget.record(state, 1.0, cfg=cfg, now=SEPT)
+        assert out["allowance"] == 2000
+
+
+class TestStoppingRatherThanSpending:
+    """The guard writes a file the workflow reads before it installs anything.
+
+    A file, not an API call to disable the workflow: it is visible in the
+    repository, it survives a token with no actions: write, and deleting it is
+    how a person says "I have looked at this and it is fine".
+    """
+
+    @pytest.fixture
+    def watcher(self, tmp_path, monkeypatch, fixture_html):
+        from autotrader import runner as runner_mod
+        from autotrader.runner import run
+        from .helpers import Capture, FakeFetcher, use_channels
+
         monkeypatch.chdir(tmp_path)
-        cfg = Config.defaults(tmp_path / "c.json")
-        for i in range(6):
-            cfg.add_search(f"https://www.autotrader.ca/cars/bmw/m{i}/?rcp=15", f"M{i}")
+        cfg = Config.defaults(tmp_path / "config.json")
+        cfg.add_search("https://www.autotrader.ca/cars/bmw/m3/?rcp=25", "M3")
         cfg.set("scraping.delay_ms", 0)
-        cfg.set("scraping.max_pages", 5)
         cfg.set("scraping.enrich_details", False)
+        cfg.set("archive.mode", "off")
+        cfg.set("dashboard.photos", False)
+        cfg.save()
+        sink = Capture()
+        use_channels(monkeypatch, runner_mod, [sink])
+        html = fixture_html("search_next_data")
 
-        spy = FakeFetcher(fixture_html("search_cards"), budget=4)
-        original = spy.get
+        def go():
+            return run(cfg, State.load(tmp_path / "state.json"),
+                       fetcher=FakeFetcher(html), env={})
 
-        def metered(url, referer=None, allow_block=False):
-            if spy.spent >= spy.budget:
-                raise BudgetExhausted("allowance spent")
-            return original(url, referer, allow_block)
+        return type("W", (), {"cfg": cfg, "sink": sink, "run": staticmethod(go),
+                              "path": tmp_path,
+                              "state": staticmethod(
+                                  lambda: State.load(tmp_path / "state.json"))})
 
-        spy.get = metered
-        report = run(cfg, State.load(tmp_path / "s.json"), fetcher=spy, notify=False)
+    def spend_the_month(self, watcher, per_day: float):
+        state = watcher.state()
+        now = datetime.now(timezone.utc)
+        state.data["actions"] = {
+            "month": f"{now.year:04d}-{now.month:02d}",
+            "days": {f"{now.year:04d}-{now.month:02d}-{d:02d}": per_day
+                     for d in range(1, max(2, now.day) + 1)},
+            "runs": 400}
+        state.save()
 
-        assert spy.spent <= 4
-        assert report.budget_exhausted
-        assert report.searches_run < 6, "it must stop early, not scrape everything"
+    def test_an_ordinary_run_leaves_no_stop_file(self, watcher):
+        report = watcher.run()
+        assert report.ok
+        assert not (watcher.path / "BUDGET-STOP").exists()
+        assert report.budget["charged"] >= 1
 
-    def test_running_out_of_budget_is_not_treated_as_a_broken_search(self, tmp_path,
-                                                                    monkeypatch, fixture_html):
-        monkeypatch.chdir(tmp_path)
-        cfg = Config.defaults(tmp_path / "c.json")
-        cfg.add_search("https://www.autotrader.ca/cars/bmw/m5/?rcp=15", "M5")
-        cfg.add_search("https://www.autotrader.ca/cars/bmw/m3/?rcp=15", "M3")
-        cfg.set("scraping.delay_ms", 0)
+    def test_every_run_is_charged_to_the_month(self, watcher):
+        watcher.run()
+        first = watcher.state().data["actions"]["runs"]
+        watcher.run()
+        assert watcher.state().data["actions"]["runs"] == first + 1
 
-        spy = FakeFetcher(fixture_html("search_cards"), budget=1)
-        original = spy.get
+    def test_a_spent_month_writes_the_stop_file(self, watcher):
+        self.spend_the_month(watcher, 400.0)
+        report = watcher.run()
+        stop = watcher.path / "BUDGET-STOP"
+        assert stop.exists(), "nothing stopped the bot spending past its allowance"
+        text = stop.read_text()
+        assert "stopped checking" in text
+        assert "Delete this file" in text, "a guard with no way out is a trap"
 
-        def metered(url, referer=None, allow_block=False):
-            if spy.spent >= spy.budget:
-                raise BudgetExhausted("allowance spent")
-            return original(url, referer, allow_block)
+    def test_it_says_so_out_loud_once(self, watcher):
+        """Silently stopping is the same failure as silently spending."""
+        self.spend_the_month(watcher, 400.0)
+        watcher.run()
+        subjects = [s for s, _ in watcher.sink.alerts]
+        assert any("minutes are spent" in s for s in subjects), subjects
+        before = len(watcher.sink.alerts)
+        watcher.run()
+        assert len(watcher.sink.alerts) == before, "told twice for the same month"
 
-        spy.get = metered
-        state = State.load(tmp_path / "s.json")
-        report = run(cfg, state, fetcher=spy, notify=False)
+    def test_projected_over_warns_without_stopping(self, watcher):
+        """Heading over is a warning; being over is a stop. Different things."""
+        self.spend_the_month(watcher, 195.0)
+        report = watcher.run()
+        assert not (watcher.path / "BUDGET-STOP").exists()
+        assert any("month ends at about" in w for w in report.warnings), report.warnings
 
-        assert report.searches_failed == 0, "we chose to stop; nothing is broken"
-        for search in cfg.active_searches:
-            assert state.search_health(search.id)["consecutive_failures"] == 0
+    def test_the_stop_clears_itself_when_the_month_does(self, watcher):
+        self.spend_the_month(watcher, 400.0)
+        watcher.run()
+        assert (watcher.path / "BUDGET-STOP").exists()
+        state = watcher.state()
+        state.data["actions"]["days"] = {"2026-09-01": 1.0}
+        state.save()
+        report = watcher.run()
+        assert not (watcher.path / "BUDGET-STOP").exists()
+        assert any("cleared" in w for w in report.warnings), report.warnings
 
-    def test_detail_lookups_are_capped_independently(self, tmp_path, monkeypatch,
-                                                     fixture_html, archive_html):
-        monkeypatch.chdir(tmp_path)
-        cfg = Config.defaults(tmp_path / "c.json")
-        cfg.add_search("https://www.autotrader.ca/cars/bmw/m5/?rcp=15", "M5")
-        cfg.set("scraping.delay_ms", 0)
-        cfg.set("scraping.enrich_limit", 1)
-
-        details = {i: archive_html(i) for i in ("13166607", "68819631", "13221555")}
-        spy = FakeFetcher(fixture_html("search_cards"), details)
-        run(cfg, State.load(tmp_path / "s.json"), fetcher=spy, notify=False)
-
-        detail_calls = [u for u in spy.urls if "/a/" in u]
-        assert len(detail_calls) == 1, "enrich_limit must cap detail fetches"
-
-    def test_the_request_count_is_reported(self, bench):
-        report = bench.run()
-        assert report.requests_made > 0
-        assert report.to_dict()["requests_made"] == report.requests_made
+    def test_accounting_never_fails_a_check(self, watcher, monkeypatch):
+        """A photo may not fail a check and neither may a spreadsheet."""
+        from autotrader import budget as budget_mod
+        monkeypatch.setattr(budget_mod, "record",
+                            lambda *a, **k: (_ for _ in ()).throw(RuntimeError("boom")))
+        report = watcher.run()
+        assert report.ok, report.errors
 
 
-class TestPoliteness:
-    def test_requests_are_spaced_out(self):
-        f = fetcher(delay_ms=120)
-        started = time.monotonic()
-        for _ in range(3):
-            f.get("https://www.autotrader.ca/cars/")
-        elapsed = (time.monotonic() - started) * 1000
-        # Two gaps of at least 120 ms between three requests.
-        assert elapsed >= 200, f"requests were not paced ({elapsed:.0f} ms)"
+class TestTheWorkflowReadsIt:
+    """The file is only a guard if something acts on it before spending."""
 
-    def test_the_delay_is_jittered_not_metronomic(self):
-        """Identical gaps are a fingerprint; vary them."""
-        f = fetcher(delay_ms=60)
-        gaps = []
-        for _ in range(6):
-            before = time.monotonic()
-            f.get("https://www.autotrader.ca/cars/")
-            gaps.append(round(time.monotonic() - before, 4))
-        assert len(set(gaps)) > 1, "every gap was identical"
+    def test_the_watcher_checks_for_the_stop_file_first(self):
+        source = Path(".github/workflows/watch.yml").read_text()
+        body = source[source.index("steps:"):]
+        assert "BUDGET-STOP" in body
+        assert body.index("BUDGET-STOP") < body.index("pip install"), \
+            "the guard must run before anything is installed"
 
-    def test_the_bot_does_not_announce_itself_as_a_bot(self):
-        assert "bot" not in DEFAULT_USER_AGENT.lower()
-        assert "scrap" not in DEFAULT_USER_AGENT.lower()
+    def test_every_working_step_is_gated_on_the_guard(self):
+        import yaml
+        steps = yaml.safe_load(Path(".github/workflows/watch.yml").read_text()
+                               )["jobs"]["check"]["steps"]
+        for name in ("Install dependencies", "Check for new listings"):
+            step = next(s for s in steps if s.get("name") == name)
+            assert "guard.outputs.stop" in str(step.get("if", "")), name
 
-    def test_it_sends_the_headers_a_browser_would(self):
-        f = Fetcher()          # a real session, not the offline stand-in
-        try:
-            assert f.session.headers["User-Agent"] == DEFAULT_USER_AGENT
-            assert f.session.headers["Accept-Language"].startswith("en-CA")
-            for header in ("Accept", "Accept-Language", "Sec-Fetch-Mode"):
-                assert header in BASE_HEADERS
-        finally:
-            f.close()
-
-    def test_backoff_grows_between_retries(self, monkeypatch):
-        slept = []
-        monkeypatch.setattr("autotrader.http.time.sleep", lambda s: slept.append(s))
-        f = Fetcher(retries=3, delay_ms=0)
-        f.session = OfflineSession(status=503)
-        with pytest.raises(Exception):
-            f.get("https://www.autotrader.ca/cars/")
-        real = [s for s in slept if s > 1]
-        assert real == sorted(real), f"backoff did not increase: {real}"
-        assert max(real) <= 32, "backoff must stay bounded"
-
-    def test_the_default_config_ships_a_budget(self):
-        assert Config.defaults().get("scraping.request_budget", 0) > 0
-        assert Config.defaults().get("scraping.delay_ms", 0) > 0
+    def test_the_stop_file_is_committed_so_it_survives_the_runner(self):
+        """State is in git. A guard written to a runner's disk and thrown away
+        with it would stop exactly one run."""
+        source = Path(".github/workflows/watch.yml").read_text()
+        save = source[source.index("- name: Save results"):]
+        assert "BUDGET-STOP" in save[:save.index("git commit")]

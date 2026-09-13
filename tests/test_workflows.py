@@ -236,99 +236,129 @@ def test_chained_workflows_cannot_bounce_forever():
         )
 
 
-class TestThePacemakerStaysInsideTheRealCeiling:
-    """The runner's job limit, measured rather than read.
+class TestNothingHoldsARunner:
+    """The pattern this repository spent a week paying for, kept out.
 
-    A probe job counted out loud until something stopped it: it reached
-    minute 361 and was cancelled. So 360 is the wall. The shift was 180 - half
-    of what the runner actually allows - because that number came from the
-    documentation rather than from the machine.
+    Three "pacemaker" workflows each held a GitHub runner for up to five and a
+    half hours, sleeping in a loop to dispatch checks on a timer, because
+    GitHub drops scheduled runs and a job that is already alive can ask for
+    work reliably. It worked. Measured over 24 hours it also cost up to
+    sixteen hours of runner a day - for a watch whose checks total about
+    twelve minutes - and it was justified in writing with "the minutes are
+    free because the repository is public".
 
-    These assert the bounds hold against the measured number, so raising the
-    shift again cannot quietly cross it, and so the thing that makes a
-    pacemaker safe cannot be removed while nobody is looking.
+    That justification is true and it is not a property of this code: it is a
+    repository setting that one click changes. These tests are what stops the
+    idea coming back the next time the schedule looks thin.
     """
 
-    CEILING = 360
-    PACEMAKERS = ("pacemaker.yml", "pacemaker-b.yml", "pacemaker-c.yml")
+    # GitHub cancels a job at 360 minutes - measured, by a probe that counted
+    # out loud and got to 361. Nothing here should want a tenth of it.
+    RUNNER_CEILING = 360
+    SANE_CEILING = 30
 
     @staticmethod
-    def job(name):
+    def workflows():
+        from pathlib import Path
+        return sorted(Path(".github/workflows").glob("*.yml"))
+
+    def test_the_pacemakers_are_gone(self):
+        names = {p.name for p in self.workflows()}
+        assert not (names & {"pacemaker.yml", "pacemaker-b.yml",
+                             "pacemaker-c.yml"}), sorted(names)
+
+    def test_nothing_long_running_is_on_a_timer(self):
+        """A long job is fine. A long job GitHub starts by itself is not.
+
+        The soak deliberately holds a runner for hours to watch behaviour over
+        time - that is its whole job, it is asked for by hand, and it is
+        bounded. What must never exist again is a job with a big ceiling and a
+        cron in front of it.
+        """
+        import re, yaml
+        for path in self.workflows():
+            body = path.read_text()
+            longest = max((int(t) for t in
+                           re.findall(r"timeout-minutes:\s*(\d+)", body)),
+                          default=0)
+            if longest <= self.SANE_CEILING:
+                continue
+            doc = yaml.safe_load(body)
+            on = doc[True] if True in doc else doc.get("on") or {}
+            triggers = set(on) if isinstance(on, dict) else {on}
+            assert "schedule" not in triggers, (
+                f"{path.name} may run for {longest} minutes AND is on a "
+                f"schedule. Every minute of it is billed.")
+            assert longest < self.RUNNER_CEILING, (
+                f"{path.name}'s {longest}-minute ceiling is past the "
+                f"{self.RUNNER_CEILING} the runner allows, so it is cancelled "
+                f"rather than finishing.")
+
+    def test_a_scheduled_job_is_minutes_not_hours(self):
+        import re, yaml
+        for path in self.workflows():
+            body = path.read_text()
+            doc = yaml.safe_load(body)
+            on = doc[True] if True in doc else doc.get("on") or {}
+            if not isinstance(on, dict) or "schedule" not in on:
+                continue
+            for timeout in re.findall(r"timeout-minutes:\s*(\d+)", body):
+                assert int(timeout) <= self.SANE_CEILING, (
+                    f"{path.name} is scheduled and allows a job to run for "
+                    f"{timeout} minutes")
+
+    def test_nothing_sleeps_its_way_through_a_shift(self):
+        """Retry backoff is seconds. A pacemaker is minutes, in a loop."""
+        import re
+        for path in self.workflows():
+            for line in path.read_text().splitlines():
+                stripped = line.strip()
+                if stripped.startswith("#") or "sleep" not in stripped:
+                    continue
+                assert "INTERVAL_MINUTES" not in stripped, f"{path.name}: {stripped}"
+                literal = re.search(r"\bsleep\s+(\d+)\b", stripped)
+                if literal:
+                    assert int(literal.group(1)) <= 60, f"{path.name}: {stripped}"
+                assert not re.search(r"\bsleep\s+\$\(\(\s*\w+\s*\*\s*60", stripped), \
+                    f"{path.name}: {stripped}"
+
+    def test_nothing_starts_the_watcher_on_a_timer(self):
+        """One-shot dispatches are fine - control.yml asks for a check after
+        it applies a change, which is a person's action. A dispatch inside a
+        loop is a clock, and a clock is a held runner."""
+        for path in self.workflows():
+            body = path.read_text()
+            if "gh workflow run watch.yml" not in body:
+                continue
+            assert path.name in {"watch.yml", "control.yml"}, (
+                f"{path.name} starts the watcher")
+            after = body[body.index("gh workflow run watch.yml"):]
+            assert "while" not in after.split("\n")[0], f"{path.name}: in a loop"
+            assert "INTERVAL" not in body, f"{path.name} dispatches on a timer"
+
+    def test_the_watcher_is_one_job(self):
+        """Every job rounds up to a whole minute, so two jobs is two minutes."""
         import yaml
         from pathlib import Path
-        data = yaml.safe_load(
-            (Path(".github/workflows") / name).read_text(encoding="utf-8"))
-        (job,) = data["jobs"].values()
-        return job
+        doc = yaml.safe_load(Path(".github/workflows/watch.yml").read_text())
+        assert list(doc["jobs"]) == ["check"], list(doc["jobs"])
 
-    @pytest.mark.parametrize("name", PACEMAKERS)
-    def test_the_timeout_is_under_the_measured_wall(self, name):
-        timeout = int(self.job(name)["timeout-minutes"])
-        assert timeout < self.CEILING, (
-            f"{name}: a {timeout}-minute timeout is past the {self.CEILING} "
-            f"the runner actually allows, so the job is cancelled rather than "
-            f"finishing and saying what it did")
-
-    @pytest.mark.parametrize("name", PACEMAKERS)
-    def test_the_shift_finishes_before_its_own_backstop(self, name):
-        job = self.job(name)
-        shift = int(job["env"]["SHIFT_MINUTES"])
-        timeout = int(job["timeout-minutes"])
-        assert shift < timeout, (
-            f"{name}: the shift ({shift}) has to end before the backstop "
-            f"({timeout}), or the backstop is the thing being relied on")
-
-    @pytest.mark.parametrize("name", PACEMAKERS)
-    def test_it_beats_more_than_once(self, name):
-        env = self.job(name)["env"]
-        shift, interval = int(env["SHIFT_MINUTES"]), int(env["INTERVAL_MINUTES"])
-        assert shift >= interval * 2, (
-            f"{name}: a shift that fits one interval buys nothing over the "
-            f"single check the firing could have dispatched directly")
-
-    @pytest.mark.parametrize("name", PACEMAKERS)
-    def test_every_way_of_stopping_it_is_still_there(self, name):
-        """A pacemaker without all of these is a process nobody can stop."""
+    def test_the_schedule_asks_for_what_the_config_expects(self):
+        """The interval in config.json has to be the one the cron produces,
+        or every coverage number on the dashboard is measured against a
+        schedule that does not exist."""
+        import re, yaml
         from pathlib import Path
-        source = (Path(".github/workflows") / name).read_text()
-        assert "PACEMAKER-OFF" in source, "the kill switch"
-        assert "STRIKES" in source, "the failed-dispatch limit"
-        assert "timeout-minutes" in source, "the backstop"
-        assert "SHIFT_MINUTES" in source, "its own deadline"
-
-    @pytest.mark.parametrize("name", PACEMAKERS)
-    def test_it_does_not_start_a_successor(self, name):
-        """The line between a shift and something that outlives the decision
-        to run it. A pacemaker that dispatches a pacemaker cannot be stopped
-        from outside, and that is not a thing to leave in someone's repo."""
-        from pathlib import Path
-        source = (Path(".github/workflows") / name).read_text()
-        body = "\n".join(l for l in source.splitlines()
-                         if not l.strip().startswith("#"))
-        import re
-        # The sharp version: every workflow this one can start, by name. A
-        # first attempt asserted the word "Pacemaker" was absent from the job
-        # body and failed on the step summary's own heading - which is the
-        # workflow printing its name, not starting anything.
-        dispatched = set(re.findall(r"gh workflow run\s+(\S+)", body))
-        assert dispatched, f"{name}: it dispatches nothing at all"
-        assert dispatched <= {"watch.yml"}, (
-            f"{name} can start {sorted(dispatched - {'watch.yml'})} - a "
-            f"pacemaker that starts a pacemaker cannot be stopped from "
-            f"outside, and that is not a thing to leave in someone's repo")
-
-    def test_they_sit_on_different_minutes(self):
-        """The whole reason there are three: independent chances at a runner.
-        Three workflows on the same minutes are one workflow."""
-        import re
-        from pathlib import Path
-        slots = {}
-        for name in self.PACEMAKERS:
-            source = (Path(".github/workflows") / name).read_text()
-            found = re.findall(r"cron:\s*'([^']+)'", source)
-            assert found, name
-            slots[name] = {m.strip() for m in found[0].split()[0].split(",")}
-        seen = list(slots.values())
-        for i, a in enumerate(seen):
-            for b in seen[i + 1:]:
-                assert not (a & b), f"two pacemakers share minutes: {a & b}"
+        from autotrader.config import Config
+        doc = yaml.safe_load(Path(".github/workflows/watch.yml").read_text())
+        on = doc[True] if True in doc else doc["on"]
+        (cron,) = [c["cron"] for c in on["schedule"]]
+        hours = re.match(r"^\S+\s+\S*\*/(\d+)", cron)
+        assert hours, f"cannot read an interval out of {cron!r}"
+        asked = int(hours.group(1)) * 60
+        for where in (Config.defaults(), Config.load("config.json")
+                      if Path("config.json").exists() else Config.defaults()):
+            expected = int(where.get("health.expected_interval_minutes"))
+            assert expected == asked, (
+                f"the cron asks for a check every {asked} minutes and the "
+                f"config expects one every {expected}")

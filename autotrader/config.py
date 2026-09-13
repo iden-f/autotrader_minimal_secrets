@@ -157,6 +157,25 @@ DEFAULTS: dict[str, Any] = {
         "keep_last": 400,
         "keep_days": 730,
     },
+    # What the bot is allowed to cost. See budget.py: it counts wall-clock
+    # runner minutes, treats every one as billable, projects the month, and
+    # writes BUDGET-STOP rather than spending past the ceiling.
+    "budget": {
+        "enabled": True,
+        # GitHub Free is 2,000 minutes a month, Pro 3,000. Public repositories
+        # are charged nothing at all - which is exactly why this defaults to
+        # counting anyway: the exemption is a setting, not a property of the
+        # code, and "it was free when I wrote it" is not a budget.
+        "included_minutes": 3000,
+        # Stop at this share of the allowance. The projection is a straight
+        # line through an unfinished month; the gap is what a wrong estimate
+        # costs instead of money.
+        "stop_at": 0.85,
+        # Checkout, Python setup, teardown: real runner time that the run's
+        # own clock does not see, and the reason a 34-second check is charged
+        # as a whole minute.
+        "job_overhead_seconds": 25,
+    },
     "health": {
         "alert_after_failures": 3,
         "heartbeat_hours": 0,
@@ -167,7 +186,7 @@ DEFAULTS: dict[str, Any] = {
         # What the schedule asks for. GitHub fires late, early, twice or not
         # at all, so the bot compares against this rather than trusting that a
         # run happening means a run was due.
-        "expected_interval_minutes": 30,
+        "expected_interval_minutes": 120,
         # Two checks closer together than this tell you the same thing twice,
         # so a scheduled one arriving inside the window is skipped without
         # touching the site.
@@ -181,7 +200,7 @@ DEFAULTS: dict[str, Any] = {
         # make quietly. At 24 the redundancy buys resilience instead: if one
         # pacemaker dies, another's dispatch lands in the same window and the
         # check still happens on time.
-        "min_interval_minutes": 24,
+        "min_interval_minutes": 90,
         # No successful check for this long and the bot is not watching
         # anything, whatever the reason.
         "silent_after_hours": 3,

@@ -129,12 +129,18 @@
     "heartbeat_hours": 0,
     "disable_channel_after": 2,
     "watch_page_shape": true,
-    "expected_interval_minutes": 30,
-    "min_interval_minutes": 24,
-    "silent_after_hours": 3
+    "expected_interval_minutes": 120,
+    "min_interval_minutes": 90,
+    "silent_after_hours": 6
   },
   "dashboard": {
     "enabled": true,
     "max_listings": 500
+  },
+  "budget": {
+    "enabled": true,
+    "included_minutes": 3000,
+    "stop_at": 0.85,
+    "job_overhead_seconds": 25
   }
 }

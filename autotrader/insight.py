@@ -320,18 +320,24 @@ def minutes_spent(runs: list[dict[str, Any]], window_hours: int = 24,
                   now: datetime | None = None) -> dict[str, Any]:
     """Runner time the checks themselves cost, per day.
 
-    Not the whole Actions bill - the pacemaker's held runner dwarfs it - but
-    the part that scales with how often the bot checks, which is the part a
-    decision about frequency actually turns on.
+    This is wall clock inside the run, which is not what GitHub charges:
+    every JOB is rounded up to a whole minute, so twelve 35-second checks cost
+    twelve minutes and not seven. ``billed_minutes`` is the charged figure and
+    is the one to quote; ``minutes`` is kept because it is what shows whether
+    the runs themselves are getting slower.
     """
     now = now or datetime.now(timezone.utc)
     start = now - timedelta(hours=window_hours)
     durations = [float(r.get("duration_s") or 0) for r in runs
                  if (_dt(r.get("at")) or start) >= start]
     total = sum(durations) / 60.0
+    import math
+    overhead = 25.0
+    billed = sum(max(1, math.ceil((d + overhead) / 60.0)) for d in durations)
     return {
         "checks": len(durations),
         "minutes": round(total, 1),
+        "billed_minutes": billed,
         "mean_seconds": round(statistics.mean(durations), 1) if durations else None,
         "window_hours": window_hours,
     }

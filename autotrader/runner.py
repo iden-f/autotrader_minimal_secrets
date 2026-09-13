@@ -74,6 +74,8 @@ class RunReport:
     invariants: list[str] = field(default_factory=list)
     # What the run did about photographs. Nothing here can fail a check.
     photos: dict[str, Any] = field(default_factory=dict)
+    # What this run cost and where the month stands - see budget.py.
+    budget: dict[str, Any] = field(default_factory=dict)
     # Changes held back because you said you did not want them.
     your_call: int = 0
     # Searches that read the site fine and kept nothing after your rules.
@@ -124,6 +126,7 @@ class RunReport:
             "warnings": self.warnings[:10], "strategies": self.strategies,
             "quiet": self.quiet, "dry_run": self.dry_run,
             "photos": self.photos, "your_call": self.your_call,
+            "minutes": (self.budget or {}).get("charged"),
         }
 
     def summary(self) -> str:
@@ -1193,6 +1196,12 @@ def run(cfg: Config | None = None, state: State | None = None, *,
         if fetcher is not None:
             fetcher.close()
         if not dry_run:
+            # What this run cost, before the run is written down - so a run
+            # that crashed still pays for the runner it held.
+            try:
+                report.budget = _charge_the_budget(cfg, state, report, env, notify)
+            except Exception as exc:   # noqa: BLE001 - never fail a check over accounting
+                log.warning("could not update the minute ledger: %s", exc)
             # This is the whole point: state is written even if something above
             # blew up, so a failure costs one run, never the entire history.
             state.record_run(report.to_dict())
@@ -1203,6 +1212,68 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                 report.errors.append(f"could not save state: {exc}")
 
     return report
+
+
+def _charge_the_budget(cfg: Config, state: State, report: "RunReport",
+                       env: dict[str, str], notify: bool) -> dict[str, Any]:
+    """Bill this run to the month, and stop the bot if the month is spent.
+
+    The guard writes a file rather than trying to switch a workflow off
+    through the API: a file is visible in the repository, survives a token
+    with no actions: write, and is deleted by hand by whoever decides the
+    spending is fine after all. watch.yml reads it before it installs
+    anything.
+
+    Deleting the file is also how it recovers - so the check for "should this
+    still be stopped" runs every time, and a new month clears it on its own.
+    """
+    from . import budget as budget_mod
+
+    if not cfg.get("budget.enabled", True):
+        return {}
+
+    # Wall clock this job has been alive, not the seconds this run spent
+    # working: the runner is charged from checkout to teardown. A step's worth
+    # of overhead either side is real and is what makes a 34-second check cost
+    # a whole minute.
+    overhead = float(cfg.get("budget.job_overhead_seconds", 25) or 0)
+    minutes = budget_mod.minutes_for(report.duration_s + overhead)
+    verdict = budget_mod.record(state, minutes, cfg=cfg)
+    verdict["charged"] = minutes
+
+    stop_file = Path(budget_mod.STOP_FILE)
+    if verdict["should_stop"]:
+        stop_file.write_text(
+            verdict["text"] + "\n\n"
+            f"Used: {verdict['used']:,.0f} minutes in {verdict['month']} over "
+            f"{verdict['days_elapsed']} days ({verdict['per_day']:,.1f}/day).\n"
+            f"Allowance: {verdict['allowance']:,}. This bot stops at "
+            f"{verdict['ceiling']:,.0f}.\n\n"
+            "Delete this file to start checking again. It will be rewritten "
+            "on the next run if the month is still over.\n",
+            encoding="utf-8")
+        report.warnings.append(verdict["text"])
+        if notify and not state.data.get("budget_told") == verdict["month"]:
+            notifiers.alert(cfg, "The watcher has stopped: this month's minutes are spent",
+                            verdict["text"], env)
+            state.data["budget_told"] = verdict["month"]
+    else:
+        if stop_file.exists():
+            stop_file.unlink()
+            report.warnings.append("the budget stop has cleared")
+        state.data.pop("budget_told", None)
+        if verdict["state"] == "over":
+            report.warnings.append(verdict["text"])
+            # Once per month, not once per run: a warning that arrives every
+            # two hours for a fortnight is a warning nobody reads.
+            told = state.data.get("budget_warned")
+            if notify and told != verdict["month"]:
+                notifiers.alert(cfg, "This month's runner minutes are heading over",
+                                verdict["text"], env)
+                state.data["budget_warned"] = verdict["month"]
+        else:
+            state.data.pop("budget_warned", None)
+    return verdict
 
 
 def _retire_dead_channels(cfg: Config, state: State, report: RunReport,

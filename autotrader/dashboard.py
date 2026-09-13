@@ -18,6 +18,7 @@ import re
 
 from .archive import size_report
 from . import geo, insight, thumbs
+from . import budget
 from .config import CHANNEL_SECRETS, Config
 from .listing import name_of
 from .parser import STRATEGIES
@@ -324,6 +325,10 @@ def build_payload(cfg: Config, state: State, env: dict[str, str] | None = None
         "coverage": insight.coverage(
             runs, int(cfg.get("health.expected_interval_minutes", 30) or 30)),
         "cost": insight.minutes_spent(runs),
+        # What the month has cost and where that is heading. A bot that can
+        # spend someone's money should say what it is spending, on the page
+        # they already look at, rather than in a billing screen they do not.
+        "budget": budget.load(state, cfg).verdict(datetime.now(timezone.utc)),
         # What two hundred cars say together, rather than what one says. The
         # window block travels with it: most of this is two days old.
         "market": insight.market(state.listings.values(), runs=state.runs,

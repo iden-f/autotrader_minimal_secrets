@@ -77,8 +77,15 @@ class TestTheScheduleFiringTwice:
         assert not bench.run(SCHEDULED, force=True).skipped
 
     def test_a_scheduled_run_after_the_interval_goes_ahead(self, bench):
+        """Relative to the configured floor, not to a number typed in 2026.
+
+        This said hours=1, which was comfortably past a 24-minute floor and is
+        inside a 90-minute one. The test was measuring the schedule the bot
+        had when it was written rather than the one it has.
+        """
         bench.run()
-        age_last_run(bench, hours=1)
+        floor = int(bench.cfg.get("health.min_interval_minutes"))
+        age_last_run(bench, hours=(floor + 10) / 60)
         assert not bench.run(SCHEDULED).skipped
 
     def test_it_can_be_switched_off(self, bench):
@@ -97,7 +104,17 @@ class TestAMissedWindow:
         assert not report.skipped
         assert report.missed_by == pytest.approx(286, abs=2)
         warning = next(w for w in report.warnings if "dropped" in w)
-        assert "4.8 hours" in warning and "runs" in warning
+        assert "4.8 hours" in warning
+        # The count itself is the runner's arithmetic, not this test's: a
+        # second copy of that formula here would drift from it silently. What
+        # is asserted is that it is a real number of whole runs, and reads as
+        # English for one of them.
+        import re
+        expected = int(bench.cfg.get("health.expected_interval_minutes"))
+        dropped = re.search(r"dropped (\d+) runs?\b", warning)
+        assert dropped, warning
+        assert 1 <= int(dropped.group(1)) <= 286 // expected, warning
+        assert ("dropped 1 run." in warning) == (int(dropped.group(1)) == 1)
 
     def test_an_ordinary_gap_says_nothing(self, bench):
         bench.run()
@@ -162,14 +179,12 @@ class TestNoticingItsOwnSilence:
         assert events.silence(bench.cfg, bench.state(), record) is None
 
 
-class TestThreePacemakersDoNotMeanThreeTimesTheScraping:
-    """They run concurrently now; before, they cancelled each other.
+class TestTheScrapingRateIsWhatWasAskedFor:
+    """The floor exists so a schedule cannot become load on somebody's site.
 
-    All three sat in one concurrency group. GitHub keeps at most one pending
-    run per group, so each firing displaced the previously queued one and the
-    three behaved as one workflow. Per-workflow groups fixed that - and made
-    the dedupe floor load-bearing, because nine offset dispatch minutes with
-    an 8-minute floor is a check every 10 minutes rather than every 30.
+    It used to guard against three pacemakers dispatching on nine offset
+    minutes; they are gone, and the floor still matters for the same reason -
+    a dispatch, a push and a cron can all land within a minute of each other.
     """
 
     @pytest.mark.parametrize("where", ["defaults", "live"])
@@ -179,8 +194,7 @@ class TestThreePacemakersDoNotMeanThreeTimesTheScraping:
         Checking only the default is how the first version of this passed
         while the bot hammered the site every twelve minutes. config.json is
         materialised from the defaults once, at setup, and then owns its own
-        copy - so changing a default changes nothing for an installed bot, and
-        a test that reads only the default cannot see that.
+        copy - so changing a default changes nothing for an installed bot.
         """
         from pathlib import Path
         from autotrader.config import Config
@@ -188,38 +202,14 @@ class TestThreePacemakersDoNotMeanThreeTimesTheScraping:
             if not Path("config.json").exists():
                 pytest.skip("no live config in this checkout")
             cfg = Config.load("config.json")
-            floor = cfg.get("health.min_interval_minutes")
-            expected = cfg.get("health.expected_interval_minutes")
         else:
-            health = Config.defaults().get("health", {})
-            floor = health["min_interval_minutes"]
-            expected = health["expected_interval_minutes"]
+            cfg = Config.defaults()
+        floor = int(cfg.get("health.min_interval_minutes"))
+        expected = int(cfg.get("health.expected_interval_minutes"))
         assert floor >= expected * 0.6, (
             f"a {floor}-minute floor under a {expected}-minute schedule lets "
-            f"concurrent pacemakers check {expected // floor}x as often as "
+            f"a dispatch and a cron check {expected // floor}x as often as "
             f"asked - that is somebody else's site")
         assert floor < expected, (
             "a floor at or above the interval would skip the checks the "
             "schedule actually asked for")
-
-    def test_each_pacemaker_has_its_own_group(self):
-        import re
-        from pathlib import Path
-        groups = []
-        for name in ("pacemaker.yml", "pacemaker-b.yml", "pacemaker-c.yml"):
-            source = (Path(".github/workflows") / name).read_text()
-            body = "\n".join(l for l in source.splitlines()
-                             if not l.lstrip().startswith("#"))
-            found = re.search(r"concurrency:\s*\n\s*group:\s*(\S+)", body)
-            assert found, name
-            groups.append(found.group(1))
-        assert len(set(groups)) == 3, (
-            f"the pacemakers share a concurrency group ({groups}) - GitHub "
-            f"keeps one pending run per group, so they cancel each other and "
-            f"three workflows behave as one")
-
-    def test_they_still_do_not_cancel_a_shift_in_progress(self):
-        from pathlib import Path
-        for name in ("pacemaker.yml", "pacemaker-b.yml", "pacemaker-c.yml"):
-            source = (Path(".github/workflows") / name).read_text()
-            assert "cancel-in-progress: false" in source, name

@@ -97,10 +97,47 @@ class TestTheMechanismsTheRunbookReliesOn:
         assert ".capture-raw" in DOCS["RUNBOOK.md"]
         assert ".capture-raw" in Path(".github/workflows/watch.yml").read_text()
 
-    def test_the_kill_switch_is_the_one_the_pacemakers_read(self):
-        assert "PACEMAKER-OFF" in DOCS["RUNBOOK.md"]
-        for name in ("pacemaker.yml", "pacemaker-b.yml", "pacemaker-c.yml"):
-            assert "PACEMAKER-OFF" in Path(f".github/workflows/{name}").read_text(), name
+    def test_the_kill_switch_is_the_one_the_watcher_reads(self):
+        """The runbook's stop button has to be the file the workflow checks."""
+        assert "BUDGET-STOP" in DOCS["RUNBOOK.md"]
+        watch = Path(".github/workflows/watch.yml").read_text()
+        assert "BUDGET-STOP" in watch
+        from autotrader.budget import STOP_FILE
+        assert STOP_FILE == "BUDGET-STOP", "three names for one switch"
+
+    def test_no_workflow_holds_a_runner_to_keep_time(self):
+        """The pattern this repository spent a week paying for.
+
+        A job that sleeps in a loop to dispatch other jobs bills for every
+        minute it is alive. Three of them ran here, for up to five and a half
+        hours each, and the justification written in ARCHITECTURE.md was that
+        public repositories are not charged - which is true, and is a
+        repository setting rather than a property of this code.
+        """
+        for path in Path(".github/workflows").glob("*.yml"):
+            body = path.read_text()
+            assert "sleep $(( INTERVAL_MINUTES" not in body, path.name
+            timeout = re.search(r"timeout-minutes:\s*(\d+)", body)
+            if timeout:
+                assert int(timeout.group(1)) <= 30, (
+                    f"{path.name} may hold a runner for "
+                    f"{timeout.group(1)} minutes")
+
+    def test_the_schedules_are_the_ones_the_docs_quote(self):
+        import yaml
+        watch = yaml.safe_load(Path(".github/workflows/watch.yml").read_text())
+        on = watch[True] if True in watch else watch["on"]
+        crons = [c["cron"] for c in on["schedule"]]
+        assert crons == ["11 */2 * * *"], crons
+        assert "every two hours" in DOCS["RUNBOOK.md"].lower() or \
+               "every **two hours**" in DOCS["RUNBOOK.md"]
+        assert "Twelve checks a day" in DOCS["ARCHITECTURE.md"]
+
+    def test_one_job_per_check(self):
+        """Every job is a whole minute. A second job doubles the bill."""
+        import yaml
+        watch = yaml.safe_load(Path(".github/workflows/watch.yml").read_text())
+        assert list(watch["jobs"]) == ["check"], list(watch["jobs"])
 
     def test_the_corrupt_state_file_is_named_correctly(self):
         from autotrader import state

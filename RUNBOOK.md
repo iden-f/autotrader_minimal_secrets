@@ -29,7 +29,12 @@ hours, not minutes. You may also have had a message from the watchdog — it is
 scheduled independently of the watcher precisely so it can report its silence.
 
 **Almost always**: GitHub dropped the schedules. This is normal and it is the
-biggest limitation of this bot. One cron slot in seven is served on a bad day.
+biggest limitation of this bot. One cron slot in seven is served on a bad day,
+and the bot only asks for twelve.
+
+**Or**: it stopped itself. If `BUDGET-STOP` exists at the top of the
+repository, the month's runner minutes are spent and every check is exiting
+early on purpose - see [what this costs](#what-this-costs).
 
 **Check it is only that:**
 
@@ -50,8 +55,9 @@ biggest limitation of this bot. One cron slot in seven is served on a bad day.
     https://api.github.com/repos/iden-f/autotrader_minimal_secrets/dispatches \
     -d '{"event_type":"check"}'
   ```
-- Longer term: check the three pacemaker workflows are enabled, and that
-  `PACEMAKER-OFF` does not exist in the repository root.
+- Longer term: check `BUDGET-STOP` does not exist in the repository root -
+  the bot writes it when the month's runner minutes are spent, and every
+  check exits immediately while it is there. The run summary says so.
 
 **What not to do**: do not add more cron slots. They are dropped from the same
 pool; more slots on one workflow does not help. More *independent workflows*
@@ -123,37 +129,72 @@ a narrow search. The warning says which.
 
 ## The schedule is thin
 
-**How you know**: Status says something like "35% — 17 of 48 half-hours had a
+**How you know**: Status says something like "35% - 17 of 48 half-hours had a
 check", and "When it checked" is mostly grey.
 
-**This is no longer normal, and it used to be.** With the three pacemakers
-running in separate concurrency groups, measured coverage is 100% — every
-half-hour slot served, longest gap 34 minutes. If you are seeing thin
-coverage, something below is wrong rather than "GitHub being GitHub".
+**Read the interval first.** The bot asks for a check every **two hours**, not
+every thirty minutes, and it says so on the Status tab. Twelve checks a day is
+the schedule, on purpose - see "What this costs" below. Thin against twelve is
+a fault; thin against forty-eight is arithmetic.
 
-It matters because a car can be listed and sold inside a three-hour gap.
+It matters because a car can be listed and sold inside a gap.
 
 **Levers, in order of how much they help:**
 
-1. Keep all three pacemakers enabled, and keep them in **separate
-   concurrency groups**. Sharing one makes them cancel each other's queued
-   runs - GitHub keeps a single pending run per group - so three workflows
-   behave as one and most served firings never start. If you see pacemaker
-   runs with conclusion "cancelled" a few minutes after they were created,
-   that is this.
-2. Keep `poke-the-watcher.yml` in `iden-f/autotrader_notifier` running — it
-   needs a `WATCHER_DISPATCH_TOKEN` secret with `contents: write` on this
-   repository. The workflow fails loudly with setup instructions if it is
-   missing.
-3. Push to the repository occasionally. GitHub deprioritises schedules in
-   quiet repositories and eventually disables them.
-4. Check `health.min_interval_minutes` in **config.json**, not just the
-   default in `config.py`. config.json is written once at setup and then owns
-   its own copy, so changing the default does nothing to a bot that is
-   already running. If it is much lower than `expected_interval_minutes`, the
-   pacemakers will check far more often than you asked - which is load on
-   somebody else's site, not just yours.
-5. Accept what is left. This is free compute on someone else's machines.
+1. Ask for a check directly. It costs the same as a scheduled one and never
+   gets dropped:
+   ```bash
+   curl -X POST -H "Authorization: Bearer $TOKEN" \
+     https://api.github.com/repos/iden-f/autotrader_minimal_secrets/dispatches \
+     -d '{"event_type":"check"}'
+   ```
+   A phone shortcut pointed at that is the most reliable clock this bot has.
+2. Push to the repository occasionally. GitHub deprioritises schedules in quiet
+   repositories and eventually disables them outright - the sibling repository
+   `autotrader_notifier` is `disabled_inactivity` right now for exactly that.
+3. Check `health.min_interval_minutes` in **config.json**, not just the default
+   in `config.py`. config.json is written once at setup and then owns its own
+   copy, so changing the default does nothing to a bot already running.
+4. Accept what is left. More scheduled slots is not a free lever any more -
+   every served one is a job-minute. See below.
+
+**What not to do**: do not add a workflow that holds a runner to dispatch
+checks on a timer. This repository had three of them. They worked, and they
+cost up to sixteen hours of runner a day for a watch that needed twelve
+minutes.
+
+---
+
+## What this costs
+
+**The short version**: about 17 billed minutes a day, against a GitHub
+allowance of 3,000 a month. The Status tab shows the running total.
+
+**How GitHub charges**: every *job* is rounded up to a whole minute. A
+35-second check costs one minute. Two 35-second jobs cost two. The number of
+jobs is the only lever that matters; seconds are almost irrelevant.
+
+**Public repositories are not charged at all.** Verified through the API on
+this repository: `get_workflow_run_usage` returns `billable: {}` or
+`total_ms: 0` for every run, including a 115-minute one. If the account's
+billing page shows minutes consumed, they are coming from somewhere else -
+a private repository, Codespaces, or the *gross usage* report, which lists
+public-repo minutes at $0. Settings -> Billing -> Plans and usage is the page
+that distinguishes them.
+
+**The bot counts anyway.** `budget.py` treats every wall-clock runner minute
+as billable, which over-counts by exactly what the public exemption is worth.
+That is deliberate: the exemption is a repository setting, and the day someone
+flips this repository to private the guard is already right.
+
+**When it stops**: at 85% of the allowance the bot writes `BUDGET-STOP` at the
+top of the repository, alerts you once, and every check after that exits
+before installing anything. Delete the file to resume; it rewrites itself next
+run if the month is still over, and clears itself when the month turns.
+
+```bash
+python -m autotrader doctor     # prints the month's ledger among everything else
+```
 
 ---
 
@@ -247,7 +288,9 @@ kept for that reason. Photos of forgotten cars go on the next check, and
 ## Breaking glass
 
 **Stop everything**: Actions → Check AutoTrader → ⋯ → Disable workflow. Or
-create a file named `PACEMAKER-OFF` to stop the pacemakers alone.
+commit a file named `BUDGET-STOP` at the top of the repository: every check
+reads it before it installs anything, says why it stopped in the run summary,
+and does nothing else. Delete it to resume.
 
 **state.json is corrupt**: do nothing. The bot quarantines it to
 `state.corrupt.json`, rebuilds, and costs you exactly one round of

@@ -12,7 +12,9 @@ name: Cold start
 
 on:
   schedule:
-    - cron: '23 6 * * *'
+    # Weekly, not daily. It proves a clean clone still works, which
+    # changes when the repository changes, not when the clock ticks.
+    - cron: '23 6 * * 0'
   workflow_dispatch:
   push:
     branches: [main]

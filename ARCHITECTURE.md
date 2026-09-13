@@ -178,68 +178,72 @@ and it works.
 
 | Workflow | Trigger | What it is for |
 |---|---|---|
-| `watch.yml` | schedule, dispatch, `repository_dispatch`, `workflow_run` | **The bot.** One check. Everything else exists to get this to run. |
-| `pages.yml` | push to `docs/`, called by `watch.yml` | Publishes the dashboard. |
-| `ci.yml` | every push and PR | The test suite. |
+| `watch.yml` | schedule (every 2h), `repository_dispatch`, push to `config.json`, dispatch | **The bot.** One check, one job: it scrapes, records events, saves state and publishes the dashboard without a second job. |
+| `pages.yml` | push to `docs/`, dispatch | Publishes the dashboard by hand. The watcher no longer calls it - that was a second job-minute for a duplicate of work already done. |
+| `ci.yml` | push and PR, ignoring everything the bot writes | The test suite. |
 | `control.yml` | push to `control/*.json`, or an issue | Applies a config change from a phone. |
-| `events.yml` | after a check, and on its own schedule | Records market firsts, and is the only thing that can report the watcher's silence — so it is scheduled independently of it. |
-| `pacemaker.yml`, `-b`, `-c` | three staggered crons | See below. |
-| `coldstart.yml` | daily | Proves the repository still works from a clean clone. |
-| `soak.yml` | scheduled | Long-running behaviour checks. |
+| `events.yml` | four times a day | The only thing that can report the watcher's silence, so it keeps a schedule independent of it. The market-events ledger itself is recorded inside the check. |
+| `coldstart.yml` | weekly | Proves the repository still works from a clean clone. |
+| `soak.yml` | on demand | Long-running behaviour checks. |
 | `add-search.yml` | dispatch | Paste a link in the Actions UI. |
-| `probe.yml` | dispatch | Measures the real Actions job time limit. |
 
-### The pacemaker, and why there are three
+### The schedule, and what it costs
 
-GitHub drops scheduled runs under load — heavily. A `*/30` cron does not run
-every thirty minutes; measured here, roughly one slot in seven is served, and
-gaps of several hours are normal.
+Twelve checks a day, one job each, on `cron: '11 */2 * * *'`. That is the whole
+schedule. Everything below is why it is not more.
 
-That was the single biggest limit on this bot, and the pacemakers now work
-around it almost completely: measured over the six hours after they were
-fixed, **every one of 48 half-hour slots was served, longest gap 34 minutes**,
-against 41.7% before. The cron slots are still being dropped at the same rate;
-what changed is that a firing which *is* served now buys five hours of
-timekeeping instead of being cancelled by its siblings.
+**What GitHub charges.** Every *job* is rounded up to a whole minute. A check
+takes about 35 seconds, so it costs one minute; a check plus a separate
+publishing job costs two. That one fact decides the shape of this - the lever
+is the number of jobs, not the number of seconds - which is why publishing is
+now a step inside the check rather than the second job it used to be, and why
+recording market events moved in with it.
 
-What helps: **more independent chances to be served.** Three pacemaker
-workflows sit on three unrelated sets of minutes, each in **its own
-concurrency group**. Each one that *is* served holds a runner for a bounded
-period and dispatches the watcher on a timer.
+**What it used to cost.** Measured here over the 24 hours before it changed:
+56 checks, 68 billed job-minutes, and that was the watcher alone. Beside it ran
+a ledger workflow on its own 30-minute schedule, and three "pacemaker"
+workflows, each holding a runner for up to five and a half hours to dispatch
+checks on a timer. Together they asked for 144 firings a day and, when served,
+held up to sixteen hours of runner between them.
 
-The separate groups are the whole point and were once missing. All three sat
-in a single group, and GitHub keeps at most one pending run per group - so
-every firing arriving while a shift ran displaced the previously queued one.
-Measured over nine hours: seven firings served, one ran, six cancelled before
-starting. Three workflows behaving as one, with extra steps.
+**Why that was allowed to happen.** The pacemakers were justified, in writing,
+in this file, with "runner minutes are free here because the repository is
+public". That claim is *true* - GitHub returns `billable: {}` and
+`total_ms: 0` against those runs, checked through the API - and it was still
+the wrong way to decide. The exemption is a repository setting, not a property
+of this code; nothing here would have noticed the day someone made the
+repository private. "It was free when I wrote it" is not a budget, and sixteen
+hours a day of somebody else's machines to watch a page that changes a few
+times a week was a bad trade at any price.
 
-That also makes `health.min_interval_minutes` load-bearing. Nine offset
-dispatch minutes against an 8-minute floor is a check every 10 minutes rather
-than every 30 - three times the load on somebody else's site to learn the
-same thing. At 24 the redundancy buys resilience instead: if one pacemaker
-dies, another's dispatch lands in the same window and the check still happens
-on time.
+**What is left.** Twelve checks (12 job-minutes), the ledger four times a day
+(4), a weekly cold start (about 2 amortised): roughly 17 billed minutes a day
+against an allowance of 3,000 a month.
 
-One served firing holds a runner for 330 minutes and dispatches a check every
-30 - eleven checks, five hours of cover. That number is measured, not read: a
-probe job counted out loud until GitHub stopped it, reaching minute 361, so
-the runner's real ceiling is 360 and the backstop timeout sits at 350. It was
-180 before the probe answered, which was half of what the machine allows.
-Runner minutes are free here because the repository is public; on a private
-one this would be the wrong trade.
+**The cost guard.** `budget.py` adds every run to a per-day ledger in
+`state.json`, projects the month at the current rate, and writes a
+`BUDGET-STOP` file at the top of the repository when the month passes 85% of
+the allowance. `watch.yml` reads that file before it installs anything and
+stops; the Status tab shows the running total either way. It counts wall-clock
+runner minutes and treats every one as billable, which over-counts by exactly
+the value of the public-repository exemption - deliberately, so the guard
+trips early on a public repo and on time on a private one. Deleting the file
+resumes, and a new month clears it by itself.
 
-They are deliberately **bounded**. A pacemaker does not re-trigger itself.
-A self-perpetuating job is a job that cannot be switched off from outside, and
-that is not a thing to build into somebody's repository. Every pacemaker
-stops on its own, and `PACEMAKER-OFF` in the repository kills all of them.
-`tests/test_workflows.py` holds all four bounds - the kill switch, the strike
-limit, the backstop under the measured ceiling, and the shift under the
-backstop - and asserts the only workflow a pacemaker can start is `watch.yml`.
+**What the schedule buys, honestly.** GitHub drops scheduled runs; measured
+here, roughly one slot in seven on a bad day. Asking for twelve and being
+served eight or nine means a real interval of two to four hours, and a car
+listed and sold inside one of those gaps is missed. That is the trade, and it
+is now a decision instead of an accident. Three levers cost no scheduled job
+at all: `repository_dispatch` from anything that can make one authenticated
+POST (see RUNBOOK.md), a push to `config.json`, and the Run workflow button.
 
-There is also a fourth lever in the sibling repository
-`iden-f/autotrader_notifier`: `poke-the-watcher.yml`, which fires
-`repository_dispatch` at this one on its own schedule. Two repositories'
-schedules are dropped independently.
+A fourth was described here for days and never existed:
+`poke-the-watcher.yml` in `iden-f/autotrader_notifier`, firing
+`repository_dispatch` on its own schedule. It never ran once. GitHub registers
+scheduled workflows from a repository's **default branch only**, and that file
+only ever sat on a feature branch - so coverage it was being credited with was
+always somebody else's. It has been deleted.
 
 To trigger a check from anywhere, with a token that has `contents: write`:
 
@@ -250,6 +254,9 @@ curl -X POST \
   https://api.github.com/repos/iden-f/autotrader_minimal_secrets/dispatches \
   -d '{"event_type":"check"}'
 ```
+
+This costs one job-minute, the same as a scheduled check, and it is the lever
+that does not depend on GitHub's scheduler at all.
 
 ---
 
