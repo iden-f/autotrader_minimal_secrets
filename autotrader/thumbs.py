@@ -37,6 +37,14 @@ MAX_TOTAL_BYTES = 12_000_000
 # How many new photos one check may fetch. A first run would otherwise pull
 # two hundred images in one go, on top of its own requests.
 MAX_PER_RUN = 24
+# How many photos to keep per car. One was enough for a card and not for the
+# detail sheet, which drew a gallery of the seller's full set - one local copy
+# followed by seven boxes hotlinked straight from the CDN this module exists
+# to stop hotlinking. Offline they were grey; in the screenshots that verified
+# the page they were grey; once a car is delisted they are gone. Three is a
+# front, a side and an interior on most listings, and 26 live cars at three
+# photos is under two megabytes.
+KEEP_PER_CAR = 3
 # What an image is allowed to claim to be.
 OK_TYPES = ("image/webp", "image/jpeg", "image/png", "image/avif")
 EXT = {"image/webp": ".webp", "image/jpeg": ".jpg",
@@ -156,11 +164,25 @@ def _dimensions(blob: bytes) -> tuple[int, int] | None:
     return None
 
 
-def _safe_name(listing_id: str, content_type: str) -> str | None:
-    """A filename that cannot escape the directory it belongs in."""
+def _safe_name(listing_id: str, content_type: str, n: int = 0) -> str | None:
+    """A filename that cannot escape the directory it belongs in.
+
+    The first photo of a car keeps the bare id, so every file written before
+    there was more than one still resolves.
+    """
     if not _ID_OK.match(str(listing_id).replace("-", "")[:64]):
         return None
-    return f"{listing_id}{EXT.get(content_type, '.img')}"
+    suffix = "" if n == 0 else f"-{int(n)}"
+    return f"{listing_id}{suffix}{EXT.get(content_type, '.img')}"
+
+
+def _files_of(row: dict[str, Any]) -> list[dict[str, Any]]:
+    """Every kept photo for a car, old single-file rows included."""
+    if not isinstance(row, dict):
+        return []
+    if row.get("files"):
+        return [f for f in row["files"] if isinstance(f, dict) and f.get("file")]
+    return [row] if row.get("file") else []
 
 
 def _existing_bytes() -> int:
@@ -172,7 +194,7 @@ def _existing_bytes() -> int:
 
 def sync(entries: Iterable[dict[str, Any]], fetcher: Any,
          *, limit: int = MAX_PER_RUN, budget: int = MAX_TOTAL_BYTES,
-         dry_run: bool = False) -> Report:
+         per_car: int = KEEP_PER_CAR, dry_run: bool = False) -> Report:
     """Fetch what is missing, drop what is no longer watched.
 
     ``fetcher`` is the bot's own rate-limited, retrying, budgeted HTTP client,
@@ -193,57 +215,67 @@ def sync(entries: Iterable[dict[str, Any]], fetcher: Any,
     for listing_id in list(index):
         if listing_id in wanted:
             continue
-        name = index[listing_id].get("file")
-        if name:
+        for row in _files_of(index[listing_id]):
             try:
-                (THUMB_DIR / name).unlink(missing_ok=True)
+                (THUMB_DIR / row["file"]).unlink(missing_ok=True)
                 report.pruned += 1
             except OSError:
                 pass
         del index[listing_id]
 
     total = _existing_bytes()
+    keep = max(1, int(per_car))
     for listing_id, entry in wanted.items():
-        if listing_id in index and (THUMB_DIR / index[listing_id]["file"]).exists():
-            continue
-        if report.fetched >= limit:
-            report.skipped += 1
-            continue
-        if total + MAX_BYTES_EACH > budget:
-            report.notes.append(
-                f"photo budget of {budget / 1e6:.0f} MB is full - "
-                f"{report.skipped + 1} car(s) are showing the placeholder")
-            report.skipped += 1
+        have = [f for f in _files_of(index.get(listing_id, {}))
+                if (THUMB_DIR / f["file"]).exists()]
+        urls = [u for u in (entry.get("images") or []) if u][:keep]
+        if len(have) >= min(keep, len(urls)):
             continue
 
-        url = (entry.get("images") or [None])[0]
-        got = _fetch_best(url, fetcher, report)
-        if got is None:
-            report.failed += 1
-            continue
-        blob, content_type, note = got
-        if blob is None:
-            report.failed += 1
-            continue
-
-        name = _safe_name(listing_id, content_type)
-        if not name:
-            report.failed += 1
-            report.notes.append(f"{listing_id} is not a safe filename")
-            continue
-        if not dry_run:
-            try:
-                THUMB_DIR.mkdir(parents=True, exist_ok=True)
-                (THUMB_DIR / name).write_bytes(blob)
-            except OSError as exc:
-                report.failed += 1
-                report.notes.append(f"could not write {name}: {exc}")
+        for n, url in enumerate(urls):
+            if any(f.get("n", 0) == n for f in have):
                 continue
-        index[listing_id] = {"file": name, "bytes": len(blob),
-                             "w": note.get("w"), "h": note.get("h")}
-        report.fetched += 1
-        report.bytes_added += len(blob)
-        total += len(blob)
+            if report.fetched >= limit:
+                report.skipped += 1
+                break
+            if total + MAX_BYTES_EACH > budget:
+                report.notes.append(
+                    f"photo budget of {budget / 1e6:.0f} MB is full - "
+                    f"{report.skipped + 1} more would not fit")
+                report.skipped += 1
+                break
+
+            got = _fetch_best(url, fetcher, report)
+            if got is None or got[0] is None:
+                report.failed += 1
+                # The first photo failing is worth reporting; the fourth angle
+                # of the same car is not worth three more requests.
+                break
+            blob, content_type, note = got
+            name = _safe_name(listing_id, content_type, n)
+            if not name:
+                report.failed += 1
+                report.notes.append(f"{listing_id} is not a safe filename")
+                break
+            if not dry_run:
+                try:
+                    THUMB_DIR.mkdir(parents=True, exist_ok=True)
+                    (THUMB_DIR / name).write_bytes(blob)
+                except OSError as exc:
+                    report.failed += 1
+                    report.notes.append(f"could not write {name}: {exc}")
+                    break
+            have.append({"file": name, "bytes": len(blob), "n": n,
+                         "w": note.get("w"), "h": note.get("h")})
+            report.fetched += 1
+            report.bytes_added += len(blob)
+            total += len(blob)
+
+        if have:
+            have.sort(key=lambda f: f.get("n", 0))
+            index[listing_id] = {"files": have, "file": have[0]["file"],
+                                 "bytes": sum(f.get("bytes", 0) for f in have),
+                                 "w": have[0].get("w"), "h": have[0].get("h")}
 
     report.kept = len(index)
     report.total_bytes = total
@@ -343,7 +375,12 @@ def _fetch_one(url: str | None, fetcher: Any
 
 
 def local_for(listing_id: str, index: dict[str, Any] | None = None) -> str | None:
-    """The published path for a car's photo, if we kept one."""
+    """The published path for a car's first photo, if we kept one."""
+    kept = locals_for(listing_id, index)
+    return kept[0] if kept else None
+
+
+def locals_for(listing_id: str, index: dict[str, Any] | None = None) -> list[str]:
+    """Every photo of a car we hold a copy of, in the seller's order."""
     index = _load_index() if index is None else index
-    row = index.get(str(listing_id))
-    return f"thumbs/{row['file']}" if row and row.get("file") else None
+    return [f"thumbs/{f['file']}" for f in _files_of(index.get(str(listing_id), {}))]

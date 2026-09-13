@@ -59,9 +59,12 @@ def comparables(entries: Iterable[dict[str, Any]]) -> dict[str, dict[str, Any]]:
     honest reading of "14% under median" depends entirely on whether that is
     fourteen cars or three.
     """
+    # Cars your rules keep. A 2020 M4 judged against 2021 M4s - which the year
+    # rule exists to exclude - is judged against a market you are not shopping
+    # in, and reads as a bargain for being older.
     pool = [e for e in entries
             if e.get("price") and e.get("year") and _group_key(e)
-            and e.get("status") == "active"]
+            and e.get("status") == "active" and not e.get("filtered")]
 
     out: dict[str, dict[str, Any]] = {}
     for entry in pool:
@@ -513,6 +516,64 @@ def _days(n: int) -> str:
     return "1 day" if n == 1 else f"{n} days"
 
 
+# A median from four cars is a coincidence with a dollar sign on it. Below
+# this, the cars themselves are shown instead of a statistic drawn from them -
+# which is both more honest and, at these sizes, more useful.
+MIN_FOR_A_MEDIAN = 5
+
+
+def _spread(prices: list[int]) -> dict[str, Any]:
+    prices = sorted(prices)
+    row: dict[str, Any] = {"n": len(prices)}
+    if len(prices) < MIN_FOR_A_MEDIAN:
+        # Everything, in order, and no summary of it.
+        row["prices"] = prices
+        row["thin"] = True
+        return row
+    row.update({
+        "median": int(statistics.median(prices)),
+        "low": prices[0], "high": prices[-1],
+        "q1": int(statistics.quantiles(prices, n=4)[0]) if len(prices) >= 4 else None,
+        "q3": int(statistics.quantiles(prices, n=4)[2]) if len(prices) >= 4 else None,
+        "thin": False,
+    })
+    return row
+
+
+def _model_label(entry: dict[str, Any]) -> str:
+    make = str(entry.get("make") or "").strip()
+    model = str(entry.get("model") or "").strip()
+    return " ".join(p for p in (make, model) if p) or "unknown"
+
+
+def _by_model(live: list[dict[str, Any]]) -> dict[str, Any]:
+    """Every model on its own, with year and trim breakdowns inside it.
+
+    Sorted by how many cars each has, so the page leads with the one there is
+    something to say about.
+    """
+    groups: dict[str, list[dict[str, Any]]] = {}
+    for entry in live:
+        if entry.get("price"):
+            groups.setdefault(_model_label(entry), []).append(entry)
+
+    out: dict[str, Any] = {}
+    for label, cars in sorted(groups.items(), key=lambda kv: (-len(kv[1]), kv[0])):
+        years: dict[int, list[int]] = {}
+        trims: dict[str, list[int]] = {}
+        for car in cars:
+            if car.get("year"):
+                years.setdefault(int(car["year"]), []).append(int(car["price"]))
+            trims.setdefault(_trim_of(car), []).append(int(car["price"]))
+        row = _spread([int(c["price"]) for c in cars])
+        row["label"] = label
+        row["by_year"] = {str(y): _spread(p) for y, p in sorted(years.items())}
+        row["by_trim"] = {t: _spread(p) for t, p in
+                          sorted(trims.items(), key=lambda kv: -len(kv[1]))}
+        out[label] = row
+    return out
+
+
 def market(entries: Iterable[dict[str, Any]], *, now: datetime | None = None,
            runs: Iterable[dict[str, Any]] | None = None,
            since: str | None = None) -> dict[str, Any]:
@@ -529,34 +590,41 @@ def market(entries: Iterable[dict[str, Any]], *, now: datetime | None = None,
     live = [e for e in entries if e.get("status") == "active"]
     gone = [e for e in entries if e.get("status") == "gone" and e.get("removed_at")]
 
-    # ---- price by year, and by year and trim ------------------------------
-    by_year: dict[str, Any] = {}
-    buckets: dict[int, list[int]] = {}
+    # ---- price by model, then by year and trim within it ------------------
+    #
+    # By year alone was wrong, and stayed wrong until the watched cars changed
+    # from one model to three. "2017: median $51,972, from $15,980 to $62,999"
+    # was an ordinary X3 and an M3 averaged together, and the trim table put
+    # "competition" at n=23 by mixing M4 Competitions with X3 M Competitions.
+    # A median across two different cars is not a number about either of them.
+    # Cars the rules keep, not every car the search returned. A watch for an
+    # M3 up to 2020 that reports "BMW M3, median $111,947" is quoting a market
+    # of 2025s the rules exist to exclude - true about the search results, and
+    # useless to the person reading it. The hidden ones are counted beside
+    # each model rather than folded into its median.
+    yours = [e for e in live if not e.get("filtered")]
+    by_model = _by_model(yours)
+    hidden_by_model: dict[str, int] = {}
     for entry in live:
-        if entry.get("price") and entry.get("year"):
-            buckets.setdefault(int(entry["year"]), []).append(int(entry["price"]))
-    for year, prices in sorted(buckets.items()):
-        if len(prices) < MIN_PER_BUCKET:
-            continue
-        prices.sort()
-        by_year[str(year)] = {
-            "n": len(prices),
-            "median": int(statistics.median(prices)),
-            "low": prices[0], "high": prices[-1],
-            "q1": int(statistics.quantiles(prices, n=4)[0]) if len(prices) >= 4 else None,
-            "q3": int(statistics.quantiles(prices, n=4)[2]) if len(prices) >= 4 else None,
-        }
-
-    by_trim: dict[str, Any] = {}
-    trims: dict[str, list[int]] = {}
-    for entry in live:
-        if entry.get("price"):
-            trims.setdefault(_trim_of(entry), []).append(int(entry["price"]))
-    for trim, prices in trims.items():
-        if len(prices) < MIN_PER_BUCKET:
-            continue
-        by_trim[trim] = {"n": len(prices),
-                         "median": int(statistics.median(sorted(prices)))}
+        if entry.get("filtered"):
+            label = _model_label(entry)
+            hidden_by_model[label] = hidden_by_model.get(label, 0) + 1
+    for label, row in by_model.items():
+        row["hidden"] = hidden_by_model.pop(label, 0)
+    # A model that exists only as hidden cars still deserves a line, or the
+    # page silently omits a whole car you are searching for.
+    for label, count in hidden_by_model.items():
+        by_model[label] = {"label": label, "n": 0, "hidden": count,
+                           "thin": True, "prices": [],
+                           "by_year": {}, "by_trim": {}}
+    # Kept flat as well, because the page and the weekly digest both read it,
+    # but now scoped to the model with the most cars rather than to whatever
+    # happened to share a year.
+    leader = max(by_model.values(), key=lambda m: m["n"], default=None)
+    if leader is not None and not leader["n"]:
+        leader = None
+    by_year = leader["by_year"] if leader else {}
+    by_trim = leader["by_trim"] if leader else {}
 
     # ---- how long things last --------------------------------------------
     # "Sold" is not knowable from a listing disappearing, and saying so would
@@ -632,6 +700,8 @@ def market(entries: Iterable[dict[str, Any]], *, now: datetime | None = None,
         "gone": len(gone),
         "by_year": by_year,
         "by_trim": by_trim,
+        "by_model": by_model,
+        "leader": leader["label"] if leader else None,
         "listed_days": {
             "n": len(lifespans),
             "median": lifespans[len(lifespans) // 2] if lifespans else None,

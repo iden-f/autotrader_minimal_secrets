@@ -134,9 +134,15 @@ def build_payload(cfg: Config, state: State, env: dict[str, str] | None = None
         # Our own copy, when we have one. The remote URL stays as a fallback:
         # a photo we failed to fetch is still better than a grey box, and the
         # page tries local first so it works with no network at all.
-        local = thumbs.local_for(entry.get("id"), photo_index)
-        if local:
-            item["thumb"] = local
+        kept = thumbs.locals_for(entry.get("id"), photo_index)
+        if kept:
+            item["thumb"] = kept[0]
+            # Every photo we actually hold. The sheet's gallery used to draw
+            # the seller's whole set - one local copy and then the rest
+            # hotlinked from their CDN, which is the thing thumbs.py exists to
+            # stop: grey offline, grey in every screenshot taken to verify the
+            # page, and gone the day the car is delisted.
+            item["thumbs"] = kept
         item["per_1000km"] = insight.per_1000km(entry.get("price"),
                                                 entry.get("mileage_km"))
         first = entry.get("first_seen")

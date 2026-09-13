@@ -396,10 +396,17 @@ a{ color:var(--ev-new); text-underline-offset:2px; }
    comparison task. Defined after the card itself so it actually wins. */
 @media (max-width:559px){
   .card{ flex-direction:row; align-items:stretch; }
-  /* Fills the card's height rather than leaving a gap under a 4:3 box. The
-     width is fixed, so the space is still reserved before the image loads
-     and nothing shifts when it arrives. */
-  .card__shot{ flex:none; width:116px; aspect-ratio:auto; align-self:stretch; min-height:92px; }
+  /* A photo keeps its shape. This said aspect-ratio:auto with align-self:
+     stretch, so the slot was as tall as the text beside it and a 480x360
+     photo was cover-fit into a 116x150 portrait - the middle third of a car,
+     zoomed in, on every card. It looked deliberate for as long as every box
+     was an empty grey placeholder, which is the entire time this layout was
+     designed: the bot could not reach the photo CDN from the machine that
+     renders the screenshots, so the first real image anyone here saw was
+     three weeks after the card was written.
+     Still a fixed width, so the space is still reserved and nothing shifts
+     when the image arrives. */
+  .card__shot{ flex:none; width:128px; aspect-ratio:4/3; align-self:flex-start; }
   .card__body{ flex:1; min-width:0; padding:var(--s3); gap:var(--s1); }
   .card__title{ -webkit-line-clamp:2; min-height:0; }
   .card__foot{ padding-top:var(--s1); }

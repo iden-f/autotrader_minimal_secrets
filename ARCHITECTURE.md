@@ -199,12 +199,37 @@ is the number of jobs, not the number of seconds - which is why publishing is
 now a step inside the check rather than the second job it used to be, and why
 recording market events moved in with it.
 
-**What it used to cost.** Measured here over the 24 hours before it changed:
-56 checks, 68 billed job-minutes, and that was the watcher alone. Beside it ran
-a ledger workflow on its own 30-minute schedule, and three "pacemaker"
-workflows, each holding a runner for up to five and a half hours to dispatch
-checks on a timer. Together they asked for 144 firings a day and, when served,
-held up to sixteen hours of runner between them.
+**What it used to cost.** Measured across every run of both repositories from
+1 September, by pulling `get_workflow_run_usage` for all 705 of them:
+
+| Day | Runner minutes |
+|---|---|
+| Sept 9 | 25 |
+| Sept 10 | 410 |
+| Sept 11 | 25 |
+| Sept 12 | **3,540** |
+| Sept 13 (to 06:00) | 904 |
+
+| Workflow | Minutes | Runs |
+|---|---|---|
+| `pacemaker.yml` | 1,798 | 10 |
+| `pacemaker-c.yml` | 908 | 7 |
+| `pacemaker-b.yml` | 884 | 7 |
+| `watch.yml` | 603 | 228 |
+| `probe.yml` | 360 | **1** |
+| `soak.yml` | 164 | 22 |
+| `ci.yml` | 109 | 118 |
+| `coldstart.yml` | 48 | 30 |
+| `events.yml` | 20 | 77 |
+| `pages.yml` | 10 | 40 |
+
+Three pacemakers and one probe: **3,950 minutes across 25 runs**. The whole
+watcher, 228 checks over five days: 603. GitHub's own
+`pages-build-deployment` adds about 600 job-minutes on top, one per publish.
+
+**The billable figure for every one of those runs is zero.** Not "small" -
+zero. `get_workflow_run_usage` returns `billable: {}` or `total_ms: 0` on all
+705, because both repositories are public.
 
 **Why that was allowed to happen.** The pacemakers were justified, in writing,
 in this file, with "runner minutes are free here because the repository is
@@ -216,9 +241,17 @@ repository private. "It was free when I wrote it" is not a budget, and sixteen
 hours a day of somebody else's machines to watch a page that changes a few
 times a week was a bad trade at any price.
 
-**What is left.** Twelve checks (12 job-minutes), the ledger four times a day
-(4), a weekly cold start (about 2 amortised): roughly 17 billed minutes a day
-against an allowance of 3,000 a month.
+**What is left.** Twelve checks at one job each (12), the ledger four times a
+day (4), a weekly cold start (about 2 amortised), and GitHub's own
+`pages-build-deployment` once per publish - which is now only when the page
+really changed rather than on every check, so a few rather than twelve. About
+**20-25 job-minutes a day**, against 3,000 a month.
+
+That last line is worth naming: `pages-build-deployment` is a job GitHub runs
+for you on every push to `gh-pages`, it does not appear in
+`.github/workflows/`, and at 600 job-minutes over five days it was the third
+largest line in this bill. A schedule audit that only reads your own workflow
+files misses it.
 
 **The cost guard.** `budget.py` adds every run to a per-day ledger in
 `state.json`, projects the month at the current rate, and writes a

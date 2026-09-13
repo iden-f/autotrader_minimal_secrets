@@ -56,7 +56,11 @@ class TestEveryFileAndWorkflowTheDocsPointAt:
             # Named as history, not as a pointer. v1's workflow was renamed
             # because GitHub remembers "disabled" against a file path.
             "run_bot.yml",
-            "poke-the-watcher.yml",   # lives in the sibling repository
+            # Deleted, and named in the docs precisely so the next person does
+            # not reinvent them. Between them they spent 3,950 runner minutes
+            # across 25 runs while the entire watcher spent 603 across 228.
+            "pacemaker.yml", "pacemaker-b.yml", "pacemaker-c.yml", "probe.yml",
+            "poke-the-watcher.yml",   # never existed on a default branch
         }
         for name in set(re.findall(r"`?([\w-]+\.yml)`?", DOCS[doc])) - gone:
             assert (here / name).exists(), f"{doc} names {name}"

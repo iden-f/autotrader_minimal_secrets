@@ -25,10 +25,12 @@ def runs_since(days: float) -> list[dict]:
 
 
 def car(i, *, price=90000, year=2019, trim="", status="active",
-        first=30, removed=None, history=None, title=""):
+        first=30, removed=None, history=None, title="",
+        make="", model="", filtered=False):
     entry = {
         "id": f"{i:08d}-0000-0000-0000-000000000000",
         "price": price, "year": year, "trim": trim, "title": title,
+        "make": make, "model": model, "filtered": filtered,
         "status": status, "first_seen": ago(first),
         "price_history": history if history is not None
         else [{"at": ago(first), "price": price}],
@@ -47,16 +49,25 @@ class TestPriceByYear:
         assert out["by_year"]["2019"]["median"] == 80000
         assert out["by_year"]["2019"]["low"] == 60000
 
-    def test_a_year_with_two_cars_does_not(self):
-        """Two cars is not a median, it is two cars."""
-        out = insight.market([car(1, year=2021), car(2, year=2021)], now=NOW)
-        assert "2021" not in out["by_year"]
+    def test_a_year_with_two_cars_shows_the_two_cars(self):
+        """Two cars is not a median, it is two cars - so it says which two.
+
+        This used to drop the row entirely, which is honest and useless: on a
+        watch holding five M3s, dropping every thin row leaves an empty tab.
+        Below the threshold the prices themselves are published instead.
+        """
+        out = insight.market([car(1, year=2021, price=60000),
+                              car(2, year=2021, price=70000)], now=NOW)
+        row = out["by_year"]["2021"]
+        assert row["thin"] is True and row["n"] == 2
+        assert row["prices"] == [60000, 70000]
+        assert "median" not in row
 
     def test_trims_are_grouped_from_the_words_that_move_the_price(self):
         cars = ([car(i, title="BMW M5 Competition xDrive", price=95000)
-                 for i in range(4)]
+                 for i in range(5)]
                 + [car(10 + i, title="BMW M5 Touring", price=170000)
-                   for i in range(4)])
+                   for i in range(5)])
         out = insight.market(cars, now=NOW)
         assert out["by_trim"]["competition"]["median"] == 95000
         assert out["by_trim"]["touring"]["median"] == 170000
@@ -255,3 +266,101 @@ class TestTheWatchStartSurvivesTheRunLog:
         """The regression, stated as the difference it makes."""
         out = insight.market([car(1, first=1)], now=NOW, runs=[{"at": ago(1)}])
         assert out["still_listed_days"]["watching_days"] == 1
+
+
+class TestThreeModelsInsteadOfOne:
+    """The watch changed from 255 BMW M5s to three different cars, and the
+    market layer kept averaging across them.
+
+    Real output from the day it changed: "2017: median $51,972, from $15,980
+    to $62,999" - a 2017 X3 and a 2017 M3 in one median. And a trim table
+    reading "competition: 23 cars, median $112,895", which was M4 Competitions
+    and X3 M Competitions and 2027 cars the year rule hides, together.
+    """
+
+    def fleet(self):
+        return (
+            [car(i, title="BMW M4 Competition", make="BMW", model="M4",
+                 year=2018, price=60000 + i * 1000) for i in range(6)]
+            + [car(20 + i, title="BMW M3", make="BMW", model="M3",
+                   year=2017, price=55000 + i * 1000) for i in range(2)]
+            + [car(40 + i, title="BMW X3 M", make="BMW", model="X3 M",
+                   year=2020, price=50000 + i * 1000) for i in range(5)]
+        )
+
+    def test_each_model_is_its_own_market(self):
+        out = insight.market(self.fleet(), now=NOW)
+        assert set(out["by_model"]) == {"BMW M4", "BMW M3", "BMW X3 M"}
+
+    def test_a_model_median_is_only_that_model(self):
+        out = insight.market(self.fleet(), now=NOW)
+        m4 = out["by_model"]["BMW M4"]
+        assert m4["n"] == 6
+        assert m4["low"] == 60000 and m4["high"] == 65000, \
+            "another model's prices leaked into this one"
+
+    def test_a_model_with_too_few_shows_the_cars_not_a_median(self):
+        out = insight.market(self.fleet(), now=NOW)
+        m3 = out["by_model"]["BMW M3"]
+        assert m3["thin"] is True and m3["prices"] == [55000, 56000]
+        assert "median" not in m3
+
+    def test_the_flat_tables_follow_the_model_with_the_most_cars(self):
+        out = insight.market(self.fleet(), now=NOW)
+        assert out["leader"] == "BMW M4"
+        assert set(out["by_year"]) == {"2018"}, \
+            "the flat by_year table is still mixing models"
+
+    def test_every_row_carries_its_sample_size(self):
+        out = insight.market(self.fleet(), now=NOW)
+        for model in out["by_model"].values():
+            assert "n" in model
+            for row in list(model["by_year"].values()) + list(model["by_trim"].values()):
+                assert "n" in row and row["n"] >= 1
+
+    def test_no_row_shows_a_median_from_fewer_than_five(self):
+        out = insight.market(self.fleet(), now=NOW)
+        for model in out["by_model"].values():
+            rows = [model] + list(model["by_year"].values()) + list(model["by_trim"].values())
+            for row in rows:
+                if "median" in row:
+                    assert row["n"] >= insight.MIN_FOR_A_MEDIAN, row
+
+
+class TestTheHiddenCarsAreNotTheMarket:
+    """A watch for an M3 up to 2020 that reports the median of the 2025s its
+    own rule rejects is quoting a market nobody is shopping in."""
+
+    def fleet(self):
+        yours = [car(i, make="BMW", model="M3", year=2018, price=60000 + i * 1000)
+                 for i in range(5)]
+        theirs = [car(50 + i, make="BMW", model="M3", year=2025, price=120000,
+                      filtered=True) for i in range(9)]
+        return yours + theirs
+
+    def test_the_median_is_of_the_cars_you_could_buy(self):
+        out = insight.market(self.fleet(), now=NOW)
+        m3 = out["by_model"]["BMW M3"]
+        assert m3["n"] == 5 and m3["median"] == 62000
+        assert m3["high"] == 64000, "a hidden car is in the spread"
+
+    def test_the_hidden_ones_are_still_counted_beside_it(self):
+        out = insight.market(self.fleet(), now=NOW)
+        assert out["by_model"]["BMW M3"]["hidden"] == 9
+
+    def test_a_model_that_is_entirely_hidden_still_gets_a_line(self):
+        """Silently omitting a whole car you are searching for is worse than
+        saying "9 of these, all hidden"."""
+        out = insight.market([car(50 + i, make="BMW", model="X3 M", year=2025,
+                                  price=120000, filtered=True) for i in range(9)],
+                             now=NOW)
+        row = out["by_model"]["BMW X3 M"]
+        assert row["n"] == 0 and row["hidden"] == 9
+
+    def test_a_car_is_scored_against_cars_you_could_buy(self):
+        """comparables() had the same fault: a 2020 M4 judged against 2021
+        M4s, which the year rule exists to exclude."""
+        out = insight.comparables(self.fleet())
+        for row in out.values():
+            if "median" in row:
+                assert row["median"] < 100000, "a hidden car is in the cohort"

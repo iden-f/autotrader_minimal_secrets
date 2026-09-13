@@ -348,3 +348,85 @@ class TestAskingForTheRightSize:
         assert "over the" in report.samples[-1]["error"]
         assert len(report.samples) == 1, "one car, one sample"
 
+
+
+class TestKeepingMoreThanOne:
+    """The detail sheet draws a gallery. One local photo followed by seven
+    hotlinked from the seller's CDN is the exact thing this module exists to
+    stop - and it was invisible for three weeks because the machine that
+    renders the screenshots cannot reach that CDN, so every one of those
+    slides was a grey box in every picture anyone looked at."""
+
+    def car_with(self, n: int) -> dict:
+        return {"id": "aaaaaaaa-0000-0000-0000-000000000000",
+                "status": "active", "filtered": False,
+                "images": [f"https://cdn.test/{i}.webp/1920x1080.webp"
+                           for i in range(n)]}
+
+    def test_three_are_kept_by_default(self, here):
+        cdn = CDN()
+        report = thumbs.sync([self.car_with(8)], cdn)
+        assert report.fetched == 3, report.notes
+        assert len(thumbs.locals_for(self.car_with(8)["id"])) == 3
+
+    def test_a_car_with_one_photo_keeps_one(self, here):
+        report = thumbs.sync([self.car_with(1)], CDN())
+        assert report.fetched == 1 and report.failed == 0
+
+    def test_the_first_file_keeps_the_bare_id(self, here):
+        """Every path written before there was more than one still resolves."""
+        thumbs.sync([self.car_with(3)], CDN())
+        first = thumbs.local_for(self.car_with(3)["id"])
+        assert first == f"thumbs/{self.car_with(3)['id']}.webp"
+
+    def test_they_come_back_in_the_sellers_order(self, here):
+        thumbs.sync([self.car_with(3)], CDN())
+        kept = thumbs.locals_for(self.car_with(3)["id"])
+        assert kept == sorted(kept, key=lambda p: (len(p), p))
+
+    def test_a_second_run_fetches_nothing_new(self, here):
+        cdn = CDN()
+        thumbs.sync([self.car_with(3)], cdn)
+        before = len(cdn.calls)
+        again = thumbs.sync([self.car_with(3)], cdn)
+        assert again.fetched == 0
+        assert len(cdn.calls) == before, "re-fetched photos it already had"
+
+    def test_a_delisted_car_takes_all_of_its_photos_with_it(self, here):
+        thumbs.sync([self.car_with(3)], CDN())
+        report = thumbs.sync([], CDN())
+        assert report.pruned == 3
+        assert thumbs.locals_for(self.car_with(3)["id"]) == []
+
+    def test_the_per_run_limit_counts_photos_not_cars(self, here):
+        cars = [dict(self.car_with(3),
+                     id=f"{i:08d}-0000-0000-0000-000000000000") for i in range(5)]
+        report = thumbs.sync(cars, CDN(), limit=4)
+        assert report.fetched == 4 and report.skipped
+
+    def test_one_bad_angle_does_not_cost_three_requests(self, here):
+        """A car whose second photo 404s stops there rather than hammering."""
+
+        class Flaky:
+            def __init__(self): self.calls = []
+
+            def get(self, url, referer=None, allow_block=False):
+                self.calls.append(url)
+                if "/1." in url:
+                    return Response(b"gone", 404, "text/plain")
+                return Response(webp(), 200, "image/webp")
+
+        cdn = Flaky()
+        report = thumbs.sync([self.car_with(3)], cdn)
+        assert report.fetched == 1
+        assert len(thumbs.locals_for(self.car_with(3)["id"])) == 1
+        assert sum(1 for c in cdn.calls if "/2." in c) == 0, "kept going after a failure"
+
+    def test_an_index_written_before_this_still_works(self, here):
+        """A single-file row from the old format keeps resolving."""
+        thumbs.THUMB_DIR.mkdir(parents=True, exist_ok=True)
+        (thumbs.THUMB_DIR / "old.webp").write_bytes(webp())
+        thumbs.INDEX.write_text(json.dumps(
+            {"legacy-car": {"file": "old.webp", "bytes": 900, "w": 250, "h": 188}}))
+        assert thumbs.local_for("legacy-car") == "thumbs/old.webp"
+        assert thumbs.locals_for("legacy-car") == ["thumbs/old.webp"]

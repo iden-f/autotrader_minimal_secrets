@@ -810,6 +810,15 @@ function sentence(text) {
   return t.charAt(0).toUpperCase() + t.slice(1) + (/[.!?]$/.test(t) ? '' : '.');
 }
 
+/* Two or three prices, written out. A median of two numbers is one of the
+   two numbers with a statistical word in front of it. */
+function priceList(prices) {
+  const all = (prices || []).map(money);
+  if (!all.length) return '—';
+  if (all.length === 1) return all[0];
+  return all.slice(0, -1).join(', ') + ' and ' + all[all.length - 1];
+}
+
 function trimLabel(name) {
   if (name === 'base' || !name) return 'No trim named';
   return name.charAt(0).toUpperCase() + name.slice(1);
@@ -826,9 +835,13 @@ function renderMarket() {
   const hiddenHere = (app.data.listings || [])
     .filter(l => l.status === 'active' && l.filtered).length;
   head.innerHTML = `<h1 id="market-h">The market</h1>
-    <p>What all ${m.live ?? 0} cars listed right now say together, rather than
-       what one says${hiddenHere ? `, including the ${hiddenHere} your rules hide`
-       : ''}. Everything here carries how many cars it is drawn from.</p>`;
+    <p>What the cars say together, rather than what one says. The tiles count
+       all ${m.live ?? 0} listings the searches returned${hiddenHere
+         ? `, the ${hiddenHere} your rules hide included` : ''};
+       the per-model figures below count only the ${(m.live ?? 0) - hiddenHere}
+       you could actually buy, because a median of the cars a rule rejects is
+       a market you are not shopping in. Everything carries how many cars it
+       is drawn from.</p>`;
   host.appendChild(head);
 
   // The window first, because it decides how much of the rest to believe.
@@ -879,28 +892,58 @@ function renderMarket() {
       '“Listed before coming down” is ' + lt.note + '.'));
   }
 
-  const years = Object.entries(m.by_year || {});
-  if (years.length) {
+  // One section per model. This was a single "asking price by year" chart
+  // drawn across every car in state, which was fine while the watch held one
+  // model and became nonsense the day it held three: a 2017 row reading
+  // "median $51,972, from $15,980 to $62,999" was an ordinary X3 and an M3
+  // averaged together, and a trim table said "competition, 23 cars" by
+  // counting M4 Competitions and X3 M Competitions as the same thing.
+  for (const row of Object.values(m.by_model || {})) {
     const sec = el('section', 'section measure');
-    sec.innerHTML = `<div class="section__head"><h2>Asking price by year</h2>
-      <span class="count num">${years.length} year${years.length === 1 ? '' : 's'}
-        with enough cars</span></div>`;
-    sec.appendChild(rangeChart(years));
-    host.appendChild(sec);
-  }
+    const count = row.n
+      ? `${row.n} to buy${row.hidden ? ` · ${row.hidden} hidden` : ''}`
+      : `none to buy · ${row.hidden} hidden`;
+    sec.innerHTML = `<div class="section__head">
+        <h2>${esc(row.label)}</h2><span class="count num">${count}</span></div>`;
 
-  const trims = Object.entries(m.by_trim || {})
-    .sort((a, b) => b[1].median - a[1].median);
-  if (trims.length) {
-    const sec = el('section', 'section measure');
-    sec.innerHTML = `<div class="section__head"><h2>By trim</h2></div>`;
-    const t = el('table', 'tbl');
-    t.innerHTML = `<thead><tr><th>Trim</th><th class="r">Cars</th>
-        <th class="r">Median asking</th></tr></thead><tbody>` +
-      trims.map(([name, row]) =>
-        `<tr><td>${esc(trimLabel(name))}</td><td class="r num">${row.n}</td>
-          <td class="r num">${money(row.median)}</td></tr>`).join('') + '</tbody>';
-    sec.appendChild(t);
+    if (!row.n) {
+      sec.appendChild(el('p', 'note', `Every ${row.label} the searches found is `
+        + `outside your rules. The Listings tab says which rule, car by car.`));
+      host.appendChild(sec);
+      continue;
+    }
+    sec.appendChild(el('p', 'note', row.thin
+      ? `${priceList(row.prices)} — ${row.n} car${row.n === 1 ? '' : 's'}, which is `
+        + `too few for a median. The asking prices themselves are above.`
+      : `Median ${money(row.median)}, ${money(row.low)} to ${money(row.high)}, `
+        + `from ${row.n} cars.`));
+
+    const years = Object.entries(row.by_year || {});
+    const fat = years.filter(([, y]) => !y.thin);
+    if (fat.length) sec.appendChild(rangeChart(fat));
+    const thin = years.filter(([, y]) => y.thin);
+    if (thin.length) {
+      const t = el('table', 'tbl');
+      t.innerHTML = `<thead><tr><th>Year</th><th class="r">Cars</th>
+          <th class="r">Asking</th></tr></thead><tbody>` +
+        thin.map(([year, y]) =>
+          `<tr><td>${esc(year)}</td><td class="r num">${y.n}</td>
+            <td class="r num">${priceList(y.prices)}</td></tr>`).join('') + '</tbody>';
+      sec.appendChild(t);
+    }
+
+    const trims = Object.entries(row.by_trim || {}).filter(([, t]) => t.n > 1);
+    if (trims.length > 1) {
+      const t = el('table', 'tbl');
+      t.style.marginTop = 'var(--s4)';
+      t.innerHTML = `<thead><tr><th>Trim</th><th class="r">Cars</th>
+          <th class="r">Asking</th></tr></thead><tbody>` +
+        trims.map(([name, r]) =>
+          `<tr><td>${esc(trimLabel(name))}</td><td class="r num">${r.n}</td>
+            <td class="r num">${r.thin ? priceList(r.prices) : money(r.median)}</td>
+            </tr>`).join('') + '</tbody>';
+      sec.appendChild(t);
+    }
     host.appendChild(sec);
   }
 
@@ -1442,7 +1485,14 @@ function sheetBody(l) {
   const cmp = app.data.comparables?.[String(l.id)];
 
   const gal = el('div', 'gallery');
-  const imgs = [l.thumb, ...(l.images || [])].filter(Boolean).slice(0, 8);
+  // Only the photos we hold a copy of. This was [l.thumb, ...l.images], so
+  // every slide after the first was hotlinked from the seller's CDN: broken
+  // offline, broken in the installed app, gone when the car is delisted, and
+  // a grey box in every screenshot ever taken of this page - which is how it
+  // survived so long.
+  const imgs = (l.thumbs && l.thumbs.length ? l.thumbs
+                : [l.thumb].filter(Boolean)).slice(0, 8);
+  const published = l.photo_count || 0;
   if (imgs.length) {
     for (const src of imgs) {
       const box = el('div', 'shotbox');
@@ -1460,6 +1510,13 @@ function sheetBody(l) {
     gal.setAttribute('aria-label',
       `${imgs.length} photo${imgs.length === 1 ? '' : 's'}`);
     frag.appendChild(gal);
+    if (published > imgs.length) {
+      const note = el('p', 'note');
+      note.style.margin = '0 0 var(--s4)';
+      note.innerHTML = `${imgs.length} of ${published} photos kept here. `
+        + `<a href="${esc(l.url || '#')}" rel="noopener" target="_blank">See them all on autotrader.ca</a>`;
+      frag.appendChild(note);
+    }
   } else {
     const box = el('div', 'shotbox');
     box.style.cssText = 'width:100%;aspect-ratio:4/3;border-radius:var(--r-sm);margin-bottom:var(--s4)';
