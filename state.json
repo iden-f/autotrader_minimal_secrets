@@ -20,6 +20,219 @@
  "ntfy_topic": "autotrader-2q592ak9gnx7sqrere5r",
  "runs": [
   {
+   "at": "2026-09-13T05:21:22+00:00",
+   "baselines": [],
+   "budget_exhausted": false,
+   "diagnostics": [],
+   "disabled_channels": [],
+   "dry_run": false,
+   "duration_s": 21.3,
+   "empty_parses": [],
+   "errors": [],
+   "filtered_out": 121,
+   "first_run": false,
+   "hidden_events": {},
+   "invariants": [],
+   "listings_seen": 214,
+   "missed_by": 80,
+   "new": 0,
+   "notified": [],
+   "ok": true,
+   "photos": {
+    "bytes": 417614,
+    "failed": 0,
+    "fetched": 0,
+    "kept": 72,
+    "pruned": 0,
+    "samples": []
+   },
+   "price_drops": 0,
+   "price_rises": 0,
+   "priced": 0,
+   "qualified": 0,
+   "quiet": false,
+   "relisted": 0,
+   "removed": 0,
+   "requests_made": 12,
+   "searches_failed": 0,
+   "searches_run": 2,
+   "shape_drift": [],
+   "shut_out": [
+    "2021-2023 BMW M5"
+   ],
+   "skipped": false,
+   "strategies": {
+    "2021-2023-bmw-m5-310324": "embedded_json",
+    "bmw-m5-bargains-any-year-f2f097": "jsonld"
+   },
+   "unpriced": 2,
+   "validation_ok": true,
+   "warnings": [
+    "the last successful check was 1.3 hours ago, not 30 minutes - the schedule dropped 1 run. Catching up now.",
+    "2021-2023 BMW M5: read 20 listings and none passed your rules for it (12 too far away, 8 outside the year range). It is working - it just has nothing to show you."
+   ],
+   "your_call": 0
+  },
+  {
+   "at": "2026-09-13T04:01:31+00:00",
+   "baselines": [],
+   "budget_exhausted": false,
+   "diagnostics": [],
+   "disabled_channels": [],
+   "dry_run": false,
+   "duration_s": 28.4,
+   "empty_parses": [],
+   "errors": [],
+   "filtered_out": 121,
+   "first_run": false,
+   "hidden_events": {},
+   "invariants": [],
+   "listings_seen": 213,
+   "missed_by": 0,
+   "new": 0,
+   "notified": [],
+   "ok": true,
+   "photos": {
+    "bytes": 417614,
+    "failed": 0,
+    "fetched": 0,
+    "kept": 72,
+    "pruned": 0,
+    "samples": []
+   },
+   "price_drops": 0,
+   "price_rises": 0,
+   "priced": 0,
+   "qualified": 0,
+   "quiet": false,
+   "relisted": 0,
+   "removed": 0,
+   "requests_made": 12,
+   "searches_failed": 0,
+   "searches_run": 2,
+   "shape_drift": [],
+   "shut_out": [
+    "2021-2023 BMW M5"
+   ],
+   "skipped": false,
+   "strategies": {
+    "2021-2023-bmw-m5-310324": "embedded_json",
+    "bmw-m5-bargains-any-year-f2f097": "jsonld"
+   },
+   "unpriced": 2,
+   "validation_ok": true,
+   "warnings": [
+    "2021-2023 BMW M5: read 19 listings and none passed your rules for it (12 too far away, 7 outside the year range). It is working - it just has nothing to show you."
+   ],
+   "your_call": 0
+  },
+  {
+   "at": "2026-09-13T03:31:25+00:00",
+   "baselines": [],
+   "budget_exhausted": false,
+   "diagnostics": [],
+   "disabled_channels": [],
+   "dry_run": false,
+   "duration_s": 23.6,
+   "empty_parses": [],
+   "errors": [],
+   "filtered_out": 121,
+   "first_run": false,
+   "hidden_events": {},
+   "invariants": [],
+   "listings_seen": 213,
+   "missed_by": 0,
+   "new": 0,
+   "notified": [],
+   "ok": true,
+   "photos": {
+    "bytes": 417614,
+    "failed": 0,
+    "fetched": 0,
+    "kept": 72,
+    "pruned": 0,
+    "samples": []
+   },
+   "price_drops": 0,
+   "price_rises": 0,
+   "priced": 0,
+   "qualified": 0,
+   "quiet": false,
+   "relisted": 0,
+   "removed": 0,
+   "requests_made": 12,
+   "searches_failed": 0,
+   "searches_run": 2,
+   "shape_drift": [],
+   "shut_out": [
+    "2021-2023 BMW M5"
+   ],
+   "skipped": false,
+   "strategies": {
+    "2021-2023-bmw-m5-310324": "embedded_json",
+    "bmw-m5-bargains-any-year-f2f097": "jsonld"
+   },
+   "unpriced": 2,
+   "validation_ok": true,
+   "warnings": [
+    "2021-2023 BMW M5: read 19 listings and none passed your rules for it (12 too far away, 7 outside the year range). It is working - it just has nothing to show you."
+   ],
+   "your_call": 0
+  },
+  {
+   "at": "2026-09-13T03:01:18+00:00",
+   "baselines": [],
+   "budget_exhausted": false,
+   "diagnostics": [],
+   "disabled_channels": [],
+   "dry_run": false,
+   "duration_s": 22.3,
+   "empty_parses": [],
+   "errors": [],
+   "filtered_out": 121,
+   "first_run": false,
+   "hidden_events": {},
+   "invariants": [],
+   "listings_seen": 213,
+   "missed_by": 0,
+   "new": 0,
+   "notified": [],
+   "ok": true,
+   "photos": {
+    "bytes": 417614,
+    "failed": 0,
+    "fetched": 0,
+    "kept": 72,
+    "pruned": 0,
+    "samples": []
+   },
+   "price_drops": 0,
+   "price_rises": 0,
+   "priced": 0,
+   "qualified": 0,
+   "quiet": false,
+   "relisted": 0,
+   "removed": 0,
+   "requests_made": 12,
+   "searches_failed": 0,
+   "searches_run": 2,
+   "shape_drift": [],
+   "shut_out": [
+    "2021-2023 BMW M5"
+   ],
+   "skipped": false,
+   "strategies": {
+    "2021-2023-bmw-m5-310324": "embedded_json",
+    "bmw-m5-bargains-any-year-f2f097": "jsonld"
+   },
+   "unpriced": 2,
+   "validation_ok": true,
+   "warnings": [
+    "2021-2023 BMW M5: read 19 listings and none passed your rules for it (12 too far away, 7 outside the year range). It is working - it just has nothing to show you."
+   ],
+   "your_call": 0
+  },
+  {
    "at": "2026-09-13T02:31:24+00:00",
    "baselines": [],
    "budget_exhausted": false,
@@ -3126,210 +3339,10 @@
     "the last successful check was 33.6 hour(s) ago, not 30 minute(s) - the schedule dropped 66 run(s). Catching up now.",
     "2021-2023 BMW M5: read 19 listing(s) and none passed your rules for it (10 too far away, 9 outside the year range). It is working - it just has nothing to show you."
    ]
-  },
-  {
-   "at": "2026-09-11T22:33:21+00:00",
-   "baselines": [],
-   "budget_exhausted": false,
-   "diagnostics": [
-    "diagnostics/invariants.json"
-   ],
-   "disabled_channels": [],
-   "dry_run": false,
-   "duration_s": 28.4,
-   "empty_parses": [],
-   "errors": [
-    "the bot's own bookkeeping is inconsistent: hidden-has-a-reason: listings that are not hidden but still say a rule is why they were kept quiet [9b202e41-4d14-41fe-9bad-e19278a892b4]"
-   ],
-   "filtered_out": 121,
-   "first_run": false,
-   "hidden_events": {},
-   "invariants": [
-    "hidden-has-a-reason: listings that are not hidden but still say a rule is why they were kept quiet [9b202e41-4d14-41fe-9bad-e19278a892b4]"
-   ],
-   "listings_seen": 206,
-   "missed_by": 1975,
-   "new": 0,
-   "notified": [],
-   "ok": false,
-   "price_drops": 0,
-   "price_rises": 0,
-   "priced": 0,
-   "quiet": false,
-   "relisted": 0,
-   "removed": 0,
-   "requests_made": 12,
-   "searches_failed": 0,
-   "searches_run": 2,
-   "shape_drift": [],
-   "shut_out": [
-    "2021-2023 BMW M5"
-   ],
-   "skipped": false,
-   "strategies": {
-    "2021-2023-bmw-m5-310324": "embedded_json",
-    "bmw-m5-bargains-any-year-f2f097": "jsonld"
-   },
-   "unpriced": 2,
-   "validation_ok": true,
-   "warnings": [
-    "the last successful check was 32.9 hour(s) ago, not 30 minute(s) - the schedule dropped 64 run(s). Catching up now.",
-    "2021-2023 BMW M5: read 19 listing(s) and none passed your rules for it (10 too far away, 9 outside the year range). It is working - it just has nothing to show you."
-   ]
-  },
-  {
-   "at": "2026-09-11T20:55:02+00:00",
-   "baselines": [],
-   "budget_exhausted": false,
-   "diagnostics": [
-    "diagnostics/invariants.json"
-   ],
-   "disabled_channels": [],
-   "dry_run": false,
-   "duration_s": 23.1,
-   "empty_parses": [],
-   "errors": [
-    "the bot's own bookkeeping is inconsistent: hidden-has-a-reason: listings that are not hidden but still say a rule is why they were kept quiet [9b202e41-4d14-41fe-9bad-e19278a892b4]"
-   ],
-   "filtered_out": 121,
-   "first_run": false,
-   "hidden_events": {},
-   "invariants": [
-    "hidden-has-a-reason: listings that are not hidden but still say a rule is why they were kept quiet [9b202e41-4d14-41fe-9bad-e19278a892b4]"
-   ],
-   "listings_seen": 206,
-   "missed_by": 1877,
-   "new": 0,
-   "notified": [],
-   "ok": false,
-   "price_drops": 0,
-   "price_rises": 0,
-   "priced": 0,
-   "quiet": false,
-   "relisted": 0,
-   "removed": 0,
-   "requests_made": 12,
-   "searches_failed": 0,
-   "searches_run": 2,
-   "shape_drift": [],
-   "shut_out": [
-    "2021-2023 BMW M5"
-   ],
-   "skipped": false,
-   "strategies": {
-    "2021-2023-bmw-m5-310324": "embedded_json",
-    "bmw-m5-bargains-any-year-f2f097": "jsonld"
-   },
-   "unpriced": 2,
-   "validation_ok": true,
-   "warnings": [
-    "the last successful check was 31.3 hour(s) ago, not 30 minute(s) - the schedule dropped 61 run(s). Catching up now.",
-    "2021-2023 BMW M5: read 19 listing(s) and none passed your rules for it (10 too far away, 9 outside the year range). It is working - it just has nothing to show you."
-   ]
-  },
-  {
-   "at": "2026-09-11T20:01:44+00:00",
-   "baselines": [],
-   "budget_exhausted": false,
-   "diagnostics": [
-    "diagnostics/invariants.json"
-   ],
-   "disabled_channels": [],
-   "dry_run": false,
-   "duration_s": 33.0,
-   "empty_parses": [],
-   "errors": [
-    "the bot's own bookkeeping is inconsistent: hidden-has-a-reason: listings that are not hidden but still say a rule is why they were kept quiet [9b202e41-4d14-41fe-9bad-e19278a892b4]"
-   ],
-   "filtered_out": 121,
-   "first_run": false,
-   "hidden_events": {},
-   "invariants": [
-    "hidden-has-a-reason: listings that are not hidden but still say a rule is why they were kept quiet [9b202e41-4d14-41fe-9bad-e19278a892b4]"
-   ],
-   "listings_seen": 207,
-   "missed_by": 1823,
-   "new": 0,
-   "notified": [],
-   "ok": false,
-   "price_drops": 0,
-   "price_rises": 0,
-   "priced": 0,
-   "quiet": false,
-   "relisted": 0,
-   "removed": 1,
-   "requests_made": 13,
-   "searches_failed": 0,
-   "searches_run": 2,
-   "shape_drift": [],
-   "shut_out": [
-    "2021-2023 BMW M5"
-   ],
-   "skipped": false,
-   "strategies": {
-    "2021-2023-bmw-m5-310324": "embedded_json",
-    "bmw-m5-bargains-any-year-f2f097": "jsonld"
-   },
-   "unpriced": 2,
-   "validation_ok": true,
-   "warnings": [
-    "the last successful check was 30.4 hour(s) ago, not 30 minute(s) - the schedule dropped 59 run(s). Catching up now.",
-    "2021-2023 BMW M5: read 20 listing(s) and none passed your rules for it (10 too far away, 10 outside the year range). It is working - it just has nothing to show you."
-   ]
-  },
-  {
-   "at": "2026-09-11T17:44:39+00:00",
-   "baselines": [],
-   "budget_exhausted": false,
-   "diagnostics": [
-    "diagnostics/invariants.json"
-   ],
-   "disabled_channels": [],
-   "dry_run": false,
-   "duration_s": 24.0,
-   "empty_parses": [],
-   "errors": [
-    "the bot's own bookkeeping is inconsistent: hidden-has-a-reason: listings that are not hidden but still say a rule is why they were kept quiet [9b202e41-4d14-41fe-9bad-e19278a892b4]"
-   ],
-   "filtered_out": 121,
-   "first_run": false,
-   "hidden_events": {},
-   "invariants": [
-    "hidden-has-a-reason: listings that are not hidden but still say a rule is why they were kept quiet [9b202e41-4d14-41fe-9bad-e19278a892b4]"
-   ],
-   "listings_seen": 206,
-   "missed_by": 1686,
-   "new": 0,
-   "notified": [],
-   "ok": false,
-   "price_drops": 0,
-   "price_rises": 0,
-   "priced": 0,
-   "quiet": false,
-   "relisted": 0,
-   "removed": 0,
-   "requests_made": 13,
-   "searches_failed": 0,
-   "searches_run": 2,
-   "shape_drift": [],
-   "shut_out": [
-    "2021-2023 BMW M5"
-   ],
-   "skipped": false,
-   "strategies": {
-    "2021-2023-bmw-m5-310324": "embedded_json",
-    "bmw-m5-bargains-any-year-f2f097": "jsonld"
-   },
-   "unpriced": 2,
-   "validation_ok": true,
-   "warnings": [
-    "the last successful check was 28.1 hour(s) ago, not 30 minute(s) - the schedule dropped 55 run(s). Catching up now.",
-    "2021-2023 BMW M5: read 19 listing(s) and none passed your rules for it (10 too far away, 9 outside the year range). It is working - it just has nothing to show you."
-   ]
   }
  ],
  "searches": {},
- "updated_at": "2026-09-13T05:15:15+00:00",
+ "updated_at": "2026-09-13T05:35:19+00:00",
  "version": 2,
  "watch_started": "2026-09-09T20:55:29+00:00"
 }
