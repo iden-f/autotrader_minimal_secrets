@@ -107,7 +107,10 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
    the rest is a sales pitch that makes every card look the same. */
 function carName(l) {
   const head = String(l.title || '').split('|')[0].trim();
-  const year = l.year ? `${l.year} ` : '';
+  // A title that already opens with the year gets no second one. The names
+  // the bot composes for cars whose card carried none start "2025 BMW M4",
+  // and this happily made that "2025 2025 BMW M4".
+  const year = (l.year && !head.startsWith(String(l.year))) ? `${l.year} ` : '';
   return (year + (head || [l.make, l.model].filter(Boolean).join(' '))).trim() || 'Listing';
 }
 function carExtras(l) {
@@ -467,8 +470,10 @@ function eventRow(e) {
   else if (e.delivery?.state === 'queued') sub.push('<span>queued, not sent yet</span>');
   else if (e.delivery?.state === 'quiet') sub.push(`<span>${esc(e.delivery.text)}</span>`);
 
-  const name = (e.year ? e.year + ' ' : '') +
-    (String(e.title || '').split('|')[0].trim() || [e.make, e.model].filter(Boolean).join(' '));
+  // carName, not a second copy of it. There were two, they were the same
+  // line, and when one learned not to print "2025 2025 BMW M4" the other
+  // carried on doing it - on the Feed, which is the view people read most.
+  const name = carName(e);
   // Named by its own content, with the kind word carried in a visually
   // hidden span rather than an aria-label.
   //

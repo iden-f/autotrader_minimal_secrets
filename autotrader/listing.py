@@ -8,6 +8,11 @@ from typing import Any
 
 _YEAR_RE = re.compile(r"\b(19[7-9]\d|20[0-5]\d)\b")
 
+_EDGE_SEPARATOR = re.compile(r"^[\s|,/·\-]+|[\s|,/·\-]+$")
+
+# What the parser writes when a results card carries no readable name.
+PLACEHOLDER_TITLE = "AutoTrader listing "
+
 
 @dataclass
 class Listing:
@@ -68,7 +73,14 @@ class Listing:
         trim = (self.trim or "").strip()
         if not trim:
             return ""
-        for separator in ("|", ",", "/"):
+        # A trim can arrive already separated from a name that was stripped
+        # off it, so it starts on the separator: "I Premium PKG I M Carbon".
+        trim = _EDGE_SEPARATOR.sub("", trim).strip()
+        if trim[:2].upper() == "I " and trim[2:3].isupper():
+            trim = trim[2:].strip()
+        # " I " is in there because dealers on this platform type a capital I
+        # where they mean a pipe: "M4 I Premium PKG I M Carbon Exterior PKG".
+        for separator in ("|", ",", "/", " I "):
             if separator in trim:
                 trim = trim.split(separator)[0].strip()
                 break
@@ -77,7 +89,13 @@ class Listing:
         for prefix in (self.model, self.make):
             if prefix and trim.lower().startswith(prefix.lower() + " "):
                 trim = trim[len(prefix):].strip()
-        return trim[:40].strip()
+        if len(trim) <= 40:
+            return trim.strip()
+        # Cut at a word, not mid-word: "M Carbon Exterior PKG Ca" was a real
+        # card title, and the two dangling letters read as a rendering fault.
+        cut = trim[:40]
+        head, space, _ = cut.rpartition(" ")
+        return (head if space and len(head) >= 12 else cut).strip()
 
     @property
     def display_title(self) -> str:
@@ -134,3 +152,27 @@ class Listing:
                 setattr(self, name, new)
             elif name == "images" and len(new) > len(current):
                 setattr(self, name, new)
+
+
+def name_of(entry: dict[str, Any]) -> str:
+    """What to call a car, from a state row rather than a Listing object.
+
+    The parser falls back to "AutoTrader listing <uuid>" when a card has no
+    name on it, and enrichment then fills in year, make, model and trim
+    without ever going back to fix the title. Nothing failed, and the Feed
+    filled up with rows reading "2025 AutoTrader listing 01108a1a-2812-475d-
+    b800-be530145cf6f" - a placeholder shown to a person, on the one view
+    whose whole job is to be readable at a glance.
+
+    Hidden cars are where it shows: they are deliberately not enriched from
+    their own detail page, so the card is all there is. They still have a
+    make, a model and a year, which is a name.
+    """
+    title = str(entry.get("title") or "").strip()
+    if title and not title.startswith(PLACEHOLDER_TITLE):
+        return title
+    built = Listing(id=str(entry.get("id") or ""), title="",
+                    year=entry.get("year"), make=entry.get("make") or "",
+                    model=entry.get("model") or "",
+                    trim=entry.get("trim") or "").display_title
+    return built if not built.startswith(PLACEHOLDER_TITLE) else title or built

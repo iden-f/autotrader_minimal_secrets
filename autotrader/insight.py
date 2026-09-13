@@ -15,6 +15,8 @@ import statistics
 from datetime import datetime, timedelta, timezone
 from typing import Any, Iterable
 
+from .listing import name_of
+
 # A price comparison drawn from a handful of cars is a coincidence with a
 # percentage sign on it. Below this many comparables the dashboard says so
 # instead of scoring.
@@ -149,7 +151,10 @@ def events(entries: Iterable[dict[str, Any]], limit: int = 400
             "kind": kind,
             "at": when.isoformat(timespec="seconds"),
             "listing_id": str(entry.get("id")),
-            "title": entry.get("title") or "",
+            # name_of, not entry["title"]: a hidden car is never enriched from
+            # its own page, so its title can still be the parser's placeholder
+            # long after make, model and year are known.
+            "title": name_of(entry),
             "year": entry.get("year"),
             "make": entry.get("make"),
             "model": entry.get("model"),

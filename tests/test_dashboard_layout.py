@@ -270,6 +270,26 @@ def test_the_detail_sheet_opens_closes_and_hands_focus_back(browser, site):
         ctx.close()
 
 
+def test_a_car_is_never_named_with_its_year_twice(browser, site):
+    """"2025 2025 BMW M4 Premium PKG", on the view people read most.
+
+    The bot composes a name like "2025 BMW M4" for a car whose results card
+    carried no title, and the Feed prepended the year to whatever it was
+    given. There were two copies of that line - one on the cards, one on the
+    feed rows - so fixing the first left the second doing it.
+    """
+    import re
+    ctx, page, _ = _page(browser, site, 390, "light")
+    try:
+        names = page.evaluate(
+            "() => [...document.querySelectorAll('.ev__title')].map(e => e.textContent.trim())")
+        assert names, "no feed rows to check"
+        for name in names:
+            assert not re.match(r"^(\d{4})\s+\1\b", name), name
+    finally:
+        ctx.close()
+
+
 def test_a_caption_under_a_figure_stays_smaller_than_the_figure(browser, site):
     """Both are <dd> inside .stat, and that is how this broke.
 

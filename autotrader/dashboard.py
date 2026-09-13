@@ -19,6 +19,7 @@ import re
 from .archive import size_report
 from . import geo, insight, thumbs
 from .config import CHANNEL_SECRETS, Config
+from .listing import name_of
 from .parser import STRATEGIES
 from .state import State
 from .urls import describe_search
@@ -110,6 +111,9 @@ def build_payload(cfg: Config, state: State, env: dict[str, str] | None = None
         # still kept out of every count and list by default: the point is
         # that a number you can click on beats a number that silently omits.
         item = {k: entry.get(k) for k in LISTING_FIELDS if k in entry}
+        # The published name, which is not always the recorded one - see
+        # listing.name_of.
+        item["title"] = name_of(entry)
         item["filtered"] = bool(entry.get("filtered"))
         item["unpriced"] = entry.get("price") is None
         item["price_history"] = (entry.get("price_history") or [])[-20:]
