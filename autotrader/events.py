@@ -153,7 +153,7 @@ def scan(state) -> dict[str, Event]:
             offer(Event(
                 kind="relisted", at=entry["relisted_at"], listing_id=lid,
                 title=title, url=url, before="gone", after="active",
-                detail=f"written off, then listed again",
+                detail="written off, then listed again",
                 delivered=_delivery(entry), run=_run_at(runs, entry["relisted_at"])))
 
         # A call-for-price car naming a figure. The run stamps the moment it

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import logging
 import os
 import re
@@ -19,7 +18,7 @@ from .http import Fetcher
 from .listing import Listing, name_of
 from .parser import parse_search_page
 from .state import Change, State
-from .urls import describe_search, normalise_search_url, page_url
+from .urls import describe_search, page_url
 
 GREEN, RED, YELLOW, DIM, BOLD, RESET = (
     "\033[32m", "\033[31m", "\033[33m", "\033[2m", "\033[1m", "\033[0m")
@@ -861,7 +860,7 @@ def cmd_events(args: argparse.Namespace) -> int:
     cfg = Config.load(args.config)
     state = State.load(args.state)
     record = events.update(state)
-    first, waiting = record.get("first", {}), record.get("waiting", [])
+    first = record.get("first", {})
 
     # A watcher cannot report its own absence - the run that would tell you is
     # the run that is not happening - so this job, which runs on its own

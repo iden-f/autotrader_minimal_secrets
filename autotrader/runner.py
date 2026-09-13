@@ -483,8 +483,6 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                     f"Catching up now.")
 
     settings = cfg.get("notifications", {}) or {}
-    notify_on = settings.get("notify_on", {}) or {}
-    filter_conf = cfg.get("filters", {}) or {}
     scraping = cfg.get("scraping", {}) or {}
     archive_conf = cfg.get("archive", {}) or {}
 
@@ -1175,7 +1173,7 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                 if written:
                     report.diagnostics.append(str(written))
                 report.errors.append(
-                    f"the bot's own bookkeeping is inconsistent: "
+                    "the bot's own bookkeeping is inconsistent: "
                     + "; ".join(report.invariants[:3])
                     + (f" (+{len(broken) - 3} more)" if len(broken) > 3 else ""))
 

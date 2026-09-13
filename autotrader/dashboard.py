@@ -10,11 +10,11 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
-
-import re
 
 from .archive import size_report
 from . import geo, insight, thumbs
@@ -24,6 +24,11 @@ from .listing import name_of
 from .parser import STRATEGIES
 from .state import State
 from .urls import describe_search
+
+# The one except branch in this module calls log.warning, and without this
+# it raised NameError instead - turning a publish that could not stamp the
+# service worker into a publish that crashed.
+log = logging.getLogger(__name__)
 
 # The ladder, in order, so the dashboard can show which rungs are missing
 # rather than only which one happened to win.

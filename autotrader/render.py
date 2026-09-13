@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import html as htmllib
-from typing import Any, Iterable
+from typing import Any
 
 from .state import Change
 

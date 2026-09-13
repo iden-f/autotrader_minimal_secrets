@@ -603,7 +603,6 @@ def dispatch(config, changes: list[Change], run: dict[str, Any] | None = None,
     """Send one digest per active channel.  Always returns; never raises."""
     if not changes:
         return []
-    settings = config.get("notifications", {}) or {}
     channels = notifiers if notifiers is not None else build(config, env)
     if not channels:
         return [Result("none", False,
