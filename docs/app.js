@@ -108,6 +108,14 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
 /* "12 of 12 half-hours" on a bot that checks every two hours.
    The word was written into four separate strings when the schedule happened
    to be half-hourly, and stayed there when it stopped being. */
+/* "2.3h" and "24h" and "the last 24 hours" were three shapes for one idea. */
+function hours(n) {
+  const h = Number(n) || 0;
+  if (h < 1) return `${Math.round(h * 60)} minutes`;
+  const rounded = h < 10 ? Math.round(h * 10) / 10 : Math.round(h);
+  return `${rounded} hour${rounded === 1 ? '' : 's'}`;
+}
+
 function slotWord(cov, plural) {
   const mins = (cov && cov.expected_interval_minutes) || 30;
   const one = mins === 30 ? 'half-hour'
@@ -233,12 +241,12 @@ function trustState() {
         // number of runs printed "79.2% - 51 of 48 expected checks" on a page
         // whose Status tab said 38 of 48 two screens away. Both numbers were
         // true and the sentence was not.
-        detail: cov.pct !== undefined
-          ? `Coverage over the last ${cov.window_hours}h: ${cov.pct}% — ${cov.slots_covered ?? cov.successful} of ${cov.expected} ${slotWord(cov)} had a check.` : '',
+        detail: (cov.pct !== undefined && !cov.too_short)
+          ? `Coverage over the last ${hours(cov.window_hours)}: ${cov.pct}% — ${cov.slots_covered ?? cov.successful} of ${cov.expected} ${slotWord(cov)} had a check.` : '',
       },
     };
   }
-  if (thin) {
+  if (thin && !cov.too_short) {
     return {
       state: 'stale',
       text: `Checked ${when(run.at)}`,
@@ -248,7 +256,7 @@ function trustState() {
         // the raw check count here said "22 of 48" beside a card reading
         // "17 of 48", which is one number too many for a page whose whole
         // argument is that its numbers can be trusted.
-        text: `Only ${cov.pct}% of the last ${cov.window_hours} hours were watched — ${cov.slots_covered ?? cov.successful} of ${cov.expected} ${slotWord(cov)} had a check. A car can be listed and sold between checks at this rate.`,
+        text: `Only ${cov.pct}% of the last ${hours(cov.window_hours)} were watched — ${cov.slots_covered ?? cov.successful} of ${cov.expected} ${slotWord(cov)} had a check. A car can be listed and sold between checks at this rate.`,
         detail: cov.longest_gap_minutes
           ? `Longest gap: ${(cov.longest_gap_minutes / 60).toFixed(1)} hours.` : '',
       },
@@ -1252,14 +1260,20 @@ function renderStatus() {
        last check passed — it is what share of the checks it was meant to make it made.</p>`;
   host.appendChild(head);
 
-  const covTone = cov.pct >= 80 ? 'good' : cov.pct >= 40 ? 'warn' : 'bad';
+  const covTone = cov.too_short ? '' 
+    : cov.pct >= 80 ? 'good' : cov.pct >= 40 ? 'warn' : 'bad';
   const stats = el('dl', 'stats');
   stats.innerHTML = `
-    <div class="stat" data-tone="${covTone}"><dt>Coverage, ${cov.window_hours || 24}h</dt>
-      <dd class="num">${cov.pct ?? '—'}%</dd>
-      <dd class="stat__note">${cov.slots_covered ?? cov.successful ?? 0} of
-        ${cov.expected ?? 0} ${slotWord(cov)}${cov.complained
-          ? ` · ${cov.complained} of ${cov.successful} checks complained` : ''}</dd></div>
+    <div class="stat" data-tone="${covTone}"><dt>Coverage, ${hours(cov.window_hours || 24)}</dt>
+      <dd class="num">${cov.too_short ? '—' : `${cov.pct ?? '—'}%`}</dd>
+      <dd class="stat__note">${cov.too_short
+        ? `measuring for ${hours(cov.window_hours)} so far, since the schedule `
+          + `changed to one check every ${cov.expected_interval_minutes} minutes. `
+          + `${cov.successful ?? 0} check${cov.successful === 1 ? '' : 's'} in that time.`
+        : `${cov.slots_covered ?? cov.successful ?? 0} of ${cov.expected ?? 0} ${slotWord(cov)}`
+          + `${cov.partial ? ` in the ${hours(cov.window_hours)} since the schedule changed` : ''}`
+          + `${cov.complained ? ` · ${cov.complained} of ${cov.successful} checks complained` : ''}`
+        }</dd></div>
     <div class="stat"><dt>Last good check</dt><dd>${when(run.at)}</dd>
       <dd class="stat__note">${stamp(run.at)}</dd></div>
     <div class="stat" data-tone="${cov.longest_gap_minutes > 180 ? 'warn' : ''}"><dt>Longest gap</dt>
@@ -1272,10 +1286,12 @@ function renderStatus() {
         ? `${d.cost.checks} checks · ${d.cost.billed_minutes ?? d.cost.minutes} billed minutes in ${d.cost.window_hours}h`
         : ''}</dd></div>
     ${d.budget ? `<div class="stat" data-tone="${
-        d.budget.state === 'stop' ? 'bad' : d.budget.state === 'over' ? 'warn' : 'good'}">
+        d.budget.state === 'stop' ? 'bad' : d.budget.state === 'over' ? 'warn' : ''}">
       <dt>Runner minutes this month</dt>
-      <dd class="num">${Math.round(d.budget.used).toLocaleString()}<small style="display:inline">
-        / ${d.budget.allowance.toLocaleString()}</small></dd>
+      <dd class="num">${Math.round(d.budget.used).toLocaleString()}${
+        d.budget.charged
+          ? `<small style="display:inline"> / ${d.budget.allowance.toLocaleString()}</small>`
+          : ''}</dd>
       <dd class="stat__note">${esc(d.budget.text)}</dd></div>` : ''}
     <div class="stat" data-tone="${h.accounted?.unexplained ? 'bad' : 'good'}"><dt>Unaccounted cars</dt>
       <dd class="num">${h.accounted?.unexplained ?? 0}</dd>
@@ -1293,7 +1309,7 @@ function renderStatus() {
     strip.setAttribute('role', 'img');
     strip.setAttribute('aria-label',
       `${cov.slots_covered ?? 0} of ${cov.expected ?? 0} ${slotWord(cov)} in the `
-      + `last ${cov.window_hours ?? 24} hours had a check. `
+      + `last ${hours(cov.window_hours ?? 24)} had a check. `
       + `Longest gap ${Math.round((cov.longest_gap_minutes || 0) / 6) / 10} hours.`);
     const begin = Date.parse(cov.since);
     const step = (cov.expected_interval_minutes || 30) * 60000;

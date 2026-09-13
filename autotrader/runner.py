@@ -1196,6 +1196,21 @@ def run(cfg: Config | None = None, state: State | None = None, *,
         if fetcher is not None:
             fetcher.close()
         if not dry_run:
+            # What GitHub says this repository is, so the minute ledger can
+            # tell minutes that are merely spent from minutes that are
+            # charged. Absent outside Actions, and absence means "assume
+            # charged" - see budget.draws_on_the_allowance.
+            visibility = (env or {}).get("REPO_VISIBILITY", "").strip()
+            if visibility:
+                state.data.setdefault("repo", {})["visibility"] = visibility
+            # The interval this run was asked for, so coverage can be
+            # measured against the schedule that was actually running.
+            try:
+                if state.note_schedule(
+                        int(cfg.get("health.expected_interval_minutes", 30) or 30)):
+                    log.info("the check interval changed; coverage restarts from now")
+            except Exception as exc:   # noqa: BLE001
+                log.warning("could not record the schedule: %s", exc)
             # What this run cost, before the run is written down - so a run
             # that crashed still pays for the runner it held.
             try:

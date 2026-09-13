@@ -175,6 +175,11 @@ DEFAULTS: dict[str, Any] = {
         # own clock does not see, and the reason a 34-second check is charged
         # as a whole minute.
         "job_overhead_seconds": 25,
+        # Whether these minutes draw on the account's included allowance.
+        # null means "ask GitHub" - the workflow passes the repository's
+        # visibility through and public repositories are not charged. Set it
+        # to true or false only to override that.
+        "charged": None,
     },
     "health": {
         "alert_after_failures": 3,

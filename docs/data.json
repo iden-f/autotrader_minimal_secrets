@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-09-13T08:39:14+00:00",
+ "generated_at": "2026-09-13T08:52:01+00:00",
  "notify": {
   "ntfy_topic": "autotrader-2q592ak9gnx7sqrere5r",
   "ntfy_url": "https://ntfy.sh/autotrader-2q592ak9gnx7sqrere5r",
@@ -8633,30 +8633,23 @@
   }
  },
  "coverage": {
-  "window_hours": 24,
-  "expected": 12,
-  "checks": 53,
-  "successful": 53,
-  "slots_covered": 12,
+  "window_hours": 2.4,
+  "asked_window_hours": 24,
+  "partial": true,
+  "too_short": true,
+  "since_change": "2026-09-13T06:30:00+00:00",
+  "expected": 1,
+  "checks": 2,
+  "successful": 2,
+  "slots_covered": 1,
   "complained": 0,
-  "clean": 53,
+  "clean": 2,
   "pct": 100.0,
   "longest_gap_minutes": 116.6,
   "expected_interval_minutes": 120,
   "truncated": false,
-  "since": "2026-09-12T08:39:14+00:00",
+  "since": "2026-09-13T06:30:00+00:00",
   "slots": [
-   1,
-   1,
-   1,
-   1,
-   1,
-   1,
-   1,
-   1,
-   1,
-   1,
-   1,
    1
   ]
  },
@@ -8676,12 +8669,13 @@
   "projected": null,
   "allowance": 3000,
   "ceiling": 2550.0,
-  "state": "early",
-  "text": "3.0 minutes used over 1 day - too little to project a month from.",
+  "charged": false,
+  "state": "exempt",
+  "text": "3 runner minutes this month. None of it draws on the allowance: GitHub does not charge Actions on a public repository.",
   "should_stop": false
  },
  "market": {
-  "at": "2026-09-13T08:39:14+00:00",
+  "at": "2026-09-13T08:52:01+00:00",
   "window": {
    "ids_span_days": 0,
    "watching_days": 3,
@@ -9164,7 +9158,8 @@
    "enabled": true,
    "included_minutes": 3000,
    "stop_at": 0.85,
-   "job_overhead_seconds": 25
+   "job_overhead_seconds": 25,
+   "charged": null
   },
   "health": {
    "alert_after_failures": 3,

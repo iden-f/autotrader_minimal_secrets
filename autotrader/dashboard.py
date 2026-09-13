@@ -329,7 +329,8 @@ def build_payload(cfg: Config, state: State, env: dict[str, str] | None = None
         "events": insight.events(state.listings.values()),
         "comparables": insight.comparables(state.listings.values()),
         "coverage": insight.coverage(
-            runs, int(cfg.get("health.expected_interval_minutes", 30) or 30)),
+            runs, int(cfg.get("health.expected_interval_minutes", 30) or 30),
+            since_change=state.schedule_changed_at),
         "cost": insight.minutes_spent(runs),
         # What the month has cost and where that is heading. A bot that can
         # spend someone's money should say what it is spending, on the page

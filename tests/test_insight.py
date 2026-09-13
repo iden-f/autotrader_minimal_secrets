@@ -84,3 +84,101 @@ class TestCoverageMeasuresTheWatchNotTheExitCode:
         runs = [self.run_at(m) for m in range(0, 24 * 60, 30)]
         cov = insight.coverage(runs, expected_minutes=30, window_hours=24)
         assert cov["pct"] == 100.0
+
+
+class TestCoverageIsAboutTheScheduleThatIsRunning:
+    """A coverage figure is a statement about a schedule, so it may only be
+    measured over a period when that schedule was the one running.
+
+    This bot's interval went from 30 minutes to 120 at 06:30 one morning. For
+    the 24 hours after that, the window still held 54 half-hourly runs, and
+    bucketing them into 12 two-hour slots filled every one: the Status tab
+    read "100% - 12 of 12" about a schedule that had produced two checks.
+    Every word of it was arithmetically true.
+    """
+
+    def runs(self, stamps):
+        return [{"at": t.isoformat(timespec="seconds"), "ok": True,
+                 "searches_run": 1, "listings_seen": 5} for t in stamps]
+
+    def test_the_old_schedules_runs_do_not_fill_the_new_schedules_slots(self):
+        from datetime import datetime, timedelta, timezone
+        from autotrader import insight
+        now = datetime(2026, 9, 13, 8, 40, tzinfo=timezone.utc)
+        changed = datetime(2026, 9, 13, 6, 30, tzinfo=timezone.utc)
+        # 48 half-hourly runs before the change, two after it.
+        old = [changed - timedelta(minutes=30 * n) for n in range(1, 49)]
+        new = [changed + timedelta(minutes=10), changed + timedelta(minutes=126)]
+        runs = self.runs(old + new)
+
+        blind = insight.coverage(runs, 120, now=now)
+        assert blind["pct"] == 100.0, "the bug this exists to stop"
+
+        honest = insight.coverage(runs, 120, now=now,
+                                  since_change=changed.isoformat())
+        assert honest["partial"] is True
+        assert honest["window_hours"] < 3
+        assert honest["successful"] == 2, "it should only see the new runs"
+
+    def test_a_window_too_short_to_judge_says_so_instead_of_a_number(self):
+        from datetime import datetime, timedelta, timezone
+        from autotrader import insight
+        now = datetime(2026, 9, 13, 8, 40, tzinfo=timezone.utc)
+        changed = now - timedelta(hours=2, minutes=10)
+        out = insight.coverage(self.runs([now - timedelta(minutes=5)]), 120,
+                               now=now, since_change=changed.isoformat())
+        assert out["too_short"] is True, "one complete slot is not a measurement"
+
+    def test_three_complete_slots_is_enough_to_judge(self):
+        from datetime import datetime, timedelta, timezone
+        from autotrader import insight
+        now = datetime(2026, 9, 13, 12, 40, tzinfo=timezone.utc)
+        changed = now - timedelta(hours=6, minutes=10)
+        runs = self.runs([changed + timedelta(hours=h) for h in (0.2, 2.2, 4.2)])
+        out = insight.coverage(runs, 120, now=now, since_change=changed.isoformat())
+        assert out["too_short"] is False
+        assert out["expected"] == 3 and out["slots_covered"] == 3
+        assert out["pct"] == 100.0
+
+    def test_the_slot_in_progress_is_not_counted_against_the_schedule(self):
+        """Half an hour into a two-hour slot, no check is late yet."""
+        from datetime import datetime, timedelta, timezone
+        from autotrader import insight
+        now = datetime(2026, 9, 13, 12, 40, tzinfo=timezone.utc)
+        changed = now - timedelta(hours=6, minutes=30)
+        runs = self.runs([changed + timedelta(hours=h) for h in (0.2, 2.2, 4.2)])
+        out = insight.coverage(runs, 120, now=now, since_change=changed.isoformat())
+        assert out["expected"] == 3, "the fourth slot has not finished"
+
+    def test_without_a_change_stamp_nothing_changes(self):
+        from datetime import datetime, timedelta, timezone
+        from autotrader import insight
+        now = datetime(2026, 9, 13, 12, 0, tzinfo=timezone.utc)
+        runs = self.runs([now - timedelta(minutes=30 * n) for n in range(1, 48)])
+        out = insight.coverage(runs, 30, now=now)
+        assert out["partial"] is False and out["window_hours"] == 24.0
+
+
+class TestTheScheduleStampItself:
+    def test_it_is_recorded_the_first_time(self, tmp_path):
+        from autotrader.state import State
+        state = State(path=tmp_path / "state.json")
+        assert state.note_schedule(120) is True
+        assert state.schedule_changed_at
+
+    def test_it_does_not_move_when_nothing_changed(self, tmp_path):
+        from autotrader.state import State
+        state = State(path=tmp_path / "state.json")
+        state.note_schedule(120)
+        first = state.schedule_changed_at
+        assert state.note_schedule(120) is False
+        assert state.schedule_changed_at == first
+
+    def test_it_moves_when_the_interval_does(self, tmp_path):
+        from autotrader.state import State
+        state = State(path=tmp_path / "state.json")
+        state.note_schedule(30)
+        state.data["schedule"]["since"] = "2026-01-01T00:00:00+00:00"
+        assert state.note_schedule(120) is True
+        assert state.schedule_changed_at != "2026-01-01T00:00:00+00:00"
+        assert state.data["schedule"]["was"] == 30

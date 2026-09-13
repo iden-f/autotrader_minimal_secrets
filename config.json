@@ -141,6 +141,7 @@
     "enabled": true,
     "included_minutes": 3000,
     "stop_at": 0.85,
-    "job_overhead_seconds": 25
+    "job_overhead_seconds": 25,
+    "charged": null
   }
 }

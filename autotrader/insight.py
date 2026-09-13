@@ -225,8 +225,8 @@ def _read_the_site(run: dict[str, Any]) -> bool:
 
 
 def coverage(runs: list[dict[str, Any]], expected_minutes: int = 30,
-             window_hours: int = 24, now: datetime | None = None
-             ) -> dict[str, Any]:
+             window_hours: int = 24, now: datetime | None = None,
+             since_change: str | None = None) -> dict[str, Any]:
     """How much of the last day was actually watched.
 
     The honest measure of this bot is not whether the last run worked, it is
@@ -237,7 +237,28 @@ def coverage(runs: list[dict[str, Any]], expected_minutes: int = 30,
     """
     now = now or datetime.now(timezone.utc)
     start = now - timedelta(hours=window_hours)
-    expected = max(1, int(window_hours * 60 / max(1, expected_minutes)))
+
+    # A coverage figure is a statement about a schedule, so it may only be
+    # measured over a period when that schedule was the one running.
+    #
+    # This bot's interval changed from 30 minutes to 120 at 06:30 one morning.
+    # For the 24 hours after that, the window still held 54 half-hourly runs,
+    # and bucketing them into 12 two-hour slots filled every one: the Status
+    # tab read "100% - 12 of 12" about a schedule that had produced two
+    # checks. Every word of it was arithmetically true and the number was
+    # evidence about the wrong thing.
+    changed = _dt(since_change)
+    partial = False
+    if changed is not None and changed > start:
+        start = changed
+        partial = True
+    measured_hours = max(0.0, _hours_between(now, start))
+    # Complete slots only. The slot in progress has not finished failing yet,
+    # and counting it either flatters the figure (if a check has landed) or
+    # damns it (if one is still due).
+    import math
+    complete = int(math.floor(measured_hours * 60 / max(1, expected_minutes)))
+    expected = max(1, complete)
 
     stamps = sorted(t for t in (_dt(r.get("at")) for r in runs)
                     if t is not None and t >= start)
@@ -284,7 +305,17 @@ def coverage(runs: list[dict[str, Any]], expected_minutes: int = 30,
     truncated = bool(runs) and (_dt(runs[-1].get("at")) or start) > start
 
     return {
-        "window_hours": window_hours,
+        "window_hours": round(measured_hours, 1),
+        "asked_window_hours": window_hours,
+        # True when the window was cut short because the schedule changed
+        # inside it. The page must say so rather than presenting a partial
+        # measurement as a day's worth.
+        "partial": partial,
+        # Three slots is the fewest that can distinguish a schedule from an
+        # accident. Below that there is no percentage worth printing, and the
+        # page says how long it has been measuring instead.
+        "too_short": complete < 3,
+        "since_change": changed.isoformat(timespec="seconds") if changed else None,
         "expected": expected,
         "checks": len(stamps),
         "successful": len(read_stamps),

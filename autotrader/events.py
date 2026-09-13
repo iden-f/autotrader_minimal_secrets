@@ -372,7 +372,8 @@ def thin_coverage(cfg, state, record: dict[str, Any],
         return None
     expected = int(health.get("expected_interval_minutes", 30) or 30)
     now = now or datetime.now(timezone.utc)
-    cover = insight.coverage(state.data.get("runs") or [], expected, now=now)
+    cover = insight.coverage(state.data.get("runs") or [], expected, now=now,
+                             since_change=state.schedule_changed_at)
     if cover.get("checks", 0) < 2 or cover["pct"] >= floor:
         return None
 
@@ -380,6 +381,10 @@ def thin_coverage(cfg, state, record: dict[str, Any],
     # hourly reminder that the schedule is thin is itself noise.
     said = str(record.get("coverage_reported") or "")
     if said and said[:10] == now.isoformat()[:10]:
+        return None
+    # A schedule that changed two hours ago has not had time to be thin. The
+    # first version of this alerted on its own reconfiguration.
+    if cover.get("partial") and cover.get("window_hours", 0) < 6:
         return None
 
     longest = cover.get("longest_gap_minutes") or 0

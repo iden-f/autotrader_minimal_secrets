@@ -150,6 +150,11 @@ jobs:
           # commit a file - and picking the wrong one gives a button that
           # 404s. GitHub knows the answer; there is no reason to guess it.
           REPO_HAS_ISSUES:     ${{ github.event.repository.has_issues }}
+          # Public repositories are not charged for Actions. GitHub knows
+          # which this is; the bot should not have to be told twice, and a
+          # config value somebody has to keep in step with reality is a
+          # config value that will one day be wrong.
+          REPO_VISIBILITY:     ${{ github.event.repository.visibility }}
           # Non-secret settings live in config.json. Only credentials are here,
           # and every one of them is optional - the bot enables whichever
           # channels it finds and says so in the log.

@@ -28,7 +28,11 @@ def bench(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     cfg = Config.defaults(tmp_path / "config.json")
     cfg.save()
-    return cfg, State(path=tmp_path / "state.json")
+    state = State(path=tmp_path / "state.json")
+    # Default the tests to a repository that IS charged, so the arithmetic
+    # below is about the arithmetic. The exemption has its own class.
+    state.data["repo"] = {"visibility": "private"}
+    return cfg, state
 
 
 def month(days: dict[str, float], runs: int = 0) -> dict:
@@ -256,3 +260,62 @@ class TestTheWorkflowReadsIt:
         source = Path(".github/workflows/watch.yml").read_text()
         save = source[source.index("- name: Save results"):]
         assert "BUDGET-STOP" in save[:save.index("git commit")]
+
+
+
+class TestExemptIsNotTheSameAsFree:
+    """Public repositories are not charged for Actions. This counted every
+    minute as billable "to be conservative", which meant a guard that would
+    shout about an allowance nothing was drawing on - and a warning that
+    fires when nothing is wrong is a warning that gets muted."""
+
+    def spent_month(self, state, per_day=195.0):
+        state.data["actions"] = {
+            "month": "2026-09",
+            "days": {f"2026-09-{d:02d}": per_day for d in range(1, 13)},
+            "runs": 500}
+
+    def test_a_public_repo_is_counted_but_never_alarming(self, bench):
+        cfg, state = bench
+        state.data["repo"] = {"visibility": "public"}
+        self.spent_month(state)
+        out = budget.record(state, 1.0, cfg=cfg, now=SEPT)
+        assert out["state"] == "exempt"
+        assert out["should_stop"] is False
+        assert out["charged"] is False
+        assert out["used"] > 2000, "it still counts what it spends"
+        assert "does not charge" in out["text"]
+
+    def test_the_same_month_on_a_private_repo_is_a_problem(self, bench):
+        cfg, state = bench
+        state.data["repo"] = {"visibility": "private"}
+        self.spent_month(state)
+        out = budget.record(state, 1.0, cfg=cfg, now=SEPT)
+        assert out["state"] == "over" and out["charged"] is True
+
+    def test_not_knowing_means_assuming_you_are_charged(self, bench):
+        """Being wrong that way costs a sentence. The other way costs money."""
+        cfg, state = bench
+        state.data.pop("repo", None)
+        self.spent_month(state)
+        assert budget.record(state, 1.0, cfg=cfg, now=SEPT)["charged"] is True
+
+    def test_config_can_override_what_github_says(self, bench):
+        cfg, state = bench
+        state.data["repo"] = {"visibility": "public"}
+        cfg.set("budget.charged", True)
+        self.spent_month(state)
+        assert budget.record(state, 1.0, cfg=cfg, now=SEPT)["state"] == "over"
+
+    def test_an_exempt_repo_never_writes_the_stop_file(self, bench):
+        cfg, state = bench
+        state.data["repo"] = {"visibility": "public"}
+        self.spent_month(state, per_day=400.0)
+        out = budget.record(state, 1.0, cfg=cfg, now=SEPT)
+        assert out["should_stop"] is False, "it would stop a bot costing nothing"
+
+    def test_one_minute_reads_as_one_minute(self, bench):
+        cfg, state = bench
+        state.data["repo"] = {"visibility": "public"}
+        out = budget.record(state, 1.0, cfg=cfg, now=SEPT)
+        assert "1 runner minute this month" in out["text"], out["text"]

@@ -56,6 +56,10 @@ class Ledger:
     runs: int = 0
     allowance: int = DEFAULT_ALLOWANCE
     stop_at: float = DEFAULT_STOP_AT
+    # Whether these minutes draw on the allowance at all. False on a public
+    # repository, where GitHub charges nothing for Actions - confirmed against
+    # 705 runs of this one, every one returning billable {} or total_ms 0.
+    charged: bool = True
 
     @property
     def used(self) -> float:
@@ -93,6 +97,27 @@ class Ledger:
         projection = self.projected(now)
         over = projection is not None and projection > self.ceiling()
         spent_out = self.used >= self.ceiling()
+
+        if not self.charged:
+            # Exempt: counted, shown, never alarming. The first version of
+            # this treated every minute as billable "to be conservative", and
+            # the effect was a guard that would shout about an allowance
+            # nothing was drawing on. A warning that fires when nothing is
+            # wrong is a warning that gets muted, and then it is not a guard.
+            return {
+                "month": self.month, "used": self.used, "runs": self.runs,
+                "per_day": self.per_day(), "days_elapsed": self.days_elapsed,
+                "projected": projection, "allowance": self.allowance,
+                "ceiling": self.ceiling(), "charged": False,
+                "state": "exempt",
+                "text": (f"{self.used:,.0f} runner minute"
+                         f"{'' if self.used == 1 else 's'} this month"
+                         + (f", about {projection:,.0f} by month end"
+                            if projection is not None else "")
+                         + ". None of it draws on the allowance: GitHub does "
+                           "not charge Actions on a public repository."),
+                "should_stop": False,
+            }
         if spent_out:
             state, text = "stop", (
                 f"{self.used:,.0f} of {self.allowance:,} minutes are gone this "
@@ -116,6 +141,7 @@ class Ledger:
         return {
             "month": self.month,
             "used": self.used,
+            "charged": True,
             "runs": self.runs,
             "per_day": self.per_day(),
             "days_elapsed": self.days_elapsed,
@@ -144,8 +170,33 @@ def load(state: Any, cfg: Any = None, *, now: datetime | None = None) -> Ledger:
         stop_at = float(cfg.get("budget.stop_at", DEFAULT_STOP_AT)
                         or DEFAULT_STOP_AT)
     return Ledger(month=month, days=dict(raw.get("days") or {}),
-                  runs=int(raw.get("runs") or 0),
-                  allowance=allowance, stop_at=stop_at)
+                  runs=int(raw.get("runs") or 0), allowance=allowance,
+                  stop_at=stop_at, charged=draws_on_the_allowance(cfg, state))
+
+
+def draws_on_the_allowance(cfg: Any, state: Any) -> bool:
+    """Do this repository's Actions minutes come out of the allowance?
+
+    Public repositories are exempt - confirmed against 705 runs of this one,
+    every one of which returned ``billable: {}`` or ``total_ms: 0``. The
+    workflow passes GitHub's own answer through, so this is an observed fact
+    rather than a setting somebody has to keep in step with reality.
+
+    The default when nothing is known is True. Assuming you are charged and
+    being wrong costs a sentence on a dashboard; assuming you are not and
+    being wrong costs money.
+    """
+    told = None if cfg is None else cfg.get("budget.charged", None)
+    if told is not None:
+        return bool(told)
+    visibility = ""
+    try:
+        visibility = str((state.data.get("repo") or {}).get("visibility") or "")
+    except AttributeError:
+        pass
+    if visibility:
+        return visibility.lower() != "public"
+    return True
 
 
 def record(state: Any, minutes: float, *, cfg: Any = None,

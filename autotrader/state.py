@@ -653,6 +653,30 @@ class State:
         runs = self.data.get("runs") or []
         return runs[0] if runs else None
 
+    # ---------------- the schedule ----------------
+
+    def note_schedule(self, interval_minutes: int) -> bool:
+        """Remember when the check interval last changed.
+
+        Coverage is a statement about a schedule, and it may only be measured
+        over a period when that schedule was the one running. Without this
+        stamp there is nothing to clamp the window to, and the day after an
+        interval change the dashboard reports the old schedule's runs against
+        the new schedule's slots.
+        """
+        interval = max(1, int(interval_minutes or 0))
+        current = self.data.get("schedule") or {}
+        if int(current.get("interval_minutes") or 0) == interval:
+            return False
+        self.data["schedule"] = {"interval_minutes": interval,
+                                 "since": utcnow(),
+                                 "was": current.get("interval_minutes")}
+        return True
+
+    @property
+    def schedule_changed_at(self) -> str | None:
+        return (self.data.get("schedule") or {}).get("since")
+
     # ---------------- housekeeping ----------------
 
     def forget_searches(self, keep_ids: set[str]) -> list[str]:
