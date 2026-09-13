@@ -26,11 +26,18 @@ class TestNamingACarFromAStateRow:
         assert name_of({"id": "01108a1a", "title": "AutoTrader listing 01108a1a",
                         "year": 2025, "make": "BMW", "model": "M4"}) == "2025 BMW M4"
 
-    def test_a_real_title_is_left_exactly_as_it_is(self):
-        """Dealer titles carry detail no reconstruction has: keep them whole."""
-        title = "BMW M4 Competition | Carbon roof | One owner"
-        assert name_of({"id": "x", "title": title, "year": 2019,
-                        "make": "BMW", "model": "M4"}) == title
+    def test_a_real_title_keeps_the_dealers_words(self):
+        """Dealer titles carry detail no reconstruction has - but only up to
+        the first pipe, after which it is a feature list, and with the year in
+        front because a card without one is a car of unknown age."""
+        assert name_of({"id": "x", "year": 2019, "make": "BMW", "model": "M4",
+                        "title": "BMW M4 Competition | Carbon roof | One owner"
+                        }) == "2019 BMW M4 Competition"
+
+    def test_a_title_that_already_opens_with_the_year_gets_no_second_one(self):
+        assert name_of({"id": "x", "year": 2018, "make": "BMW", "model": "M3",
+                        "title": "2018 BMW M3 Competition"
+                        }) == "2018 BMW M3 Competition"
 
     def test_a_car_we_know_nothing_about_keeps_its_placeholder(self):
         """Better an id than a confident lie about which car this is."""
@@ -71,6 +78,11 @@ class TestTrimsDealersActuallyType:
     def test_a_trim_that_merely_starts_with_i_is_not_mangled(self):
         assert self.name("I6 Turbo") == "2019 BMW M4 I6 Turbo"
 
+    def test_a_trim_that_is_just_the_model_again_is_dropped(self):
+        """Real row: make BMW, model X3, trim X3 - "2010 BMW X3 X3"."""
+        assert Listing(id="x", year=2010, make="BMW", model="X3",
+                       trim="X3").display_title == "2010 BMW X3"
+
     def test_a_short_trim_is_untouched(self):
         assert self.name("Competition") == "2019 BMW M4 Competition"
 
@@ -105,3 +117,43 @@ class TestEverywhereItIsRead:
         """The published name is a presentation choice; the record is a record."""
         _, state = self.bench(tmp_path)
         assert state.listings["nameless"]["title"] == "AutoTrader listing nameless"
+
+
+class TestThePageAndTheAlertAgree:
+    """The naming bug was a fork in the road, not a broken function.
+
+    render.py builds a notification from a Listing and reads
+    ``listing.display_title``, which composes a name from year, make and model
+    - so alerts were always right. dashboard.py and insight.py build the page
+    from state ROWS, which are dicts, and read ``entry["title"]`` - so the
+    page was always wrong. Two answers to "what is this car called", one of
+    them correct, and the difference invisible because nobody compares a push
+    notification to a web page.
+    """
+
+    def car(self) -> Listing:
+        return Listing(id="01108a1a-2812-475d-b800-be530145cf6f",
+                       title="AutoTrader listing 01108a1a-2812-475d-b800-be530145cf6f",
+                       year=2025, make="BMW", model="M4", price=108999,
+                       price_source="detail")
+
+    def test_they_produce_the_same_name(self):
+        listing = self.car()
+        assert name_of(listing.to_dict()) == listing.display_title
+
+    def test_and_for_a_car_with_a_real_title(self):
+        listing = Listing(id="x", title="BMW M4 Competition | One owner",
+                          year=2019, make="BMW", model="M4")
+        assert name_of(listing.to_dict()) == listing.display_title
+
+    def test_and_for_a_car_nothing_is_known_about(self):
+        listing = Listing(id="deadbeef", title="AutoTrader listing deadbeef")
+        assert name_of(listing.to_dict()) == listing.display_title
+
+    def test_the_notification_never_said_the_placeholder(self, tmp_path):
+        """Worth pinning: the alerts were the half that was right."""
+        from autotrader import render
+        from autotrader.state import Change
+        text = render.as_text([Change(kind=Change.NEW, listing=self.car())])
+        assert "AutoTrader listing" not in text, text
+        assert "2025 BMW M4" in text, text

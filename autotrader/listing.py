@@ -87,7 +87,13 @@ class Listing:
         # Dealers often repeat the model inside the trim, which reads as
         # "BMW M5 M5 Competition" once the name is assembled.
         for prefix in (self.model, self.make):
-            if prefix and trim.lower().startswith(prefix.lower() + " "):
+            if not prefix:
+                continue
+            if trim.lower() == prefix.lower():
+                # The trim IS the model - a real row: make BMW, model X3,
+                # trim X3, which named the car "2010 BMW X3 X3".
+                return ""
+            if trim.lower().startswith(prefix.lower() + " "):
                 trim = trim[len(prefix):].strip()
         if len(trim) <= 40:
             return trim.strip()
@@ -99,13 +105,23 @@ class Listing:
 
     @property
     def display_title(self) -> str:
-        """A tidy 'YEAR MAKE MODEL TRIM' when we know enough, else the title."""
+        """What to call this car. One definition, shared with ``name_of``.
+
+        These were two rules for a while and they disagreed: a car titled
+        "BMW M4 Competition | One owner" was "BMW M4 Competition" on the page
+        and "2019 BMW M4" in the notification about it, because the page read
+        the stored title and this composed a fresh one and threw the dealer's
+        away. Nobody compares a push notification against a web page, so the
+        fork was invisible until a test put them side by side.
+        """
+        return name_of(self.to_dict())
+
+    @property
+    def composed_title(self) -> str:
+        """'YEAR MAKE MODEL TRIM' out of the fields, ignoring any title."""
         parts = [str(self.year) if self.year else "", self.make, self.model,
                  self.short_trim]
-        built = " ".join(p for p in parts if p).strip()
-        if len(built.split()) >= 2:
-            return built
-        return (self.title or f"AutoTrader listing {self.id}").strip()
+        return " ".join(p for p in parts if p).strip()
 
     @property
     def price_text(self) -> str:
@@ -168,11 +184,24 @@ def name_of(entry: dict[str, Any]) -> str:
     their own detail page, so the card is all there is. They still have a
     make, a model and a year, which is a name.
     """
+    lone = Listing(id=str(entry.get("id") or ""), title="",
+                   year=entry.get("year"), make=entry.get("make") or "",
+                   model=entry.get("model") or "",
+                   trim=entry.get("trim") or "")
+    built = lone.composed_title
+
     title = str(entry.get("title") or "").strip()
     if title and not title.startswith(PLACEHOLDER_TITLE):
-        return title
-    built = Listing(id=str(entry.get("id") or ""), title="",
-                    year=entry.get("year"), make=entry.get("make") or "",
-                    model=entry.get("model") or "",
-                    trim=entry.get("trim") or "").display_title
-    return built if not built.startswith(PLACEHOLDER_TITLE) else title or built
+        # The dealer's own words, which carry detail no reconstruction has -
+        # but only the part before the pipe, because the rest is a feature
+        # list. The year goes in front when the title does not already open
+        # with one, so "BMW M4 Competition" becomes "2019 BMW M4 Competition"
+        # and "2019 BMW M4" is not made into "2019 2019 BMW M4".
+        head = title.split("|")[0].strip() or title
+        year = str(entry.get("year") or "")
+        if year and not head.startswith(year):
+            head = f"{year} {head}"
+        return head
+    if len(built.split()) >= 2:
+        return built
+    return title or f"{PLACEHOLDER_TITLE}{entry.get('id')}"
