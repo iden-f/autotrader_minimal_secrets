@@ -869,8 +869,10 @@ function renderMarket() {
       <dd class="num">${lt.median == null ? '—' : days(lt.median)}</dd>
       <dd class="stat__note">from ${lt.n ?? 0} that came down${lt.biased_short
         ? ' — only short-lived ones can finish inside a watch this young' : ''}</dd></div>
-    <div class="stat"><dt>Live now</dt><dd class="num">${m.live ?? 0}</dd>
-      <dd class="stat__note">${m.gone ?? 0} gone and kept</dd></div>`;
+    <div class="stat"><dt>Listed right now</dt><dd class="num">${m.live ?? 0}</dd>
+      <dd class="stat__note">${hiddenHere
+        ? `${(m.live ?? 0) - hiddenHere} live · ${hiddenHere} hidden · `
+        : ''}${m.gone ?? 0} gone and kept</dd></div>`;
   host.appendChild(stats);
   if (lt.note) {
     host.appendChild(el('p', 'note measure',
