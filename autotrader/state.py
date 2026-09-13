@@ -571,6 +571,7 @@ class State:
 
     def record_search_ok(self, search_id: str, count: int, strategy: str) -> None:
         health = self.search_health(search_id)
+        health.setdefault("first_ok", utcnow())
         health.update({"consecutive_failures": 0, "last_ok": utcnow(),
                        "last_error": None, "last_count": count,
                        "last_strategy": strategy})
@@ -647,6 +648,26 @@ class State:
             return self.data["watch_started"]
         ats = [r.get("at") for r in (self.data.get("runs") or []) if r.get("at")]
         return min(ats) if ats else None
+
+    @property
+    def watching_these_since(self) -> str | None:
+        """When the CURRENT searches started producing data.
+
+        ``watch_started`` is when the bot first ran, which stops being the
+        same thing the moment the watch list changes. This bot had been
+        running for three days when its searches were swapped for three
+        different cars, and every number that measured "how long have we been
+        watching" against the older date was measuring the wrong watch.
+        """
+        firsts = [h.get("first_ok") for h in (self.data.get("searches") or {}).values()
+                  if h.get("first_ok")]
+        started = self.watch_started
+        if not firsts:
+            return started
+        newest_watch = min(firsts)
+        if started and started > newest_watch:
+            return started
+        return newest_watch
 
     @property
     def last_run(self) -> dict[str, Any] | None:

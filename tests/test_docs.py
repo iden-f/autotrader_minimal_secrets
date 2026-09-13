@@ -172,9 +172,15 @@ class TestTheMechanismsTheRunbookReliesOn:
             assert call.group(1) in watch, f"{doc}: watch.yml has no such type"
 
     def test_the_photo_fallback_wordings_are_the_ones_the_page_uses(self):
+        """Four different things, and the runbook has to name all four.
+
+        The fourth - "photo not loaded" - exists because offline the page used
+        to say "photo not copied yet", which is a statement about the bot for
+        a fault in the reader's connection.
+        """
         app = Path("docs/app.js").read_text()
         for phrase in ("no photo", "photo not copied yet",
-                       "not kept for hidden cars"):
+                       "not kept for hidden cars", "photo not loaded"):
             assert phrase in DOCS["RUNBOOK.md"], phrase
             assert phrase in app, f"the page no longer says {phrase!r}"
 

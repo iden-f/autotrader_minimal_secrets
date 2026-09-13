@@ -364,3 +364,73 @@ class TestTheHiddenCarsAreNotTheMarket:
         for row in out.values():
             if "median" in row:
                 assert row["median"] < 100000, "a hidden car is in the cohort"
+
+
+class TestMeasuringTheRightWatch:
+    """"watch_started" is when the BOT first ran. That stops being the same
+    thing as "how long have we been watching these cars" the moment the watch
+    list changes - and this bot had been running three days when its searches
+    were swapped for three different cars."""
+
+    def test_the_searches_first_read_beats_the_bots_own_birthday(self, tmp_path):
+        from autotrader.state import State
+        state = State(path=tmp_path / "state.json")
+        state.data["watch_started"] = "2026-09-09T20:55:29+00:00"
+        state.data["searches"] = {"a": {"first_ok": "2026-09-13T05:40:00+00:00"}}
+        assert state.watching_these_since == "2026-09-13T05:40:00+00:00"
+
+    def test_an_older_search_keeps_the_older_date(self, tmp_path):
+        from autotrader.state import State
+        state = State(path=tmp_path / "state.json")
+        state.data["watch_started"] = "2026-09-09T20:55:29+00:00"
+        state.data["searches"] = {"a": {"first_ok": "2026-09-10T00:00:00+00:00"},
+                                  "b": {"first_ok": "2026-09-13T05:40:00+00:00"}}
+        assert state.watching_these_since == "2026-09-10T00:00:00+00:00"
+
+    def test_no_search_history_falls_back_to_the_bot(self, tmp_path):
+        from autotrader.state import State
+        state = State(path=tmp_path / "state.json")
+        state.data["watch_started"] = "2026-09-09T20:55:29+00:00"
+        assert state.watching_these_since == "2026-09-09T20:55:29+00:00"
+
+    def test_first_ok_is_stamped_once_and_never_moves(self, tmp_path):
+        from autotrader.state import State
+        state = State(path=tmp_path / "state.json")
+        state.record_search_ok("a", 5, "jsonld")
+        first = state.data["searches"]["a"]["first_ok"]
+        state.record_search_ok("a", 6, "jsonld")
+        assert state.data["searches"]["a"]["first_ok"] == first
+        assert state.data["searches"]["a"]["last_ok"] >= first
+
+    def test_a_three_hour_watch_does_not_report_zero_days(self):
+        """"over 0 days of watching" reads as a rounding error rather than
+        the true and useful "the searches were read this morning"."""
+        assert insight._span(3.4) == "3 hours"
+        assert insight._span(0.2) == "12 minutes"
+        assert insight._span(72) == "3 days"
+
+
+class TestTheDenominatorCanMove:
+    """A rate whose denominator holds cases that could not have gone the other
+    way is not a rate. Every one of 83 cars first read this morning counted as
+    a car that "did not cut its price"."""
+
+    def watched_for(self, i, hours, **kw):
+        from datetime import datetime, timedelta, timezone
+        base = dict(price=60000, year=2019, make="BMW", model="M5")
+        base.update(kw)
+        entry = car(i, **base)
+        entry["first_seen"] = (NOW - timedelta(hours=hours)).isoformat()
+        entry["last_seen"] = NOW.isoformat()
+        return entry
+
+    def test_a_car_read_this_morning_is_not_in_the_denominator(self):
+        cars = [self.watched_for(i, 3) for i in range(12)]
+        out = insight.backtest(cars)
+        assert out["called_cheap"] == 0 and out["called_dear"] == 0
+
+    def test_a_car_watched_for_days_is(self):
+        cars = ([self.watched_for(i, 24 * 9, price=50000) for i in range(8)]
+                + [self.watched_for(50 + i, 24 * 9, price=90000) for i in range(8)])
+        out = insight.backtest(cars)
+        assert out["called_cheap"] + out["called_dear"] > 0

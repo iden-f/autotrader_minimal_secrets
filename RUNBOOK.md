@@ -231,9 +231,21 @@ version is ready · Reload" banner on the first. If it never updates, check
 `sw.js` has a real build stamp rather than `__BUILD__` — the publish step
 writes it, and `tests/test_offline.py` fails if it ships unstamped.
 
-**Photos missing** — cards say which: "no photo" (the seller published none),
-"photo not copied yet" (there is one, we have not fetched it — a check
-fetches at most 24 new photos), or "not kept for hidden cars".
+**Photos missing** — the card says which, and these are four different
+things:
+
+- "no photo" — the seller published none.
+- "photo not copied yet" — there is one and the bot has not fetched it. A
+  check fetches at most 24 new photos.
+- "not kept for hidden cars" — deliberate; a car your rules hide does not get
+  its photos published.
+- "photo not loaded" — the bot has the file and *this device* could not read
+  it. Offline, or a bad connection. The service worker keeps the photos in
+  their own cache that survives a publish, so this should only appear on a
+  device that has never opened the page with a connection.
+
+The fourth one exists because without it, offline showed "photo not copied
+yet" — a statement about the bot, for a fault in your aeroplane.
 
 **Numbers disagree between views** — that is a bug; they are all computed once
 in `insight.py`. File it.

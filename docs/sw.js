@@ -23,9 +23,19 @@
  *   2. The shell is cache-first, because correctness there comes from BUILD
  *      rather than from revalidation.
  */
-const BUILD = '2284ba416f49';
+const BUILD = '87131f06f605';
 const SHELL = `atw-shell-${BUILD}`;
 const DATA = `atw-data-${BUILD}`;
+/* Photos, in a cache that OUTLIVES a build. The shell and the data are
+   rewritten whenever the page changes; a car's photo is the same bytes it
+   always was, and re-downloading 25 of them on every publish is the opposite
+   of the reason this bot keeps its own copies.
+
+   Without this, offline was worse than a missing picture: the card falls back
+   to "photo not copied yet", which is a statement about the BOT - and the bot
+   had copied it. The page blamed the wrong thing for the reader's own
+   aeroplane. */
+const PHOTOS = 'atw-photos';
 const FILES = ['./', './index.html', './app.js', './manifest.webmanifest',
                './icon.svg'];
 
@@ -54,7 +64,7 @@ self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys()
       .then(keys => Promise.all(keys
-        .filter(k => k !== SHELL && k !== DATA)
+        .filter(k => k !== SHELL && k !== DATA && k !== PHOTOS)
         .map(k => caches.delete(k))))
       .then(() => self.clients.claim()));
 });
@@ -87,6 +97,25 @@ async function data(request) {
   }
 }
 
+/* Cache first, and keep whatever comes back. A photo never changes: the file
+   is named for the listing, and a car with a new picture is a new file. */
+async function photo(request) {
+  const hit = await caches.match(request, { cacheName: PHOTOS });
+  if (hit) return hit;
+  try {
+    const response = await fetch(request);
+    if (response && response.ok) {
+      const cache = await caches.open(PHOTOS);
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch (err) {
+    // A 504 rather than a made-up image: the page's own error handler draws
+    // the fallback, and it can say "offline" because the page knows it is.
+    return new Response('', { status: 504, headers: { 'X-From-Cache': '0' } });
+  }
+}
+
 async function shell(request) {
   const hit = await caches.match(request, { cacheName: SHELL });
   if (hit) return hit;
@@ -104,6 +133,10 @@ self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET' || url.origin !== location.origin) return;
   if (url.pathname.endsWith('data.json') || url.pathname.endsWith('events.json')) {
     event.respondWith(data(event.request));
+    return;
+  }
+  if (url.pathname.includes('/thumbs/')) {
+    event.respondWith(photo(event.request));
     return;
   }
   event.respondWith(shell(event.request));

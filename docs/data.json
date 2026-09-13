@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-09-13T08:55:05+00:00",
+ "generated_at": "2026-09-13T09:08:56+00:00",
  "notify": {
   "ntfy_topic": "autotrader-2q592ak9gnx7sqrere5r",
   "ntfy_url": "https://ntfy.sh/autotrader-2q592ak9gnx7sqrere5r",
@@ -8702,7 +8702,7 @@
   }
  },
  "coverage": {
-  "window_hours": 2.4,
+  "window_hours": 2.6,
   "asked_window_hours": 24,
   "partial": true,
   "too_short": true,
@@ -8723,10 +8723,10 @@
   ]
  },
  "cost": {
-  "checks": 54,
-  "minutes": 30.0,
-  "billed_minutes": 65,
-  "mean_seconds": 33.3,
+  "checks": 53,
+  "minutes": 28.8,
+  "billed_minutes": 63,
+  "mean_seconds": 32.6,
   "window_hours": 24
  },
  "budget": {
@@ -8744,13 +8744,13 @@
   "should_stop": false
  },
  "market": {
-  "at": "2026-09-13T08:55:05+00:00",
+  "at": "2026-09-13T09:08:56+00:00",
   "window": {
    "ids_span_days": 0,
-   "watching_days": 3,
+   "watching_days": 0,
    "cars_with_two_prices": 0,
    "thin": true,
-   "note": "0 of 89 cars have been priced more than once, over 3 days of watching. Anything below described as a trend is really a snapshot until that number grows."
+   "note": "0 of 89 cars have been priced more than once, over 3 hours of watching. Anything below described as a trend is really a snapshot until that number grows."
   },
   "live": 89,
   "gone": 0,
@@ -9064,14 +9064,14 @@
    "p90": null,
    "note": "how long a car was listed before it came down - not how long it took to sell, which a listing cannot tell you",
    "biased_short": true,
-   "watching_days": 3
+   "watching_days": 0
   },
   "still_listed_days": {
    "n": 89,
    "median": 0,
    "longest": 0,
-   "censored": false,
-   "watching_days": 3
+   "censored": true,
+   "watching_days": 0
   },
   "velocity": {
    "arrived_7d": 89,
@@ -9085,11 +9085,11 @@
   }
  },
  "score_check": {
-  "called_cheap": 4,
+  "called_cheap": 0,
   "cheap_that_cut": 0,
-  "called_dear": 2,
+  "called_dear": 0,
   "dear_that_cut": 0,
-  "verdict": "not enough scored cars to test it: 4 called cheap and 2 called dear, and five of each is the minimum worth drawing a conclusion from"
+  "verdict": "not enough scored cars to test it: 0 called cheap and 0 called dear, and five of each is the minimum worth drawing a conclusion from"
  },
  "archive": {
   "folders": 28,

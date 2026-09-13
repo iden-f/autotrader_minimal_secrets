@@ -38,9 +38,20 @@ def _facts(listing) -> list[str]:
 
 
 def _short(listing) -> str:
-    """The car, in as few words as still identify it on a lock screen."""
+    """The car, in as few words as still identify it on a lock screen.
+
+    Cut at a word. A bare [:48] gave "2027 BMW M3 Competition xDrive leasing
+    starting at " - a dangling preposition and a trailing space that doubled
+    up against whatever came next - and the same slice on a 48-character
+    boundary mid-word gave nonsense with no ellipsis to show it had been cut.
+    """
     title = str(getattr(listing, "display_title", "") or "").split("|")[0].strip()
-    return (title or "listing")[:48]
+    title = title or "listing"
+    if len(title) <= 48:
+        return title
+    head, space, _ = title[:48].rpartition(" ")
+    cut = (head if space and len(head) >= 16 else title[:48]).rstrip(" ,-*/|")
+    return f"{cut}\u2026"
 
 
 def _one_line(change: Change) -> str:
@@ -69,6 +80,12 @@ def _one_line(change: Change) -> str:
         return f"{car} back on the market at {listing.price_text}"
     if change.kind == Change.QUALIFIED:
         return f"{car} is back inside your rules at {listing.price_text}"
+    if change.kind == Change.NEW:
+        # Every other kind names itself and this one fell through to a bare
+        # "car, price", so a digest of exactly one arrival was a car and a
+        # number with no verb - the one message where the headline above it
+        # does not supply the word either.
+        return f"{car} just listed at {listing.price_text}"
     return f"{car} {listing.price_text}"
 
 

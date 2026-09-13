@@ -21,6 +21,9 @@ from .listing import name_of
 # percentage sign on it. Below this many comparables the dashboard says so
 # instead of scoring.
 MIN_COMPARABLES = 6
+# How long a car must have been watched before "it did not cut its price"
+# means anything about the car rather than about the bot.
+BACKTEST_MIN_DAYS = 1
 # How far either side of a car's year its comparables may come from. Wider
 # than this and a 2015 is being judged against a 2021.
 YEAR_BAND = 1
@@ -524,7 +527,13 @@ def _trim_of(entry: dict[str, Any]) -> str:
     price is Competition, Touring, CS and so on. Anything else is "base",
     which is honest about what is known rather than inventing a category.
     """
-    text = " ".join(str(entry.get(k) or "") for k in ("trim", "title")).lower()
+    import unicodedata
+    raw = " ".join(str(entry.get(k) or "") for k in ("trim", "title"))
+    # Fold the accents before matching. A real car in this watch is titled
+    # "BMW M3 COMPETITION" with an acute E, and it was bucketed as "other"
+    # alongside cars with no trim at all.
+    text = "".join(c for c in unicodedata.normalize("NFKD", raw)
+                   if not unicodedata.combining(c)).lower()
     for word in ("competition", "touring", "cs", "m carbon", "lci"):
         if word in text:
             return word.replace("m carbon", "carbon")
@@ -543,6 +552,24 @@ def _count(n: int, word: str, plural: str = "") -> str:
 def _days(n: int) -> str:
     """Two days, or one day. Never one day with an (s) after it."""
     return "1 day" if n == 1 else f"{n} days"
+
+
+def _span(hours: float) -> str:
+    """How long something has been going on, in the unit that fits.
+
+    A watch three hours old reported "over 0 days of watching", which reads as
+    a rounding error rather than as the true and useful statement that the
+    searches were read this morning.
+    """
+    hours = max(0.0, float(hours or 0))
+    if hours < 1:
+        minutes = int(round(hours * 60))
+        return "under an hour" if minutes < 1 else (
+            "1 minute" if minutes == 1 else f"{minutes} minutes")
+    if hours < 48:
+        whole = int(round(hours))
+        return "1 hour" if whole == 1 else f"{whole} hours"
+    return _days(int(hours // 24))
 
 
 # A median from four cars is a coincidence with a dollar sign on it. Below
@@ -712,6 +739,7 @@ def market(entries: Iterable[dict[str, Any]], *, now: datetime | None = None,
     watch_began = (_dt(since) or (started[0] if started else None)
                    or (watched[0] if watched else now))
     watch_days = max(0, (now - watch_began).days)
+    watch_hours = max(0.0, _hours_between(now, watch_began))
 
     return {
         "at": now.isoformat(timespec="seconds"),
@@ -721,7 +749,7 @@ def market(entries: Iterable[dict[str, Any]], *, now: datetime | None = None,
             "cars_with_two_prices": len(tracked),
             "thin": len(tracked) < 20 or watch_days < 14,
             "note": (f"{len(tracked)} of {len(entries)} cars have been priced "
-                     f"more than once, over {_days(watch_days)} of watching. "
+                     f"more than once, over {_span(watch_hours)} of watching. "
                      f"Anything below described as a trend is really a "
                      f"snapshot until that number grows."),
         },
@@ -758,6 +786,20 @@ def market(entries: Iterable[dict[str, Any]], *, now: datetime | None = None,
             # two-day-old bot claims the market turns over every two days.
             # A car first seen on the first run has been listed for *at
             # least* this long; how much longer is not knowable from here.
+            #
+            # Against when THESE searches began, which is not when the bot was
+            # installed. The two dates diverge the moment the watch list
+            # changes: this bot had been running three days when its searches
+            # were swapped for different cars, so every car was three days
+            # younger than "the watch", the guard compared against the wrong
+            # date and did not fire - and the Market tab reported "still
+            # listed, median 0 days, longest 0 days" about a market it had
+            # been watching for a hundred minutes.
+            #
+            # Not `min(watched)`, which is the same number on the other side
+            # of the comparison and therefore true of every dataset ever
+            # collected. That was the original bug here and it was briefly
+            # reintroduced fixing this one.
             "censored": bool(standing and watched
                              and watched[0] <= watch_began + timedelta(hours=6)),
             "watching_days": watch_days,
@@ -793,6 +835,16 @@ def backtest(entries: Iterable[dict[str, Any]]) -> dict[str, Any]:
             continue
         history = [p for p in (entry.get("price_history") or []) if p.get("price")]
         if len(history) < 1:
+            continue
+        # Watched long enough that a cut would have been seen. A car first
+        # read this morning has not "failed to cut its price"; it has not had
+        # the chance, and counting it as one fills the denominator with cases
+        # that could never have gone the other way. With 83 cars all first
+        # seen within five minutes of each other, that was the whole
+        # denominator.
+        first_seen, last_seen = _dt(entry.get("first_seen")), _dt(entry.get("last_seen"))
+        if first_seen and last_seen and (last_seen - first_seen) < timedelta(
+                days=BACKTEST_MIN_DAYS):
             continue
         first = history[0]["price"]
         last = history[-1]["price"]

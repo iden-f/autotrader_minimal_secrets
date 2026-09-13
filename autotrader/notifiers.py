@@ -155,10 +155,17 @@ class TelegramNotifier(Notifier):
             # through to the plain message rather than losing the alert.
             try:
                 media = [{"type": "photo", "media": url} for url in photos]
-                media[0]["caption"] = text[:1000]
-                media[0]["parse_mode"] = "HTML"
+                # Telegram caps a media-group caption at 1,024 characters.
+                # A digest longer than that was sent as a truncated caption
+                # AND then in full as a second message, so the first thousand
+                # characters arrived twice. Either the caption carries the
+                # whole thing or the photos go up without one.
+                fits = len(text) <= 1000
+                if fits:
+                    media[0]["caption"] = text
+                    media[0]["parse_mode"] = "HTML"
                 self._api("sendMediaGroup", {"chat_id": chat_id, "media": media})
-                if len(text) > 1000:
+                if not fits:
                     self._api("sendMessage", {
                         "chat_id": chat_id, "text": text, "parse_mode": "HTML",
                         "disable_web_page_preview": True})
@@ -367,12 +374,32 @@ class SlackNotifier(Notifier):
         if not response.ok:
             raise RuntimeError(f"HTTP {response.status_code}: {response.text[:200]}")
 
+    # Slack's block text limit. Cutting the rendered digest to fit it threw
+    # away the "...and 14 more." line that render adds - so a truncated
+    # message looked like a complete one that happened to be short, and the
+    # last listing in it was cut mid-word.
+    BLOCK_LIMIT = 2900
+
     def _send(self, changes: list[Change], run: dict[str, Any]) -> Result:
+        text = self._fit(changes)
         self._post({"text": render.headline(changes),
                     "blocks": [{"type": "section",
-                                "text": {"type": "mrkdwn",
-                                         "text": render.as_markdown(changes, limit=self.limit)[:2900]}}]})
+                                "text": {"type": "mrkdwn", "text": text}}]})
         return Result(self.name, True, _count(len(changes), "change"))
+
+    def _fit(self, changes: list[Change]) -> str:
+        """The digest, shortened by showing fewer cars rather than fewer bytes.
+
+        render.as_markdown already knows how to say "and N more"; it just has
+        to be asked for a length that fits.
+        """
+        limit = self.limit
+        while limit > 1:
+            text = render.as_markdown(changes, limit=limit)
+            if len(text) <= self.BLOCK_LIMIT:
+                return text
+            limit -= 1
+        return render.as_markdown(changes, limit=1)[: self.BLOCK_LIMIT]
 
     def _send_text(self, subject: str, body: str) -> Result:
         self._post({"text": f"*{subject}*\n{body}"[:2900]})

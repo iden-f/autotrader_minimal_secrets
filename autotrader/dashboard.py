@@ -339,7 +339,7 @@ def build_payload(cfg: Config, state: State, env: dict[str, str] | None = None
         # What two hundred cars say together, rather than what one says. The
         # window block travels with it: most of this is two days old.
         "market": insight.market(state.listings.values(), runs=state.runs,
-                                 since=state.watch_started),
+                                 since=state.watching_these_since),
         "score_check": insight.backtest(state.listings.values()),
         "archive": size_report(),
         "config": _safe_config(cfg),

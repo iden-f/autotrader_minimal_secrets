@@ -42,7 +42,10 @@ const SORTS = [
   { id: 'newest',   label: 'Newest first',      get: l => -(Date.parse(l.first_seen) || 0) },
   { id: 'price',    label: 'Asking, low first', get: l => l.price ?? Infinity },
   { id: 'priced',   label: 'Asking, high first',get: l => -(l.price ?? -Infinity) },
-  { id: 'perkm',    label: 'Best $/1000km',     get: l => l.per_1000km ?? Infinity },
+  // "Best" is a claim about value; this is asking price divided by odometer,
+  // which ranks a 2010 X3 with 269,000 km and $2,150 on it above every M4 in
+  // the watch. The arithmetic is right and the word was wrong.
+  { id: 'perkm',    label: 'Cheapest per 1,000 km', get: l => l.per_1000km ?? Infinity },
   { id: 'year',     label: 'Newest year',       get: l => -(l.year || 0) },
   { id: 'km',       label: 'Lowest odometer',   get: l => l.mileage_km ?? Infinity },
   { id: 'distance', label: 'Closest',           get: l => l.distance_km ?? Infinity },
@@ -450,14 +453,19 @@ function renderFeed() {
       </div>`;
     const list = el('ul', 'feed');
     let markerDone = false;
-    for (const e of rows.slice(0, 60)) {
+    // Cars your rules keep come first within the group, then the hidden ones.
+    // This sliced the first 60 by recency, and with 57 hidden cars arriving in
+    // the same minute as the 26 you can buy, twenty of yours fell off the end
+    // of a list whose whole job is to show you what changed.
+    const ordered = [...rows.filter(e => !e.filtered), ...rows.filter(e => e.filtered)];
+    for (const e of ordered.slice(0, 60)) {
       if (!markerDone && !isUnread(e) && rows.some(isUnread)) {
         const m = el('li'); m.innerHTML = `<div class="marker">Seen before this</div>`;
         list.appendChild(m); markerDone = true;
       }
       list.appendChild(eventRow(e));
     }
-    if (rows.length > 60) {
+    if (ordered.length > 60) {
       const more = el('li', 'note', `and ${rows.length - 60} older`);
       more.style.padding = 'var(--s3) var(--s4)';
       list.appendChild(more);
@@ -578,17 +586,21 @@ function renderListings() {
   host.appendChild(bar);
 
   const kept = l => !marks.of(l.id).dismissed;
+  // Within the selected search, not across all of them. "Live 26" sat above a
+  // grid of 5 whenever a single search was picked, and the chip you clicked
+  // then showed a different number again.
+  const mine = l => app.search === 'all' || l.search_id === app.search;
   const counts = {
-    all: live().filter(l => !l.filtered && kept(l)).length,
-    private: live().filter(l => !l.filtered && kept(l)
+    all: live().filter(l => mine(l) && !l.filtered && kept(l)).length,
+    private: live().filter(l => mine(l) && !l.filtered && kept(l)
       && l.seller_type === 'private').length,
-    mine: (app.data.listings || []).filter(l => marks.of(l.id).shortlisted).length,
-    dropped: (app.data.listings || []).filter(l => marks.of(l.id).dismissed).length,
-    drops: live().filter(l => priceMove(l)?.delta < 0).length,
-    new: live().filter(l => !l.filtered && arrivedRecently(l)).length,
-    unpriced: live().filter(l => l.unpriced && !l.filtered).length,
-    hidden: live().filter(l => l.filtered).length,
-    gone: (app.data.listings || []).filter(l => l.status === 'gone').length,
+    mine: (app.data.listings || []).filter(l => mine(l) && marks.of(l.id).shortlisted).length,
+    dropped: (app.data.listings || []).filter(l => mine(l) && marks.of(l.id).dismissed).length,
+    drops: live().filter(l => mine(l) && priceMove(l)?.delta < 0).length,
+    new: live().filter(l => mine(l) && !l.filtered && arrivedRecently(l)).length,
+    unpriced: live().filter(l => mine(l) && l.unpriced && !l.filtered).length,
+    hidden: live().filter(l => mine(l) && l.filtered).length,
+    gone: (app.data.listings || []).filter(l => mine(l) && l.status === 'gone').length,
   };
   const chips = el('div', 'chips');
   chips.setAttribute('role', 'group');
@@ -713,9 +725,14 @@ function shot(l, cls) {
   // Three different things are being said here and they are not the same:
   // the seller published none, we have not copied one yet, or this car is
   // hidden and never will be.
-  const fallback = () => {
+  const fallback = (failedToLoad) => {
     const has = (l.images || []).length;
-    const why = l.filtered ? 'not kept for hidden cars'
+    // A fourth case, and the one that was being blamed on the bot: the file
+    // exists, the bot copied it, and this device cannot reach it. Saying
+    // "photo not copied yet" there is the page blaming itself for the
+    // reader's aeroplane.
+    const why = (failedToLoad && l.thumb) ? 'photo not loaded'
+              : l.filtered ? 'not kept for hidden cars'
               : has ? 'photo not copied yet'
               : 'no photo';
     box.innerHTML = `<div class="shot__fallback">${CAR_GLYPH}
@@ -735,7 +752,7 @@ function shot(l, cls) {
   img.width = 400; img.height = 300;
   img.alt = '';
   img.src = src;
-  img.addEventListener('error', fallback, { once: true });
+  img.addEventListener('error', () => fallback(true), { once: true });
   box.appendChild(img);
   return box;
 }
@@ -858,9 +875,14 @@ function table(html) {
    else, and calling it "No trim named" was wrong about most of the cars in
    it: a car titled "xDrive30i Premium Enhanced Package" names a trim, just
    not one this groups on. */
+const TRIM_NAMES = { cs: 'CS', lci: 'LCI', competition: 'Competition',
+                    touring: 'Touring', carbon: 'Carbon' };
+
 function trimLabel(name) {
   if (name === 'base' || !name) return 'Other';
-  return name.charAt(0).toUpperCase() + name.slice(1);
+  // Capitalising the first letter turned the CS bucket into "Cs", which is
+  // not a car BMW makes.
+  return TRIM_NAMES[name] || name.charAt(0).toUpperCase() + name.slice(1);
 }
 
 function renderMarket() {
@@ -911,10 +933,15 @@ function renderMarket() {
       <dd class="num">${v.left_7d ?? '—'}</dd></div>
     <div class="stat"><dt>Still listed, median</dt>
       <dd class="num">${st.median == null ? '—'
+        : (st.censored && !st.median) ? '—'
         : (st.censored ? '<small style="display:inline">at least </small>' : '') + days(st.median)}</dd>
-      <dd class="stat__note">${st.censored
-        ? 'nothing has been watched longer than this'
-        : `longest ${st.longest ?? '—'} days`}</dd></div>
+      <dd class="stat__note">${
+        st.median == null ? 'nothing to measure yet'
+        : (st.censored && !st.median)
+          ? 'every car here arrived after the watch on it started, so none of '
+            + 'them has a measurable age yet'
+        : st.censored ? 'nothing has been watched longer than this'
+        : `longest ${days(st.longest ?? 0)}`}</dd></div>
     <div class="stat"><dt>Cars discounted</dt><dd class="num">${d.cars ?? 0}</dd>
       <dd class="stat__note">${d.total ? money(d.total) + ' off in total' : 'none yet'}</dd></div>
     <div class="stat"><dt>Listed before coming down</dt>
@@ -1545,7 +1572,7 @@ function sheetBody(l) {
       img.width = 400; img.height = 300; img.src = src;
       img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:var(--r-sm)';
       img.addEventListener('error', () => {
-        box.innerHTML = `<div class="shot__fallback">${CAR_GLYPH}<span>photo did not load</span></div>`;
+        box.innerHTML = `<div class="shot__fallback">${CAR_GLYPH}<span>photo not loaded</span></div>`;
       }, { once: true });
       box.appendChild(img);
       gal.appendChild(box);
