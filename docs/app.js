@@ -79,7 +79,13 @@ const money = n => (n === null || n === undefined || n === '') ? '—'
 const signed = n => (n > 0 ? '+' : '−') + '$' + Math.abs(Math.round(n)).toLocaleString('en-CA');
 const daysListed = d => d === 0 ? 'listed today'
   : d === 1 ? 'listed yesterday' : `${d} days listed`;
-const km = n => (n === null || n === undefined) ? null : Math.round(n).toLocaleString('en-CA');
+const km = n => (n === null || n === undefined) ? null : num(n);
+/* Every number a person reads, grouped the same way. A bare toLocaleString()
+   with no locale is the browser's locale, which is not this page's - so the
+   same figure rendered "3,000" in one tile and "3.000" in the next on a
+   German phone. */
+const num = n => (n === null || n === undefined || n === '') ? '—'
+  : Math.round(n).toLocaleString('en-CA');
 
 function when(iso) {
   const t = Date.parse(iso);
@@ -788,7 +794,9 @@ function card(l) {
 
   const facts = [];
   if (l.mileage_km) facts.push(`<span class="num">${km(l.mileage_km)}<u> km</u></span>`);
-  if (l.per_1000km) facts.push(`<span class="num">$${Math.round(l.per_1000km)}<u> /1000km</u></span>`);
+  // money(), not a bare $ and Math.round: "$1113" sat next to "$69,000" on
+  // eleven of twenty-six cards, the same currency formatted two ways.
+  if (l.per_1000km) facts.push(`<span class="num">${money(l.per_1000km)}<u> /1000km</u></span>`);
   if (l.distance_km !== undefined && l.distance_km !== null) facts.push(`<span class="num">${km(l.distance_km)}<u> km away</u></span>`);
   if (l.location) facts.push(`<span>${esc(l.location)}</span>`);
 
@@ -1315,9 +1323,9 @@ function renderStatus() {
     ${d.budget ? `<div class="stat" data-tone="${
         d.budget.state === 'stop' ? 'bad' : d.budget.state === 'over' ? 'warn' : ''}">
       <dt>Runner minutes this month</dt>
-      <dd class="num">${Math.round(d.budget.used).toLocaleString()}${
+      <dd class="num">${num(d.budget.used)}${
         d.budget.charged
-          ? `<small style="display:inline"> / ${d.budget.allowance.toLocaleString()}</small>`
+          ? `<small style="display:inline"> / ${num(d.budget.allowance)}</small>`
           : ''}</dd>
       <dd class="stat__note">${esc(d.budget.text)}</dd></div>` : ''}
     <div class="stat" data-tone="${h.accounted?.unexplained ? 'bad' : 'good'}"><dt>Unaccounted cars</dt>
@@ -1344,7 +1352,7 @@ function renderStatus() {
       const cell = el('i', 'slot');
       cell.dataset.state = v === 0 ? 'miss' : v === 1 ? 'ok' : 'warn';
       const at = new Date(begin + i * step);
-      cell.title = `${at.toLocaleString([], { weekday: 'short', hour: '2-digit',
+      cell.title = `${at.toLocaleString('en-CA', { weekday: 'short', hour: '2-digit',
         minute: '2-digit' })} — ` + (v === 0 ? 'no check'
           : v === 1 ? 'checked' : 'checked, reported a problem');
       strip.appendChild(cell);
@@ -1642,7 +1650,7 @@ function sheetBody(l) {
   const kv = el('dl', 'kv');
   const pairs = [
     ['Year', l.year], ['Odometer', l.mileage_km ? `${km(l.mileage_km)} km` : null],
-    ['Per 1000km', l.per_1000km ? `$${Math.round(l.per_1000km)}` : null],
+    ['Per 1,000 km', l.per_1000km ? money(l.per_1000km) : null],
     ['Distance', (l.distance_km ?? null) !== null ? `${km(l.distance_km)} km from ${esc(l.distance_from || 'home')}` : null],
     ['On the market', l.days_listed === undefined ? null : daysListed(l.days_listed)], ['Colour', l.color], ['Body', l.body],
     ['Transmission', l.transmission], ['Drivetrain', l.drivetrain], ['Fuel', l.fuel],
