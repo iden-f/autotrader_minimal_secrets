@@ -308,7 +308,7 @@ class TestTheClockJumps:
         now = datetime.now(timezone.utc)
         runs = [{"at": (now + timedelta(hours=1)).isoformat(), "ok": True},
                 {"at": (now - timedelta(minutes=30)).isoformat(), "ok": True}]
-        cov = insight.coverage(runs, expected_minutes=30, window_hours=24)
+        cov = insight.coverage(runs, expected_minutes=30, window_hours=24, since_change=None)
         assert cov["successful"] >= 1
         assert cov["pct"] >= 0
 
@@ -327,7 +327,7 @@ class TestTheClockJumps:
         from autotrader import insight
         now = datetime.now(timezone.utc)
         runs = [{"at": (now + timedelta(minutes=90)).isoformat(), "ok": True}]
-        cov = insight.coverage(runs, expected_minutes=30, window_hours=24)
+        cov = insight.coverage(runs, expected_minutes=30, window_hours=24, since_change=None)
         assert (cov.get("longest_gap_minutes") or 0) >= 0
 
 

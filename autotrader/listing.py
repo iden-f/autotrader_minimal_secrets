@@ -14,6 +14,33 @@ _EDGE_SEPARATOR = re.compile(r"^[\s|,/·\-]+|[\s|,/·\-]+$")
 PLACEHOLDER_TITLE = "AutoTrader listing "
 
 
+# Where a dealer's hand-typed feature list starts.
+#
+# ONE list, used by both the trim and the title. It was two: short_trim cut a
+# trim at any of five separators, and the title was cut at a pipe and nothing
+# else - so a dealer who types slashes instead of pipes put "2020 BMW X3 M
+# PREMIUM PKG / CARBON FIBRE TRIM / 1 OWNER NO ACCID" on the Feed, sixty
+# characters of marketing copy truncated mid-word.
+#
+# " I " is here because dealers on this platform type a capital I where they
+# mean a pipe: "M4 I Premium PKG I M Carbon Exterior PKG". " * " is here
+# because they use it as a bullet: "XDrive30i * NO ACCIDENTS * ONE OWNER *
+# CERTIFIED" is one real trim field, and it went into a notification verbatim.
+#
+# The slash and the star are SPACED. Unspaced they eat real names: "w/ Comp
+# Package" becomes "w", and a trim written "M4*" loses its model.
+FEATURE_LIST_SEPARATORS = ("|", ",", " / ", " * ", " I ")
+
+
+def before_the_feature_list(text: str) -> str:
+    """Everything up to the first separator a dealer used as a bullet."""
+    text = (text or "").strip()
+    for separator in FEATURE_LIST_SEPARATORS:
+        if separator in text:
+            return text.split(separator)[0].strip()
+    return text
+
+
 @dataclass
 class Listing:
     id: str
@@ -78,15 +105,7 @@ class Listing:
         trim = _EDGE_SEPARATOR.sub("", trim).strip()
         if trim[:2].upper() == "I " and trim[2:3].isupper():
             trim = trim[2:].strip()
-        # " I " is in there because dealers on this platform type a capital I
-        # where they mean a pipe: "M4 I Premium PKG I M Carbon Exterior PKG".
-        # "*" is in there because this platform's dealers use it as a bullet:
-        # "XDrive30i * NO ACCIDENTS * ONE OWNER * CERTIFIED" is one real trim
-        # field, and it went into a notification verbatim.
-        for separator in ("|", ",", "/", "*", " I "):
-            if separator in trim:
-                trim = trim.split(separator)[0].strip()
-                break
+        trim = before_the_feature_list(trim)
         # Dealers often repeat the model inside the trim, which reads as
         # "BMW M5 M5 Competition" once the name is assembled.
         for prefix in (self.model, self.make):
@@ -200,7 +219,7 @@ def name_of(entry: dict[str, Any]) -> str:
         # list. The year goes in front when the title does not already open
         # with one, so "BMW M4 Competition" becomes "2019 BMW M4 Competition"
         # and "2019 BMW M4" is not made into "2019 2019 BMW M4".
-        head = title.split("|")[0].strip() or title
+        head = before_the_feature_list(title) or title
         year = str(entry.get("year") or "")
         if year and not head.startswith(year):
             head = f"{year} {head}"

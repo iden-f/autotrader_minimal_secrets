@@ -14,6 +14,8 @@ the rows a person scrolls past fastest were the ones named worst.
 
 from __future__ import annotations
 
+import pytest
+
 from autotrader import insight
 from autotrader.config import Config
 from autotrader.dashboard import build_payload
@@ -162,3 +164,50 @@ class TestThePageAndTheAlertAgree:
         text = render.as_text([Change(kind=Change.NEW, listing=self.car())])
         assert "AutoTrader listing" not in text, text
         assert "2025 BMW M4" in text, text
+
+
+class TestOneSeparatorListNotTwo:
+    """A dealer's feature list, wherever they type one.
+
+    short_trim cut a TRIM at five separators. The TITLE was cut at a pipe and
+    nothing else, so the dealer who types slashes put "2020 BMW X3 M PREMIUM
+    PKG / CARBON FIBRE TRIM / 1 OWNER NO ACCID" across the Feed - sixty-four
+    characters of marketing copy, truncated mid-word by the column it landed
+    in. Both are the same rule and there is now one of it.
+    """
+
+    CASES = [
+        ("2020 BMW X3 M PREMIUM PKG / CARBON FIBRE TRIM / 1 OWNER NO ACCID",
+         "2020 BMW X3 M PREMIUM PKG"),
+        ("BMW M4 | Premium | Carbon", "2020 BMW M4"),
+        ("BMW M4 I Premium PKG I M Carbon", "2020 BMW M4"),
+        ("XDrive30i * NO ACCIDENTS * ONE OWNER", "2020 XDrive30i"),
+        ("BMW M5 Competition, M Drivers Package", "2020 BMW M5 Competition"),
+        # Not a feature list. An unspaced slash is part of a word.
+        ("BMW M4 w/ Competition Package", "2020 BMW M4 w/ Competition Package"),
+    ]
+
+    @pytest.mark.parametrize("title,want", CASES)
+    def test_the_title_is_cut_where_the_trim_would_be(self, title, want):
+        from autotrader.listing import name_of
+        got = name_of({"id": "1", "title": title, "year": 2020,
+                       "make": "BMW", "model": "M4"})
+        assert got == want
+
+    def test_the_trim_uses_the_very_same_list(self):
+        from autotrader.listing import FEATURE_LIST_SEPARATORS, Listing
+        for sep in FEATURE_LIST_SEPARATORS:
+            listing = Listing(id="1", url="u", make="BMW", model="M5",
+                              trim=f"Competition{sep}Premium Package")
+            assert listing.short_trim == "Competition", sep
+
+    def test_the_page_does_not_keep_its_own_copy_of_the_rule(self):
+        """It reads the name the bot published. A second implementation is a
+        second chance to know about fewer separators than the first."""
+        from pathlib import Path
+        source = (Path(__file__).resolve().parent.parent
+                  / "docs" / "app.js").read_text()
+        start = source.index("function carName(")
+        body = source[start:source.index("}", source.index("return", start))]
+        for sep in ("'|'", '"|"', "split("):
+            assert sep not in body, f"carName is deriving the name again: {sep}"

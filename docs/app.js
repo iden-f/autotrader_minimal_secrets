@@ -221,13 +221,22 @@ function comparableSays(cmp, l) {
 const ordinal = n => (n % 100 >= 10 && n % 100 <= 20) ? `${n}th`
   : `${n}${ ({ 1: 'st', 2: 'nd', 3: 'rd' })[n % 10] || 'th' }`;
 
+/* The bot's name for a car, as the bot published it.
+
+   This used to re-derive it: split the title on a pipe, prepend the year if
+   it was not already there. Both steps had already been done by
+   listing.name_of before the file was written, and the copy here knew about
+   one separator where the rule knows about five - so a dealer who types
+   slashes got "2020 BMW X3 M PREMIUM PKG / CARBON FIBRE TRIM / 1 OWNER NO
+   ACCID" across the Feed, cut off mid-word by the column.
+
+   The fallback is for a payload published before that was true, and for a
+   row the bot never named. It does not try to be the rule. */
 function carName(l) {
-  const head = String(l.title || '').split('|')[0].trim();
-  // A title that already opens with the year gets no second one. The names
-  // the bot composes for cars whose card carried none start "2025 BMW M4",
-  // and this happily made that "2025 2025 BMW M4".
-  const year = (l.year && !head.startsWith(String(l.year))) ? `${l.year} ` : '';
-  return (year + (head || [l.make, l.model].filter(Boolean).join(' '))).trim() || 'Listing';
+  const named = String(l.title || '').trim();
+  if (named) return named;
+  const built = [l.year, l.make, l.model].filter(Boolean).join(' ').trim();
+  return built || 'Listing';
 }
 function carExtras(l) {
   return String(l.title || '').split('|').slice(1)
@@ -265,6 +274,20 @@ function priceMove(l) {
 }
 
 /* ----------------------------------------------------------------- trust */
+
+/* The coverage percentage, or null when there is not one to show yet.
+
+   The Status tile learned to say "measuring for 3.6 hours so far" instead of
+   a number the window was too short to support. The header did not, and went
+   on printing "100% covered" - the same figure, from one complete slot, three
+   centimetres above a tile refusing to print it. One reader, two answers.
+
+   Every place that shows or reasons about the percentage asks this. */
+function coveragePct(cov) {
+  if (!cov || cov.too_short) return null;
+  return (cov.pct === undefined || cov.pct === null) ? null : cov.pct;
+}
+
 function trustState() {
   const d = app.data;
   if (!d) return { state: 'ok', text: 'Loading…' };
@@ -297,7 +320,8 @@ function trustState() {
   const stale = ageMin > expected * 3;
   // Coverage this poor means cars can arrive and go between checks, which is
   // worth an amber light even when the most recent check was a minute ago.
-  const thin = cov.pct !== undefined && cov.pct < 50;
+  const pct = coveragePct(cov);
+  const thin = pct !== null && pct < 50;
 
   // Nothing has ever run. That is not a fault, it is a fresh install, and
   // reporting it as "0% coverage" tells somebody who has just set this up
@@ -337,12 +361,12 @@ function trustState() {
         // number of runs printed "79.2% - 51 of 48 expected checks" on a page
         // whose Status tab said 38 of 48 two screens away. Both numbers were
         // true and the sentence was not.
-        detail: (cov.pct !== undefined && !cov.too_short)
-          ? `Coverage over the last ${hours(cov.window_hours)}: ${cov.pct}% — ${cov.slots_covered ?? cov.successful} of ${cov.expected} ${slotWord(cov)} had a check.` : '',
+        detail: pct === null ? ''
+          : `Coverage over the last ${hours(cov.window_hours)}: ${pct}% — ${cov.slots_covered ?? cov.successful} of ${cov.expected} ${slotWord(cov)} had a check.`,
       },
     };
   }
-  if (thin && !cov.too_short) {
+  if (thin) {
     return {
       state: 'stale',
       text: `Checked ${when(run.at)}`,
@@ -352,7 +376,7 @@ function trustState() {
         // the raw check count here said "22 of 48" beside a card reading
         // "17 of 48", which is one number too many for a page whose whole
         // argument is that its numbers can be trusted.
-        text: `Only ${cov.pct}% of the last ${hours(cov.window_hours)} were watched — ${cov.slots_covered ?? cov.successful} of ${cov.expected} ${slotWord(cov)} had a check. A car can be listed and sold between checks at this rate.`,
+        text: `Only ${pct}% of the last ${hours(cov.window_hours)} were watched — ${cov.slots_covered ?? cov.successful} of ${cov.expected} ${slotWord(cov)} had a check. A car can be listed and sold between checks at this rate.`,
         detail: cov.longest_gap_minutes
           ? `Longest gap: ${(cov.longest_gap_minutes / 60).toFixed(1)} hours.` : '',
       },
@@ -384,8 +408,9 @@ function renderTrust() {
   wrap.dataset.state = t.state;
   document.getElementById('trust-text').textContent = t.text;
   const cov = app.data?.coverage;
-  document.getElementById('trust-cov').innerHTML = cov
-    ? `· <b class="num">${cov.pct}%</b> covered` : '';
+  const pct = coveragePct(cov);
+  document.getElementById('trust-cov').innerHTML =
+    !cov ? '' : pct === null ? '· measuring' : `· <b class="num">${pct}%</b> covered`;
 
   const alarm = document.getElementById('alarm');
   if (t.alarm) {
@@ -482,7 +507,8 @@ function renderFeed() {
   head.classList.add('measure');
   head.innerHTML = `<h1 id="feed-h">What changed</h1>
     <p>Everything that has happened to a car you are watching, newest first — including
-       cars your rules hide, which the run counters never counted.</p>`;
+       cars your rules hide, which the run counters never counted. A row you were
+       told about says nothing extra; a row that stayed quiet says why.</p>`;
   host.appendChild(head);
   if (app.firstVisit && !store.get('welcomed', false)) {
     host.appendChild(welcome());
@@ -590,10 +616,17 @@ function eventRow(e) {
     // nothing at all about it - a title and the word "alerted".
     fig = '<span class="ev__fig">Call for price</span>';
   }
+  // Only when the delivery was NOT the ordinary one.
+  //
+  // "alerted" under every row is a word the eye learns to skip, and the row
+  // that says "deliberately quiet: muted" is the one it then skips too.
+  // Seven rows down a phone screen all read "alerted" and carried no other
+  // information between them. The Feed says once, above, what a row with
+  // nothing under it means.
   if (e.filtered) sub.push(`<span>hidden — ${esc(e.filter_reason || 'a rule of yours')}</span>`);
-  else if (e.delivery?.state === 'sent') sub.push('<span>alerted</span>');
   else if (e.delivery?.state === 'queued') sub.push('<span>queued, not sent yet</span>');
   else if (e.delivery?.state === 'quiet') sub.push(`<span>${esc(e.delivery.text)}</span>`);
+  else if (e.delivery?.state === 'none') sub.push('<span class="drop">no delivery record</span>');
 
   // carName, not a second copy of it. There were two, they were the same
   // line, and when one learned not to print "2025 2025 BMW M4" the other
@@ -685,7 +718,11 @@ function renderListings() {
   // then showed a different number again.
   const mine = l => app.search === 'all' || l.search_id === app.search;
   const counts = {
-    all: live().filter(l => mine(l) && !l.filtered && kept(l)).length,
+    // Whatever the Live chip will actually show. It counted only unhidden
+    // cars whether or not you had pressed "Include hidden", so the chip read
+    // "Live 28" over a grid of 89.
+    all: live().filter(l => mine(l) && (app.showHidden || !l.filtered)
+                            && kept(l)).length,
     private: live().filter(l => mine(l) && !l.filtered && kept(l)
       && l.seller_type === 'private').length,
     mine: (app.data.listings || []).filter(l => mine(l) && marks.of(l.id).shortlisted).length,
@@ -719,7 +756,10 @@ function renderListings() {
     const btn = el('button', 'chip');
     btn.type = 'button';
     btn.setAttribute('aria-pressed', String(app.showHidden));
-    btn.innerHTML = `Include hidden<span class="n num">${counts.hidden}</span>`;
+    // No count on it. "Include hidden 61" sat directly beside "Hidden by a
+    // rule 61" and read as the same control twice. This one is a switch, and
+    // its effect is the Live count next to it changing.
+    btn.textContent = app.showHidden ? 'Hidden cars included' : 'Include hidden';
     btn.addEventListener('click', () => { app.showHidden = !app.showHidden; renderListings(); });
     chips.appendChild(btn);
   }
@@ -924,14 +964,20 @@ function card(l) {
   let flag = '';
   if (kind) flag = `<span class="flag flag--${KIND[kind].flag}">${KIND[kind].label}</span>`;
 
-  const price = l.unpriced
-    ? `<b>Call for price</b>`
+  // An unpriced car is headed by its NAME, and "Call for price" drops to the
+  // line under it. It was the other way round: the largest text on the card
+  // was the absence of a figure, and the car it belonged to was the small
+  // grey line beneath - on a phone, three such cards filled the first screen
+  // and none of them said what they were until you read the second line.
+  const headline = l.unpriced
+    ? `<b>${esc(carName(l))}</b>`
     : `<b class="num">${money(l.price)}</b>` +
       (move && move.delta < 0
         ? `<span class="card__was num">${money(move.was)}</span><span class="card__delta num drop">${signed(move.delta)}</span>`
         : move && move.delta > 0
         ? `<span class="card__was num">${money(move.was)}</span><span class="card__delta num rise">${signed(move.delta)}</span>`
         : '');
+  const subline = l.unpriced ? 'Call for price' : esc(carName(l));
 
   const facts = [];
   if (l.mileage_km) facts.push(`<span class="num">${km(l.mileage_km)}<u> km</u></span>`);
@@ -973,8 +1019,8 @@ function card(l) {
 
   body.innerHTML =
     `${flag}
-     <div class="card__price">${price}</div>
-     <div class="card__title">${esc(carName(l))}</div>
+     <div class="card__price">${headline}</div>
+     <div class="card__title">${subline}</div>
      <div class="facts">${facts.join('')}</div>` +
     (l.filtered ? `<p class="rule">Hidden: ${esc(l.filter_reason || 'a rule of yours')}</p>` : '') +
     (mine.note ? `<p class="yours">${esc(mine.note)}</p>` : '') +
@@ -1031,6 +1077,16 @@ function table(html) {
 const TRIM_NAMES = { cs: 'CS', lci: 'LCI', competition: 'Competition',
                     touring: 'Touring', carbon: 'Carbon' };
 
+/* How old the watch is, in words rather than in a subtraction. "the watch is
+   0 days old" is what a count does on its first day, and it reads as a fault
+   rather than as a beginning. */
+function age(days) {
+  const n = Number(days) || 0;
+  if (n < 1) return 'the watch started today';
+  if (n === 1) return 'the watch is a day old';
+  return `the watch is ${plural(n, 'day')} old`;
+}
+
 function trimLabel(name) {
   if (name === 'base' || !name) return 'Other';
   // Capitalising the first letter turned the CS bucket into "Cs", which is
@@ -1079,8 +1135,8 @@ function renderMarket() {
   stats.innerHTML = `
     <div class="stat"><dt>${sinceWatch ? 'Arrived since watching began' : 'Arrived this week'}</dt>
       <dd class="num">${v.arrived_7d ?? '—'}</dd>
-      ${sinceWatch ? `<dd class="stat__note">the watch is ${plural(st.watching_days ?? 0, 'day')}
-        old, so that is all of them rather than this week's</dd>` : ''}</div>
+      ${sinceWatch ? `<dd class="stat__note">${age(st.watching_days)}, so that is
+        all of them rather than this week's</dd>` : ''}</div>
     <div class="stat"><dt>${sinceWatch ? 'Left since watching began' : 'Left this week'}</dt>
       <dd class="num">${v.left_7d ?? '—'}</dd></div>
     <div class="stat"><dt>Still listed, median</dt>
@@ -1374,6 +1430,9 @@ function rulesEditor(s) {
     // which the bot was hiding two. `filter_rule` is the run's own verdict,
     // named by the config key that produced it, so the seven rules off
     // screen come from the bot rather than being guessed at here.
+    // Hidden, and not by one of the four boxes above. A car whose rule the
+    // bot has not recorded counts as held too - the safe direction, since
+    // the alternative is claiming a car passes when something is hiding it.
     const elsewhere = l => l.filtered && !(l.filter_rule in rule);
     const held = pool.filter(elsewhere);
     const kept = pool.filter(l => {
@@ -1391,8 +1450,9 @@ function rulesEditor(s) {
     box.querySelector('#pv-' + id).innerHTML = pool.length
       ? `<b>${num(kept.length)}</b> of the ${num(pool.length)} cars this search currently holds would pass`
         + (changed ? ' under the rule above.' : ' under the rule as saved.')
-        + (held.length ? ` ${plural(held.length, 'car')} ${held.length === 1 ? 'is' : 'are'} held`
-            + ' out by a rule this editor does not show, whatever you set here.' : '')
+        + (held.length ? ` ${plural(held.length, 'car')} the bot currently hides `
+            + `${held.length === 1 ? 'is' : 'are'} not counted here: this preview `
+            + 'can only re-run the four rules above.' : '')
       : 'This search is not holding any cars to test the rule against.';
 
     ask.innerHTML = '';
@@ -1479,12 +1539,15 @@ function renderStatus() {
        last check passed — it is what share of the checks it was meant to make it made.</p>`;
   host.appendChild(head);
 
-  const covTone = cov.too_short ? '' 
-    : cov.pct >= 80 ? 'good' : cov.pct >= 40 ? 'warn' : 'bad';
+  // The colour goes with the number. No number, no colour - a red tile over
+  // an em-dash is the tile shouting about a figure it declined to print.
+  const covPct = coveragePct(cov);
+  const covTone = covPct === null ? ''
+    : covPct >= 80 ? 'good' : covPct >= 40 ? 'warn' : 'bad';
   const stats = el('dl', 'stats');
   stats.innerHTML = `
     <div class="stat" data-tone="${covTone}"><dt>Coverage, ${hours(cov.window_hours || 24)}</dt>
-      <dd class="num">${cov.too_short ? '—' : `${cov.pct ?? '—'}%`}</dd>
+      <dd class="num">${covPct === null ? '—' : `${covPct}%`}</dd>
       <dd class="stat__note">${cov.too_short
         ? `measuring for ${hours(cov.window_hours)} so far, since the schedule `
           + `changed to one check every ${every(cov.expected_interval_minutes)}. `

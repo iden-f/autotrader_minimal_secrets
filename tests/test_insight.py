@@ -26,7 +26,7 @@ class TestCoverageMeasuresTheWatchNotTheExitCode:
         runs = [self.run_at(m, ok=False,
                             errors=["the bot's own bookkeeping is inconsistent"])
                 for m in range(0, 240, 30)]
-        cov = insight.coverage(runs, expected_minutes=30, window_hours=24)
+        cov = insight.coverage(runs, expected_minutes=30, window_hours=24, since_change=None)
         assert cov["successful"] == len(runs)
         assert cov["clean"] == 0
         assert cov["complained"] == len(runs)
@@ -35,30 +35,30 @@ class TestCoverageMeasuresTheWatchNotTheExitCode:
         from autotrader import insight
         runs = [self.run_at(m, ok=False, searches_run=2, searches_failed=2)
                 for m in range(0, 240, 30)]
-        assert insight.coverage(runs, expected_minutes=30)["successful"] == 0
+        assert insight.coverage(runs, expected_minutes=30, since_change=None)["successful"] == 0
 
     def test_a_partial_failure_still_counts(self):
         """One search down is a narrower watch, not a blind one."""
         from autotrader import insight
         runs = [self.run_at(0, ok=False, searches_run=2, searches_failed=1)]
-        assert insight.coverage(runs, expected_minutes=30)["successful"] == 1
+        assert insight.coverage(runs, expected_minutes=30, since_change=None)["successful"] == 1
 
     def test_a_skipped_run_never_looked(self):
         from autotrader import insight
         runs = [self.run_at(m, skipped=True) for m in range(0, 240, 30)]
-        assert insight.coverage(runs, expected_minutes=30)["successful"] == 0
+        assert insight.coverage(runs, expected_minutes=30, since_change=None)["successful"] == 0
 
     def test_an_old_record_with_no_counters_falls_back_to_the_exit_code(self):
         from autotrader import insight
         runs = [{"at": self.run_at(10)["at"], "ok": True},
                 {"at": self.run_at(40)["at"], "ok": False}]
-        assert insight.coverage(runs, expected_minutes=30)["successful"] == 1
+        assert insight.coverage(runs, expected_minutes=30, since_change=None)["successful"] == 1
 
     def test_the_gap_is_measured_between_checks_that_looked(self):
         from autotrader import insight
         runs = [self.run_at(0), self.run_at(60, ok=False,
                                             errors=["bookkeeping"])]
-        cov = insight.coverage(runs, expected_minutes=30, window_hours=24)
+        cov = insight.coverage(runs, expected_minutes=30, window_hours=24, since_change=None)
         # Not 24 hours: the complaining run an hour ago still read the site.
         assert cov["longest_gap_minutes"] < 24 * 60
 
@@ -74,7 +74,7 @@ class TestCoverageMeasuresTheWatchNotTheExitCode:
         """A burst of manual runs is not coverage the schedule delivered."""
         from autotrader import insight
         runs = [self.run_at(1), self.run_at(2), self.run_at(3), self.run_at(4)]
-        cov = insight.coverage(runs, expected_minutes=30, window_hours=24)
+        cov = insight.coverage(runs, expected_minutes=30, window_hours=24, since_change=None)
         assert cov["checks"] == 4
         assert cov["slots_covered"] == 1
         assert cov["pct"] == round(1 / 48 * 100, 1)
@@ -82,7 +82,7 @@ class TestCoverageMeasuresTheWatchNotTheExitCode:
     def test_a_check_every_slot_is_a_hundred_percent(self):
         from autotrader import insight
         runs = [self.run_at(m) for m in range(0, 24 * 60, 30)]
-        cov = insight.coverage(runs, expected_minutes=30, window_hours=24)
+        cov = insight.coverage(runs, expected_minutes=30, window_hours=24, since_change=None)
         assert cov["pct"] == 100.0
 
 
@@ -111,7 +111,7 @@ class TestCoverageIsAboutTheScheduleThatIsRunning:
         new = [changed + timedelta(minutes=10), changed + timedelta(minutes=126)]
         runs = self.runs(old + new)
 
-        blind = insight.coverage(runs, 120, now=now)
+        blind = insight.coverage(runs, 120, now=now, since_change=None)
         assert blind["pct"] == 100.0, "the bug this exists to stop"
 
         honest = insight.coverage(runs, 120, now=now,
@@ -155,7 +155,7 @@ class TestCoverageIsAboutTheScheduleThatIsRunning:
         from autotrader import insight
         now = datetime(2026, 9, 13, 12, 0, tzinfo=timezone.utc)
         runs = self.runs([now - timedelta(minutes=30 * n) for n in range(1, 48)])
-        out = insight.coverage(runs, 30, now=now)
+        out = insight.coverage(runs, 30, now=now, since_change=None)
         assert out["partial"] is False and out["window_hours"] == 24.0
 
 
@@ -182,3 +182,21 @@ class TestTheScheduleStampItself:
         assert state.note_schedule(120) is True
         assert state.schedule_changed_at != "2026-01-01T00:00:00+00:00"
         assert state.data["schedule"]["was"] == 30
+
+
+def test_a_coverage_figure_cannot_be_asked_for_without_saying_which_schedule():
+    """The stamp has no default.
+
+    A coverage percentage is a statement about a schedule, and a caller that
+    does not say when the current one started gets a figure measured over a
+    period that may have been running a different one. The Status tab read
+    "100% - 12 of 12" about a schedule that had produced two checks, and it
+    read that because the argument was optional and the caller had not been
+    updated. A new caller now has to decide, and can still say None.
+    """
+    import inspect
+    from autotrader import insight
+
+    p = inspect.signature(insight.coverage).parameters["since_change"]
+    assert p.default is inspect.Parameter.empty, "it went back to optional"
+    assert p.kind is inspect.Parameter.KEYWORD_ONLY

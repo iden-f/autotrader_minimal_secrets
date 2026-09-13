@@ -869,3 +869,93 @@ class TestTheEmptyStateBlamesTheRightControl:
                 assert "search" not in text.lower(), text
         finally:
             ctx.close()
+
+
+class TestOneReaderTwoAnswers:
+    """Numbers the page shows in two places at once, which disagreed."""
+
+    def test_the_header_does_not_print_a_percentage_the_tile_withholds(
+            self, browser, site):
+        """The Status tile learned to say "measuring for 3.6 hours so far"
+        rather than a figure from one complete slot. The header went on
+        printing "100% covered" three centimetres above it."""
+        ctx, page, _ = _page(browser, site, 1440, "light")
+        try:
+            for too_short in (True, False):
+                page.evaluate(f"""() => {{
+                  app.data.coverage = Object.assign({{}}, app.data.coverage, {{
+                    too_short: {str(too_short).lower()}, pct: 100,
+                    window_hours: 3.6, expected: 1, slots_covered: 1,
+                    successful: 3, expected_interval_minutes: 120 }});
+                  renderTrust(); go('status');
+                }}""")
+                page.wait_for_timeout(250)
+                header = page.evaluate(
+                    "() => document.getElementById('trust-cov').textContent")
+                tile = page.evaluate("""() => {
+                  const d = [...document.querySelectorAll('[data-view="status"] .stat')]
+                    .find(s => /coverage/i.test(s.querySelector('dt').textContent));
+                  return d ? d.querySelector('dd').textContent.trim() : null; }""")
+                if too_short:
+                    assert "%" not in header, header
+                    assert tile == "—", tile
+                else:
+                    assert "100%" in header, header
+                    assert "100%" in tile, tile
+        finally:
+            ctx.close()
+
+    def test_the_live_chip_counts_what_the_live_chip_shows(self, browser, site):
+        """"Live 28" over a grid of 89, the moment you press Include hidden."""
+        ctx, page, _ = _page(browser, site, 1440, "light", view="listings")
+        try:
+            for _ in range(2):
+                said = page.evaluate("""() => {
+                  const c = [...document.querySelectorAll('.chips .chip')]
+                    .find(b => b.textContent.startsWith('Live'));
+                  return c ? parseInt(c.querySelector('.n').textContent.replace(/,/g, ''), 10) : null;
+                }""")
+                drawn = page.evaluate(
+                    "() => document.querySelectorAll('.grid > .card').length")
+                assert said == drawn, (said, drawn)
+                toggled = page.evaluate("""() => {
+                  const b = [...document.querySelectorAll('.chips .chip')]
+                    .find(x => /hidden/i.test(x.textContent) && x.hasAttribute('aria-pressed')
+                               && x.getAttribute('aria-pressed') !== null
+                               && !/Hidden by a rule/.test(x.textContent));
+                  if (!b) return false; b.click(); return true; }""")
+                if not toggled:
+                    break
+                page.wait_for_timeout(250)
+        finally:
+            ctx.close()
+
+    def test_no_two_chips_wear_the_same_number_and_nearly_the_same_word(
+            self, browser, site):
+        ctx, page, _ = _page(browser, site, 1440, "light", view="listings")
+        try:
+            chips = page.evaluate("""() => [...document.querySelectorAll('.chips .chip')]
+                .map(c => c.textContent.trim())""")
+            hidden = [c for c in chips if "hidden" in c.lower()]
+            assert len(set(hidden)) == len(hidden), chips
+            with_counts = [c for c in hidden if any(ch.isdigit() for ch in c)]
+            assert len(with_counts) <= 1, hidden
+        finally:
+            ctx.close()
+
+    def test_an_unpriced_card_is_headed_by_the_car(self, browser, site):
+        """The largest text on three of the first four cards was the absence
+        of a figure, and the car it belonged to was the grey line beneath."""
+        ctx, page, _ = _page(browser, site, 1440, "light", view="listings")
+        try:
+            heads = page.evaluate("""() => [...document.querySelectorAll('.grid > .card')]
+                .map(c => ({ head: (c.querySelector('.card__price') || {}).textContent || '',
+                             sub: (c.querySelector('.card__title') || {}).textContent || '' }))""")
+            assert heads, "no cards"
+            for card in heads:
+                assert "Call for price" not in card["head"], card
+                assert card["head"].strip(), card
+                # And the name is said once, not twice.
+                assert card["head"].strip() != card["sub"].strip(), card
+        finally:
+            ctx.close()

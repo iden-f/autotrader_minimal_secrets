@@ -396,7 +396,7 @@ def _read_the_site(run: dict[str, Any]) -> bool:
 
 def coverage(runs: list[dict[str, Any]], expected_minutes: int = 30,
              window_hours: int = 24, now: datetime | None = None,
-             since_change: str | None = None) -> dict[str, Any]:
+             *, since_change: str | None) -> dict[str, Any]:
     """How much of the last day was actually watched.
 
     The honest measure of this bot is not whether the last run worked, it is
@@ -404,6 +404,13 @@ def coverage(runs: list[dict[str, Any]], expected_minutes: int = 30,
     GitHub serves roughly a tenth of the schedules asked of it here, so this
     number is the one that says whether the car you want could have come and
     gone between checks.
+
+    ``since_change`` has no default on purpose. It is when the current
+    interval started running, and a caller that does not supply it gets a
+    figure measured over a period that may have been running a different
+    schedule. That was not a hypothetical: the Status tab read "100% - 12 of
+    12" about a schedule that had produced two checks. A caller that
+    genuinely has no stamp passes None and says so.
     """
     now = now or datetime.now(timezone.utc)
     start = now - timedelta(hours=window_hours)
