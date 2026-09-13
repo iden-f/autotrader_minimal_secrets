@@ -100,7 +100,8 @@ class TestProvinceAllowlist:
             [car("Vancouver", "BC", id="a"), car("Toronto", "ON", id="b")],
             {"provinces": ["BC"]})
         assert [l.id for l in kept] == ["a"]
-        assert "not one of BC" in dropped[0][1]
+        assert "not one of BC" in dropped[0][1].reason
+        assert dropped[0][1].rule == "provinces"
 
     def test_a_car_with_no_province_is_kept(self):
         assert check(car("Somewhere", ""), {"provinces": ["BC"]}).keep
@@ -166,8 +167,12 @@ class TestAWatchThatMatchesNothing:
         from autotrader.listing import Listing
 
         car = Listing(id="x", title="t")
-        dropped = [(car, "Toronto, ON is 3,365 km from V6N 3B5, beyond the 250 km you asked for")] * 17
-        dropped += [(car, "year 2019 below minimum 2021")] * 2
+        from autotrader.filters import Verdict
+        dropped = [(car, Verdict(False, "Toronto, ON is 3,365 km from V6N 3B5, "
+                                        "beyond the 250 km you asked for",
+                                 rule="max_distance_km"))] * 17
+        dropped += [(car, Verdict(False, "year 2019 below minimum 2021",
+                                  rule="min_year"))] * 2
         assert _why_none_survived(dropped) == "17 too far away, 2 outside the year range"
 
     def test_a_search_that_finds_something_again_clears_the_marker(

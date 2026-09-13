@@ -1297,7 +1297,18 @@ function rulesEditor(s) {
     };
     const rule = { max_price: v('mx'), min_year: v('y0'), max_year: v('y1'), max_distance_km: v('km') };
     const pool = (app.data.listings || []).filter(l => l.status === 'active' && l.search_id === s.id);
+    // A car held out by a rule this editor does not show stays held out.
+    //
+    // There are eleven rules and four boxes. This preview evaluated only its
+    // own four and counted the rest as passing, so a search carrying an
+    // excluded-seller rule could be told "9 of 9 would pass" over a list in
+    // which the bot was hiding two. `filter_rule` is the run's own verdict,
+    // named by the config key that produced it, so the seven rules off
+    // screen come from the bot rather than being guessed at here.
+    const elsewhere = l => l.filtered && !(l.filter_rule in rule);
+    const held = pool.filter(elsewhere);
     const kept = pool.filter(l => {
+      if (elsewhere(l)) return false;
       if (rule.max_price !== null && l.price !== null && l.price > rule.max_price) return false;
       if (rule.min_year !== null && l.year && l.year < rule.min_year) return false;
       if (rule.max_year !== null && l.year && l.year > rule.max_year) return false;
@@ -1309,8 +1320,10 @@ function rulesEditor(s) {
       max_price: f.max_price ?? null, min_year: f.min_year ?? null,
       max_year: f.max_year ?? null, max_distance_km: f.max_distance_km ?? null });
     box.querySelector('#pv-' + id).innerHTML = pool.length
-      ? `<b>${kept.length}</b> of the ${pool.length} cars this search currently holds would pass` +
-        (changed ? ' under the rule above.' : ' under the rule as saved.')
+      ? `<b>${num(kept.length)}</b> of the ${num(pool.length)} cars this search currently holds would pass`
+        + (changed ? ' under the rule above.' : ' under the rule as saved.')
+        + (held.length ? ` ${plural(held.length, 'car')} ${held.length === 1 ? 'is' : 'are'} held`
+            + ' out by a rule this editor does not show, whatever you set here.' : '')
       : 'This search is not holding any cars to test the rule against.';
 
     ask.innerHTML = '';
@@ -1322,7 +1335,7 @@ function rulesEditor(s) {
     ask.appendChild(askButton(
       `Apply this to ${s.name}`,
       `Change the rules on ${s.name}`, instructions,
-      `Rules for ${s.name}. On today's ${pool.length} cars this would keep ${kept.length}.`));
+      `Rules for ${s.name}. On today's ${num(pool.length)} cars this would keep ${num(kept.length)}.`));
     ask.appendChild(el('span', 'note',
       'Opens a GitHub issue with the change in it. A workflow applies it, says '
       + 'what it did, and runs a check — usually inside a minute.'));

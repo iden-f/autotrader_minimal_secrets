@@ -320,25 +320,32 @@ def scrape_search(search, cfg: Config, fetcher: Fetcher) -> "SearchResult":
                         candidates, first_page, complete)
 
 
-def _why_none_survived(dropped: list[tuple[Listing, str]]) -> str:
+# What each rule is called when a person is being told it turned everything
+# away. Keyed on the rule, not on its prose: this used to substring-match the
+# reason text, and the check for "year" ran before the check for "seller", so
+# an excluded dealer named Yearsley would have been reported as a year rule.
+RULE_LABELS = {
+    "max_distance_km": "too far away",
+    "provinces": "in the wrong province",
+    "min_year": "outside the year range",
+    "max_year": "outside the year range",
+    "max_price": "over your price ceiling",
+    "min_price": "under your price floor",
+    "max_mileage_km": "over your odometer limit",
+    "require_price": "no price published",
+    "include_keywords": "a keyword rule",
+    "exclude_keywords": "a keyword rule",
+    "exclude_sellers": "an excluded seller",
+}
+
+
+def _why_none_survived(dropped: list[tuple[Listing, filters.Verdict]]) -> str:
     """Which rule turned everything away, in the order it hurt most."""
     buckets: dict[str, int] = {}
-    for _, reason in dropped:
-        for phrase, label in (("beyond the", "too far away"),
-                              ("is not one of", "in the wrong province"),
-                              ("year", "outside the year range"),
-                              ("above maximum $", "over your price ceiling"),
-                              ("below minimum $", "under your price floor"),
-                              ("km above maximum", "over your odometer limit"),
-                              ("call for price", "no price published"),
-                              ("keyword", "a keyword rule"),
-                              ("seller", "an excluded seller")):
-            if phrase in reason:
-                buckets[label] = buckets.get(label, 0) + 1
-                break
-        else:
-            buckets["other rules"] = buckets.get("other rules", 0) + 1
-    ranked = sorted(buckets.items(), key=lambda kv: -kv[1])
+    for _, verdict in dropped:
+        label = RULE_LABELS.get(verdict.rule, "other rules")
+        buckets[label] = buckets.get(label, 0) + 1
+    ranked = sorted(buckets.items(), key=lambda kv: (-kv[1], kv[0]))
     return ", ".join(f"{n} {label}" for label, n in ranked) or "every one of them"
 
 
@@ -496,7 +503,7 @@ def run(cfg: Config | None = None, state: State | None = None, *,
     owned: set[str] = set()
     seen_anywhere: set[str] = set()
     removal_plan: list[tuple[Any, bool, bool, dict[str, Any]]] = []
-    rejected: dict[str, tuple[Listing, str]] = {}
+    rejected: dict[str, tuple[Listing, filters.Verdict]] = {}
     blocked_searches: list[str] = []
     assessments: list[validate.Assessment] = []
     drifted: list[tuple[str, list[str], dict[str, Any]]] = []
@@ -908,8 +915,8 @@ def run(cfg: Config | None = None, state: State | None = None, *,
             # wants it would then find it already known - so a car the narrow
             # watch turned down and the broad one wanted would be stored and
             # never announced.
-            for listing, why in dropped:
-                rejected.setdefault(listing.id, (listing, why))
+            for listing, verdict in dropped:
+                rejected.setdefault(listing.id, (listing, verdict))
 
             # A car is only "gone" if we actually looked and did not find it.
             # A page we could not read is not evidence of anything, and a page
@@ -936,10 +943,12 @@ def run(cfg: Config | None = None, state: State | None = None, *,
         # hid by filter is still on the site, and forgetting it makes the next
         # run report it as removed - but quietly, and only now that every
         # search has had its say.
-        for lid, (listing, why) in rejected.items():
+        for lid, (listing, verdict) in rejected.items():
             if lid in owned:
                 continue
-            change = state.record(listing, filtered=True, filter_reason=why)
+            why = verdict.reason
+            change = state.record(listing, filtered=True, filter_reason=why,
+                                  filter_rule=verdict.rule)
             # A price that moved on a car your rules hide is still a fact about
             # the market. Not alerting on it is right; reporting "0 price
             # drops" when one demonstrably happened is not - the first real

@@ -6,6 +6,7 @@ import argparse
 import json
 import logging
 import os
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -561,6 +562,20 @@ def cmd_ui(args: argparse.Namespace) -> int:
                  state_path=Path(args.state), open_browser=not args.no_browser)
 
 
+# Every figure on the page that is shaped like a car's asking price.
+#
+# Deliberately not a parse. A listing page carries finance payments, fees,
+# taxes, and the prices of half a dozen other cars in its "similar" rail, and
+# any rule for picking THE price out of that is a rule that can pick the
+# wrong one and report a disagreement that is not there. A set that the bot's
+# own figure is either in or not in cannot be wrong about that.
+_DOLLARS = re.compile(r"\$\s?(\d{1,3}(?:,\d{3})+)")
+
+
+def _dollar_figures(html: str) -> set[int]:
+    return {int(m.replace(",", "")) for m in _DOLLARS.findall(html or "")}
+
+
 def cmd_verify(args: argparse.Namespace) -> int:
     """Re-read every tracked car from the site and compare it with the ledger.
 
@@ -641,9 +656,33 @@ def cmd_verify(args: argparse.Namespace) -> int:
 
             held, live_price = entry.get("price"), fresh.price
             if live_price is None:
-                print(f"  {YELLOW}?{RESET} {name:46} the page shows no price "
-                      f"(the bot holds {held and f'${held:,}' or 'none'})")
-                unreadable += 1
+                # The data block carries no price. That is not the same as
+                # the page carrying none, and the difference is the whole
+                # question this command exists to answer: the first run of it
+                # reported "the page shows no price" for all 28 cars, which
+                # reads as a blind bot and is in fact the site not putting a
+                # price in the structured data it puts everything else in.
+                #
+                # So look at the page as a person would. Not a parse - a
+                # containment check, which cannot pick the wrong figure
+                # because it does not pick one.
+                figures = _dollar_figures(html)
+                if held is not None and held in figures:
+                    agreed += 1
+                    if args.verbose:
+                        print(f"  {GREEN}={RESET} {name:46} ${held:,} "
+                              f"(on the page, not in its data block)")
+                elif figures:
+                    shown = ", ".join(f"${f:,}" for f in sorted(figures)[:4])
+                    print(f"  {YELLOW}~{RESET} {name:46} the bot holds "
+                          f"{held and f'${held:,}' or 'no price'}, and the "
+                          f"page does not show it. On the page: {shown}")
+                    moved += 1
+                else:
+                    print(f"  {YELLOW}?{RESET} {name:46} no price anywhere on "
+                          f"the page (the bot holds "
+                          f"{held and f'${held:,}' or 'none'})")
+                    unreadable += 1
             elif held == live_price:
                 agreed += 1
                 if args.verbose:

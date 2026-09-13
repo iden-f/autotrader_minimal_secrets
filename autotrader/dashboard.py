@@ -38,7 +38,7 @@ LISTING_FIELDS = (
     "mileage_km", "location", "province", "seller", "body", "color",
     "transmission", "drivetrain", "fuel", "engine", "images", "search_id",
     "search_name", "first_seen", "last_seen", "status", "price_history",
-    "price_source", "filtered", "filter_reason", "unpriced", "enriched",
+    "price_source", "filtered", "filter_reason", "filter_rule", "unpriced", "enriched",
     # When each thing happened to it, so the feed can be derived rather than
     # stored twice and drift apart.
     "removed_at", "relisted_at", "priced_at", "qualified_at", "qualified_from",

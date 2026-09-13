@@ -26,6 +26,11 @@ class Verdict:
     # to negotiate on, and hiding them - which is what require_price used to
     # do - hides exactly the listings someone hunting a bargain wants to see.
     unpriced: bool = False
+    # WHICH rule said no, as the config key that holds it. The reason above
+    # is written for a person; this is written for the settings page, which
+    # has four of these eleven rules on screen and used to report "would pass"
+    # for a car one of the other seven was hiding.
+    rule: str = ""
 
 
 def _number(value: Any) -> int | None:
@@ -74,20 +79,25 @@ def check(listing: Listing, filters: dict[str, Any] | None) -> Verdict:
     max_price = _number(f.get("max_price"))
     if listing.price is not None:
         if min_price and listing.price < min_price:
-            return Verdict(False, f"price ${listing.price:,} below minimum ${min_price:,}")
+            return Verdict(False, f"price ${listing.price:,} below minimum ${min_price:,}",
+                           rule="min_price")
         if max_price and listing.price > max_price:
-            return Verdict(False, f"price ${listing.price:,} above maximum ${max_price:,}")
+            return Verdict(False, f"price ${listing.price:,} above maximum ${max_price:,}",
+                           rule="max_price")
 
     min_year, max_year = _number(f.get("min_year")), _number(f.get("max_year"))
     if listing.year is not None:
         if min_year and listing.year < min_year:
-            return Verdict(False, f"year {listing.year} below minimum {min_year}")
+            return Verdict(False, f"year {listing.year} below minimum {min_year}",
+                           rule="min_year")
         if max_year and listing.year > max_year:
-            return Verdict(False, f"year {listing.year} above maximum {max_year}")
+            return Verdict(False, f"year {listing.year} above maximum {max_year}",
+                           rule="max_year")
 
     max_km = _number(f.get("max_mileage_km"))
     if max_km and listing.mileage_km is not None and listing.mileage_km > max_km:
-        return Verdict(False, f"{listing.mileage_km:,} km above maximum {max_km:,} km")
+        return Verdict(False, f"{listing.mileage_km:,} km above maximum {max_km:,} km",
+                       rule="max_mileage_km")
 
     # Where the car is. The pasted link's own "near this postal code" is
     # ignored by the current platform, so if you want it honoured the bot has
@@ -107,41 +117,45 @@ def check(listing: Listing, filters: dict[str, Any] | None) -> Verdict:
                     f"{where or 'that location'} is {away:,} km from {near}, "
                     f"beyond the {radius:,} km you asked for" if away else
                     f"{where or 'that location'} is beyond the {radius:,} km "
-                    f"you asked for around {near}"))
+                    f"you asked for around {near}"), rule="max_distance_km")
 
     provinces = [str(p).strip().upper() for p in _as_list(f.get("provinces"))
                  if str(p).strip()]
     if provinces and listing.province and listing.province.upper() not in provinces:
         return Verdict(False, f"{listing.province} is not one of "
-                              f"{', '.join(provinces)}")
+                              f"{', '.join(provinces)}", rule="provinces")
 
     text = _haystack(listing)
 
     include = [str(k).strip().lower() for k in _as_list(f.get("include_keywords"))
                if str(k).strip()]
     if include and not any(k in text for k in include):
-        return Verdict(False, f"none of the required keywords matched: {', '.join(include)}")
+        return Verdict(False, f"none of the required keywords matched: {', '.join(include)}",
+                       rule="include_keywords")
 
     for word in _as_list(f.get("exclude_keywords")):
         word = str(word).strip().lower()
         if word and word in text:
-            return Verdict(False, f"excluded keyword matched: {word}")
+            return Verdict(False, f"excluded keyword matched: {word}",
+                           rule="exclude_keywords")
 
     for seller in _as_list(f.get("exclude_sellers")):
         seller = str(seller).strip().lower()
         if seller and listing.seller and seller in listing.seller.lower():
-            return Verdict(False, f"excluded seller: {listing.seller}")
+            return Verdict(False, f"excluded seller: {listing.seller}",
+                           rule="exclude_sellers")
 
     # Last, so a car excluded for some other reason is reported for that
     # reason rather than being filed under "call for price".
     if listing.price is None and f.get("require_price"):
-        return Verdict(False, "call for price - no figure published", unpriced=True)
+        return Verdict(False, "call for price - no figure published", unpriced=True,
+                       rule="require_price")
 
     return Verdict(True)
 
 
 def apply(listings: list[Listing], filters: dict[str, Any] | None
-          ) -> tuple[list[Listing], list[Listing], list[tuple[Listing, str]]]:
+          ) -> tuple[list[Listing], list[Listing], list[tuple[Listing, Verdict]]]:
     """Split listings three ways: kept, call-for-price, and rejected.
 
     The middle bucket is the point. A car that passes every filter you can
@@ -150,7 +164,7 @@ def apply(listings: list[Listing], filters: dict[str, Any] | None
     """
     kept: list[Listing] = []
     unpriced: list[Listing] = []
-    dropped: list[tuple[Listing, str]] = []
+    dropped: list[tuple[Listing, Verdict]] = []
     for listing in listings:
         verdict = check(listing, filters)
         if verdict.keep:
@@ -158,7 +172,7 @@ def apply(listings: list[Listing], filters: dict[str, Any] | None
         elif verdict.unpriced:
             unpriced.append(listing)
         else:
-            dropped.append((listing, verdict.reason))
+            dropped.append((listing, verdict))
     return kept, unpriced, dropped
 
 

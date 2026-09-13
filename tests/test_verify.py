@@ -175,3 +175,60 @@ class TestWhatItReports:
         site = Site()
         run(monkeypatch, site, "--limit", "1")
         assert len(site.asked) == 1
+
+
+class TestThePageAsAPersonReadsIt:
+    """The whole command reported "the page shows no price" for all 28 cars.
+
+    That reads as a blind bot. It was the site not putting the price in the
+    structured data it puts the odometer, the colour, the transmission and
+    the photographs in - and every price this bot holds came off the search
+    results card, never off a detail page. A command that cannot tell those
+    two apart cannot answer the question it exists to answer.
+    """
+
+    # The data block the site does publish: everything except a price.
+    NO_PRICE = """<html><body>
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":["Car","Product"],
+     "name":"BMW M4 Competition",
+     "mileageFromOdometer":{"value":50000,"unitCode":"KMT"}}
+    </script>
+    %s</body></html>"""
+
+    def site(self, body):
+        site = Site()
+        site.get = lambda url, referer=None, allow_block=False: (
+            Site._as_the_real_one_would(url, self.NO_PRICE % body))
+        site.spent = 0
+        site.close = lambda: None
+        return site
+
+    def test_a_figure_on_the_page_that_matches_is_agreement(self, bench, monkeypatch, capsys):
+        rc = run(monkeypatch, self.site(
+            "<div class='price'>$60,000</div>"), "--limit", "1", "--verbose")
+        out = capsys.readouterr().out
+        assert "1 car agree" in out or "1 cars agree" in out, out
+        assert "not in its data block" in out
+        assert rc == 0
+
+    def test_figures_that_do_not_include_it_is_a_disagreement(self, monkeypatch, bench, capsys):
+        run(monkeypatch, self.site(
+            "<div>$44,900</div><div>$799/mo</div>"), "--limit", "1")
+        out = capsys.readouterr().out
+        assert "does not show it" in out, out
+        assert "$44,900" in out
+
+    def test_no_figure_anywhere_is_unreadable(self, monkeypatch, bench, capsys):
+        run(monkeypatch, self.site("<p>Call for price</p>"), "--limit", "1")
+        out = capsys.readouterr().out
+        assert "no price anywhere on the page" in out, out
+
+    def test_a_monthly_payment_is_not_mistaken_for_an_asking_price(self):
+        from autotrader.cli import _dollar_figures
+        # Four digits and up, grouped. "$799" and "$99" are not asking prices
+        # and are not in the set; "$1,299" is, and that is the honest cost of
+        # not parsing: it can be in the set without being the price. It only
+        # ever decides whether the bot's own figure is present.
+        assert _dollar_figures("$799/mo $99 down $60,000") == {60000}
+        assert _dollar_figures("$1,299 bi-weekly") == {1299}
