@@ -819,6 +819,19 @@ function priceList(prices) {
   return all.slice(0, -1).join(', ') + ' and ' + all[all.length - 1];
 }
 
+/* Every table on this page, inside its own horizontal scroller. Five call
+   sites built `el('table','tbl')` by hand and not one of them wrapped it, so
+   the Status tab's parser ladder was 365px wide in a 358px column - spilling
+   seven pixels under body{overflow-x:hidden}, invisible and unreachable. The
+   sixth call site would have forgotten it too. */
+function table(html) {
+  const wrap = el('div', 'tblwrap');
+  const t = el('table', 'tbl');
+  t.innerHTML = html;
+  wrap.appendChild(t);
+  return wrap;
+}
+
 function trimLabel(name) {
   if (name === 'base' || !name) return 'No trim named';
   return name.charAt(0).toUpperCase() + name.slice(1);
@@ -923,26 +936,23 @@ function renderMarket() {
     if (fat.length) sec.appendChild(rangeChart(fat));
     const thin = years.filter(([, y]) => y.thin);
     if (thin.length) {
-      const t = el('table', 'tbl');
-      t.innerHTML = `<thead><tr><th>Year</th><th class="r">Cars</th>
+      sec.appendChild(table(`<thead><tr><th>Year</th><th class="r">Cars</th>
           <th class="r">Asking</th></tr></thead><tbody>` +
         thin.map(([year, y]) =>
           `<tr><td>${esc(year)}</td><td class="r num">${y.n}</td>
-            <td class="r num">${priceList(y.prices)}</td></tr>`).join('') + '</tbody>';
-      sec.appendChild(t);
+            <td class="r num">${priceList(y.prices)}</td></tr>`).join('') + '</tbody>'));
     }
 
     const trims = Object.entries(row.by_trim || {}).filter(([, t]) => t.n > 1);
     if (trims.length > 1) {
-      const t = el('table', 'tbl');
-      t.style.marginTop = 'var(--s4)';
-      t.innerHTML = `<thead><tr><th>Trim</th><th class="r">Cars</th>
+      const trimTable = table(`<thead><tr><th>Trim</th><th class="r">Cars</th>
           <th class="r">Asking</th></tr></thead><tbody>` +
         trims.map(([name, r]) =>
           `<tr><td>${esc(trimLabel(name))}</td><td class="r num">${r.n}</td>
             <td class="r num">${r.thin ? priceList(r.prices) : money(r.median)}</td>
-            </tr>`).join('') + '</tbody>';
-      sec.appendChild(t);
+            </tr>`).join('') + '</tbody>');
+      trimTable.style.marginTop = 'var(--s4)';
+      sec.appendChild(trimTable);
     }
     host.appendChild(sec);
   }
@@ -954,14 +964,12 @@ function renderMarket() {
     sec.innerHTML = `<div class="section__head"><h2>Is the deal score worth anything?</h2></div>
       <p class="note" style="margin-top:0">${esc(sentence(check.verdict))}</p>`;
     if (check.cheap_rate !== undefined) {
-      const t = el('table', 'tbl');
-      t.innerHTML = `<thead><tr><th>Called</th><th class="r">Cars</th>
+      sec.appendChild(table(`<thead><tr><th>Called</th><th class="r">Cars</th>
           <th class="r">Later cut the price</th></tr></thead><tbody>
         <tr><td>cheap for its kind</td><td class="r num">${check.called_cheap}</td>
           <td class="r num">${check.cheap_rate}%</td></tr>
         <tr><td>dear for its kind</td><td class="r num">${check.called_dear}</td>
-          <td class="r num">${check.dear_rate}%</td></tr></tbody>`;
-      sec.appendChild(t);
+          <td class="r num">${check.dear_rate}%</td></tr></tbody>`));
     }
     host.appendChild(sec);
   }
@@ -1328,8 +1336,7 @@ function renderStatus() {
   if (Object.keys(strat).length) {
     const s = el('section', 'section');
     s.innerHTML = `<div class="section__head"><h2>Parser ladder</h2></div>`;
-    const t = el('table', 'tbl');
-    t.innerHTML = `<thead><tr><th>Search</th><th>Winner</th><th>Working</th><th class="r">Scores</th></tr></thead><tbody>` +
+    const ladderHtml = `<thead><tr><th>Search</th><th>Winner</th><th>Working</th><th class="r">Scores</th></tr></thead><tbody>` +
       Object.entries(strat).map(([, v]) => {
         const order = v.order || [];
         const lad = order.map(n => `<i data-on="${(v.working || []).includes(n) ? 1 : 0}" title="${esc(n)}"></i>`).join('');
@@ -1338,7 +1345,7 @@ function renderStatus() {
           <td><span class="ladder" role="img" aria-label="${(v.working || []).length} of ${v.of} strateg${v.of === 1 ? 'y' : 'ies'} working">${lad}</span></td>
           <td class="r mono" style="font-size:var(--t-micro)">${esc(scores)}</td></tr>`;
       }).join('') + `</tbody>`;
-    s.appendChild(t);
+    s.appendChild(table(ladderHtml));
     if ((h.drift || []).length) {
       s.appendChild(el('p', 'note warnt', 'Shape drift: ' + h.drift.join('; ')));
     }
@@ -1350,8 +1357,7 @@ function renderStatus() {
   s2.innerHTML = `<div class="section__head"><h2>Alerts</h2></div>`;
   const rows = Object.entries(d.channel_health || {});
   const active = (d.notify?.active || []);
-  const t2 = el('table', 'tbl');
-  t2.innerHTML = `<thead><tr><th>Channel</th><th>State</th><th>Last good</th></tr></thead><tbody>` +
+  const channelsHtml = `<thead><tr><th>Channel</th><th>State</th><th>Last good</th></tr></thead><tbody>` +
     (active.length ? active.map(name => {
       const ch = (d.channel_health || {})[name] || {};
       const fails = ch.consecutive_failures || 0;
@@ -1360,7 +1366,7 @@ function renderStatus() {
         <td class="num">${ch.last_ok ? when(ch.last_ok) : '—'}</td></tr>`;
     }).join('') : `<tr><td colspan="3">No channel is switched on, so nothing is being sent.</td></tr>`) +
     `</tbody>`;
-  s2.appendChild(t2);
+  s2.appendChild(table(channelsHtml));
   if (d.notify?.ntfy_url) {
     const p = el('p', 'note');
     p.innerHTML = `Your feed: <a href="${esc(d.notify.ntfy_url)}" rel="noopener">${esc(d.notify.ntfy_url)}</a>`;

@@ -23,7 +23,7 @@
  *   2. The shell is cache-first, because correctness there comes from BUILD
  *      rather than from revalidation.
  */
-const BUILD = 'd12a080877db';
+const BUILD = '50271a647183';
 const SHELL = `atw-shell-${BUILD}`;
 const DATA = `atw-data-${BUILD}`;
 const FILES = ['./', './index.html', './app.js', './manifest.webmanifest',

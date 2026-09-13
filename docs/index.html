@@ -570,6 +570,13 @@ select:hover,.btn:hover{ background:var(--surface-2); }
 @keyframes pulse{ 0%,100%{ opacity:1 } 50%{ opacity:.55 } }
 
 /* ------------------------------------------------------------------ tables */
+/* A table is the one thing on this page allowed to be wider than the column
+   it sits in - dealer search names and score strings have no upper bound -
+   and it is only allowed that inside its own scroller. Without the wrapper
+   the Status tab's parser ladder was 365px in a 358px column at 390px wide,
+   spilling seven pixels under body{overflow-x:hidden}: invisible, unreachable
+   and silently cut off. */
+.tblwrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
 .tbl{ width:100%; border-collapse:collapse; font-size:var(--t-small); }
 .tbl th{
   text-align:left; font-size:var(--t-micro); font-weight:520; letter-spacing:.06em;

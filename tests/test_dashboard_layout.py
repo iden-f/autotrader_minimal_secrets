@@ -92,10 +92,24 @@ def _demo_payload(root: Path) -> dict:
     state.record(car("1", "2018 BMW M3 Competition", 71900, year=2018,
                      mileage_km=48000, seller="A Dealer"))
     state.listings["2"]["mark"] = "shortlist"
+    # Real photo files from the published site, so the browser tests render
+    # actual images. Every one of these tests was written after a day in which
+    # no photo loaded at all and the page looked completely normal.
+    photos = sorted((DOCS / "thumbs").glob("*.webp"))[:3]
+    for lid, shot in zip(("1", "2", "3"), photos):
+        state.listings[lid]["_thumb"] = f"thumbs/{shot.name}"
     state.record_run({"ok": True, "searches": 1, "listings": 6})
     state.record_search_ok(search.id, 5, "jsonld")
     state.save()
-    return build_payload(cfg, state, {})
+    payload = build_payload(cfg, state, {})
+    by_id = {l["id"]: l for l in payload["listings"]}
+    for lid in ("1", "2", "3"):
+        shot = state.listings[lid].get("_thumb")
+        if shot and lid in by_id:
+            by_id[lid]["thumb"] = shot
+            by_id[lid]["thumbs"] = [shot]
+            by_id[lid]["photo_count"] = 12
+    return payload
 
 
 @pytest.fixture(scope="module")
@@ -342,6 +356,181 @@ def test_the_service_worker_and_manifest_are_publishable():
     assert any(i.get("purpose") == "maskable" for i in manifest["icons"])
     sw = (DOCS / "sw.js").read_text()
     assert "data.json" in sw, "the data file needs its own caching rule"
+
+
+class TestWhatAScreenshotDoesNotCatch:
+    """Four defects shipped this month that every test passed and every
+    screenshot looked fine with:
+
+      * a caption rendering at headline size, because a class selector lost a
+        specificity fight to a class+type one;
+      * a placeholder string, "AutoTrader listing <uuid>", on every row of the
+        Feed;
+      * every photo failing to load, for a day, while the page looked like a
+        page whose cars simply had no photos;
+      * a number derived one way printed beside a number derived another.
+
+    None of them is visible to a test that asserts on data. All four are
+    visible to a browser that is asked the right question, which is what these
+    are.
+    """
+
+    def test_no_text_is_rendered_at_a_size_its_rule_did_not_ask_for(self, browser, site):
+        """Every element whose class names a size gets the size that class
+        defines - not one it inherited by losing a specificity fight."""
+        ctx, page, _ = _page(browser, site, 1440, "light", view="market")
+        try:
+            bad = page.evaluate("""() => {
+              const out = [];
+              // Classes that exist specifically to make text smaller.
+              for (const cls of ['stat__note', 'note', 'why', 'count']) {
+                for (const el of document.querySelectorAll('.' + cls)) {
+                  if (!el.offsetParent) continue;
+                  const size = parseFloat(getComputedStyle(el).fontSize);
+                  if (size > 20) out.push({cls, size, text: el.textContent.trim().slice(0, 40)});
+                }
+              }
+              return out;
+            }""")
+            assert not bad, bad
+        finally:
+            ctx.close()
+
+    def test_no_placeholder_string_reaches_the_page(self, browser, site):
+        """The strings this codebase uses when it does not know something.
+
+        Every one of them is correct in its own layer and wrong on a screen.
+        """
+        ctx, page, _ = _page(browser, site, 390, "light")
+        try:
+            for view in ("feed", "listings", "market", "searches", "status"):
+                page.click(f'[data-view-link="{view}"]')
+                page.wait_for_timeout(200)
+                text = page.evaluate("() => document.body.innerText")
+                for leak in ("AutoTrader listing ", "undefined", "NaN",
+                             "[object Object]", "null", "Infinity"):
+                    assert leak not in text, f"{view}: {leak!r} is on the page"
+        finally:
+            ctx.close()
+
+    def test_every_image_actually_loaded(self, browser, site):
+        """naturalWidth is 0 for an image the browser could not decode.
+
+        For a day every photo fetch failed - the site had started serving
+        1920x1080 originals over a 60 KB cap - and the page looked exactly
+        like a page whose cars have no photos, because that is the fallback.
+        """
+        ctx, page, _ = _page(browser, site, 390, "light", view="listings")
+        try:
+            page.wait_for_timeout(700)
+            broken = page.evaluate("""() => [...document.images]
+                .filter(i => i.complete && i.naturalWidth === 0)
+                .map(i => i.currentSrc || i.src)""")
+            assert not broken, broken
+            count = page.evaluate("() => document.images.length")
+            assert count, "no images on a listings page built from cars with photos"
+        finally:
+            ctx.close()
+
+    def test_a_photo_keeps_its_shape(self, browser, site):
+        """A 4:3 photo in a portrait slot is the middle third of a car.
+
+        Measured, not asserted from the CSS: the rule that broke this said the
+        right thing and lost.
+        """
+        ctx, page, _ = _page(browser, site, 390, "light", view="listings")
+        try:
+            page.wait_for_timeout(700)
+            shots = page.evaluate("""() => [...document.querySelectorAll('.card__shot')]
+                .filter(e => e.offsetParent)
+                .map(e => { const r = e.getBoundingClientRect();
+                            return {w: r.width, h: r.height}; })""")
+            assert shots, "no card photos to measure"
+            for box in shots:
+                ratio = box["w"] / box["h"]
+                assert 1.0 < ratio < 2.0, (
+                    f"a photo slot {box['w']:.0f}x{box['h']:.0f} is "
+                    f"{ratio:.2f}:1 - a landscape photo is being cropped to "
+                    f"a sliver")
+        finally:
+            ctx.close()
+
+    def test_every_table_can_be_scrolled_to_the_end_of(self, browser, site):
+        """A table is the one thing here allowed to be wider than its column -
+        dealer search names and score strings have no upper bound - and only
+        inside its own scroller.
+
+        Five call sites built a table by hand and none wrapped it. On a phone
+        the Status tab's parser ladder was 365px in a 358px column: seven
+        pixels of it spilled under body{overflow-x:hidden}, where it was
+        invisible and could not be scrolled to.
+        """
+        ctx, page, _ = _page(browser, site, 390, "light", view="status")
+        try:
+            page.wait_for_timeout(400)
+            bad = page.evaluate("""() => [...document.querySelectorAll('table')]
+                .filter(t => t.offsetParent)
+                .filter(t => {
+                  let n = t.parentElement;
+                  while (n && n !== document.body) {
+                    const ox = getComputedStyle(n).overflowX;
+                    if (ox === 'auto' || ox === 'scroll') return false;
+                    n = n.parentElement;
+                  }
+                  return true;
+                })
+                .map(t => t.textContent.trim().slice(0, 40))""")
+            assert not bad, bad
+        finally:
+            ctx.close()
+
+    def test_nothing_spills_where_it_cannot_be_reached(self, browser, site):
+        """Content past the right edge of the viewport, in an element nobody
+        can scroll. The chips row is 390px wide on purpose and scrolls; a
+        table that is 7px too wide inside a clipped parent does not."""
+        ctx, page, _ = _page(browser, site, 390, "light", view="listings")
+        try:
+            page.wait_for_timeout(400)
+            spills = page.evaluate("""() => {
+              const scrollable = el => {
+                let n = el;
+                while (n && n !== document.body) {
+                  const ox = getComputedStyle(n).overflowX;
+                  if (ox === 'auto' || ox === 'scroll') return true;
+                  n = n.parentElement;
+                }
+                return false;
+              };
+              const out = [];
+              for (const el of document.querySelectorAll('body *')) {
+                if (!el.offsetParent || scrollable(el)) continue;
+                const r = el.getBoundingClientRect();
+                if (r.right > innerWidth + 1 || r.left < -1)
+                  out.push({cls: String(el.className).slice(0, 30),
+                            right: Math.round(r.right), win: innerWidth,
+                            text: el.textContent.trim().slice(0, 30)});
+              }
+              return out;
+            }""")
+            assert not spills, spills
+        finally:
+            ctx.close()
+
+    def test_every_number_the_page_repeats_agrees_with_itself(self, browser, site, payload):
+        """The count in the tab badge is the count on the tab."""
+        ctx, page, _ = _page(browser, site, 1440, "light")
+        try:
+            badge = page.evaluate(
+                """() => document.querySelector('[data-view-link="listings"] .tab__n')?.textContent.trim()""")
+            page.click('[data-view-link="listings"]')
+            page.wait_for_timeout(300)
+            chip = page.evaluate(
+                """() => [...document.querySelectorAll('.chips button')]
+                     .find(b => /live/i.test(b.textContent))?.textContent.match(/\\d+/)?.[0]""")
+            assert badge and chip, (badge, chip)
+            assert badge == chip, f"tab badge says {badge}, the Live chip says {chip}"
+        finally:
+            ctx.close()
 
 
 def test_the_coverage_percentage_is_always_shown_with_its_own_fraction():
