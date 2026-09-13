@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-09-13T01:05:14+00:00",
+ "generated_at": "2026-09-13T01:08:32+00:00",
  "notify": {
   "ntfy_topic": "autotrader-2q592ak9gnx7sqrere5r",
   "ntfy_url": "https://ntfy.sh/autotrader-2q592ak9gnx7sqrere5r",
@@ -2575,7 +2575,7 @@
    "photo_count": 12,
    "thumb": "thumbs/adc0f8dd-e279-4942-819f-de6fb17e03a4.webp",
    "per_1000km": 636.7,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "a90de5da-c085-4267-a036-e0cf60ec0bce",
@@ -2634,7 +2634,7 @@
    "photo_count": 12,
    "thumb": "thumbs/a90de5da-c085-4267-a036-e0cf60ec0bce.webp",
    "per_1000km": 225.3,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "dc98e0d2-e5ef-454e-8313-308eb4389ada",
@@ -10501,7 +10501,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": null,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "54bd2feb-f5d2-46b6-9e14-188294209051",
@@ -10545,7 +10545,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": null,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "3a118d74-eb3a-493a-bbf3-9fead7015df3",
@@ -10589,7 +10589,7 @@
    "is_new": false,
    "photo_count": 3,
    "per_1000km": null,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "351e4608-5072-4324-a1ba-2c4109b55133",
@@ -10633,7 +10633,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": null,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "1b51ec31-6cdd-4210-87ad-9f9c0ccde34f",
@@ -10678,7 +10678,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": null,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "1a0d74f5-b85f-4793-a742-e4ffaef5869a",
@@ -10727,7 +10727,7 @@
    "price_change": -4000,
    "photo_count": 1,
    "per_1000km": null,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "fcd517b3-cc95-4342-9a5c-ba1d8c6a4595",
@@ -20461,7 +20461,7 @@
   "longest_gap_minutes": 208.5,
   "expected_interval_minutes": 30,
   "truncated": false,
-  "since": "2026-09-12T01:05:14+00:00",
+  "since": "2026-09-12T01:08:32+00:00",
   "slots": [
    1,
    0,
@@ -20520,7 +20520,7 @@
   "window_hours": 24
  },
  "market": {
-  "at": "2026-09-13T01:05:14+00:00",
+  "at": "2026-09-13T01:08:32+00:00",
   "window": {
    "ids_span_days": 3,
    "watching_days": 3,
