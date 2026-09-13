@@ -15,6 +15,7 @@ import statistics
 from datetime import datetime, timedelta, timezone
 from typing import Any, Iterable
 
+from .events import delivery_state
 from .listing import name_of
 
 # A price comparison drawn from a handful of cars is a coincidence with a
@@ -283,26 +284,25 @@ def per_1000km_withheld(price: Any, km: Any) -> str | None:
 def _delivery(entry: dict[str, Any]) -> dict[str, Any]:
     """Whether you heard about this, and if not, why not.
 
-    The quiet reason is asked first, and that ordering is the whole point. A
-    car can carry both: delivered once when it arrived and visible, then
-    hidden by a rule added afterwards. Reading notified_at first made the
-    ledger report a suppressed relisting as "delivered at 02:15" - a real
-    timestamp, attached to a different event, describing a message that was
-    never sent about this one.
+    The decision - which of the four states, and in which order they are
+    asked - lives in events.delivery_state. Only the wording is here: this
+    writes a sentence onto a card, and the ledger writes a line for a log.
+    Both used to write the ordering down as well, and the bug the docstring
+    over there describes was fixed in one copy first.
     """
-    if entry.get("pending"):
-        return {"state": "queued",
-                "text": "queued for delivery, not sent yet"}
-    if entry.get("quiet_reason"):
+    state = delivery_state(entry)
+    if state == "queued":
+        return {"state": state, "text": "queued for delivery, not sent yet"}
+    if state == "quiet":
         text = str(entry["quiet_reason"])
         if entry.get("notified_at"):
             text += (f" (you were told about this car at "
                      f"{entry['notified_at']}, before that rule applied)")
-        return {"state": "quiet", "text": text}
-    if entry.get("notified_at"):
-        return {"state": "sent", "at": entry["notified_at"],
+        return {"state": state, "text": text}
+    if state == "sent":
+        return {"state": state, "at": entry["notified_at"],
                 "text": f"sent {entry['notified_at']}"}
-    return {"state": "none",
+    return {"state": state,
             "text": "no record of telling you - which is itself a fault"}
 
 

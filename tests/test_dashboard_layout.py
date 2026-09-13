@@ -775,3 +775,97 @@ class TestNoMetricRanksWhatItCannotRead:
                 page.wait_for_timeout(200)
         finally:
             ctx.close()
+
+
+@pytest.mark.parametrize("width", (390, 1440))
+def test_the_placeholder_is_the_size_of_the_thing_it_stands_in_for(browser, site, width):
+    """The loading rows were 48px on a phone; the rows they stand in for are
+    88.5. Eight of them, so the page grew 320px under the reader's thumb the
+    moment the data landed.
+
+    The layout-shift test never saw it: a local data.json arrives before the
+    first paint, and CLS only counts what was painted. So this measures the
+    two heights directly, with the data held open.
+    """
+    ctx = browser.new_context(viewport={"width": width, "height": 900})
+    page = ctx.new_page()
+    try:
+        page.route("**/data.json", lambda route: None)   # never answered
+        page.goto(site, wait_until="domcontentloaded")
+        page.wait_for_selector(".skel-row")
+        placeholder = page.evaluate(
+            "() => document.querySelector('.skel-row').getBoundingClientRect().height")
+        page.unroute("**/data.json")
+    finally:
+        ctx.close()
+
+    ctx, page, _ = _page(browser, site, width, "light")
+    try:
+        row = page.evaluate(
+            "() => document.querySelector('.ev').getBoundingClientRect().height")
+    finally:
+        ctx.close()
+    assert abs(placeholder - row) < 1.5, (placeholder, row)
+
+
+class TestTheEmptyStateBlamesTheRightControl:
+    """The old branch order tested text, then the hidden chip, then the
+    search, then the chip - and blamed the first one it reached.
+
+    So a search plus a chip that is empty inside it produced "<search> has
+    nothing to show. It read the site fine and every car was turned away", a
+    sentence about a search holding twenty cars, over a button that cleared
+    the search and left the chip - and the list stayed empty when pressed.
+    """
+
+    def test_two_narrowed_controls_offer_two_ways_out(self, browser, site):
+        ctx, page, _ = _page(browser, site, 1440, "light", view="listings")
+        try:
+            page.evaluate("""() => {
+              app.search = (app.data.searches || [])[0].id;
+              app.chip = 'gone';
+              app.q = 'nothing matches this string';
+              renderListings();
+            }""")
+            page.wait_for_timeout(200)
+            state = page.evaluate("""() => {
+              const s = document.querySelector('[data-view="listings"] .state');
+              return s && { text: s.innerText,
+                            buttons: [...s.querySelectorAll('button')]
+                              .map(b => b.textContent.trim()) };
+            }""")
+            assert state, "no empty state drawn"
+            assert len(state["buttons"]) == 3, state
+            assert "Clear the text filter" in state["buttons"]
+            assert "Show every live car" in state["buttons"]
+            assert "Show all searches" in state["buttons"]
+        finally:
+            ctx.close()
+
+    def test_pressing_the_one_way_out_actually_shows_cars(self, browser, site):
+        """The button that clears the control the page blamed has to be the
+        button that ends the emptiness."""
+        ctx, page, _ = _page(browser, site, 1440, "light", view="listings")
+        try:
+            page.evaluate("() => { app.q = 'zzzznothing'; renderListings(); }")
+            page.wait_for_timeout(150)
+            page.click('[data-view="listings"] .state button')
+            page.wait_for_timeout(200)
+            cards = page.evaluate("() => document.querySelectorAll('.grid > .card').length")
+            assert cards, "the way out led back to the same empty page"
+        finally:
+            ctx.close()
+
+    def test_an_empty_chip_is_named_by_the_chip(self, browser, site):
+        ctx, page, _ = _page(browser, site, 1440, "light", view="listings")
+        try:
+            page.evaluate("() => { app.chip = 'drops'; renderListings(); }")
+            page.wait_for_timeout(150)
+            text = page.evaluate(
+                "() => (document.querySelector('[data-view=\"listings\"] .state')"
+                " || {}).innerText || ''")
+            if text:
+                assert "price drops" in text.lower(), text
+                assert "search" not in text.lower(), text
+        finally:
+            ctx.close()

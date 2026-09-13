@@ -575,13 +575,19 @@ select:hover,.btn:hover{ background:var(--surface-2); }
 .skel{ background:var(--surface); border-radius:var(--r-md); overflow:hidden; }
 /* Same metrics as a real feed row, so replacing it moves nothing. */
 .skel-row{ cursor:default; }
-.skel-row .skel__line{ border-radius:3px; background:var(--surface-2); align-self:center; }
+.skel-row{ pointer-events:none; }
+/* A real row with its text made invisible, so the placeholder's height is
+   the real line box for the real font rather than a number someone typed. */
+.skel__text{
+  background:var(--surface-2); border-radius:3px; color:transparent;
+  display:inline-block; max-width:100%;
+}
 .skel__shot{ aspect-ratio:4/3; background:var(--surface-2); }
 .skel__line{ height:11px; border-radius:3px; background:var(--surface-2); margin:var(--s3); }
 .skel__line:nth-child(2){ width:70%; }
 .skel__line:nth-child(3){ width:40%; height:18px; }
 @media (prefers-reduced-motion:no-preference){
-  .skel__shot,.skel__line{ animation:pulse 1.4s ease-in-out infinite; }
+  .skel__shot,.skel__line,.skel__text{ animation:pulse 1.4s ease-in-out infinite; }
 }
 @keyframes pulse{ 0%,100%{ opacity:1 } 50%{ opacity:.55 } }
 

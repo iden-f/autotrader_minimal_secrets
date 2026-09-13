@@ -699,10 +699,7 @@ function renderListings() {
   const chips = el('div', 'chips');
   chips.setAttribute('role', 'group');
   chips.setAttribute('aria-label', 'Filter by state');
-  for (const [id, label] of [['all', 'Live'], ['new', 'New'], ['drops', 'Price drops'],
-                             ['private', 'Private sellers'], ['mine', 'Shortlisted'],
-                             ['unpriced', 'Call for price'], ['hidden', 'Hidden by a rule'],
-                             ['gone', 'Gone'], ['dropped', 'Not interested']]) {
+  for (const [id, label] of CHIPS) {
     // A filter that would return nothing is a control that does nothing,
     // sitting beside controls that do. That was the stated rule and it was
     // applied to three of the nine chips, so the row read "Price drops 0 ·
@@ -731,7 +728,7 @@ function renderListings() {
   const pool = listingPool();
   const total = pool.has.length + pool.absent.length;
   if (!total) {
-    host.appendChild(noResults(counts));
+    host.appendChild(noResults());
     return;
   }
 
@@ -761,50 +758,95 @@ function renderListings() {
   bar.querySelector('#search-pick').addEventListener('change', e => { app.search = e.target.value; renderListings(); });
 }
 
-/* Zero results, and specifically why - with the offending control offered
-   back rather than a shrug. */
-function noResults(counts) {
+/* The states a car can be in, in the order they are offered. One list: the
+   chip row reads it and so does the empty state, which used to spell four of
+   the nine out again in its own words. */
+const CHIPS = [['all', 'Live'], ['new', 'New'], ['drops', 'Price drops'],
+               ['private', 'Private sellers'], ['mine', 'Shortlisted'],
+               ['unpriced', 'Call for price'], ['hidden', 'Hidden by a rule'],
+               ['gone', 'Gone'], ['dropped', 'Not interested']];
+const chipLabel = id => (CHIPS.find(c => c[0] === id) || [, id])[1];
+
+/* Zero results, and specifically why - with every control that is narrowing
+   the list offered back, rather than the first one a fixed order happened to
+   reach.
+
+   That order was: text, then the hidden chip, then the search, then the chip.
+   So picking a search and then a chip that is empty inside it produced
+   "<search> has nothing to show. It read the site fine and every car was
+   turned away" - a sentence about a search that was holding twenty cars -
+   over a button that cleared the search and left the chip, and a list that
+   stayed empty when you pressed it. */
+function noResults() {
   const s = el('div', 'state');
+  const search = (app.data.searches || []).find(x => x.id === app.search);
+  const narrowing = [];
   if (app.q) {
-    s.innerHTML = `<h2>Nothing matches “${esc(app.q)}”</h2>
-      <p>The text filter is applied to the title, city, colour, trim and seller.</p>`;
-    const b = el('button', 'btn', 'Clear the text filter');
-    b.type = 'button';
-    b.addEventListener('click', () => { app.q = ''; renderListings(); });
-    s.appendChild(b);
-    return s;
+    narrowing.push({
+      what: `the text \u201c${esc(app.q)}\u201d`,
+      label: 'Clear the text filter',
+      clear: () => { app.q = ''; },
+    });
   }
-  if (app.chip === 'hidden' && !counts.hidden) {
-    s.innerHTML = `<h2>Nothing is hidden right now</h2>
-      <p>Every car the searches found passed your rules.</p>`;
-    return s;
+  if (app.chip !== 'all') {
+    narrowing.push({
+      what: `\u201c${esc(chipLabel(app.chip))}\u201d`,
+      label: 'Show every live car',
+      clear: () => { app.chip = 'all'; },
+    });
   }
   if (app.search !== 'all') {
-    const sr = (app.data.searches || []).find(x => x.id === app.search);
-    const why = sr?.health?.shut_out;
-    s.innerHTML = `<h2>${esc(sr?.name || 'This search')} has nothing to show</h2>
-      <p>${why ? `It read the site fine and every car was turned away: ${esc(why)}.`
-                : 'It has not kept any cars yet.'}</p>`;
-    const b = el('button', 'btn', 'Show all searches');
-    b.type = 'button';
-    b.addEventListener('click', () => { app.search = 'all'; renderListings(); });
-    s.appendChild(b);
-    return s;
+    narrowing.push({
+      what: esc(search?.name || 'one search'),
+      label: 'Show all searches',
+      clear: () => { app.search = 'all'; },
+    });
   }
-  // On the live chip with nothing live, "back to live listings" is a button
-  // that does nothing to a page you are already on. There are two different
-  // emptinesses here and only one of them has somewhere to go back to.
-  if (app.chip === 'all') {
+
+  const offer = choice => {
+    const b = el('button', 'btn', choice.label);
+    b.type = 'button';
+    b.addEventListener('click', () => { choice.clear(); renderListings(); });
+    s.appendChild(b);
+  };
+
+  // Nothing is narrowed, so this is the watch itself being empty.
+  if (!narrowing.length) {
     s.innerHTML = `<h2>No cars yet</h2>
       <p>The searches have not turned up a car. The Searches tab says how many
          listings each one read last time it ran.</p>`;
     return s;
   }
-  s.innerHTML = `<h2>Nothing here</h2><p>No car is in this state at the moment.</p>`;
-  const b = el('button', 'btn', 'Back to live listings');
-  b.type = 'button';
-  b.addEventListener('click', () => { app.chip = 'all'; renderListings(); });
-  s.appendChild(b);
+
+  if (narrowing.length === 1) {
+    const only = narrowing[0];
+    if (app.q) {
+      s.innerHTML = `<h2>Nothing matches ${only.what}</h2>
+        <p>The text filter is applied to the title, city, colour, trim and seller.</p>`;
+    } else if (app.chip === 'hidden') {
+      // Not an emptiness with somewhere to go back to: it is good news.
+      s.innerHTML = `<h2>Nothing is hidden right now</h2>
+        <p>Every car the searches found passed your rules.</p>`;
+      return s;
+    } else if (app.chip !== 'all') {
+      s.innerHTML = `<h2>No car is ${esc(chipLabel(app.chip).toLowerCase())}</h2>
+        <p>Every other car the searches hold is still on the Live chip.</p>`;
+    } else {
+      const why = search?.health?.shut_out;
+      s.innerHTML = `<h2>${esc(search?.name || 'This search')} has nothing to show</h2>
+        <p>${why ? `It read the site fine and every car was turned away: ${esc(why)}.`
+                 : 'It has not kept any cars yet.'}</p>`;
+    }
+    offer(only);
+    return s;
+  }
+
+  // More than one, so no single sentence is the reason. Name them all, and
+  // offer every way out rather than guessing which one was meant.
+  s.innerHTML = `<h2>Nothing is all of these at once</h2>
+    <p>No car is ${andList(narrowing.map(n => n.what))}. Each of these is
+       narrowing the list on its own.</p>`;
+  for (const choice of narrowing) offer(choice);
   return s;
 }
 
@@ -1096,7 +1138,11 @@ function renderMarket() {
 
     const years = Object.entries(row.by_year || {});
     const fat = years.filter(([, y]) => !y.thin);
-    if (fat.length) sec.appendChild(rangeChart(fat));
+    // Scaled against the whole model, not against the rows drawn. With one
+    // fat year the axis was that year's own range, so its bar filled the
+    // width whatever the prices were - a chart whose only reading came from
+    // the tick, next to a sentence that had already given the number.
+    if (fat.length) sec.appendChild(rangeChart(fat, modelRange(row)));
     const thin = years.filter(([, y]) => y.thin);
     if (thin.length) {
       sec.appendChild(table(`<thead><tr><th>Year</th><th class="r">Cars</th>
@@ -1155,11 +1201,26 @@ function renderMarket() {
   host.appendChild(out);
 }
 
+/* The asking prices of every car of this model, however few. The chart's
+   axis comes from here rather than from the rows it draws. */
+function modelRange(row) {
+  const prices = (row.prices || []).filter(p => typeof p === 'number');
+  const ends = [row.low, row.high, ...prices].filter(p => typeof p === 'number');
+  const years = Object.values(row.by_year || {});
+  for (const y of years) {
+    for (const p of [y.low, y.high, ...(y.prices || [])])
+      if (typeof p === 'number') ends.push(p);
+  }
+  return ends.length ? { min: Math.min(...ends), max: Math.max(...ends) } : null;
+}
+
 /* One row per year: the range as a bar, the median as a tick. A box plot
    without the jargon, and it degrades to a table on a phone. */
-function rangeChart(years) {
+function rangeChart(years, axis) {
   const all = years.flatMap(([, r]) => [r.low, r.high]);
-  const min = Math.min(...all), max = Math.max(...all), span = (max - min) || 1;
+  const min = Math.min(axis?.min ?? Infinity, ...all);
+  const max = Math.max(axis?.max ?? -Infinity, ...all);
+  const span = (max - min) || 1;
   const wrap = el('div');
   for (const [year, r] of years) {
     const row = el('div');
@@ -1184,6 +1245,14 @@ function rangeChart(years) {
       `middle half ${money(q1)} to ${money(q3)}, median ${money(r.median)}`);
     wrap.appendChild(row);
   }
+  // What the bars are measured against. Without it the only readable number
+  // on the chart is the one printed beside each bar, which makes the bars
+  // decoration.
+  const ends = el('div', 'facts');
+  ends.style.cssText = 'justify-content:space-between;margin-top:var(--s2)';
+  ends.innerHTML = `<span class="num">${money(min)}</span>`
+    + `<span class="num">${money(max)}</span>`;
+  wrap.appendChild(ends);
   return wrap;
 }
 
@@ -1938,12 +2007,22 @@ function skeleton() {
   const sec = el('section', 'section measure');
   sec.innerHTML = `<div class="section__head"><h2>&nbsp;</h2></div>`;
   const list = el('ul', 'feed');
+  /* Real rows with the text taken out, not bars of a guessed height.
+     Measured against a real feed row, the hand-sized version was 48px on a
+     phone where the row it stands in for is 88.5 - eight of them, so the
+     page grew 320px under the reader's thumb the moment the data landed.
+     The layout-shift test did not see it because a local data.json arrives
+     before the first paint.
+     Same elements, same classes, same font metrics: the height cannot
+     disagree because nothing about it is written down twice. */
+  const bar = n => '\u00a0'.repeat(n);
   for (let i = 0; i < 8; i++) {
     const li = el('li');
-    li.innerHTML = `<div class="ev skel-row">
-        <span class="skel__line" style="width:52px;height:9px;margin:0"></span>
-        <span class="skel__line" style="width:${40 + (i % 4) * 12}%;height:12px;margin:0"></span>
-        <span class="skel__line" style="width:64px;height:12px;margin:0"></span>
+    li.innerHTML = `<div class="ev skel-row" aria-hidden="true">
+        <time class="ev__when skel__text">${bar(6)}</time>
+        <span class="ev__title skel__text">${bar(16 + (i % 4) * 4)}</span>
+        <span class="ev__fig skel__text">${bar(8)}</span>
+        <span class="ev__sub"><span class="skel__text">${bar(20 + (i % 3) * 5)}</span></span>
       </div>`;
     list.appendChild(li);
   }

@@ -53,25 +53,43 @@ class Event:
                 "detail": self.detail, "run": self.run}
 
 
-def _delivery(entry: dict[str, Any]) -> str:
-    """What the bot did about this car, in the words it recorded at the time.
+# The four things that can have happened about a car, and the order they are
+# asked in. THE ORDER IS THE RULE, and it was written down twice - here and
+# in insight.py - each with its own wording. A car can carry both a delivery
+# time and a quiet reason: delivered once when it arrived and visible, then
+# hidden by a rule added later. Reading the delivery time first reported a
+# relisting that was correctly suppressed as "delivered at 02:15" - a real
+# timestamp, belonging to a different event, describing a message never sent
+# about this one. That was fixed in one copy first.
+#
+# The wording differs by design: this file writes a ledger line and the
+# dashboard writes a sentence on a card. The decision does not.
+DELIVERY_STATES = ("queued", "quiet", "sent", "none")
 
-    The quiet reason comes first, and that ordering matters. A car can carry
-    both: delivered once when it arrived and visible, then hidden by a rule
-    added later. Reading the delivery time first reported a relisting that
-    was correctly suppressed as "delivered at 02:15" - a real timestamp,
-    belonging to a different event, describing a message never sent about
-    this one.
-    """
+
+def delivery_state(entry: dict[str, Any]) -> str:
+    """Which of the four happened, asked in the only order that is correct."""
     if entry.get("pending"):
-        return "queued, not yet delivered"
+        return "queued"
     if entry.get("quiet_reason"):
+        return "quiet"
+    if entry.get("notified_at"):
+        return "sent"
+    return "none"
+
+
+def _delivery(entry: dict[str, Any]) -> str:
+    """What the bot did about this car, in the words it recorded at the time."""
+    state = delivery_state(entry)
+    if state == "queued":
+        return "queued, not yet delivered"
+    if state == "quiet":
         text = f"deliberately quiet: {entry['quiet_reason']}"
         if entry.get("notified_at"):
             text += (f" (this car was announced at {entry['notified_at']}, "
                      f"before that rule applied)")
         return text
-    if entry.get("notified_at"):
+    if state == "sent":
         stamp = entry["notified_at"]
         if entry.get("notified_at_backfilled"):
             return f"delivered (time reconstructed, {stamp})"

@@ -440,3 +440,46 @@ class TestACarThatWasAnnouncedAndIsNowHidden:
         state = State(path=tmp_path / "s.json")
         entry = self._entry(state)
         assert insight._delivery(entry)["state"] == "quiet"
+
+
+class TestOneDeliveryRuleNotTwo:
+    """The ledger and the dashboard each wrote down the same ordering.
+
+    A car can carry a delivery time AND a quiet reason - told about once when
+    it arrived, hidden by a rule added later - and reading the time first
+    reports a correctly suppressed relisting as "delivered at 02:15": a real
+    timestamp, belonging to a different event, describing a message never
+    sent about this one. That was fixed in one of the two copies.
+    """
+
+    CASES = {
+        "queued": {"pending": True, "quiet_reason": "muted",
+                   "notified_at": "2026-09-01T00:00:00+00:00"},
+        "quiet": {"quiet_reason": "hidden by a rule",
+                  "notified_at": "2026-09-01T00:00:00+00:00"},
+        "sent": {"notified_at": "2026-09-01T00:00:00+00:00"},
+        "none": {},
+    }
+
+    @pytest.mark.parametrize("state", sorted(CASES))
+    def test_both_readers_agree(self, state):
+        from autotrader import insight
+        from autotrader.events import delivery_state
+
+        entry = self.CASES[state]
+        assert delivery_state(entry) == state
+        assert insight._delivery(entry)["state"] == state
+
+    def test_a_quiet_car_that_was_once_told_about_says_both(self):
+        from autotrader import events, insight
+
+        entry = self.CASES["quiet"]
+        ledger = events._delivery(entry)
+        card = insight._delivery(entry)["text"]
+        for text in (ledger, card):
+            assert "hidden by a rule" in text
+            assert "2026-09-01" in text, text
+
+    def test_the_states_are_the_states(self):
+        from autotrader.events import DELIVERY_STATES
+        assert set(DELIVERY_STATES) == set(self.CASES)
