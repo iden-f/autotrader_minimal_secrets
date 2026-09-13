@@ -83,6 +83,11 @@ class TestTrimsDealersActuallyType:
         assert Listing(id="x", year=2010, make="BMW", model="X3",
                        trim="X3").display_title == "2010 BMW X3"
 
+    def test_a_star_separated_feature_list_is_cut_at_the_first_star(self):
+        """Real trim: "XDrive30i * NO ACCIDENTS * ONE OWNER * CERTIFIED"."""
+        assert self.name("XDrive30i * NO ACCIDENTS * ONE OWNER") == \
+            "2019 BMW M4 XDrive30i"
+
     def test_a_short_trim_is_untouched(self):
         assert self.name("Competition") == "2019 BMW M4 Competition"
 

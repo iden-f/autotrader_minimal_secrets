@@ -338,6 +338,18 @@ def update(state, ledger_path: Path = LEDGER_PATH,
     return record
 
 
+def _slot_word(minutes: int) -> str:
+    """"half-hours" was written into five strings while the schedule happened
+    to be half-hourly, and stayed there when it stopped being."""
+    if minutes == 30:
+        return "half-hours"
+    if minutes == 60:
+        return "hours"
+    if minutes % 60 == 0:
+        return f"{minutes // 60}-hour slots"
+    return f"{minutes}-minute slots"
+
+
 # Below this share of the expected checks, the bot is not really watching -
 # a car can be listed and sold inside a gap this size. Said once per day at
 # most, because it is a condition rather than an event.
@@ -375,9 +387,15 @@ def thin_coverage(cfg, state, record: dict[str, Any],
         "pct": cover["pct"],
         "at": now.isoformat(timespec="seconds"),
         "subject": f"AutoTrader watcher covered only {cover['pct']}% of yesterday",
-        "body": (f"{cover['successful']} successful checks in the last "
-                 f"{cover['window_hours']} hours, against {cover['expected']} "
-                 f"expected at one every {expected} minutes.\n\n"
+        # slots_covered, not successful. cover["pct"] is the share of SLOTS
+        # that had a check; pairing it with the number of RUNS produced
+        # "79.2% - 51 of 48 expected checks" on the dashboard, and this line
+        # is the same sentence in the alert - the copy that nobody
+        # screenshots, so it outlived the fix to the page by a day.
+        "body": (f"{cover.get('slots_covered', cover['successful'])} of "
+                 f"{cover['expected']} {_slot_word(expected)} in the last "
+                 f"{cover['window_hours']} hours had a check, at one asked "
+                 f"for every {expected} minutes.\n\n"
                  f"The longest gap was {longest / 60:.1f} hours. A car can be "
                  f"listed and sold inside a gap that size, so treat anything "
                  f"the dashboard says as a sample rather than the market.\n\n"

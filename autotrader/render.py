@@ -20,11 +20,20 @@ def _facts(listing) -> list[str]:
     if listing.mileage_km is not None:
         out.append(listing.mileage_text)
     title = listing.display_title.lower()
-    for value in (listing.trim, listing.drivetrain, listing.transmission,
+    # short_trim, not trim. The raw field is a dealer's feature list - "I
+    # Premium PKG I M Carbon Exterior PKG Carbon Fibre" - which the page has
+    # trimmed since the day it was written and every notification repeated
+    # verbatim underneath the car's name.
+    for value in (listing.short_trim, listing.drivetrain, listing.transmission,
                   listing.color, listing.location or listing.province):
         # display_title already carries the trim; do not say it twice.
-        if value and str(value).lower() not in title:
-            out.append(str(value))
+        text = str(value or "").strip()
+        # A dealer leaving a field as "n/a" is a dealer saying nothing, and
+        # it arrived as a bare chip in the middle of the fact line.
+        if not text or text.lower() in {"n/a", "na", "-", "unknown", "none"}:
+            continue
+        if text.lower() not in title:
+            out.append(text)
     return out
 
 

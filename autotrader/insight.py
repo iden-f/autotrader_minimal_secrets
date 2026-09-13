@@ -450,8 +450,6 @@ def weekly_text(summary: dict[str, Any]) -> str:
 
 # ---------------------------------------------------------------- the market
 
-# Below this, a "median for the year" is one or two cars wearing a statistic.
-MIN_PER_BUCKET = 4
 # How long a price point has to survive before compaction stops thinning it.
 KEEP_DAILY_DAYS = 30
 

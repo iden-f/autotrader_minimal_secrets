@@ -229,3 +229,86 @@ class TestWhatThePushCarries:
         drop = [c for c in sample() if c.kind == Change.PRICE_DROP]
         title = self._posted(drop, monkeypatch=monkeypatch)["headers"]["Title"]
         assert "down $" in title and "change" not in title, title
+
+
+class TestWhatTheAlertActuallySays:
+    """The part of this product nobody screenshots.
+
+    A sweep for user-visible strings derived rather than stored found four
+    defects here that had never been looked at, because looking means reading
+    a push notification on a phone rather than a page in a browser.
+    """
+
+    def car(self, **kw):
+        from autotrader.listing import Listing
+        base = dict(id="c39aad61", title="BMW X3 xDrive30i", year=2019,
+                    make="BMW", model="X3", price=21999, price_source="detail",
+                    mileage_km=103000, location="Thornhill", province="ON")
+        base.update(kw)
+        return Listing(**base)
+
+    def test_a_dealers_feature_list_is_not_repeated_under_the_name(self):
+        """The page has trimmed this since the day it was written; every
+        notification repeated it verbatim."""
+        from autotrader import render
+        facts = render._facts(self.car(
+            trim="XDrive30i * NO ACCIDENTS * ONE OWNER * CERTIFIED"))
+        assert not any("ACCIDENTS" in f for f in facts), facts
+
+    def test_a_field_a_dealer_left_as_na_is_not_a_specification(self):
+        from autotrader import render
+        facts = render._facts(self.car(transmission="n/a"))
+        assert "n/a" not in facts, facts
+
+    def test_an_accented_name_survives_the_ntfy_header(self):
+        """HTTP headers are latin-1 at best. This encoded UTF-8 and decoded
+        the bytes as latin-1, which is the definition of mojibake - and there
+        is a "BMW M3 COMPETITION" with an accent in this watch."""
+        from autotrader.notifiers import _ascii_header
+        out = _ascii_header("AutoTrader: 2025 BMW M3 COMPÉTITION $118,995")
+        assert out == "AutoTrader: 2025 BMW M3 COMPETITION $118,995"
+        assert out.isascii()
+
+    def test_a_header_of_pure_non_latin_still_says_something(self):
+        from autotrader.notifiers import _ascii_header
+        assert _ascii_header("中文").isascii()
+
+
+class TestTheCoverageAlertCountsSlots:
+    """The "79.2% - 51 of 48 expected checks" bug, in the alert.
+
+    The dashboard printed a percentage derived from slots beside a fraction
+    derived from runs. That was fixed on the page and left standing here,
+    where the same sentence is sent by email - which is how a bug survives a
+    fix: the second copy is in the channel nobody looks at.
+    """
+
+    def test_the_fraction_matches_the_percentage(self, tmp_path, monkeypatch):
+        import json
+        from datetime import datetime, timedelta, timezone
+        from autotrader import events
+        from autotrader.config import Config
+        from autotrader.state import State
+
+        monkeypatch.chdir(tmp_path)
+        cfg = Config.defaults(tmp_path / "config.json")
+        cfg.set("health.expected_interval_minutes", 120)
+        cfg.save()
+        state = State(path=tmp_path / "state.json")
+        now = datetime.now(timezone.utc)
+        # Four checks in a 24-hour window that asks for twelve.
+        state.data["runs"] = [
+            {"at": (now - timedelta(hours=h)).isoformat(timespec="seconds"),
+             "ok": True, "searches_run": 1, "listings_seen": 5}
+            for h in (1, 7, 13, 19)]
+        note = events.thin_coverage(cfg, state, {}, now=now)
+        assert note, "a quarter of the slots covered should be worth saying"
+        body = note["body"]
+        assert "half-hours" not in body, body
+        assert "2-hour slots" in body, body
+        # The number in the sentence is the number the percentage came from.
+        import re
+        got = re.search(r"(\d+) of (\d+) 2-hour slots", body)
+        assert got, body
+        covered, expected = int(got.group(1)), int(got.group(2))
+        assert round(covered / expected * 100, 1) == note["pct"], (body, note["pct"])

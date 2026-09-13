@@ -459,7 +459,12 @@ textarea.field{
 }
 textarea.field:focus-visible{ outline:2px solid var(--focus); outline-offset:1px; }
 .labelled{ display:flex; flex-direction:column; gap:var(--s1); flex:0 1 160px; }
-.labelled > span{
+/* `> span:first-child`, not `> span`. The markup is
+   <label class="labelled"><span>Label</span><span class="field"><input></span></label>
+   and this rule matched BOTH spans, so every rules-editor input inherited an
+   11px uppercase letter-spaced tertiary style meant for its label. It was
+   only ever noticed as "the inputs look a bit small". */
+.labelled > span:first-child{
   font-size:var(--t-micro); font-weight:520; letter-spacing:.06em;
   text-transform:uppercase; color:var(--text-3);
 }
@@ -616,9 +621,15 @@ select:hover,.btn:hover{ background:var(--surface-2); }
   display:block; margin:var(--s1) 0 0; font-size:var(--t-small);
   font-weight:400; color:var(--text-2); letter-spacing:0;
 }
-.stat[data-tone="warn"] dd{ color:var(--warn); }
-.stat[data-tone="bad"] dd{ color:var(--bad); }
-.stat[data-tone="good"] dd{ color:var(--good); }
+/* `dd.num`, not `dd`. The figure is what carries the tone; the caption under
+   it is prose. `.stat[data-tone] dd` is (0,2,1) and so is
+   `.stat dd.stat__note` - a tie, broken by source order, and this block comes
+   later - so a green "100%" also painted its caption green, and a red one
+   painted a sentence red. The same specificity trap as the caption size, one
+   rule further down the same file. */
+.stat[data-tone="warn"] dd.num{ color:var(--warn); }
+.stat[data-tone="bad"] dd.num{ color:var(--bad); }
+.stat[data-tone="good"] dd.num{ color:var(--good); }
 
 /* Coverage / run timeline: one mark per check, so a gap is visible as a gap */
 .timeline{

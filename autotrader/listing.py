@@ -80,7 +80,10 @@ class Listing:
             trim = trim[2:].strip()
         # " I " is in there because dealers on this platform type a capital I
         # where they mean a pipe: "M4 I Premium PKG I M Carbon Exterior PKG".
-        for separator in ("|", ",", "/", " I "):
+        # "*" is in there because this platform's dealers use it as a bullet:
+        # "XDrive30i * NO ACCIDENTS * ONE OWNER * CERTIFIED" is one real trim
+        # field, and it went into a notification verbatim.
+        for separator in ("|", ",", "/", "*", " I "):
             if separator in trim:
                 trim = trim.split(separator)[0].strip()
                 break

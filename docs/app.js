@@ -844,8 +844,13 @@ function table(html) {
   return wrap;
 }
 
+/* The trim buckets are the handful of words that move a price - Competition,
+   Touring, CS, Carbon, LCI - and everything else. "base" is the everything
+   else, and calling it "No trim named" was wrong about most of the cars in
+   it: a car titled "xDrive30i Premium Enhanced Package" names a trim, just
+   not one this groups on. */
 function trimLabel(name) {
-  if (name === 'base' || !name) return 'No trim named';
+  if (name === 'base' || !name) return 'Other';
   return name.charAt(0).toUpperCase() + name.slice(1);
 }
 
@@ -965,6 +970,10 @@ function renderMarket() {
             </tr>`).join('') + '</tbody>');
       trimTable.style.marginTop = 'var(--s4)';
       sec.appendChild(trimTable);
+      sec.appendChild(el('p', 'note',
+        'Asking is a median where there are five or more of a trim, and the '
+        + 'prices themselves below that. "Other" is every trim that is not '
+        + 'one of the words that move a price.'));
     }
     host.appendChild(sec);
   }
@@ -1616,8 +1625,16 @@ function sheetBody(l) {
       if (e.kind === 'price_drop' || e.kind === 'price_rise') {
         what = `${money(e.old_price)} → ${money(e.new_price)} <span class="num ${e.kind === 'price_drop' ? 'drop' : 'rise'}">${signed(e.delta)}</span>`;
       }
+      // delivery.text is prose built in Python, and for a delivered car it
+      // ends in a raw ISO-8601 timestamp - "sent 2026-09-13T05:40:23+00:00" -
+      // printed directly under the same instant rendered as "Sep 13, 05:40".
+      // The state and the timestamp travel separately; the sentence is built
+      // here, where the formatter lives.
+      const told = e.delivery?.state === 'sent' && e.delivery.at
+        ? `Told you ${stamp(e.delivery.at)}`
+        : (e.delivery?.text || '');
       li.innerHTML = `<time datetime="${esc(e.at)}">${stamp(e.at)}</time>
-        <span>${what}<br><span class="note" style="margin:0">${esc(e.delivery?.text || '')}</span></span>`;
+        <span>${what}<br><span class="note" style="margin:0">${esc(told)}</span></span>`;
       ul.appendChild(li);
     }
     s.appendChild(ul);

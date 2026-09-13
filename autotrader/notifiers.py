@@ -229,6 +229,23 @@ class DiscordNotifier(Notifier):
                       f"posts to #{hook.get('name', '?')} as \"{hook.get('name', '?')}\"")
 
 
+def _ascii_header(text: str) -> str:
+    """A header value ntfy will deliver intact.
+
+    HTTP headers are latin-1 at best, and this used to encode the title as
+    UTF-8 and then decode those bytes as latin-1 - which is the definition of
+    mojibake. A real car in this watch is a "BMW M3 COMPETITION" with an
+    accent on the E, and it reached the lock screen mangled.
+
+    Stripping the accent gives a word a person can read. Sending the mangled
+    bytes does not.
+    """
+    import unicodedata
+    folded = unicodedata.normalize("NFKD", str(text or ""))
+    out = "".join(c for c in folded if not unicodedata.combining(c))
+    return out.encode("ascii", "replace").decode("ascii")
+
+
 class NtfyNotifier(Notifier):
     """Free push to your phone with no account at all - just a topic name.
 
@@ -247,7 +264,7 @@ class NtfyNotifier(Notifier):
 
     def _post(self, title: str, body: str, *, click: str = "",
               tags: str = "car", priority: str = "", attach: str = "") -> None:
-        headers = {"Title": title[:200].encode("utf-8", "replace").decode("latin-1", "replace"),
+        headers = {"Title": _ascii_header(title[:200]),
                    "Tags": tags, "Markdown": "yes"}
         if click:
             headers["Click"] = click

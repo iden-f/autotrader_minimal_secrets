@@ -396,6 +396,46 @@ class TestWhatAScreenshotDoesNotCatch:
         finally:
             ctx.close()
 
+    def test_a_caption_is_never_painted_in_the_figures_colour(self, browser, site):
+        """`.stat[data-tone] dd` is (0,2,1) and so is `.stat dd.stat__note`.
+
+        A tie, broken by source order, and the tone block comes later - so the
+        green "100%" painted its caption green too, and a red figure painted a
+        whole sentence red. The same trap as the caption SIZE, one rule
+        further down the same file, and the size fix walked straight past it.
+        """
+        ctx, page, _ = _page(browser, site, 1440, "light", view="status")
+        try:
+            page.wait_for_timeout(300)
+            bad = page.evaluate("""() => [...document.querySelectorAll('.stat[data-tone]')]
+                .filter(s => s.querySelector('.stat__note') && s.querySelector('dd.num'))
+                .map(s => ({
+                  tone: s.dataset.tone,
+                  figure: getComputedStyle(s.querySelector('dd.num')).color,
+                  note: getComputedStyle(s.querySelector('.stat__note')).color,
+                }))
+                .filter(r => r.figure === r.note)""")
+            assert not bad, bad
+        finally:
+            ctx.close()
+
+    def test_an_input_is_not_styled_like_its_own_label(self, browser, site):
+        """`.labelled > span` matched the <span class="field"> wrapper as well
+        as the label, so every rules-editor input inherited an 11px uppercase
+        letter-spaced tertiary style."""
+        ctx, page, _ = _page(browser, site, 1440, "light", view="searches")
+        try:
+            page.wait_for_timeout(400)
+            bad = page.evaluate("""() => [...document.querySelectorAll('.labelled input')]
+                .filter(i => i.offsetParent)
+                .map(i => ({size: parseFloat(getComputedStyle(i).fontSize),
+                            transform: getComputedStyle(i).textTransform,
+                            spacing: getComputedStyle(i).letterSpacing}))
+                .filter(r => r.size < 14 || r.transform === 'uppercase')""")
+            assert not bad, bad
+        finally:
+            ctx.close()
+
     def test_no_placeholder_string_reaches_the_page(self, browser, site):
         """The strings this codebase uses when it does not know something.
 
