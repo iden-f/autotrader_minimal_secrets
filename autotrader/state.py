@@ -683,6 +683,33 @@ class State:
             log.info("released %d listing(s) from removed searches", released)
         return gone
 
+    def forget_listings(self, keep_ids: set[str]) -> list[str]:
+        """Drop the cars no configured search is watching any more.
+
+        ``forget_searches`` retires them instead, which is the right default:
+        a car you stopped watching is still something that was really on the
+        market at a real price, and that history is the only record of it.
+
+        This is the other half, for when it is not. Change what you are
+        hunting for - a different make, a different city - and the old hunt's
+        cars are not history, they are a dashboard full of cars you will never
+        look at and a market view computing medians from the wrong cars.
+
+        A car still owed an alert is never dropped. Being told is the promise
+        the whole ledger exists to keep, and "you stopped watching" is not a
+        reason to break it silently.
+        """
+        doomed = [lid for lid, entry in self.listings.items()
+                  if str(entry.get("search_id") or "") not in keep_ids
+                  and not entry.get("pending")]
+        for lid in doomed:
+            del self.listings[lid]
+        for sid in [s for s in (self.data.get("searches") or {}) if s not in keep_ids]:
+            del self.data["searches"][sid]
+        if doomed:
+            log.info("forgot %d listing(s) no search watches", len(doomed))
+        return doomed
+
     def prune(self, *, keep_days: int = 730, keep_max: int = 5000) -> int:
         """Forget cars that went away a long time ago, so state stays small."""
         if keep_days <= 0 and keep_max <= 0:
@@ -711,17 +738,22 @@ class State:
             for lid, _ in ordered[: len(self.listings) - keep_max]:
                 del self.listings[lid]
                 removed += 1
-        return removed
 
         # Thin old price points. Every observation is kept for a month, then
         # one a week is enough to draw the line - and the endpoints are always
         # kept, because losing one moves the very numbers a history exists to
         # give you.
+        #
+        # This used to sit below the return, so it had never once run. Nothing
+        # failed and nothing looked wrong; state just grew a price point per
+        # car per check forever, and the test covering the compaction passed
+        # the whole time because it called insight.compact_history directly.
         from . import insight
         for entry in self.listings.values():
             history = entry.get("price_history") or []
             if len(history) > 8:
                 entry["price_history"] = insight.compact_history(history)
+        return removed
 
     def stats(self) -> dict[str, Any]:
         # A car hidden by the user's own filters is not something they are

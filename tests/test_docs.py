@@ -68,9 +68,21 @@ class TestEveryFileAndWorkflowTheDocsPointAt:
     def test_the_paths_named_exist(self):
         for path in set(re.findall(r"`(docs/[\w./*-]+)`", ALL)):
             if "*" in path:
-                assert list(Path(path).parent.glob(Path(path).name)), path
+                # The directory has to be the one the code writes to. Whether
+                # it currently holds files is a question about this morning's
+                # market - it is empty the day the watched searches change,
+                # and full again one check later.
+                assert Path(path).parent.exists(), path
             else:
                 assert Path(path).exists(), path
+
+    def test_the_photo_directory_is_the_one_the_code_writes_to(self):
+        """What the glob above used to prove by accident, proven on purpose."""
+        from autotrader.thumbs import THUMB_DIR
+        named = {p for p in re.findall(r"`(docs/[\w./*-]+)`", ALL) if "thumb" in p}
+        assert named, "the docs stopped naming the photo directory"
+        for path in named:
+            assert Path(path).parent == THUMB_DIR, path
 
     def test_the_sibling_documents_exist(self):
         # \b at the front, or <name>.REJECTED.md matches as REJECTED.md.
@@ -144,11 +156,49 @@ class TestTheMechanismsTheRunbookReliesOn:
 
 
 class TestTheClaimsAboutBehaviour:
-    def test_hidden_cars_really_are_kept_and_explained(self):
+    def test_hidden_cars_really_are_kept_and_explained(self, tmp_path):
+        """The claim is about what the bot does, not about what it holds today.
+
+        This read the published data.json and required it to contain a hidden
+        car, which made a documentation test depend on the market: the day the
+        watched searches were swapped out, state was empty and the docs were
+        suddenly "wrong". The behaviour is what the sentence promises, so the
+        behaviour is what gets checked - on a bot built here, with a rule that
+        hides one of two cars.
+        """
+        from autotrader import filters
+        from autotrader.config import Config
+        from autotrader.dashboard import build_payload
+        from autotrader.listing import Listing
+        from autotrader.state import State
+
         assert "kept and explained" in ALL
+        cfg = Config.defaults(tmp_path / "config.json")
+        search = cfg.add_search("https://www.autotrader.ca/cars/bmw/m3/?rcp=25", "M3")
+        cfg.set("filters.max_price", 70000)
+        state = State(path=tmp_path / "state.json")
+        cars = [Listing(id="cheap", title="2016 BMW M3", price=62000,
+                        price_source="detail", search_id=search.id),
+                Listing(id="dear", title="2020 BMW M3 CS", price=119000,
+                        price_source="detail", search_id=search.id)]
+        kept, unpriced, dropped = filters.apply(cars, cfg.rules_for(search)["filters"])
+        for listing in kept + unpriced:
+            state.record(listing)
+        for listing, reason in dropped:
+            state.record(listing, filtered=True, filter_reason=reason)
+        payload = build_payload(cfg, state, {})
+        hidden = [l for l in payload["listings"] if l.get("filtered")]
+        assert [l["id"] for l in hidden] == ["dear"], "the dear one should be hidden"
+        assert all(l.get("filter_reason") for l in hidden)
+        assert {l["id"] for l in payload["listings"]} == {"cheap", "dear"}, \
+            "a hidden car must still be published, or it is dropped not hidden"
+
+    def test_the_published_data_keeps_that_promise_too(self):
+        """And when there is live data, it has to hold there as well."""
         data = json.loads(Path("docs/data.json").read_text())
         hidden = [l for l in data["listings"] if l.get("filtered")]
-        assert hidden and all(l.get("filter_reason") for l in hidden[:20])
+        assert all(l.get("filter_reason") for l in hidden), \
+            "a car hidden with no reason given"
 
     def test_the_secret_scan_really_runs_before_the_write(self):
         source = Path("autotrader/dashboard.py").read_text()

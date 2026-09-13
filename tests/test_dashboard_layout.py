@@ -20,6 +20,7 @@ still runs anywhere.
 from __future__ import annotations
 
 import json
+import shutil
 import subprocess
 import threading
 from functools import partial
@@ -44,10 +45,71 @@ def _browser_path() -> str | None:
     return str(found[0]) if found else None
 
 
+def _demo_payload(root: Path) -> dict:
+    """A payload built here, rather than whatever the bot holds this morning.
+
+    These tests used to render the repository's live data.json. That made them
+    a measurement of the market: they passed while the watched searches held
+    cars and every test that clicks a card failed the morning those searches
+    were swapped for different ones. The page under test is still the real
+    published page - only the data it draws is fixed.
+    """
+    from autotrader.config import Config
+    from autotrader.dashboard import build_payload
+    from autotrader.listing import Listing
+    from autotrader.state import State
+
+    cfg = Config.defaults(root / "config.json")
+    search = cfg.add_search(
+        "https://www.autotrader.ca/cars/bmw/m3/reg_bc/cit_vancouver"
+        "?modelyearfrom=2015&modelyearto=2020&zip=Vancouver&zipr=1000",
+        "BMW M3 2015-2020 (F80)")
+    cfg.save()
+
+    state = State(path=root / "state.json")
+
+    def car(lid, title, price, **kw):
+        return Listing(id=lid, url=f"https://www.autotrader.ca/a/bmw/m3/vancouver/"
+                                   f"british%20columbia/19_{lid}_/",
+                       title=title, price=price, price_source="detail",
+                       search_id=search.id, location="Vancouver", province="BC", **kw)
+
+    state.record(car("1", "2018 BMW M3 Competition", 74900, year=2018,
+                     mileage_km=48000, seller="A Dealer"))
+    state.record(car("2", "2016 BMW M3 6-speed manual", 62500, year=2016,
+                     mileage_km=71200, seller="A Dealer"))
+    state.record(car("3", "2020 BMW M3 CS", 119000, year=2020, mileage_km=12000))
+    state.record(car("4", "2015 BMW M3 no price yet", None, year=2015))
+    # One the rules hide, one that left the market: both are drawn differently
+    # and both have had their own layout faults.
+    state.record(car("5", "2019 BMW M3 in Ontario", 68000, year=2019))
+    state.listings["5"].update(filtered=True,
+                               filter_reason="Toronto, ON is 3,360 km from "
+                                             "Vancouver, BC, beyond the 1,000 km "
+                                             "you asked for")
+    state.record(car("6", "2017 BMW M3 sold on", 59900, year=2017))
+    state.listings["6"].update(status="gone", notified=True)
+    state.record(car("1", "2018 BMW M3 Competition", 71900, year=2018,
+                     mileage_km=48000, seller="A Dealer"))
+    state.listings["2"]["mark"] = "shortlist"
+    state.record_run({"ok": True, "searches": 1, "listings": 6})
+    state.record_search_ok(search.id, 5, "jsonld")
+    state.save()
+    return build_payload(cfg, state, {})
+
+
 @pytest.fixture(scope="module")
-def site():
-    """Serve docs/ on a loopback port for the length of the module."""
-    handler = partial(SimpleHTTPRequestHandler, directory=str(DOCS))
+def payload(tmp_path_factory):
+    return _demo_payload(tmp_path_factory.mktemp("bot"))
+
+
+@pytest.fixture(scope="module")
+def site(tmp_path_factory, payload):
+    """Serve a copy of docs/ - real page, fixed data - on a loopback port."""
+    root = tmp_path_factory.mktemp("site") / "docs"
+    shutil.copytree(DOCS, root)
+    (root / "data.json").write_text(json.dumps(payload), encoding="utf-8")
+    handler = partial(SimpleHTTPRequestHandler, directory=str(root))
     server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
@@ -208,15 +270,40 @@ def test_the_detail_sheet_opens_closes_and_hands_focus_back(browser, site):
         ctx.close()
 
 
-def test_an_alert_link_opens_that_car(browser, site):
+def test_a_caption_under_a_figure_stays_smaller_than_the_figure(browser, site):
+    """Both are <dd> inside .stat, and that is how this broke.
+
+    The captions were <small> until an accessibility fix made them a second
+    <dd> - which is the correct markup, and which put them behind `.stat dd`,
+    a class plus a type selector that a bare `.stat__note` class cannot beat.
+    Every caption on the Market tab rendered at figure size: bold, 32px, three
+    lines of explanation shouting over the number it was explaining. It
+    shipped, because a caption in the wrong size still looks deliberate.
+    """
+    ctx, page, _ = _page(browser, site, 1440, "light", view="market")
+    try:
+        sizes = page.evaluate("""() => [...document.querySelectorAll('.stat')]
+            .filter(s => s.querySelector('.stat__note') && s.querySelector('dd.num'))
+            .map(s => ({
+              label: s.querySelector('dt').textContent.trim(),
+              figure: parseFloat(getComputedStyle(s.querySelector('dd.num')).fontSize),
+              note: parseFloat(getComputedStyle(s.querySelector('.stat__note')).fontSize),
+            }))""")
+        assert sizes, "no stat tile had a caption to measure"
+        for tile in sizes:
+            assert tile["note"] < tile["figure"] * 0.75, tile
+    finally:
+        ctx.close()
+
+
+def test_an_alert_link_opens_that_car(browser, site, payload):
     """ntfy sends you to #/listing/<id>; that has to land on the car."""
     ctx = browser.new_context(viewport={"width": 390, "height": 844})
     page = ctx.new_page()
     try:
         page.goto(site, wait_until="networkidle")
         page.wait_for_timeout(250)
-        data = json.loads((DOCS / "data.json").read_text())
-        target = next(l for l in data["listings"] if not l.get("filtered"))
+        target = next(l for l in payload["listings"] if not l.get("filtered"))
         page.goto(f"{site}#/listing/{target['id']}", wait_until="networkidle")
         page.wait_for_timeout(400)
         assert page.evaluate("() => document.getElementById('sheet').dataset.open === '1'")
@@ -235,6 +322,17 @@ def test_the_service_worker_and_manifest_are_publishable():
     assert any(i.get("purpose") == "maskable" for i in manifest["icons"])
     sw = (DOCS / "sw.js").read_text()
     assert "data.json" in sw, "the data file needs its own caching rule"
+
+
+def test_the_coverage_percentage_is_always_shown_with_its_own_fraction():
+    """cov.pct is slots covered over slots expected. Printing it beside the
+    number of runs gave "79.2% - 51 of 48 expected checks" in the banner while
+    the Status tab, two taps away, said 38 of 48. Both true; one sentence."""
+    js = (DOCS / "app.js").read_text()
+    for line in js.splitlines():
+        if "cov.pct}%" not in line:
+            continue
+        assert "cov.expected" not in line or "slots_covered" in line, line.strip()
 
 
 def test_the_app_script_parses():

@@ -261,10 +261,12 @@ exits 1 on an invariant has covered its slot completely — no car came or went
 unseen. Coverage counts runs that read the site and reports the complaints
 separately, for exactly this reason.
 
-**The narrow search finds nothing, every run.** `2021-2023 BMW M5` has been
-shut out on every run since it was written: the cars exist, they are in
-Alberta and Ontario, and the distance rule rejects them. The warning says so
-in words. It is working; it just has nothing to show you.
+**A narrow search finds nothing, run after run.** This is normal and the
+dashboard says so in words: "reads fine, keeps nothing". The watch that came
+before these three was a 2021-2023 M5 within 250 km of Vancouver, and it was
+shut out on every run it ever made - the cars existed, they were in Alberta
+and Ontario, and the distance rule rejected them. Working parser, narrow
+search. The Searches tab distinguishes the two.
 
 **"Hidden by a rule: 120."** Working as intended. Hidden cars are kept,
 counted and explained. Click the number.
@@ -280,7 +282,11 @@ watched longer than the watch has existed, so those figures are floors.
 
 ## Where to look when you change something
 
-- Changing what the bot watches → `config.json`, or the Searches tab.
+- Changing what the bot watches → `config.json`, or the Searches tab. Swapping
+  one hunt for a different one → also `python -m autotrader forget --yes`,
+  which drops the cars no remaining search is watching. Without it they are
+  retired rather than dropped: still in state, still on the dashboard, still
+  in the market medians.
 - Changing what it says → `render.py` and `notifiers.py`.
 - Changing what the page shows → `docs/app.js` + `DESIGN.md`, and re-render
   the screenshots.

@@ -151,9 +151,57 @@ def cmd_remove(args: argparse.Namespace) -> int:
     if cfg.remove_search(args.id):
         cfg.save()
         print(_ok(f"removed {args.id}"))
+        if getattr(args, "forget", False):
+            return _forget(cfg, Path(args.state), yes=True)
+        orphans = _orphans(cfg, Path(args.state))
+        if orphans:
+            print(f"   {DIM}{_many(len(orphans), 'car')} from it are still in "
+                  f"state. The next check retires them; "
+                  f"'forget --yes' drops them instead.{RESET}")
         return 0
     print(_bad(f"no search with id {args.id}"))
     return 1
+
+
+def _orphans(cfg: Config, state_path: Path) -> list[str]:
+    if not state_path.exists():
+        return []
+    state = State.load(state_path)
+    keep = {s.id for s in cfg.searches}
+    return [lid for lid, entry in state.listings.items()
+            if str(entry.get("search_id") or "") not in keep
+            and not entry.get("pending")]
+
+
+def _forget(cfg: Config, state_path: Path, *, yes: bool) -> int:
+    """Drop, or offer to drop, the cars no search watches any more."""
+    state = State.load(state_path)
+    keep = {s.id for s in cfg.searches}
+    owed = [lid for lid, entry in state.listings.items()
+            if str(entry.get("search_id") or "") not in keep and entry.get("pending")]
+    if not yes:
+        doomed = _orphans(cfg, state_path)
+        if not doomed:
+            print(_ok("every car in state belongs to a search you are watching"))
+            return 0
+        print(f"{_many(len(doomed), 'car')} belong to no search any more:")
+        for lid in doomed[:5]:
+            entry = state.listings[lid]
+            print(f"   {DIM}{lid}{RESET}  {entry.get('title') or 'untitled'}")
+        if len(doomed) > 5:
+            print(f"   {DIM}... and {len(doomed) - 5} more{RESET}")
+        print(f"   {DIM}run again with --yes to forget them{RESET}")
+        return 0
+    dropped = state.forget_listings(keep)
+    state.save()
+    print(_ok(f"forgot {_many(len(dropped), 'car')} no search watches"))
+    if owed:
+        print(f"   {DIM}kept {_many(len(owed), 'car')} still owed an alert{RESET}")
+    return 0
+
+
+def cmd_forget(args: argparse.Namespace) -> int:
+    return _forget(Config.load(args.config), Path(args.state), yes=args.yes)
 
 
 def cmd_enable(args: argparse.Namespace) -> int:
@@ -900,7 +948,13 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("remove", help="stop watching a search")
     p.add_argument("id")
+    p.add_argument("--forget", action="store_true",
+                   help="also drop its cars from state, instead of retiring them")
     p.set_defaults(func=cmd_remove)
+
+    p = sub.add_parser("forget", help="drop cars no search is watching any more")
+    p.add_argument("--yes", action="store_true", help="actually drop them")
+    p.set_defaults(func=cmd_forget)
 
     p = sub.add_parser("enable", help="turn a search on or off")
     p.add_argument("id")

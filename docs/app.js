@@ -213,8 +213,13 @@ function trustState() {
       alarm: {
         level: 'warn',
         text: `No check has landed for ${Math.round(ageMin / 60)} hours, against one expected every ${expected} minutes. Cars may have come and gone since.`,
+        // slots_covered, not successful: the percentage beside it is the
+        // share of half-hour slots that had a check, and pairing it with the
+        // number of runs printed "79.2% - 51 of 48 expected checks" on a page
+        // whose Status tab said 38 of 48 two screens away. Both numbers were
+        // true and the sentence was not.
         detail: cov.pct !== undefined
-          ? `Coverage over the last ${cov.window_hours}h: ${cov.pct}% — ${cov.successful} of ${cov.expected} expected checks.` : '',
+          ? `Coverage over the last ${cov.window_hours}h: ${cov.pct}% — ${cov.slots_covered ?? cov.successful} of ${cov.expected} half-hours had a check.` : '',
       },
     };
   }
@@ -313,6 +318,15 @@ function feedEvents() {
 }
 const isUnread = e => !app.lastSeen || e.at > app.lastSeen;
 
+/* "a, b and c" - not "a and b and c", which is what joining three names with
+   " and " gives you, and what this said the day a second and third search
+   arrived. */
+function andList(items) {
+  const parts = items.filter(Boolean);
+  if (parts.length <= 1) return parts[0] || '';
+  return parts.slice(0, -1).join(', ') + ' and ' + parts[parts.length - 1];
+}
+
 /* Shown once, on a browser that has never opened this before. It answers the
    four questions a person has on first sight and then never appears again -
    an explainer you have to dismiss twice is worse than no explainer. */
@@ -324,7 +338,7 @@ function welcome() {
   const cov = d.coverage || {};
   box.innerHTML = `
     <h2>This is watching ${searches.length} search${searches.length === 1 ? '' : 'es'} on autotrader.ca</h2>
-    <p>${esc(searches.join(' and ') || 'nothing yet')} — ${visible().length} cars live
+    <p>${esc(andList(searches) || 'nothing yet')} — ${visible().length} cars live
        right now, re-read about every ${cov.expected_interval_minutes || 30} minutes.</p>
     <p><b>Alerts</b> go to ${(d.notify?.active || []).join(', ') || 'nowhere yet — no channel is switched on'}.
        <b>Feed</b> is what changed since you last looked. <b>Status</b> says whether
@@ -365,11 +379,20 @@ function renderFeed() {
 
   const events = feedEvents();
   if (!events.length) {
+    // Three different nothings, and saying the wrong one is the page lying
+    // about its own state: no check has run; a check ran and found no cars at
+    // all (a brand new search, or one just swapped in); cars are being watched
+    // and none of them has done anything yet.
+    const noCarsAtAll = !(app.data.listings || []).length;
     host.appendChild(emptyState(
-      app.data.last_run ? 'Nothing has changed yet' : 'Nothing has been checked yet',
-      app.data.last_run
-        ? 'Every car the searches found was already there when the bot started watching. This fills up as prices move and cars come and go.'
-        : 'The first check has not run. When it does, everything already on the site is recorded as a starting point — you will hear about what changes after that, not about the back catalogue.'));
+      !app.data.last_run ? 'Nothing has been checked yet'
+        : noCarsAtAll ? 'No cars found yet'
+        : 'Nothing has changed yet',
+      !app.data.last_run
+        ? 'The first check has not run. When it does, everything already on the site is recorded as a starting point — you will hear about what changes after that, not about the back catalogue.'
+        : noCarsAtAll
+        ? 'The searches have not turned up a car yet. That is either a narrow search or a new one — the Searches tab says which, and how many listings each one read last time.'
+        : 'Every car the searches found was already there when the bot started watching. This fills up as prices move and cars come and go.'));
     return;
   }
 
@@ -623,6 +646,15 @@ function noResults(counts) {
     b.type = 'button';
     b.addEventListener('click', () => { app.search = 'all'; renderListings(); });
     s.appendChild(b);
+    return s;
+  }
+  // On the live chip with nothing live, "back to live listings" is a button
+  // that does nothing to a page you are already on. There are two different
+  // emptinesses here and only one of them has somewhere to go back to.
+  if (app.chip === 'all') {
+    s.innerHTML = `<h2>No cars yet</h2>
+      <p>The searches have not turned up a car. The Searches tab says how many
+         listings each one read last time it ran.</p>`;
     return s;
   }
   s.innerHTML = `<h2>Nothing here</h2><p>No car is in this state at the moment.</p>`;
@@ -981,7 +1013,9 @@ function renderSearches() {
       `<dt>Watching</dt><dd>${esc(searchWords(s))}
          · <a href="${esc(s.url)}" rel="noopener" target="_blank">open on autotrader.ca</a></dd>` +
       (area ? `<dt>Area</dt><dd>${esc(area)} <span class="note" style="margin:0">— enforced here, because the site ignores it</span></dd>` : '') +
-      `<dt>Last read</dt><dd>${h.last_ok ? stamp(h.last_ok) : '—'}${h.last_count !== undefined ? ` · ${h.last_count} listings` : ''}</dd>` +
+      `<dt>Last read</dt><dd>${h.last_ok
+          ? `${stamp(h.last_ok)} · ${h.last_count || 0} listing${(h.last_count || 0) === 1 ? '' : 's'}`
+          : 'never — this search has not been read yet'}</dd>` +
       (bad ? `<dt>Trouble</dt><dd class="err">${h.consecutive_failures} failure${
         h.consecutive_failures === 1 ? '' : 's'} in a row — ${esc(h.last_error || '')}</dd>` : '') +
       (shutOut ? `<dt>Note</dt><dd class="warnt">Reads fine, keeps nothing: ${esc(shutOut)}</dd>` : '');

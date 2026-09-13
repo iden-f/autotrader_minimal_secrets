@@ -214,13 +214,33 @@ with a control file already filled in. Tap **Commit changes** and the
 To do it by hand, commit a file at `control/anything.json`:
 
 ```json
-[{"action": "set-rule", "search": "BMW M5 bargains (any year)",
-  "rule": "max_price", "value": 120000}]
+[{"action": "set-rule", "search": "BMW M3 2015-2020 (F80)",
+  "rule": "max_price", "value": 90000}]
 ```
 
 Valid actions: `set-rule`, `add-search`, `remove-search`, `mute-listing`,
 `unmute-listing`, `shortlist`, `unshortlist`, `dismiss`, `undismiss`,
 `set-channel`, `note`.
+
+---
+
+## You changed what it watches and the old cars are still there
+
+Removing a search **retires** its cars: they stop being live, they keep their
+price history, and they stay on the dashboard. That is right for "I have
+stopped watching this one" and wrong for "I am hunting a different car now",
+where the leftovers are a Listings tab full of cars you will never look at and
+a Market view taking medians from the wrong ones.
+
+```bash
+python -m autotrader forget         # says what it would drop, changes nothing
+python -m autotrader forget --yes   # drops it
+python -m autotrader remove <id> --forget   # both, in one step
+```
+
+A car still owed an alert is never dropped, and the command says how many it
+kept for that reason. Photos of forgotten cars go on the next check, and
+`docs/data.json` is rebuilt by `python -m autotrader dashboard`.
 
 ---
 

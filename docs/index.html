@@ -590,8 +590,15 @@ select:hover,.btn:hover{ background:var(--surface-2); }
 /* A second <dd> rather than a <small>. A <div> inside a <dl> may contain only
    <dt> and <dd>, and a definition may have more than one <dd> - so the caption
    under a figure is a second definition of the same term, which is what it
-   actually is. */
-.stat__note, .stat small{
+   actually is.
+
+   Written as `.stat dd.stat__note`, not `.stat__note`, and that is the whole
+   point of the line: `.stat dd` above is a class plus a type selector, so a
+   bare class loses to it and every caption rendered at figure size - bold,
+   32px, three lines of explanatory prose shouting over the number it was
+   explaining. It shipped that way, because a caption in the wrong size still
+   looks deliberate in a screenshot. */
+.stat dd.stat__note, .stat small{
   display:block; margin:var(--s1) 0 0; font-size:var(--t-small);
   font-weight:400; color:var(--text-2); letter-spacing:0;
 }

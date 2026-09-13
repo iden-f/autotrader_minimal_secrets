@@ -343,3 +343,74 @@ class TestTheAnchorStrategyReadsTheRightFigure:
         html = f"<html><body>{card}</body></html>"
         listing = _strategy_anchors(BeautifulSoup(html, "html.parser"), html, BASE)[0]
         assert listing.price != 899
+
+
+class TestNewSearchLinks:
+    """The search links the site hands out now spell every filter differently.
+
+    A link copied from the 2026 address bar read as "any year, Canada-wide"
+    under the old parameter names - so the dashboard would have said a watch
+    covered the country and every model year, while the link itself asked for
+    one city and one generation. The bot enforces year and distance itself, so
+    nothing was over-fetched; the page just described the wrong search.
+    """
+
+    M4 = ("https://www.autotrader.ca/cars/bmw/m4/reg_bc/cit_vancouver?body=3%2C7"
+          "&offer=N%2CU&modelyearto=2020&cy=CA&damaged_listing=exclude&desc=1"
+          "&sort=age&ustate=N%2CU&zip=Vancouver&zipr=1000&lat=49.24966"
+          "&lon=-123.11934&atype=C&mcat=ma13gr202608&size=20")
+    M3 = ("https://www.autotrader.ca/cars/bmw/m3/reg_bc/cit_vancouver?offer=N%2CU"
+          "&modelyearfrom=2015&modelyearto=2020&zip=Vancouver&zipr=1000&size=20")
+    X3M = ("https://www.autotrader.ca/cars/bmw/x3/va_x3-m/reg_bc/cit_vancouver"
+           "?offer=N%2CU&modelyearto=2020&zip=Vancouver&zipr=1000&size=20")
+
+    def test_the_year_range_is_read(self):
+        assert describe_search(self.M3).year_min == 2015
+        assert describe_search(self.M3).year_max == 2020
+
+    def test_an_open_ended_range_stays_open(self):
+        summary = describe_search(self.M4)
+        assert summary.year_min is None and summary.year_max == 2020
+        assert summary.title() == "up to 2020 BMW M4"
+
+    def test_the_radius_is_not_mistaken_for_canada_wide(self):
+        summary = describe_search(self.M4)
+        assert summary.radius_km == 1000
+        assert "near Vancouver (1,000 km)" in summary.describe()
+        assert "Canada-wide" not in summary.describe()
+
+    def test_the_trim_segment_is_part_of_the_model(self):
+        """/cars/bmw/x3/va_x3-m is an X3 M. An X3 is a different car."""
+        assert describe_search(self.X3M).model == "X3 M"
+        assert describe_search(self.X3M).title() == "up to 2020 BMW X3 M"
+
+    def test_the_province_comes_out_of_the_tagged_segment(self):
+        assert describe_search(self.M4).province == "BC"
+
+    def test_body_codes_are_not_given_names_we_do_not_have(self):
+        """body=3,7 has no published legend. Naming a code would put a
+        confident wrong word on the dashboard; dropping it would let the page
+        claim the search is wider than it is."""
+        chips = describe_search(self.M4).describe()
+        assert "some body styles only" in chips
+        assert not any("coupe" in c.lower() for c in chips)
+
+    def test_a_spelled_out_body_style_still_reads_as_itself(self):
+        old = "https://www.autotrader.ca/cars/bmw/m4/?body=Coupe"
+        assert "Coupe" in describe_search(old).describe()
+
+    def test_excluding_damaged_listings_is_reported(self):
+        assert "no damaged listings" in describe_search(self.M4).describe()
+        assert "no damaged listings" not in describe_search(self.M3).describe()
+
+    def test_new_and_used_together_is_not_a_condition_worth_a_chip(self):
+        assert describe_search(self.M4).condition is None
+
+    def test_the_city_in_the_path_is_used_when_nothing_was_typed(self):
+        link = "https://www.autotrader.ca/cars/bmw/m4/reg_bc/cit_north-vancouver?zipr=50"
+        assert describe_search(link).location == "North-Vancouver"
+
+    def test_the_link_is_still_recognised_as_a_search(self):
+        for link in (self.M4, self.M3, self.X3M):
+            assert describe_search(link).valid, link
+

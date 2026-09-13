@@ -156,8 +156,10 @@ pip install -r requirements.txt
 
 python -m autotrader add "<paste a search link>"   # watch a search
 python -m autotrader set filters.max_price 120000  # change a setting
-python -m autotrader set max_price 90000 --search "BMW M5"   # ...for one search
+python -m autotrader set max_price 90000 --search "BMW M3"   # ...for one search
 python -m autotrader list                          # what is being watched
+python -m autotrader remove <id> --forget          # stop watching, drop its cars
+python -m autotrader forget                        # cars no search watches any more
 python -m autotrader run                           # check once
 python -m autotrader run --dry-run                 # ...changing nothing
 python -m autotrader doctor                        # is anything misconfigured?
@@ -346,8 +348,8 @@ Set `near` and `max_distance_km` on a search and the bot enforces it from the
 city and province it already reads off each listing:
 
 ```bash
-python -m autotrader set near "V6N 3B5" --search "2021-2023 BMW M5"
-python -m autotrader set max_distance_km 250 --search "2021-2023 BMW M5"
+python -m autotrader set near "Vancouver, BC" --search "BMW M3 2015-2020 (F80)"
+python -m autotrader set max_distance_km 1000 --search "BMW M3 2015-2020 (F80)"
 python -m autotrader set provinces '["BC"]' --search "Civic"   # or just a region
 ```
 
@@ -391,8 +393,10 @@ car naming $175,895 were both invisible in every number the bot printed.
 
 Nothing to do. On the first run:
 
-- `seen_listings.json` is read, so the cars you already knew about are **not**
-  re-announced.
+- `seen_listings.json` is read if it is still there, so the cars you already
+  knew about are **not** re-announced. This repository no longer has one: the
+  import ran long ago, and a list of ids for cars nobody watches any more is
+  only a way to resurrect them if state is ever rebuilt.
 - The `SEARCH_URL` secret is imported as your first search if it is still set.
 - `python -m autotrader migrate` rebuilds the old `archives/` folders into the
   dashboard, recovering the real price, odometer, colour and photos that v1

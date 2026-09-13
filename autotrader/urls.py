@@ -195,6 +195,34 @@ def _as_int(value: Any) -> int | None:
         return None
 
 
+# Segments the 2026 platform tags by hand: va_<trim>, reg_<province>,
+# cit_<city>, mcat_<category token>. None of them is a make or a model.
+_TAGGED_SEGMENT = re.compile(r"^(?:va|reg|cit|mcat)_", re.I)
+
+
+def _tagged(segment: str) -> bool:
+    return bool(_TAGGED_SEGMENT.match(segment or ""))
+
+
+def _body(value: str | None) -> str | None:
+    """What the link says about body style, without inventing a legend.
+
+    The old platform spelled it out (``body=Coupe``); the 2026 one sends
+    numeric codes (``body=3,7``) and publishes no key for them. Guessing which
+    number is a coupe would put a confident wrong word on the dashboard, and
+    dropping it silently would let the page claim the search is wider than it
+    is - so say that the link narrows it, and leave the naming alone.
+    """
+    if not value:
+        return None
+    text = unquote(value).replace("+", " ").strip()
+    if not text:
+        return None
+    if re.fullmatch(r"[\d\s,]+", text):
+        return "some body styles only"
+    return text
+
+
 def _range(value: str | None) -> tuple[int | None, int | None]:
     """Parse autotrader's ``low,high`` range syntax (either side may be blank)."""
     if not value:
@@ -221,6 +249,7 @@ class SearchSummary:
     body: str | None = None
     condition: str | None = None
     keywords: str | None = None
+    excludes_damaged: bool = False
     per_page: int | None = None
     valid: bool = True
     problems: list[str] = field(default_factory=list)
@@ -257,9 +286,11 @@ class SearchSummary:
             out.append(self.body)
         if self.condition:
             out.append(self.condition)
+        if self.excludes_damaged:
+            out.append("no damaged listings")
         if self.location:
             out.append(f"near {self.location}"
-                       + (f" ({self.radius_km} km)" if self.radius_km else ""))
+                       + (f" ({self.radius_km:,} km)" if self.radius_km else ""))
         elif self.province:
             out.append(self.province)
         elif self.radius_km is None:
@@ -277,6 +308,7 @@ class SearchSummary:
             "radius_km": self.radius_km, "province": self.province,
             "body": self.body, "condition": self.condition,
             "keywords": self.keywords, "per_page": self.per_page,
+            "excludes_damaged": self.excludes_damaged,
             "valid": self.valid, "problems": self.problems,
             "title": self.title(), "chips": self.describe(),
         }
@@ -328,19 +360,39 @@ def describe_search(url: str) -> SearchSummary:
     segments = [p for p in parts.path.split("/") if p]
     q = dict(parse_qsl(parts.query, keep_blank_values=True))
 
-    # Path shape: /cars/<make>/<model>/<province>/<city>/
+    # Path shape, old platform: /cars/<make>/<model>/<province>/<city>/
+    # Path shape, 2026 platform: /cars/<make>/<model>/va_<trim>/reg_<prov>/cit_<city>/
+    city_in_path = ""
     if segments and segments[0].lower() in {"cars", "autos"}:
         rest = segments[1:]
         provinces = {"ab", "bc", "mb", "nb", "nl", "ns", "nt", "nu",
                      "on", "pe", "qc", "sk", "yt"}
-        if rest and rest[0].lower() not in provinces:
+        if rest and rest[0].lower() not in provinces and not _tagged(rest[0]):
             s.make = _titlecase(rest[0])
             rest = rest[1:]
-            if rest and rest[0].lower() not in provinces:
+            if rest and rest[0].lower() not in provinces and not _tagged(rest[0]):
                 s.model = _titlecase(rest[0])
                 rest = rest[1:]
         if rest and rest[0].lower() in provinces:
             s.province = rest[0].upper()
+        for segment in rest:
+            tag, _, value = segment.partition("_")
+            if not value:
+                continue
+            if tag.lower() == "va":
+                # The trim lives in its own segment: .../x3/va_x3-m/... is an
+                # X3 M, and a search named "BMW X3" would be a different car.
+                trim = _titlecase(value)
+                if s.model and trim.lower().startswith(s.model.lower()):
+                    s.model = trim
+                elif s.model:
+                    s.model = f"{s.model} {trim}"
+                else:
+                    s.model = trim
+            elif tag.lower() == "reg" and value.lower() in provinces:
+                s.province = value.upper()
+            elif tag.lower() == "cit":
+                city_in_path = _place(value)
     elif not segments:
         s.problems.append(
             "That looks like the autotrader.ca home page. Run a search first, "
@@ -354,9 +406,9 @@ def describe_search(url: str) -> SearchSummary:
     _, s.mileage_max = _range(q.get("odRng"))
     s.location = unquote(q["loc"]).replace("+", " ").strip() if q.get("loc") else None
     s.province = s.province or (unquote(q["prv"]).replace("+", " ") if q.get("prv") else None)
-    s.body = unquote(q["body"]).replace("+", " ") if q.get("body") else None
+    s.body = _body(q.get("body"))
     s.keywords = unquote(q["kwd"]).replace("+", " ") if q.get("kwd") else None
-    s.per_page = _as_int(q.get("rcp"))
+    s.per_page = _as_int(q.get("rcp")) or _as_int(q.get("size"))
 
     prx = _as_int(q.get("prx"))
     # Negative proximity means "no radius limit" (province-wide or national).
@@ -365,6 +417,36 @@ def describe_search(url: str) -> SearchSummary:
     sts = unquote(q.get("sts", "")).strip()
     if sts and sts.lower() not in {"new-used", "used-new"}:
         s.condition = sts.replace("-", " & ")
+
+    # The 2026 platform spells all of this differently. A link written in the
+    # new parameters read as "any year, Canada-wide" under the old ones, which
+    # is the dashboard telling you it watches five times what it watches.
+    if s.year_min is None:
+        s.year_min = _as_int(q.get("modelyearfrom"))
+    if s.year_max is None:
+        s.year_max = _as_int(q.get("modelyearto"))
+    if s.price_min is None:
+        s.price_min = _as_int(q.get("pricefrom"))
+    if s.price_max is None:
+        s.price_max = _as_int(q.get("priceto"))
+    if s.mileage_max is None:
+        s.mileage_max = _as_int(q.get("kmto")) or _as_int(q.get("mileageto"))
+    if not s.location:
+        # zip= carries whatever was typed into the location box, which is a
+        # place name as often as a postal code.
+        s.location = (unquote(q["zip"]).replace("+", " ").strip()
+                      if q.get("zip") else None) or city_in_path or None
+    if s.radius_km is None:
+        zipr = _as_int(q.get("zipr"))
+        s.radius_km = zipr if zipr and zipr > 0 else None
+    if not s.condition:
+        offer = {p.strip().upper() for p in unquote(q.get("offer", "")).split(",") if p.strip()}
+        if offer == {"U"}:
+            s.condition = "used"
+        elif offer == {"N"}:
+            s.condition = "new"
+    if unquote(q.get("damaged_listing", "")).strip().lower() == "exclude":
+        s.excludes_damaged = True
 
     if not q:
         s.problems.append(
