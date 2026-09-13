@@ -105,6 +105,18 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
 /* AutoTrader titles arrive as pipe-delimited dealer shouting:
    "BMW M5 4dr Sdn|STAGE 2|SAFETY CERTIFIED". The first segment is the car;
    the rest is a sales pitch that makes every card look the same. */
+/* "12 of 12 half-hours" on a bot that checks every two hours.
+   The word was written into four separate strings when the schedule happened
+   to be half-hourly, and stayed there when it stopped being. */
+function slotWord(cov, plural) {
+  const mins = (cov && cov.expected_interval_minutes) || 30;
+  const one = mins === 30 ? 'half-hour'
+    : mins === 60 ? 'hour'
+    : mins % 60 === 0 ? `${mins / 60}-hour slot`
+    : `${mins}-minute slot`;
+  return plural === false ? one : one + 's';
+}
+
 function carName(l) {
   const head = String(l.title || '').split('|')[0].trim();
   // A title that already opens with the year gets no second one. The names
@@ -222,7 +234,7 @@ function trustState() {
         // whose Status tab said 38 of 48 two screens away. Both numbers were
         // true and the sentence was not.
         detail: cov.pct !== undefined
-          ? `Coverage over the last ${cov.window_hours}h: ${cov.pct}% — ${cov.slots_covered ?? cov.successful} of ${cov.expected} half-hours had a check.` : '',
+          ? `Coverage over the last ${cov.window_hours}h: ${cov.pct}% — ${cov.slots_covered ?? cov.successful} of ${cov.expected} ${slotWord(cov)} had a check.` : '',
       },
     };
   }
@@ -236,7 +248,7 @@ function trustState() {
         // the raw check count here said "22 of 48" beside a card reading
         // "17 of 48", which is one number too many for a page whose whole
         // argument is that its numbers can be trusted.
-        text: `Only ${cov.pct}% of the last ${cov.window_hours} hours were watched — ${cov.slots_covered ?? cov.successful} of ${cov.expected} half-hours had a check. A car can be listed and sold between checks at this rate.`,
+        text: `Only ${cov.pct}% of the last ${cov.window_hours} hours were watched — ${cov.slots_covered ?? cov.successful} of ${cov.expected} ${slotWord(cov)} had a check. A car can be listed and sold between checks at this rate.`,
         detail: cov.longest_gap_minutes
           ? `Longest gap: ${(cov.longest_gap_minutes / 60).toFixed(1)} hours.` : '',
       },
@@ -1236,7 +1248,7 @@ function renderStatus() {
     <div class="stat" data-tone="${covTone}"><dt>Coverage, ${cov.window_hours || 24}h</dt>
       <dd class="num">${cov.pct ?? '—'}%</dd>
       <dd class="stat__note">${cov.slots_covered ?? cov.successful ?? 0} of
-        ${cov.expected ?? 0} half-hours${cov.complained
+        ${cov.expected ?? 0} ${slotWord(cov)}${cov.complained
           ? ` · ${cov.complained} of ${cov.successful} checks complained` : ''}</dd></div>
     <div class="stat"><dt>Last good check</dt><dd>${when(run.at)}</dd>
       <dd class="stat__note">${stamp(run.at)}</dd></div>
@@ -1270,7 +1282,7 @@ function renderStatus() {
     const strip = el('div', 'slots');
     strip.setAttribute('role', 'img');
     strip.setAttribute('aria-label',
-      `${cov.slots_covered ?? 0} of ${cov.expected ?? 0} half-hour slots in the `
+      `${cov.slots_covered ?? 0} of ${cov.expected ?? 0} ${slotWord(cov)} in the `
       + `last ${cov.window_hours ?? 24} hours had a check. `
       + `Longest gap ${Math.round((cov.longest_gap_minutes || 0) / 6) / 10} hours.`);
     const begin = Date.parse(cov.since);

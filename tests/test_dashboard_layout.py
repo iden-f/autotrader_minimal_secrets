@@ -516,6 +516,24 @@ class TestWhatAScreenshotDoesNotCatch:
         finally:
             ctx.close()
 
+    def test_the_schedule_is_described_in_the_units_it_uses(self, browser, site, payload):
+        """"12 of 12 half-hours", on a bot that checks every two hours.
+
+        The word was written into four separate strings while the schedule
+        happened to be half-hourly, and stayed there when it stopped being.
+        """
+        ctx, page, _ = _page(browser, site, 390, "light", view="status")
+        try:
+            page.wait_for_timeout(300)
+            text = page.evaluate("() => document.body.innerText")
+            interval = payload.get("coverage", {}).get("expected_interval_minutes")
+            if interval and interval != 30:
+                assert "half-hour" not in text, (
+                    f"the page says half-hours while the schedule asks for one "
+                    f"check every {interval} minutes")
+        finally:
+            ctx.close()
+
     def test_every_number_the_page_repeats_agrees_with_itself(self, browser, site, payload):
         """The count in the tab badge is the count on the tab."""
         ctx, page, _ = _page(browser, site, 1440, "light")
