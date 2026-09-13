@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-09-13T12:09:15+00:00",
+ "generated_at": "2026-09-13T12:39:18+00:00",
  "notify": {
   "ntfy_topic": "autotrader-2q592ak9gnx7sqrere5r",
   "ntfy_url": "https://ntfy.sh/autotrader-2q592ak9gnx7sqrere5r",
@@ -9081,15 +9081,15 @@
   }
  },
  "coverage": {
-  "window_hours": 5.7,
+  "window_hours": 6.2,
   "asked_window_hours": 24,
   "partial": true,
-  "too_short": true,
+  "too_short": false,
   "since_change": "2026-09-13T06:30:00+00:00",
-  "expected": 2,
+  "expected": 3,
   "checks": 5,
   "successful": 5,
-  "slots_covered": 2,
+  "slots_covered": 3,
   "complained": 0,
   "clean": 5,
   "pct": 100.0,
@@ -9099,14 +9099,15 @@
   "since": "2026-09-13T06:30:00+00:00",
   "slots": [
    1,
+   1,
    1
   ]
  },
  "cost": {
-  "checks": 47,
-  "minutes": 25.5,
-  "billed_minutes": 56,
-  "mean_seconds": 32.5,
+  "checks": 46,
+  "minutes": 25.0,
+  "billed_minutes": 55,
+  "mean_seconds": 32.6,
   "window_hours": 24
  },
  "budget": {
@@ -9124,13 +9125,13 @@
   "should_stop": false
  },
  "market": {
-  "at": "2026-09-13T12:09:15+00:00",
+  "at": "2026-09-13T12:39:18+00:00",
   "window": {
    "ids_span_days": 0,
    "watching_days": 0,
    "cars_with_two_prices": 0,
    "thin": true,
-   "note": "0 of 89 cars have been priced more than once, over 6 hours of watching. Anything below described as a trend is really a snapshot until that number grows."
+   "note": "0 of 89 cars have been priced more than once, over 7 hours of watching. Anything below described as a trend is really a snapshot until that number grows."
   },
   "live": 89,
   "gone": 0,
