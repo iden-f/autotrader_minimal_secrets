@@ -1,0 +1,46 @@
+name: Verify against the site
+
+# Asks the site whether the ledger is right, rather than asking the ledger.
+#
+# Four consecutive checks reported nothing changed, and that has two
+# explanations - a quiet market, or a bot that cannot see change - which look
+# identical from the inside. This one fetches every tracked car and prints the
+# answer per car.
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: 'How many cars to check (0 = all)'
+        default: '0'
+      hidden:
+        description: 'Include cars your rules hide'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - run: pip install -r requirements.txt
+      - name: Ask the site
+        run: |
+          set -o pipefail
+          python -m autotrader --no-colour verify \
+            --limit "${{ inputs.limit }}" --verbose \
+            ${{ inputs.hidden && '--hidden' || '' }} | tee verify.log
+          {
+            echo "## What the site says"
+            echo '```'
+            cat verify.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

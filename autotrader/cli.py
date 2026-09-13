@@ -15,7 +15,7 @@ from .archive import prune as prune_archives
 from .archive import size_report
 from .config import CHANNEL_SECRETS, Config, ConfigError
 from .http import Fetcher
-from .listing import Listing
+from .listing import Listing, name_of
 from .parser import parse_search_page
 from .state import Change, State
 from .urls import describe_search, normalise_search_url, page_url
@@ -561,6 +561,98 @@ def cmd_ui(args: argparse.Namespace) -> int:
                  state_path=Path(args.state), open_browser=not args.no_browser)
 
 
+def cmd_verify(args: argparse.Namespace) -> int:
+    """Re-read every tracked car from the site and compare it with the ledger.
+
+    The bot reports what it believes. This asks the site whether it is right.
+
+    It exists because four consecutive checks reported nothing changed, and
+    that has two explanations - a quiet market, or a bot that cannot see
+    change - which look identical from the inside. Every car is fetched once,
+    through the same rate-limited client, and the answer is per car rather
+    than a summary you have to trust.
+    """
+    from .http import FetchError, Fetcher
+
+    cfg = Config.load(args.config)
+    state = State.load(args.state)
+    watched = [e for e in state.listings.values()
+               if e.get("status") == "active"
+               and (args.hidden or not e.get("filtered"))]
+    watched.sort(key=lambda e: str(e.get("search_name") or ""))
+    if args.limit:
+        watched = watched[: args.limit]
+    if not watched:
+        print(_warn("no live cars to verify"))
+        return 0
+
+    print(f"Checking {_many(len(watched), 'car')} against the site.\n")
+    fetcher = Fetcher(cfg)
+    agreed = moved = vanished = unreadable = 0
+    try:
+        for entry in watched:
+            name = name_of(entry)[:46]
+            url = entry.get("url") or ""
+            if not url:
+                print(f"  {YELLOW}?{RESET} {name:46} no link recorded")
+                unreadable += 1
+                continue
+            try:
+                html = fetcher.get(url)
+            except FetchError as exc:
+                # A 404 or a 410 is the site saying the car is gone, which is
+                # an answer rather than a failure.
+                status = getattr(exc, "status", None)
+                if status in (404, 410):
+                    print(f"  {RED}-{RESET} {name:46} gone from the site "
+                          f"(HTTP {status}); the bot still lists it")
+                    vanished += 1
+                else:
+                    print(f"  {YELLOW}?{RESET} {name:46} could not read: {exc}")
+                    unreadable += 1
+                continue
+
+            from .enrich import detail_from_html
+            from .parser import looks_like_no_results
+            fresh = detail_from_html(html, str(entry.get("id") or ""), url)
+            if fresh is None:
+                if looks_like_no_results(html):
+                    print(f"  {RED}-{RESET} {name:46} the page says it is gone")
+                    vanished += 1
+                else:
+                    print(f"  {YELLOW}?{RESET} {name:46} page did not parse")
+                    unreadable += 1
+                continue
+
+            held, live_price = entry.get("price"), fresh.price
+            if live_price is None:
+                print(f"  {YELLOW}?{RESET} {name:46} the page shows no price "
+                      f"(the bot holds {held and f'${held:,}' or 'none'})")
+                unreadable += 1
+            elif held == live_price:
+                agreed += 1
+                if args.verbose:
+                    print(f"  {GREEN}={RESET} {name:46} ${live_price:,}")
+            else:
+                moved += 1
+                delta = (live_price - held) if held else None
+                print(f"  {YELLOW}~{RESET} {name:46} bot says "
+                      f"{held and f'${held:,}' or 'no price'}, site says "
+                      f"${live_price:,}"
+                      + (f" ({delta:+,})" if delta else ""))
+    finally:
+        fetcher.close()
+
+    print(f"\n{_many(agreed, 'car')} agree, {moved} differ, "
+          f"{vanished} gone, {unreadable} unreadable "
+          f"({fetcher.spent} requests).")
+    if moved or vanished:
+        print(_warn("the next check should pick these up; run it and look again"))
+    # Disagreement is information, not failure. Only being unable to read the
+    # site at all is a fault worth an exit code.
+    return 1 if unreadable and not (agreed or moved) else 0
+
+
 def cmd_prune(args: argparse.Namespace) -> int:
     cfg = Config.load(args.config)
     conf = dict(cfg.get("archive", {}) or {})
@@ -981,6 +1073,17 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--port", type=int, default=8765)
     p.add_argument("--no-browser", action="store_true")
     p.set_defaults(func=cmd_ui)
+
+    p = sub.add_parser("verify",
+                       help="re-read every tracked car from the site and "
+                            "compare it with what the bot believes")
+    p.add_argument("--limit", type=int, default=0,
+                   help="only check this many (0 = all)")
+    p.add_argument("--hidden", action="store_true",
+                   help="include cars your rules hide")
+    p.add_argument("--verbose", action="store_true",
+                   help="print the cars that agree as well")
+    p.set_defaults(func=cmd_verify)
 
     p = sub.add_parser("prune", help="delete old archive folders")
     p.add_argument("--keep-last", type=int)
