@@ -589,13 +589,14 @@ function renderListings() {
                              ['private', 'Private sellers'], ['mine', 'Shortlisted'],
                              ['unpriced', 'Call for price'], ['hidden', 'Hidden by a rule'],
                              ['gone', 'Gone'], ['dropped', 'Not interested']]) {
-    // Your own two only appear once you have used them. An empty "Shortlisted
-    // 0" on a first visit is a control that does nothing, sitting beside
-    // controls that do.
     // A filter that would return nothing is a control that does nothing,
-    // sitting beside controls that do.
-    if ((id === 'mine' || id === 'dropped' || id === 'private')
-        && !counts[id] && app.chip !== id) continue;
+    // sitting beside controls that do. That was the stated rule and it was
+    // applied to three of the nine chips, so the row read "Price drops 0 ·
+    // Call for price 0 · Gone 0" - three dead buttons wearing a zero.
+    //
+    // "Live" always stays: it is where the other chips send you back to, and
+    // a listings page with no way back to the listings is worse than a zero.
+    if (id !== 'all' && !counts[id] && app.chip !== id) continue;
     const c = el('button', 'chip');
     c.type = 'button';
     c.setAttribute('aria-pressed', app.chip === id ? 'true' : 'false');

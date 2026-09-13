@@ -312,3 +312,29 @@ class TestTheCoverageAlertCountsSlots:
         assert got, body
         covered, expected = int(got.group(1)), int(got.group(2))
         assert round(covered / expected * 100, 1) == note["pct"], (body, note["pct"])
+
+
+class TestTheEmailIsHtmlNotEscapedHtml:
+    def test_the_fact_separator_is_a_separator_not_its_own_source_code(self):
+        """`_esc(' &#183; '.join(...))` escaped the ampersand first, so the
+        later .replace could never match and the email showed the characters
+        "&#183;" between every fact."""
+        from autotrader.listing import Listing
+        from autotrader.state import Change
+        from autotrader import render
+        car = Listing(id="x", title="BMW M4", year=2018, make="BMW", model="M4",
+                      price=64499, price_source="detail", mileage_km=50122,
+                      color="Black", location="Burnaby")
+        html = render.as_email_html([Change(kind=Change.NEW, listing=car)])
+        assert "&amp;#183;" not in html
+        assert "&#183;" in html, "the separator went missing entirely"
+
+    def test_a_dealer_title_with_an_ampersand_is_still_escaped(self):
+        """The fix must not stop escaping the thing escaping is for."""
+        from autotrader.listing import Listing
+        from autotrader.state import Change
+        from autotrader import render
+        car = Listing(id="x", title="BMW M4", year=2018, make="BMW", model="M4",
+                      price=1, price_source="detail", color="Black & Gold")
+        html = render.as_email_html([Change(kind=Change.NEW, listing=car)])
+        assert "Black &amp; Gold" in html

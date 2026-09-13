@@ -262,7 +262,7 @@ def as_email_html(changes: list[Change], *, limit: int = 25,
     {was}{_esc(listing.price_text)}
    </div>
    <div style="font:400 14px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;color:#4b5563;">
-    {_esc(' &#183; '.join(_facts(listing)[1:]) or 'No further details')}
+    {' &#183; '.join(_esc(f) for f in _facts(listing)[1:]) or 'No further details'}
    </div>
    <div style="margin-top:10px;">
     <a href="{_esc(listing.url)}" style="display:inline-block;background:#111827;color:#ffffff;
@@ -271,7 +271,7 @@ def as_email_html(changes: list[Change], *, limit: int = 25,
    </div>
   </td>
  </tr>
-</table>""".replace("&#183;", "&middot;"))
+</table>""")
 
     more = (f'<p style="font:400 14px/1.5 -apple-system,Arial,sans-serif;color:#6b7280;">'
             f'&hellip;and {len(changes) - limit} more.</p>') if len(changes) > limit else ""
