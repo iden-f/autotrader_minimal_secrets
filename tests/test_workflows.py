@@ -397,3 +397,33 @@ class TestNothingHoldsARunner:
         assert spread < floor, (
             f"offsets {minutes} are {spread} minutes apart, past the "
             f"{floor:.0f}-minute floor - the second one would scrape again")
+
+
+class TestTheWorkflowTellsTheBotWhatItNeedsToKnow:
+    """Three facts only GitHub has, and the bot cannot guess any of them."""
+
+    def watch(self):
+        import yaml
+        from pathlib import Path
+        return yaml.safe_load(Path(".github/workflows/watch.yml").read_text())
+
+    def test_the_runner_label_the_bot_is_told_is_the_one_it_runs_on(self):
+        """Half of the billing exemption is the runner - a larger runner is
+        charged on a public repository like any other - and nothing at
+        runtime can see the label that was asked for. So the workflow passes
+        it, which means it is written twice, which means this has to exist."""
+        job = self.watch()["jobs"]["check"]
+        assert job["env"]["REPO_RUNNER"] == job["runs-on"], (
+            f"runs-on is {job['runs-on']} and the bot is told "
+            f"{job['env']['REPO_RUNNER']}")
+
+    def test_the_check_is_told_how_it_was_started(self):
+        step = [s for s in self.watch()["jobs"]["check"]["steps"]
+                if s.get("id") == "bot"]
+        assert step, "no step with id 'bot'"
+        assert step[0]["env"]["RUN_TRIGGER"] == "${{ github.event_name }}"
+
+    def test_it_is_still_told_the_visibility(self):
+        step = [s for s in self.watch()["jobs"]["check"]["steps"]
+                if s.get("id") == "bot"][0]
+        assert "github.event.repository.visibility" in step["env"]["REPO_VISIBILITY"]

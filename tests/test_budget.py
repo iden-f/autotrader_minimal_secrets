@@ -20,6 +20,8 @@ from autotrader import budget
 from autotrader.config import Config
 from autotrader.state import State
 
+NOW = datetime(2026, 9, 13, 20, 0, tzinfo=timezone.utc)
+
 SEPT = datetime(2026, 9, 13, 12, 0, tzinfo=timezone.utc)
 
 
@@ -63,14 +65,15 @@ class TestTheLedger:
     def test_a_run_is_added_to_today(self, bench):
         cfg, state = bench
         budget.record(state, 1.0, cfg=cfg, now=SEPT)
-        assert state.data["actions"]["days"]["2026-09-13"] == 1.0
+        # Labelled, not bare. Which bucket it lands in is the point.
+        assert state.data["actions"]["days"]["2026-09-13"]["drawing"] == 1.0
         assert state.data["actions"]["runs"] == 1
 
     def test_runs_accumulate(self, bench):
         cfg, state = bench
         for _ in range(5):
             budget.record(state, 1.0, cfg=cfg, now=SEPT)
-        assert state.data["actions"]["days"]["2026-09-13"] == 5.0
+        assert state.data["actions"]["days"]["2026-09-13"]["drawing"] == 5.0
 
     def test_a_new_month_starts_from_zero(self, bench):
         cfg, state = bench
@@ -182,7 +185,7 @@ class TestStoppingRatherThanSpending:
         report = watcher.run()
         assert report.ok
         assert not (watcher.path / "BUDGET-STOP").exists()
-        assert report.budget["charged"] >= 1
+        assert report.budget["this_run_minutes"] >= 1
 
     def test_every_run_is_charged_to_the_month(self, watcher):
         watcher.run()
@@ -269,36 +272,44 @@ class TestExemptIsNotTheSameAsFree:
     shout about an allowance nothing was drawing on - and a warning that
     fires when nothing is wrong is a warning that gets muted."""
 
-    def spent_month(self, state, per_day=195.0):
+    # The fixture has to say WHICH KIND of minute it is seeding, because that
+    # is the distinction under test. It used to seed a bare number per day,
+    # which is the shape that made "exempt" a property of the month rather
+    # than of the minute.
+    def spent_month(self, state, per_day=195.0, label="drawing"):
         state.data["actions"] = {
             "month": "2026-09",
-            "days": {f"2026-09-{d:02d}": per_day for d in range(1, 13)},
+            "days": {f"2026-09-{d:02d}": {label: per_day} for d in range(1, 13)},
             "runs": 500}
 
     def test_a_public_repo_is_counted_but_never_alarming(self, bench):
         cfg, state = bench
-        state.data["repo"] = {"visibility": "public"}
-        self.spent_month(state)
+        state.data["repo"] = {"visibility": "public", "runner": "ubuntu-latest"}
+        self.spent_month(state, label="exempt")
         out = budget.record(state, 1.0, cfg=cfg, now=SEPT)
         assert out["state"] == "exempt"
         assert out["should_stop"] is False
-        assert out["charged"] is False
-        assert out["used"] > 2000, "it still counts what it spends"
-        assert "does not charge" in out["text"]
+        assert out["drawing_minutes"] == 0.0
+        assert out["exempt_minutes"] > 2000, "it still counts what it spends"
+        assert out["used"] > 2000
+        assert "drawing on the allowance" in out["text"]
+        assert "one meter per account" in out["text"], "no blind spot named"
 
     def test_the_same_month_on_a_private_repo_is_a_problem(self, bench):
         cfg, state = bench
         state.data["repo"] = {"visibility": "private"}
         self.spent_month(state)
         out = budget.record(state, 1.0, cfg=cfg, now=SEPT)
-        assert out["state"] == "over" and out["charged"] is True
+        assert out["state"] == "over" and out["drawing_minutes"] > 2000
 
     def test_not_knowing_means_assuming_you_are_charged(self, bench):
         """Being wrong that way costs a sentence. The other way costs money."""
         cfg, state = bench
         state.data.pop("repo", None)
         self.spent_month(state)
-        assert budget.record(state, 1.0, cfg=cfg, now=SEPT)["charged"] is True
+        out = budget.record(state, 1.0, cfg=cfg, now=SEPT)
+        assert out["label"] == "unknown"
+        assert out["drawing_minutes"] > 2000
 
     def test_config_can_override_what_github_says(self, bench):
         cfg, state = bench
@@ -309,13 +320,128 @@ class TestExemptIsNotTheSameAsFree:
 
     def test_an_exempt_repo_never_writes_the_stop_file(self, bench):
         cfg, state = bench
-        state.data["repo"] = {"visibility": "public"}
-        self.spent_month(state, per_day=400.0)
+        state.data["repo"] = {"visibility": "public", "runner": "ubuntu-latest"}
+        self.spent_month(state, per_day=400.0, label="exempt")
         out = budget.record(state, 1.0, cfg=cfg, now=SEPT)
         assert out["should_stop"] is False, "it would stop a bot costing nothing"
 
     def test_one_minute_reads_as_one_minute(self, bench):
         cfg, state = bench
-        state.data["repo"] = {"visibility": "public"}
+        state.data["repo"] = {"visibility": "public", "runner": "ubuntu-latest"}
         out = budget.record(state, 1.0, cfg=cfg, now=SEPT)
         assert "1 runner minute this month" in out["text"], out["text"]
+
+
+class TestTwoKindsOfMinuteCountedSeparately:
+    """The account's 3,000 included minutes hit 100% on 13 September with
+    eighteen days left, and this bot said nothing - because the minutes that
+    exhausted them were spent in two private repositories it cannot see.
+
+    What it had been saying, "None of it draws on the allowance", was true of
+    its own minutes and read like a statement about the account.
+    """
+
+    def ledger(self, **kw):
+        from autotrader.budget import Ledger
+        return Ledger(month="2026-09", allowance=3000, **kw)
+
+    def test_a_minute_keeps_the_label_it_was_spent_under(self, tmp_path):
+        """The repository going private must not relabel the days before it.
+
+        A single `charged` flag on the month did exactly that: read the
+        ledger after the change and every minute since the 1st was suddenly
+        allowance-drawing.
+        """
+        from autotrader import budget
+        from autotrader.state import State
+
+        state = State(path=tmp_path / "state.json")
+        state.data["repo"] = {"visibility": "public", "runner": "ubuntu-latest"}
+        budget.record(state, 5.0, now=NOW)
+        assert budget.load(state, now=NOW).exempt == 5.0
+
+        # And now it is private.
+        state.data["repo"] = {"visibility": "private", "runner": "ubuntu-latest"}
+        budget.record(state, 3.0, now=NOW)
+        after = budget.load(state, now=NOW)
+        assert after.exempt == 5.0, "yesterday's free minutes were relabelled"
+        assert after.drawing == 3.0
+        assert after.used == 8.0
+
+    def test_an_unlabelled_minute_counts_as_drawing(self):
+        """The old ledger was a bare number per day. A number carries no
+        label, so it cannot be called exempt now."""
+        from autotrader.budget import load
+        from types import SimpleNamespace
+        state = SimpleNamespace(data={"actions": {
+            "month": "2026-09", "days": {"2026-09-13": 10.0}, "runs": 4}})
+        led = load(state, None, now=NOW)
+        assert led.unknown == 10.0
+        assert led.drawing == 10.0, "unlabelled must count against you"
+        assert led.exempt == 0.0
+
+    def test_the_exempt_verdict_says_what_it_cannot_see(self):
+        led = self.ledger(days={"2026-09-13": {"exempt": 10.0}},
+                          label="exempt", why="it is public")
+        v = led.verdict(NOW)
+        assert v["state"] == "exempt"
+        assert v["exempt_minutes"] == 10.0 and v["drawing_minutes"] == 0.0
+        assert "one meter per account" in v["text"], v["text"]
+        assert "cannot tell you how much of the allowance is left" in v["text"]
+
+    def test_no_verdict_ever_omits_the_blind_spot_when_it_is_reassuring(self):
+        """Every state that could be read as "you are fine" has to carry it."""
+        from autotrader.budget import Ledger
+        for days, label in (
+            ({"2026-09-13": {"exempt": 10.0}}, "exempt"),
+            ({"2026-09-13": {"drawing": 1.0}, "2026-09-12": {"drawing": 1.0}}, "drawing"),
+        ):
+            v = Ledger(month="2026-09", days=days, allowance=3000,
+                       label=label, why="because").verdict(NOW)
+            if v["state"] in ("exempt", "ok", "early"):
+                assert Ledger.BLIND_SPOT in v["text"], (v["state"], v["text"])
+
+    def test_days_to_reset_counts_the_day_it_is_asked_on(self):
+        from datetime import datetime, timezone
+        led = self.ledger()
+        # 13 September, 30-day month: the 13th plus 17 more.
+        assert led.days_to_reset(
+            datetime(2026, 9, 13, 20, 0, tzinfo=timezone.utc)) == 18
+        assert led.days_to_reset(
+            datetime(2026, 9, 30, 23, 0, tzinfo=timezone.utc)) == 1
+
+    def test_a_larger_runner_on_a_public_repo_is_not_exempt(self):
+        from autotrader.budget import label_for
+        from types import SimpleNamespace
+        state = SimpleNamespace(data={"repo": {
+            "visibility": "public", "runner": "ubuntu-latest-16-cores"}})
+        label, why = label_for(None, state)
+        assert label == "drawing", why
+        assert "standard runners" in why
+
+    def test_a_public_repo_on_a_standard_runner_is_exempt_and_says_why(self):
+        from autotrader.budget import label_for
+        from types import SimpleNamespace
+        state = SimpleNamespace(data={"repo": {
+            "visibility": "public", "runner": "ubuntu-latest"}})
+        label, why = label_for(None, state)
+        assert label == "exempt"
+        assert "public" in why and "standard runners" in why
+
+    def test_knowing_nothing_is_not_the_same_as_knowing_it_is_free(self):
+        from autotrader.budget import label_for
+        from types import SimpleNamespace
+        label, why = label_for(None, SimpleNamespace(data={}))
+        assert label == "unknown"
+        assert "nothing has told this bot" in why
+
+    def test_every_runner_in_this_repository_is_one_github_gives_away(self):
+        """Half of the exemption is the runner, and nothing at runtime can
+        see the label that was asked for. This is where that half is held."""
+        import re
+        from pathlib import Path
+        from autotrader.budget import FREE_ON_PUBLIC
+        root = Path(__file__).resolve().parent.parent / ".github" / "workflows"
+        for path in sorted(root.glob("*.yml")):
+            for label in re.findall(r"runs-on:\s*(\S+)", path.read_text()):
+                assert label in FREE_ON_PUBLIC, f"{path.name}: {label}"

@@ -49,6 +49,11 @@ class RunReport:
     searches_failed: int = 0
     requests_made: int = 0
     budget_exhausted: bool = False
+    # schedule / push / workflow_dispatch / repository_dispatch / manual.
+    # A coverage figure built out of runs that happened because somebody
+    # pushed is a measurement of that person, not of the schedule.
+    trigger: str = "manual"
+
     empty_parses: list[str] = field(default_factory=list)
     diagnostics: list[str] = field(default_factory=list)
     shape_drift: list[dict[str, Any]] = field(default_factory=list)
@@ -126,7 +131,12 @@ class RunReport:
             "warnings": self.warnings[:10], "strategies": self.strategies,
             "quiet": self.quiet, "dry_run": self.dry_run,
             "photos": self.photos, "your_call": self.your_call,
-            "minutes": (self.budget or {}).get("charged"),
+            "trigger": self.trigger,
+            # This run's minutes. It used to be keyed "charged", which the
+            # ledger also used for "do these minutes draw on the allowance" -
+            # one word, a number in one place and a boolean in the other.
+            "minutes": (self.budget or {}).get("this_run_minutes"),
+            "minutes_label": (self.budget or {}).get("label"),
         }
 
     def summary(self) -> str:
@@ -1210,6 +1220,15 @@ def run(cfg: Config | None = None, state: State | None = None, *,
             visibility = (env or {}).get("REPO_VISIBILITY", "").strip()
             if visibility:
                 state.data.setdefault("repo", {})["visibility"] = visibility
+            # The runner label too. The exemption is a property of BOTH: a
+            # larger runner is billed on a public repository like any other,
+            # so "public" alone is not evidence that a minute was free.
+            runner_label = (env or {}).get("REPO_RUNNER", "").strip()
+            if runner_label:
+                state.data.setdefault("repo", {})["runner"] = runner_label
+            # What started this check, so coverage can tell a schedule doing
+            # its job from somebody pushing to the repository.
+            report.trigger = (env or {}).get("RUN_TRIGGER", "").strip() or "manual"
             # The interval this run was asked for, so coverage can be
             # measured against the schedule that was actually running.
             try:
@@ -1261,13 +1280,14 @@ def _charge_the_budget(cfg: Config, state: State, report: "RunReport",
     overhead = float(cfg.get("budget.job_overhead_seconds", 25) or 0)
     minutes = budget_mod.minutes_for(report.duration_s + overhead)
     verdict = budget_mod.record(state, minutes, cfg=cfg)
-    verdict["charged"] = minutes
+    verdict["this_run_minutes"] = minutes
 
     stop_file = Path(budget_mod.STOP_FILE)
     if verdict["should_stop"]:
         stop_file.write_text(
             verdict["text"] + "\n\n"
-            f"Used: {verdict['used']:,.0f} minutes in {verdict['month']} over "
+            f"Drawing: {verdict['drawing_minutes']:,.0f} minutes in "
+            f"{verdict['month']} over "
             f"{verdict['days_elapsed']} days ({verdict['per_day']:,.1f}/day).\n"
             f"Allowance: {verdict['allowance']:,}. This bot stops at "
             f"{verdict['ceiling']:,.0f}.\n\n"

@@ -394,6 +394,12 @@ def _read_the_site(run: dict[str, Any]) -> bool:
     return bool(run.get("ok"))
 
 
+# The event names GitHub gives a run that nobody asked for by hand. A
+# repository_dispatch is here because it is the documented way to drive this
+# from an external timer - it is somebody's schedule, just not GitHub's.
+SCHEDULE_TRIGGERS = frozenset({"schedule", "repository_dispatch"})
+
+
 def coverage(runs: list[dict[str, Any]], expected_minutes: int = 30,
              window_hours: int = 24, now: datetime | None = None,
              *, since_change: str | None) -> dict[str, Any]:
@@ -470,6 +476,30 @@ def coverage(runs: list[dict[str, Any]], expected_minutes: int = 30,
     covered = {int((t - start).total_seconds() // slot) for t in read_stamps}
     covered = {i for i in covered if 0 <= i < expected}
 
+    # THE SAME COUNT, OF ONLY THE RUNS THE SCHEDULE STARTED.
+    #
+    # On 13 September the page read "2 of 2 slots served" over a schedule that
+    # GitHub had fired zero times: every check in the window came from a push
+    # or a hand dispatch, which is a measurement of whoever was working on the
+    # repository that day. Both numbers are true and only one of them answers
+    # "will this still be watching tomorrow".
+    #
+    # Runs recorded before the bot knew how it had been started carry no
+    # trigger. They are counted as unattributed rather than as scheduled -
+    # the direction that cannot flatter the schedule.
+    by_trigger: dict[str, int] = {}
+    scheduled: set[int] = set()
+    for run in runs:
+        when = _dt(run.get("at"))
+        if when is None or when < start or not _read_the_site(run):
+            continue
+        how = str(run.get("trigger") or "") or "unattributed"
+        by_trigger[how] = by_trigger.get(how, 0) + 1
+        if how in SCHEDULE_TRIGGERS:
+            index = int((when - start).total_seconds() // slot)
+            if 0 <= index < expected:
+                scheduled.add(index)
+
     gaps: list[float] = []
     edge = [start] + read_stamps + [now]
     for before, after in zip(edge, edge[1:]):
@@ -511,6 +541,16 @@ def coverage(runs: list[dict[str, Any]], expected_minutes: int = 30,
         # A percentage says how much; this says when, and the shape is what
         # tells you whether the schedule is thin or simply absent for hours.
         "slots": _slot_row(runs, start, slot, expected),
+        # How many of those slots the SCHEDULE filled, and what started the
+        # rest. `pct` above counts every check; this one counts only the ones
+        # that would still have happened with nobody watching.
+        "slots_scheduled": len(scheduled),
+        "pct_scheduled": round(min(100.0, len(scheduled) / expected * 100.0), 1),
+        "by_trigger": by_trigger,
+        # True when checks landed but the schedule did not produce them. The
+        # header says so rather than letting a healthy-looking percentage
+        # stand for a schedule that is not running.
+        "propped_up": bool(covered) and not scheduled,
     }
 
 

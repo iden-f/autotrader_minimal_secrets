@@ -288,6 +288,46 @@ function coveragePct(cov) {
   return (cov.pct === undefined || cov.pct === null) ? null : cov.pct;
 }
 
+/* Was that coverage the schedule's doing, or somebody's?
+
+   On 13 September the header read "2 of 2 slots served" over a schedule
+   GitHub had fired zero times: every check came from a push or a hand
+   dispatch, which measures whoever was working on the repository that day.
+   The figure was true and it was about the wrong thing, and a reader had no
+   way to tell - which is the one failure this page is not allowed to have.
+
+   Returns null when the payload predates trigger recording, so an old file
+   does not get a confident answer either way. */
+function whoKeptTime(cov) {
+  if (!cov || cov.slots_scheduled === undefined || cov.too_short) return null;
+  const all = cov.slots_covered ?? 0;
+  const mine = cov.slots_scheduled ?? 0;
+  if (!all) return null;
+  // "None of it scheduled" and "we have no record of what started these" are
+  // different sentences, and the second one is what a payload written before
+  // the bot recorded triggers actually supports. Saying the first would be
+  // this page inventing a measurement out of a missing field - which is the
+  // whole class of thing it is not allowed to do.
+  const kinds = Object.keys(cov.by_trigger || {});
+  if (!mine && kinds.length && kinds.every(k => k === 'unattributed')) {
+    return { level: 'unknown', mine, all };
+  }
+  if (!mine) return { level: 'none', mine, all };
+  if (mine < all) return { level: 'some', mine, all };
+  return { level: 'all', mine, all };
+}
+
+/* What started the checks, in the words of the thing that started them. */
+const TRIGGER_WORDS = {
+  schedule: 'the schedule',
+  repository_dispatch: 'an outside timer',
+  workflow_dispatch: 'a dispatch by hand',
+  push: 'a push to the repository',
+  manual: 'a run by hand',
+  unattributed: 'runs recorded before the bot noted what started them',
+};
+const triggerWord = k => TRIGGER_WORDS[k] || k;
+
 function trustState() {
   const d = app.data;
   if (!d) return { state: 'ok', text: 'Loading…' };
@@ -409,8 +449,19 @@ function renderTrust() {
   document.getElementById('trust-text').textContent = t.text;
   const cov = app.data?.coverage;
   const pct = coveragePct(cov);
+  const kept = whoKeptTime(cov);
   document.getElementById('trust-cov').innerHTML =
-    !cov ? '' : pct === null ? '· measuring' : `· <b class="num">${pct}%</b> covered`;
+    !cov ? ''
+    : pct === null ? '· measuring'
+    // A percentage the schedule did not earn is never shown on its own.
+    : kept && kept.level === 'unknown'
+      ? `· <b class="num">${pct}%</b> covered, source not recorded`
+    : kept && kept.level === 'none'
+      ? `· <b class="num">${pct}%</b> covered, <b>none of it scheduled</b>`
+    : kept && kept.level === 'some'
+      ? `· <b class="num">${pct}%</b> covered, ${num(kept.mine)} of `
+        + `${num(kept.all)} scheduled`
+    : `· <b class="num">${pct}%</b> covered`;
 
   const alarm = document.getElementById('alarm');
   if (t.alarm) {
@@ -1542,11 +1593,13 @@ function renderStatus() {
   // The colour goes with the number. No number, no colour - a red tile over
   // an em-dash is the tile shouting about a figure it declined to print.
   const covPct = coveragePct(cov);
+  const covKept = whoKeptTime(cov);
   const covTone = covPct === null ? ''
     : covPct >= 80 ? 'good' : covPct >= 40 ? 'warn' : 'bad';
   const stats = el('dl', 'stats');
   stats.innerHTML = `
-    <div class="stat" data-tone="${covTone}"><dt>Coverage, ${hours(cov.window_hours || 24)}</dt>
+    <div class="stat" data-tone="${covKept && covKept.level === 'none' ? 'warn' : covTone}">
+      <dt>Coverage, ${hours(cov.window_hours || 24)}</dt>
       <dd class="num">${covPct === null ? '—' : `${covPct}%`}</dd>
       <dd class="stat__note">${cov.too_short
         ? `measuring for ${hours(cov.window_hours)} so far, since the schedule `
@@ -1555,7 +1608,22 @@ function renderStatus() {
         : `${cov.slots_covered ?? cov.successful ?? 0} of ${cov.expected ?? 0} ${slotWord(cov)}`
           + `${cov.partial ? ` in the ${hours(cov.window_hours)} since the schedule changed` : ''}`
           + `${cov.complained ? ` · ${cov.complained} of ${cov.successful} checks complained` : ''}`
-        }</dd></div>
+        }</dd>
+      ${covKept && covKept.level !== 'all' ? `<dd class="stat__note">${
+        covKept.level === 'unknown'
+          ? 'These checks were recorded before the bot noted what started '
+            + 'them, so this cannot say how many the schedule filled.'
+        : covKept.level === 'none'
+          ? `<b>The schedule filled none of them.</b> Every check came from `
+            + `${andList(Object.keys(cov.by_trigger || {})
+                  .filter(k => k !== 'schedule' && k !== 'repository_dispatch')
+                  .map(triggerWord))} — stop doing that and this number goes to zero.`
+          : `${num(covKept.mine)} of those ${num(covKept.all)} came from the `
+            + `schedule; the rest from `
+            + `${andList(Object.keys(cov.by_trigger || {})
+                  .filter(k => k !== 'schedule' && k !== 'repository_dispatch')
+                  .map(triggerWord))}.`
+      }</dd>` : ''}</div>
     <div class="stat"><dt>Last good check</dt><dd>${when(run.at)}</dd>
       <dd class="stat__note">${stamp(run.at)}</dd></div>
     <div class="stat" data-tone="${cov.longest_gap_minutes > 180 ? 'warn' : ''}"><dt>Longest gap</dt>
@@ -1569,12 +1637,24 @@ function renderStatus() {
         : ''}</dd></div>
     ${d.budget ? `<div class="stat" data-tone="${
         d.budget.state === 'stop' ? 'bad' : d.budget.state === 'over' ? 'warn' : ''}">
-      <dt>Runner minutes this month</dt>
-      <dd class="num">${num(d.budget.used)}${
-        d.budget.charged
+      <dt>Allowance minutes this month</dt>
+      <dd class="num">${num(d.budget.drawing_minutes ?? d.budget.used)}${
+        (d.budget.drawing_minutes ?? 0) > 0
           ? `<small style="display:inline"> / ${num(d.budget.allowance)}</small>`
           : ''}</dd>
-      <dd class="stat__note">${esc(d.budget.text)}</dd></div>` : ''}
+      <dd class="stat__note">${esc(d.budget.text)}</dd></div>
+    <div class="stat"><dt>Exempt minutes</dt>
+      <dd class="num">${num(d.budget.exempt_minutes ?? 0)}</dd>
+      <dd class="stat__note">${(d.budget.exempt_minutes ?? 0) > 0
+        ? 'ran free' : 'none labelled yet \u2014 from here'} \u2014 ${
+        esc(d.budget.why || 'reason not recorded')}</dd></div>
+    <div class="stat" data-tone="${d.budget.can_still_run === false ? 'bad' : 'good'}">
+      <dt>Can it still run</dt>
+      <dd>${d.budget.can_still_run === false ? 'No' : 'Yes'}</dd>
+      <dd class="stat__note">${d.budget.can_still_run === false
+        ? 'the bot has stopped itself; delete BUDGET-STOP to start it again'
+        : `nothing here is stopping it \u2014 ${plural(d.budget.days_to_reset ?? 0, 'day')} `
+          + 'until the allowance refills'}</dd></div>` : ''}
     <div class="stat" data-tone="${h.accounted?.unexplained ? 'bad' : 'good'}"><dt>Unaccounted cars</dt>
       <dd class="num">${h.accounted?.unexplained ?? 0}</dd>
       <dd class="stat__note">${h.accounted?.delivered ?? 0} told, ${h.accounted?.quiet ?? 0} deliberately quiet</dd></div>`;

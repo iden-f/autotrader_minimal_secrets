@@ -959,3 +959,115 @@ class TestOneReaderTwoAnswers:
                 assert card["head"].strip() != card["sub"].strip(), card
         finally:
             ctx.close()
+
+
+class TestThePageCannotOverstateCoverage:
+    """85.7% of slots covered, 0% of them by the schedule. Both true, and a
+    reader given only the first has been told the bot is fine when what is
+    keeping it alive is somebody pushing to the repository."""
+
+    def _say(self, page, cov):
+        import json
+        page.evaluate(
+            "c => { app.data.coverage = Object.assign({}, app.data.coverage, c);"
+            " renderTrust(); go('status'); }", cov)
+        page.wait_for_timeout(250)
+        return {
+            "header": page.evaluate(
+                "() => document.getElementById('trust-cov').textContent"),
+            "tile": page.evaluate("""() => {
+              const d = [...document.querySelectorAll('[data-view="status"] .stat')]
+                .find(s => /coverage/i.test(s.querySelector('dt').textContent));
+              return d ? d.innerText : ''; }"""),
+        }
+
+    BASE = {"too_short": False, "pct": 100.0, "expected": 4,
+            "slots_covered": 4, "window_hours": 8, "successful": 4,
+            "expected_interval_minutes": 120}
+
+    def test_a_schedule_that_never_fired_is_said_out_loud(self, browser, site):
+        ctx, page, _ = _page(browser, site, 1440, "light")
+        try:
+            said = self._say(page, dict(self.BASE, slots_scheduled=0,
+                                        by_trigger={"push": 3, "workflow_dispatch": 1}))
+            assert "none of it scheduled" in said["header"].lower(), said["header"]
+            assert "push" in said["tile"].lower(), said["tile"]
+            assert "goes to zero" in said["tile"], said["tile"]
+        finally:
+            ctx.close()
+
+    def test_a_schedule_doing_its_job_gets_a_plain_percentage(self, browser, site):
+        ctx, page, _ = _page(browser, site, 1440, "light")
+        try:
+            said = self._say(page, dict(self.BASE, slots_scheduled=4,
+                                        by_trigger={"schedule": 4}))
+            assert "100%" in said["header"]
+            assert "scheduled" not in said["header"].lower(), said["header"]
+        finally:
+            ctx.close()
+
+    def test_a_mix_names_both_numbers(self, browser, site):
+        ctx, page, _ = _page(browser, site, 1440, "light")
+        try:
+            said = self._say(page, dict(self.BASE, slots_scheduled=2,
+                                        by_trigger={"schedule": 2, "push": 2}))
+            assert "2 of 4 scheduled" in said["header"], said["header"]
+        finally:
+            ctx.close()
+
+    def test_no_record_is_not_the_same_as_no_schedule(self, browser, site):
+        """A payload written before the bot recorded triggers supports
+        "we do not know", not "the schedule did nothing"."""
+        ctx, page, _ = _page(browser, site, 1440, "light")
+        try:
+            said = self._say(page, dict(self.BASE, slots_scheduled=0,
+                                        by_trigger={"unattributed": 4}))
+            assert "none of it scheduled" not in said["header"].lower(), said["header"]
+            assert "not recorded" in said["header"].lower(), said["header"]
+            assert "before the bot noted" in said["tile"], said["tile"]
+        finally:
+            ctx.close()
+
+
+class TestTheMinutesAreShownHonestly:
+    def test_exempt_and_drawing_are_two_tiles_not_one(self, browser, site):
+        ctx, page, _ = _page(browser, site, 1440, "light", view="status")
+        try:
+            page.evaluate("""() => {
+              app.data.budget = Object.assign({}, app.data.budget, {
+                exempt_minutes: 3700, drawing_minutes: 0, unknown_minutes: 0,
+                used: 3700, days_to_reset: 18, can_still_run: true,
+                state: 'exempt', why: 'it is public and on standard runners',
+                text: 'none of them drawing on the allowance.' });
+              renderStatus(); }""")
+            page.wait_for_timeout(250)
+            tiles = page.evaluate("""() => Object.fromEntries(
+              [...document.querySelectorAll('[data-view="status"] .stat')]
+                .map(s => [s.querySelector('dt').textContent.trim(),
+                           s.innerText]))""")
+            assert any("Allowance minutes" in k for k in tiles), list(tiles)
+            assert any("Exempt minutes" in k for k in tiles), list(tiles)
+            can = [v for k, v in tiles.items() if "Can it still run" in k]
+            assert can and "Yes" in can[0], can
+            assert "18 days" in can[0], can
+        finally:
+            ctx.close()
+
+    def test_a_stopped_bot_says_no(self, browser, site):
+        ctx, page, _ = _page(browser, site, 1440, "light", view="status")
+        try:
+            page.evaluate("""() => {
+              app.data.budget = Object.assign({}, app.data.budget, {
+                exempt_minutes: 0, drawing_minutes: 2600, used: 2600,
+                days_to_reset: 18, can_still_run: false, state: 'stop',
+                text: 'It has stopped checking.' });
+              renderStatus(); }""")
+            page.wait_for_timeout(250)
+            can = page.evaluate("""() => {
+              const d = [...document.querySelectorAll('[data-view="status"] .stat')]
+                .find(s => /can it still run/i.test(s.querySelector('dt').textContent));
+              return d ? d.innerText : ''; }""")
+            assert "No" in can, can
+            assert "BUDGET-STOP" in can, can
+        finally:
+            ctx.close()

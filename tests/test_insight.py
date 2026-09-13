@@ -200,3 +200,80 @@ def test_a_coverage_figure_cannot_be_asked_for_without_saying_which_schedule():
     p = inspect.signature(insight.coverage).parameters["since_change"]
     assert p.default is inspect.Parameter.empty, "it went back to optional"
     assert p.kind is inspect.Parameter.KEYWORD_ONLY
+
+
+class TestWhoKeptTime:
+    """A coverage figure built out of runs that only happened because
+    somebody pushed is a measurement of that person.
+
+    On 13 September the page read "2 of 2 slots served" over a schedule
+    GitHub had fired zero times.
+    """
+
+    CHANGED = "2026-09-13T06:30:00+00:00"
+
+    def runs(self, *pairs):
+        from datetime import datetime, timedelta, timezone
+        base = datetime(2026, 9, 13, 6, 30, tzinfo=timezone.utc)
+        return [{"at": (base + timedelta(hours=h)).isoformat(timespec="seconds"),
+                 "ok": True, "searches_run": 1, "listings_seen": 5,
+                 "trigger": how}
+                for h, how in pairs]
+
+    def at(self, hours):
+        from datetime import datetime, timedelta, timezone
+        return datetime(2026, 9, 13, 6, 30, tzinfo=timezone.utc) + timedelta(hours=hours)
+
+    def test_a_schedule_that_never_fired_is_reported_as_such(self):
+        from autotrader import insight
+        runs = self.runs((0.2, "push"), (2.2, "workflow_dispatch"),
+                         (4.2, "push"), (6.2, "workflow_dispatch"))
+        cov = insight.coverage(runs, 120, now=self.at(8.1),
+                               since_change=self.CHANGED)
+        assert cov["slots_covered"] == 4 and cov["pct"] == 100.0
+        assert cov["slots_scheduled"] == 0 and cov["pct_scheduled"] == 0.0
+        assert cov["propped_up"] is True
+        assert cov["by_trigger"] == {"push": 2, "workflow_dispatch": 2}
+
+    def test_a_schedule_doing_its_job_is_not_flagged(self):
+        from autotrader import insight
+        runs = self.runs((0.2, "schedule"), (2.2, "schedule"),
+                         (4.2, "schedule"), (6.2, "schedule"))
+        cov = insight.coverage(runs, 120, now=self.at(8.1),
+                               since_change=self.CHANGED)
+        assert cov["slots_scheduled"] == 4 and cov["pct_scheduled"] == 100.0
+        assert cov["propped_up"] is False
+
+    def test_an_outside_timer_counts_as_a_schedule(self):
+        """repository_dispatch is the documented way to drive this from a
+        machine that is actually on. It is somebody's schedule."""
+        from autotrader import insight
+        runs = self.runs((0.2, "repository_dispatch"), (2.2, "repository_dispatch"),
+                         (4.2, "repository_dispatch"))
+        cov = insight.coverage(runs, 120, now=self.at(6.1),
+                               since_change=self.CHANGED)
+        assert cov["slots_scheduled"] == 3
+        assert cov["propped_up"] is False
+
+    def test_a_run_with_no_trigger_recorded_is_not_credited_to_the_schedule(self):
+        """Runs from before the bot noted what started them. Counting them as
+        scheduled is the one direction that can flatter the schedule."""
+        from autotrader import insight
+        runs = [dict(r) for r in self.runs((0.2, "x"), (2.2, "x"))]
+        for r in runs:
+            r.pop("trigger")
+        cov = insight.coverage(runs, 120, now=self.at(4.1),
+                               since_change=self.CHANGED)
+        assert cov["slots_covered"] == 2
+        assert cov["slots_scheduled"] == 0
+        assert cov["by_trigger"] == {"unattributed": 2}
+
+    def test_the_mixed_case_counts_only_what_the_schedule_filled(self):
+        from autotrader import insight
+        runs = self.runs((0.2, "schedule"), (2.2, "push"),
+                         (4.2, "schedule"), (6.2, "push"))
+        cov = insight.coverage(runs, 120, now=self.at(8.1),
+                               since_change=self.CHANGED)
+        assert cov["slots_covered"] == 4
+        assert cov["slots_scheduled"] == 2
+        assert cov["propped_up"] is False, "some is not none"

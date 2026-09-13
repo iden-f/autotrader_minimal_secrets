@@ -87,6 +87,15 @@ jobs:
   check:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      # The runner label, where the bot can read it. GitHub exposes the
+      # runner's NAME ("GitHub Actions 2") and its environment, but not the
+      # label that was asked for - and the label is what decides whether a
+      # minute is billed: a LARGER runner is charged on a public repository
+      # like any other. Yes, this is the label written twice;
+      # tests/test_workflows.py asserts the two agree, which is the version of
+      # "written twice" that cannot drift.
+      REPO_RUNNER: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -173,6 +182,10 @@ jobs:
           # config value somebody has to keep in step with reality is a
           # config value that will one day be wrong.
           REPO_VISIBILITY:     ${{ github.event.repository.visibility }}
+          # And what started this check. A coverage figure built out of runs
+          # that only happened because somebody pushed is a measurement of
+          # that person, not of the schedule - see insight.coverage.
+          RUN_TRIGGER:         ${{ github.event_name }}
           # Non-secret settings live in config.json. Only credentials are here,
           # and every one of them is optional - the bot enables whichever
           # channels it finds and says so in the log.

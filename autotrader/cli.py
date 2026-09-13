@@ -603,7 +603,28 @@ def cmd_verify(args: argparse.Namespace) -> int:
         print(_warn("no live cars to verify"))
         return 0
 
-    print(f"Checking {_many(len(watched), 'car')} against the site.\n")
+    # Say what is NOT being checked, not just what is.
+    #
+    # "Checking 28 cars against the site" over a state file holding 90 reads
+    # as the whole ledger. It is the live, unhidden cars - the ones you could
+    # act on - and the 61 a rule hides are tracked just as carefully and are
+    # silently out of scope. Each one is a request on somebody else's site,
+    # which is the reason, and a reason is not a thing to leave unsaid.
+    total = len(state.listings)
+    hidden = sum(1 for e in state.listings.values()
+                 if e.get("status") == "active" and e.get("filtered"))
+    gone = sum(1 for e in state.listings.values()
+               if e.get("status") != "active")
+    print(f"Checking {_many(len(watched), 'car')} against the site.")
+    if not args.hidden and (hidden or gone):
+        left_out = []
+        if hidden:
+            left_out.append(f"{hidden} hidden by a rule (--hidden includes them)")
+        if gone:
+            left_out.append(f"{gone} already gone")
+        print(f"  Not checked: {', '.join(left_out)}. "
+              f"State holds {_many(total, 'row')} in all.")
+    print()
     scraping = cfg.get("scraping", {}) or {}
     fetcher = Fetcher(
         timeout=int(scraping.get("timeout_seconds", 30)),

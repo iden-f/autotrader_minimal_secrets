@@ -187,6 +187,41 @@ and it works.
 | `soak.yml` | on demand | Long-running behaviour checks. |
 | `add-search.yml` | dispatch | Paste a link in the Actions UI. |
 
+### Two kinds of minute
+
+On 13 September the account's 3,000 included minutes hit 100% with eighteen
+days of the month left, and this bot said nothing. It had been saying "None of
+it draws on the allowance", which was true of its own minutes and read like a
+statement about the account. The minutes that exhausted the allowance were
+spent in two private repositories it cannot see.
+
+The ledger now labels every minute **when it is spent** - `exempt`, `drawing`,
+or `unknown` - rather than applying one flag to the month at read time. A
+single flag relabelled September retroactively the day the repository changed.
+`unknown` counts as drawing everywhere a decision is made.
+
+Exemption needs two things to be true, and the bot checks both:
+
+| | how it knows |
+|---|---|
+| the repository is public | `github.event.repository.visibility`, passed through by the workflow |
+| the job is on a standard runner | the label, passed through as `REPO_RUNNER`; a *larger* runner is billed on a public repository like any other |
+
+And the guard states its own blind spot in every reassuring verdict: an
+allowance has one meter per account, and this bot watches one repository. It
+cannot tell you how much of the allowance is left. See `KEEPING-TIME.md` for
+the evidence that this repository's minutes are exempt, and for what happens
+when the allowance runs out (nothing: scheduled runs kept succeeding).
+
+### Who kept time
+
+Coverage counts checks. It now also counts which of them the *schedule*
+produced, because those are different questions and only one of them answers
+"will this still be watching tomorrow". Over the 14 hours after the two-hourly
+schedule went live: 6 of 7 slots covered, 2 of 7 by the schedule. The header
+says both, and says "source not recorded" rather than "none scheduled" when
+the runs predate the bot recording what started them.
+
 ### The schedule, and what it costs
 
 Twelve checks a day, one job each, on `cron: '11 */2 * * *'` **and
