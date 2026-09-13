@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-09-13T00:35:13+00:00",
+ "generated_at": "2026-09-13T00:38:28+00:00",
  "notify": {
   "ntfy_topic": "autotrader-2q592ak9gnx7sqrere5r",
   "ntfy_url": "https://ntfy.sh/autotrader-2q592ak9gnx7sqrere5r",
@@ -20454,18 +20454,18 @@
  "coverage": {
   "window_hours": 24,
   "expected": 48,
-  "checks": 51,
-  "successful": 51,
-  "slots_covered": 40,
-  "complained": 1,
+  "checks": 50,
+  "successful": 50,
+  "slots_covered": 39,
+  "complained": 0,
   "clean": 50,
-  "pct": 83.3,
+  "pct": 81.2,
   "longest_gap_minutes": 208.5,
   "expected_interval_minutes": 30,
   "truncated": false,
-  "since": "2026-09-12T00:35:13+00:00",
+  "since": "2026-09-12T00:38:28+00:00",
   "slots": [
-   2,
+   0,
    1,
    0,
    0,
@@ -20516,13 +20516,13 @@
   ]
  },
  "cost": {
-  "checks": 51,
-  "minutes": 27.1,
-  "mean_seconds": 31.8,
+  "checks": 50,
+  "minutes": 26.6,
+  "mean_seconds": 31.9,
   "window_hours": 24
  },
  "market": {
-  "at": "2026-09-13T00:35:13+00:00",
+  "at": "2026-09-13T00:38:28+00:00",
   "window": {
    "ids_span_days": 3,
    "watching_days": 3,
