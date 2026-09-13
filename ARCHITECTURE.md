@@ -213,6 +213,31 @@ cannot tell you how much of the allowance is left. See `KEEPING-TIME.md` for
 the evidence that this repository's minutes are exempt, and for what happens
 when the allowance runs out (nothing: scheduled runs kept succeeding).
 
+### The pacemaker outlived its own deletion
+
+The three pacemaker workflows were deleted from `main` at 06:39 on 13
+September. They kept dispatching checks until **13:39**, seven hours later,
+because deleting a workflow file does not stop runs already in flight:
+
+| Run | Started | Ended | Held a runner for |
+|---|---|---|---|
+| Pacemaker B #7 | 05:05:50Z | **13:39:15Z** | 8h 33m |
+| Pacemaker C #7 | 04:55:21Z | 11:36:01Z | 6h 41m |
+| Pacemaker #9 | 00:54:51Z | 06:17:15Z | 5h 22m |
+
+For those seven hours the repository had a dispatcher nothing in it could
+explain: every 30 minutes, on a two-second drift that is the signature of a
+`sleep` loop rather than a cron. Three whole workflows, `soak.yml`,
+`control.yml`, a sibling repository and an unrelated private one were all
+eliminated before the answer turned out to be code this repository no longer
+contained.
+
+`get_workflow_run_usage` on the 8h33m run: `billable.UBUNTU.total_ms: 0`. All
+3,590 pacemaker minutes were exempt and none of them touched the allowance.
+
+Deleting a scheduled workflow from the default branch stops it *starting*, and
+that is all it does. To stop one already running, cancel the run.
+
 ### Who kept time
 
 Coverage counts checks. It now also counts which of them the *schedule*

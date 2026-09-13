@@ -1071,3 +1071,92 @@ class TestTheMinutesAreShownHonestly:
             assert "BUDGET-STOP" in can, can
         finally:
             ctx.close()
+
+
+class TestThePageNamesTheTimerKeepingTime:
+    """"An outside timer is working" is not something you can go and look at
+    when it stops. The caller names itself and the page prints the name."""
+
+    BASE = {"too_short": False, "pct": 100.0, "expected": 4,
+            "slots_covered": 4, "window_hours": 8, "successful": 4,
+            "expected_interval_minutes": 120}
+
+    def _tile(self, page, cov):
+        page.evaluate(
+            "c => { app.data.coverage = Object.assign({}, app.data.coverage, c);"
+            " renderStatus(); }", cov)
+        page.wait_for_timeout(250)
+        return page.evaluate("""() => {
+          const d = [...document.querySelectorAll('[data-view="status"] .stat')]
+            .find(s => /keeping time/i.test(s.querySelector('dt').textContent));
+          return d ? d.innerText : ''; }""")
+
+    def test_an_outside_timer_is_named(self, browser, site):
+        ctx, page, _ = _page(browser, site, 1440, "light", view="status")
+        try:
+            tile = self._tile(page, dict(
+                self.BASE, slots_scheduled=4,
+                timekeeper="repository_dispatch:cron-job.org",
+                slots_by_trigger={"repository_dispatch:cron-job.org": 3, "schedule": 1},
+                by_trigger={"repository_dispatch": 3, "schedule": 1}))
+            assert "cron-job.org" in tile, tile
+            assert "outside timer" in tile, tile
+        finally:
+            ctx.close()
+
+    def test_it_says_so_when_a_person_is_the_timer(self, browser, site):
+        ctx, page, _ = _page(browser, site, 1440, "light", view="status")
+        try:
+            tile = self._tile(page, dict(
+                self.BASE, slots_scheduled=0, timekeeper="push",
+                slots_by_trigger={"push": 4}, by_trigger={"push": 4}))
+            assert "push to the repository" in tile, tile
+        finally:
+            ctx.close()
+
+    def test_the_raw_event_name_never_reaches_the_reader(self, browser, site):
+        ctx, page, _ = _page(browser, site, 1440, "light", view="status")
+        try:
+            tile = self._tile(page, dict(
+                self.BASE, slots_scheduled=4, timekeeper="repository_dispatch",
+                slots_by_trigger={"repository_dispatch": 4},
+                by_trigger={"repository_dispatch": 4}))
+            assert "repository_dispatch" not in tile, tile
+            assert "outside timer" in tile, tile
+        finally:
+            ctx.close()
+
+
+@pytest.mark.parametrize("width", (390, 834, 1440))
+def test_no_stat_tile_is_mostly_empty_because_of_its_neighbour(browser, site, width):
+    """A grid row is as tall as its tallest tile, so one tile carrying a
+    paragraph stretches the short ones beside it into mostly-empty boxes.
+
+    On a phone the coverage explanation was 370px and "Last good check" was
+    130px of text inside a 370px card, which reads as a rendering fault.
+    """
+    ctx, page, _ = _page(browser, site, width, "light", view="status")
+    try:
+        worst = page.evaluate("""() => {
+          let worst = null;
+          for (const s of document.querySelectorAll('[data-view="status"] .stat')) {
+            const box = s.getBoundingClientRect().height;
+            // How much of the card its own content actually occupies.
+            let content = 0;
+            for (const kid of s.children) content += kid.getBoundingClientRect().height;
+            const style = getComputedStyle(s);
+            content += parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+            const filled = content / box;
+            if (!worst || filled < worst.filled) {
+              worst = { name: s.querySelector('dt').textContent.trim(),
+                        box: Math.round(box), content: Math.round(content),
+                        filled: Math.round(filled * 100) / 100 };
+            }
+          }
+          return worst; }""")
+        assert worst, "no stat tiles"
+        assert worst["filled"] >= 0.5, (
+            f"{width}px: '{worst['name']}' is {worst['content']}px of content "
+            f"in a {worst['box']}px card ({worst['filled']:.0%} full)")
+    finally:
+        ctx.close()

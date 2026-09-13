@@ -78,19 +78,33 @@ runner a day. It is free here for the same reason everything else is, which is
 exactly the argument that turned out to be the wrong way to decide.
 `tests/test_workflows.py` fails if one comes back.
 
-## Option 2, end to end
+## Option 2, end to end — four steps, in order
 
-You need a fine-grained token that can do one thing, and a free timer.
+You need a token that can do one thing, and a timer. Roughly ten minutes.
 
-**Step 1 — make the token.** github.com → Settings → Developer settings →
-Personal access tokens → Fine-grained tokens → Generate new token.
+### Step 1 — make the token
 
-- Repository access: **Only select repositories** → `autotrader_minimal_secrets`
-- Permissions → Repository permissions → **Contents: Read and write**
-  (this is what `repository_dispatch` requires; nothing else needs to be on)
-- Expiration: whatever you are willing to rotate
+github.com → Settings → Developer settings → Personal access tokens →
+**Fine-grained tokens** → Generate new token.
 
-**Step 2 — check it works.** One paste, with your token in place of `TOKEN`:
+| Field | Value |
+|---|---|
+| Repository access | **Only select repositories** → `autotrader_minimal_secrets` |
+| Repository permissions → **Contents** | **Read and write** |
+| Everything else | leave at *No access* |
+| Expiration | your call; the timer stops working the day it expires |
+
+**Contents: write is the whole list.** `repository_dispatch` is documented
+under Contents, not Actions, which is the one thing people get wrong here. Do
+not grant Actions, Workflows, or Administration — none of them is needed and
+each one widens what a leaked token could do.
+
+*What you should see:* a token starting `github_pat_`. Copy it now; GitHub
+will not show it again.
+
+### Step 2 — prove the token works, before automating it
+
+One paste, with your token in place of `TOKEN`:
 
 ```sh
 curl -sS -X POST \
@@ -98,32 +112,68 @@ curl -sS -X POST \
   -H "Authorization: Bearer TOKEN" \
   -H "X-GitHub-Api-Version: 2022-11-28" \
   https://api.github.com/repos/iden-f/autotrader_minimal_secrets/dispatches \
-  -d '{"event_type":"check"}' -w '%{http_code}\n'
+  -d '{"event_type":"check","client_payload":{"from":"my-mac"}}' \
+  -w '\nHTTP %{http_code}\n'
 ```
 
-`204` means it worked, and a run appears under Actions within seconds. `404`
-means the token cannot see the repository; `403` means it lacks Contents:
-write.
+*What you should see:* `HTTP 204` and no body. Within about ten seconds a
+**Check AutoTrader** run appears at
+`github.com/iden-f/autotrader_minimal_secrets/actions`, with
+*repository_dispatch* under its title.
 
-**Step 3 — put it on a timer.** Any of these; they are the same request.
+| Instead you got | It means |
+|---|---|
+| `404` | the token cannot see the repository — wrong repo selected in step 1 |
+| `403` | the token lacks **Contents: write** |
+| `422` | the JSON body is malformed — check the quoting |
 
-*cron-job.org* (free, hosted, no card):
-- URL: `https://api.github.com/repos/iden-f/autotrader_minimal_secrets/dispatches`
-- Method: `POST`
-- Headers: `Authorization: Bearer TOKEN`, `Accept: application/vnd.github+json`,
-  `X-GitHub-Api-Version: 2022-11-28`
-- Body: `{"event_type":"check"}`
-- Schedule: every hour at minute 25 (odd minute, away from GitHub's own)
+`client_payload.from` is what makes the dashboard able to name your timer.
+Use anything short and recognisable: `my-mac`, `cron-job.org`, `pi`.
 
-*Your Mac* — `crontab -e`:
+### Step 3 — put it on a timer
+
+Pick one. They send the identical request.
+
+**cron-job.org** — free, hosted, no card, survives your laptop being shut:
+
+| Field | Value |
+|---|---|
+| URL | `https://api.github.com/repos/iden-f/autotrader_minimal_secrets/dispatches` |
+| Method | `POST` |
+| Schedule | **every hour at minute 25** |
+| Headers | `Authorization: Bearer TOKEN`<br>`Accept: application/vnd.github+json`<br>`X-GitHub-Api-Version: 2022-11-28` |
+| Body | `{"event_type":"check","client_payload":{"from":"cron-job.org"}}` |
+
+**Your Mac** — `crontab -e`, one line:
+
 ```
-25 * * * * curl -sS -X POST -H "Accept: application/vnd.github+json" -H "Authorization: Bearer TOKEN" -H "X-GitHub-Api-Version: 2022-11-28" https://api.github.com/repos/iden-f/autotrader_minimal_secrets/dispatches -d '{"event_type":"check"}' >/dev/null
+25 * * * * curl -sS -X POST -H "Accept: application/vnd.github+json" -H "Authorization: Bearer TOKEN" -H "X-GitHub-Api-Version: 2022-11-28" https://api.github.com/repos/iden-f/autotrader_minimal_secrets/dispatches -d '{"event_type":"check","client_payload":{"from":"my-mac"}}' >/dev/null 2>&1
 ```
 
-Hourly rather than two-hourly on purpose: the bot's own 90-minute floor means
-an extra firing inside a window is a 15-second no-op, so asking twice as often
-as you need costs nothing and doubles the chance of landing one.
+**Hourly, against a two-hourly schedule, on purpose.** Asking more often than
+you need is free and doubles the chance of landing one. It cannot make the bot
+scrape more often: `health.min_interval_minutes` is 90, and a firing that
+finds a check younger than that exits in about fifteen seconds having made
+zero requests. Minute 25 is chosen to sit away from GitHub's own :11 and :41.
 
-**How you will know it worked.** The Status tab's coverage note names what
-started the checks. An outside timer counts as a schedule there, so it should
-read "N of N came from the schedule" rather than naming pushes.
+*What you should see:* two or three **Check AutoTrader** runs an hour, most of
+them lasting ~15 seconds and doing nothing. That is the design working — the
+short ones are the duplicates being refused.
+
+### Step 4 — confirm it is the thing keeping time
+
+Open the dashboard's **Status** tab after a few hours.
+
+*What you should see:* a **Keeping time** tile naming your timer —
+"cron-job.org (an outside timer)" — with a breakdown underneath like
+*"3 slots from cron-job.org (an outside timer) and 1 slot from the schedule"*.
+The header at the top of the page stops saying "none of it scheduled".
+
+If **Keeping time** still names *a push to the repository*, the timer is not
+reaching GitHub: re-run step 2 by hand and check the token has not expired.
+
+## Undoing it
+
+Delete the cron entry, and revoke the token at Settings → Developer settings.
+Nothing in the repository needs changing — `repository_dispatch` is an open
+door that simply stops being knocked on.

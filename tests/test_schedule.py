@@ -213,3 +213,60 @@ class TestTheScrapingRateIsWhatWasAskedFor:
         assert floor < expected, (
             "a floor at or above the interval would skip the checks the "
             "schedule actually asked for")
+
+
+class TestAnOutsideTimerCannotDoubleScrape:
+    """The recommended setup is an external cron BESIDE GitHub's own, so the
+    bot is asked for a check more often than it should make one. That is the
+    design - two timers means one can fail - and it only works while the
+    floor holds.
+
+    An hourly external timer plus '11,41 */2 * * *' asks for a check up to
+    four times per two-hour window. The site must see one.
+    """
+
+    def test_the_floor_is_below_the_interval_and_above_a_burst(self):
+        from pathlib import Path
+        from autotrader.config import Config
+        cfg = (Config.load("config.json") if Path("config.json").exists()
+               else Config.defaults())
+        interval = int(cfg.get("health.expected_interval_minutes"))
+        floor = float(cfg.get("health.min_interval_minutes") or interval / 3.0)
+        assert floor < interval, "a floor at or above the interval skips real checks"
+        assert floor >= 60, (
+            f"a {floor:.0f}-minute floor lets an hourly outside timer scrape "
+            f"every hour against a {interval}-minute schedule")
+
+    @pytest.mark.parametrize("how", ["schedule", "repository_dispatch",
+                                     "repository_dispatch:cron-job.org"])
+    def test_every_timer_is_deduplicated(self, how):
+        """A dispatch that is not treated as scheduled is not deduplicated,
+        and an external timer would scrape on every firing."""
+        from autotrader.runner import _trigger_of
+        env = {"RUN_TRIGGER": how.split(":")[0]}
+        if ":" in how:
+            env["RUN_TRIGGER_FROM"] = how.split(":", 1)[1]
+        assert _trigger_of(env) == how
+
+    def test_the_workflow_marks_an_outside_timer_as_scheduled(self):
+        """AUTOTRADER_SCHEDULED is what turns the floor on. A repository
+        dispatch missing from that expression is an external timer that
+        scrapes every single firing."""
+        import yaml
+        from pathlib import Path
+        doc = yaml.safe_load(Path(".github/workflows/watch.yml").read_text())
+        step = [s for s in doc["jobs"]["check"]["steps"] if s.get("id") == "bot"][0]
+        marker = step["env"]["AUTOTRADER_SCHEDULED"]
+        assert "repository_dispatch" in marker
+        assert "schedule" in marker
+
+    def test_a_named_outside_timer_still_counts_as_a_schedule(self):
+        """The name must not stop it counting. Matching the whole string
+        would have silently reclassified every external timer the moment it
+        started saying who it was."""
+        from autotrader.insight import _is_a_schedule
+        assert _is_a_schedule("repository_dispatch:cron-job.org")
+        assert _is_a_schedule("repository_dispatch")
+        assert _is_a_schedule("schedule")
+        assert not _is_a_schedule("push")
+        assert not _is_a_schedule("workflow_dispatch")

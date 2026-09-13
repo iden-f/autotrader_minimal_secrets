@@ -326,3 +326,52 @@ class TestOneFormatterPerIdea:
                 raise AssertionError(
                     f"a literal 'half-hour' at line {node.lineno} - "
                     f"_slot_word is where that word lives")
+
+
+class TestEveryTriggerTheBotCanRecordHasPageCopy:
+    """The page turns an event name into a sentence. A trigger with no copy
+    prints the raw GitHub event name at a reader - "workflow_dispatch" in the
+    middle of an English sentence - which is the same class of leak as a
+    placeholder title reaching the Feed."""
+
+    def page(self):
+        from pathlib import Path
+        return (Path(__file__).resolve().parent.parent
+                / "docs" / "app.js").read_text()
+
+    def triggers_the_workflow_can_produce(self):
+        import yaml
+        from pathlib import Path
+        doc = yaml.safe_load(
+            (Path(__file__).resolve().parent.parent
+             / ".github" / "workflows" / "watch.yml").read_text())
+        on = doc[True] if True in doc else doc["on"]
+        # Plus the two the bot invents: a local run, and a run recorded
+        # before it started noting what started it.
+        return set(on) | {"manual", "unattributed"}
+
+    def test_each_one_has_a_phrase(self):
+        import re
+        source = self.page()
+        block = source[source.index("const TRIGGER_WORDS"):]
+        block = block[:block.index("};")]
+        known = set(re.findall(r"^\s+(\w+):", block, re.M))
+        missing = self.triggers_the_workflow_can_produce() - known
+        assert not missing, f"no page copy for {sorted(missing)}"
+
+    def test_a_named_outside_timer_does_not_print_its_event_name(self):
+        """"repository_dispatch:cron-job.org" must reach the reader as the
+        name, not as the event."""
+        source = self.page()
+        assert "startsWith('repository_dispatch:')" in source
+        assert "an outside timer" in source
+
+    def test_python_and_the_page_agree_on_what_counts_as_a_schedule(self):
+        import re
+        from autotrader.insight import SCHEDULE_TRIGGERS
+        source = self.page()
+        # The page filters these out when listing "the rest came from...".
+        filtered = set(re.findall(r"k !== '(\w+)'", source))
+        assert SCHEDULE_TRIGGERS <= filtered, (
+            f"the page still lists {sorted(SCHEDULE_TRIGGERS - filtered)} as "
+            f"something other than the schedule")

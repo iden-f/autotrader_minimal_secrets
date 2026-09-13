@@ -277,3 +277,26 @@ class TestWhoKeptTime:
         assert cov["slots_covered"] == 4
         assert cov["slots_scheduled"] == 2
         assert cov["propped_up"] is False, "some is not none"
+
+
+def test_a_deduplicated_scheduled_firing_still_proves_the_cron_is_alive():
+    """A push at 23:00 suppresses the 23:41 cron via the 90-minute floor.
+    Counting only slots FILLED would read that as "the schedule did nothing" -
+    so the person measuring the schedule would be the person hiding it."""
+    from datetime import datetime, timedelta, timezone
+    from autotrader import insight
+    base = datetime(2026, 9, 14, 0, 0, tzinfo=timezone.utc)
+
+    def run(hours, trigger, read=True):
+        return {"at": (base + timedelta(hours=hours)).isoformat(timespec="seconds"),
+                "ok": True, "trigger": trigger,
+                "searches_run": 1 if read else 0,
+                "listings_seen": 5 if read else 0, "skipped": not read}
+
+    cov = insight.coverage(
+        [run(0.1, "push"), run(0.7, "schedule", read=False),
+         run(2.1, "schedule"), run(2.7, "schedule", read=False)],
+        120, now=base + timedelta(hours=4.05), since_change=base.isoformat())
+    assert cov["schedule_fired"] == 3, "deduplicated firings are still firings"
+    assert cov["slots_scheduled"] == 1, "only one slot was actually filled by it"
+    assert cov["slots_covered"] == 2

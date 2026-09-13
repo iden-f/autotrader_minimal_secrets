@@ -12,6 +12,7 @@ import hashlib
 import json
 import logging
 import os
+import re
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -1228,7 +1229,7 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                 state.data.setdefault("repo", {})["runner"] = runner_label
             # What started this check, so coverage can tell a schedule doing
             # its job from somebody pushing to the repository.
-            report.trigger = (env or {}).get("RUN_TRIGGER", "").strip() or "manual"
+            report.trigger = _trigger_of(env or {})
             # The interval this run was asked for, so coverage can be
             # measured against the schedule that was actually running.
             try:
@@ -1253,6 +1254,23 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                 report.errors.append(f"could not save state: {exc}")
 
     return report
+
+
+# Which timer started this check, named so a person can go and look at it.
+#
+# A repository_dispatch is an OUTSIDE timer, and "an outside timer is keeping
+# time" is not something you can act on when it stops. The caller names itself
+# in client_payload.from and that name reaches the dashboard, so it is bounded
+# hard: lowercase letters, digits, dot and dash, 24 characters, nothing else.
+_TRIGGER_FROM = re.compile(r"[^a-z0-9.\-]+")
+
+
+def _trigger_of(env: dict[str, str]) -> str:
+    how = str(env.get("RUN_TRIGGER") or "").strip() or "manual"
+    if how != "repository_dispatch":
+        return how
+    who = _TRIGGER_FROM.sub("", str(env.get("RUN_TRIGGER_FROM") or "").strip().lower())
+    return f"{how}:{who[:24]}" if who else how
 
 
 def _charge_the_budget(cfg: Config, state: State, report: "RunReport",

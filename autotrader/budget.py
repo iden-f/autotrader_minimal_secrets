@@ -178,6 +178,21 @@ class Ledger:
         "how much of the allowance is left."
     )
 
+    def _short(self, projection: float | None) -> str:
+        """One line for a tile. No caveat, no blind spot, no arithmetic."""
+        drawing, exempt = self.drawing, self.exempt
+        if not drawing:
+            return (f"{exempt:,.0f} minute{'' if exempt == 1 else 's'} spent, "
+                    f"none of {'it' if exempt == 1 else 'them'} on the allowance")
+        bits = [f"{drawing:,.0f} of {self.allowance:,} this month"]
+        if projection is not None:
+            bits.append(f"about {projection:,.0f} by month end")
+        if exempt:
+            bits.append(f"{exempt:,.0f} more ran exempt")
+        if self.unknown:
+            bits.append(f"{self.unknown:,.0f} unlabelled, counted as drawing")
+        return " \u00b7 ".join(bits)
+
     def verdict(self, now: datetime) -> dict[str, Any]:
         """Where this month stands, in numbers and in a sentence."""
         projection = self.projected(now)
@@ -243,6 +258,11 @@ class Ledger:
             "label": self.label,
             "why": self.why,
             "blind_spot": self.BLIND_SPOT,
+            # The tile's own line, without the caveat. Six lines of prose in
+            # a stat tile is prose nobody reads, and the caveat matters too
+            # much to be the fifth line of one - the page prints it once,
+            # under the row, where it applies to every figure in it.
+            "short": self._short(projection),
             "state": state,
             "text": text,
             # Whether the next check can run at all. An exhausted allowance

@@ -326,7 +326,33 @@ const TRIGGER_WORDS = {
   manual: 'a run by hand',
   unattributed: 'runs recorded before the bot noted what started them',
 };
-const triggerWord = k => TRIGGER_WORDS[k] || k;
+/* The same things, short enough to BE a tile's value. "Keeping time: runs
+   recorded before the bot noted what started them" set a subordinate clause
+   in 20px bold across two lines. A value is a noun phrase; the sentence goes
+   underneath it. */
+const TRIGGER_NAMES = {
+  schedule: 'GitHub\u2019s schedule',
+  repository_dispatch: 'An outside timer',
+  workflow_dispatch: 'Hand dispatches',
+  push: 'Your pushes',
+  manual: 'Runs by hand',
+  unattributed: 'Not recorded',
+};
+function triggerName(key) {
+  const k = String(key || '');
+  if (k.startsWith('repository_dispatch:')) return k.slice('repository_dispatch:'.length);
+  return TRIGGER_NAMES[k] || k;
+}
+/* A repository_dispatch may name its caller: "repository_dispatch:my-mac".
+   The name is the useful half - "an outside timer" is not something you can
+   go and look at when it stops. */
+function triggerWord(key) {
+  const k = String(key || '');
+  if (k.startsWith('repository_dispatch:')) {
+    return `${k.slice('repository_dispatch:'.length)} (an outside timer)`;
+  }
+  return TRIGGER_WORDS[k] || k;
+}
 
 function trustState() {
   const d = app.data;
@@ -1598,7 +1624,8 @@ function renderStatus() {
     : covPct >= 80 ? 'good' : covPct >= 40 ? 'warn' : 'bad';
   const stats = el('dl', 'stats');
   stats.innerHTML = `
-    <div class="stat" data-tone="${covKept && covKept.level === 'none' ? 'warn' : covTone}">
+    <div class="stat${covKept && covKept.level !== 'all' ? ' stat--wide' : ''}"
+         data-tone="${covKept && covKept.level === 'none' ? 'warn' : covTone}">
       <dt>Coverage, ${hours(cov.window_hours || 24)}</dt>
       <dd class="num">${covPct === null ? '—' : `${covPct}%`}</dd>
       <dd class="stat__note">${cov.too_short
@@ -1617,7 +1644,15 @@ function renderStatus() {
           ? `<b>The schedule filled none of them.</b> Every check came from `
             + `${andList(Object.keys(cov.by_trigger || {})
                   .filter(k => k !== 'schedule' && k !== 'repository_dispatch')
-                  .map(triggerWord))} — stop doing that and this number goes to zero.`
+                  .map(triggerWord))}.`
+            // "Stop doing that" is only true of triggers the bot can
+            // name. An unattributed run might have BEEN the schedule;
+            // telling someone to stop something the data cannot
+            // attribute is the page asserting more than it knows.
+            + ((cov.by_trigger || {}).unattributed
+               ? ' The unattributed ones may have been the schedule — they'
+                 + ' predate the bot recording what started a run.'
+               : ' Stop doing that and this number goes to zero.')
           : `${num(covKept.mine)} of those ${num(covKept.all)} came from the `
             + `schedule; the rest from `
             + `${andList(Object.keys(cov.by_trigger || {})
@@ -1642,7 +1677,7 @@ function renderStatus() {
         (d.budget.drawing_minutes ?? 0) > 0
           ? `<small style="display:inline"> / ${num(d.budget.allowance)}</small>`
           : ''}</dd>
-      <dd class="stat__note">${esc(d.budget.text)}</dd></div>
+      <dd class="stat__note">${esc(d.budget.short || d.budget.text)}</dd></div>
     <div class="stat"><dt>Exempt minutes</dt>
       <dd class="num">${num(d.budget.exempt_minutes ?? 0)}</dd>
       <dd class="stat__note">${(d.budget.exempt_minutes ?? 0) > 0
@@ -1655,10 +1690,23 @@ function renderStatus() {
         ? 'the bot has stopped itself; delete BUDGET-STOP to start it again'
         : `nothing here is stopping it \u2014 ${plural(d.budget.days_to_reset ?? 0, 'day')} `
           + 'until the allowance refills'}</dd></div>` : ''}
+    ${cov.timekeeper ? `<div class="stat" data-tone="${
+        covKept && covKept.level === 'none' ? 'warn' : ''}">
+      <dt>Keeping time</dt>
+      <dd>${esc(triggerName(cov.timekeeper))}</dd>
+      <dd class="stat__note">${andList(Object.entries(cov.slots_by_trigger || {})
+        .map(([k, n]) => `${plural(n, slotWord(cov, false))} from ${triggerWord(k)}`))
+        || 'nothing has filled a slot yet'}</dd></div>` : ''}
     <div class="stat" data-tone="${h.accounted?.unexplained ? 'bad' : 'good'}"><dt>Unaccounted cars</dt>
       <dd class="num">${h.accounted?.unexplained ?? 0}</dd>
       <dd class="stat__note">${h.accounted?.delivered ?? 0} told, ${h.accounted?.quiet ?? 0} deliberately quiet</dd></div>`;
   host.appendChild(stats);
+  // Said once, under the row, because it qualifies every minute in it. It
+  // used to be the fifth line of a stat tile, which is where a sentence goes
+  // to not be read.
+  if (d.budget?.blind_spot) {
+    host.appendChild(el('p', 'note measure', esc(d.budget.blind_spot)));
+  }
 
   // When the checks happened, not just how many. A percentage cannot tell a
   // schedule that is thin everywhere from one that is absent for six hours

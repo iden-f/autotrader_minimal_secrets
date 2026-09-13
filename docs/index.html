@@ -617,6 +617,11 @@ select:hover,.btn:hover{ background:var(--surface-2); }
 
 .stats{ display:grid; gap:var(--s3); grid-template-columns:repeat(2,1fr); }
 @media (min-width:560px){ .stats{ grid-template-columns:repeat(3,1fr); gap:var(--s4); } }
+/* The tile carrying a paragraph takes the whole row rather than stretching
+   its neighbour's empty box to match. On a phone the coverage explanation is
+   370px tall and "Last good check" is 130px of text in a 370px card, which
+   reads as a rendering fault rather than as a layout. */
+.stat--wide{ grid-column:1/-1; }
 .stat{ background:var(--surface); border-radius:var(--r-md); padding:var(--s4); }
 .stat dt{
   font-size:var(--t-micro); font-weight:520; letter-spacing:.06em;

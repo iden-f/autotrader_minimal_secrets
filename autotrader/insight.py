@@ -400,6 +400,15 @@ def _read_the_site(run: dict[str, Any]) -> bool:
 SCHEDULE_TRIGGERS = frozenset({"schedule", "repository_dispatch"})
 
 
+def _is_a_schedule(how: str) -> bool:
+    """A repository_dispatch may name its caller: "repository_dispatch:my-mac".
+
+    Matching the whole string would have quietly stopped counting outside
+    timers as schedules the moment they started saying who they were.
+    """
+    return str(how or "").split(":", 1)[0] in SCHEDULE_TRIGGERS
+
+
 def coverage(runs: list[dict[str, Any]], expected_minutes: int = 30,
              window_hours: int = 24, now: datetime | None = None,
              *, since_change: str | None) -> dict[str, Any]:
@@ -489,15 +498,31 @@ def coverage(runs: list[dict[str, Any]], expected_minutes: int = 30,
     # the direction that cannot flatter the schedule.
     by_trigger: dict[str, int] = {}
     scheduled: set[int] = set()
+    # Times the schedule FIRED, whether or not the firing produced a check.
+    #
+    # A firing that finds a recent check exits without reading the site, which
+    # is the deduplication working - but it is still evidence that GitHub's
+    # cron is alive, and slots_scheduled cannot see it. Without this, a push
+    # at 23:00 suppressing the 23:41 cron reads as "the schedule did nothing",
+    # and the person measuring the schedule is the person hiding it.
+    fired = 0
+    # Which timer filled each slot first, so the page can name the one that is
+    # actually keeping time rather than reporting that something is.
+    filled: dict[int, str] = {}
     for run in runs:
         when = _dt(run.get("at"))
-        if when is None or when < start or not _read_the_site(run):
+        if when is None or when < start:
+            continue
+        if _is_a_schedule(str(run.get("trigger") or "")):
+            fired += 1
+        if not _read_the_site(run):
             continue
         how = str(run.get("trigger") or "") or "unattributed"
         by_trigger[how] = by_trigger.get(how, 0) + 1
-        if how in SCHEDULE_TRIGGERS:
-            index = int((when - start).total_seconds() // slot)
-            if 0 <= index < expected:
+        index = int((when - start).total_seconds() // slot)
+        if 0 <= index < expected:
+            filled.setdefault(index, how)
+            if _is_a_schedule(how):
                 scheduled.add(index)
 
     gaps: list[float] = []
@@ -551,7 +576,42 @@ def coverage(runs: list[dict[str, Any]], expected_minutes: int = 30,
         # header says so rather than letting a healthy-looking percentage
         # stand for a schedule that is not running.
         "propped_up": bool(covered) and not scheduled,
+        # The timer that filled the most slots, by name. With an external
+        # cron set up this reads "repository_dispatch:cron-job.org", which is
+        # a thing you can go and look at when it stops.
+        # Firings, not slots: a scheduled run that deduplicated still proves
+        # the cron is alive. Compare against `expected` to see whether GitHub
+        # is serving the schedule at all, independently of what filled a slot.
+        "schedule_fired": fired,
+        "timekeeper": _timekeeper(filled),
+        # Every timer, and how many slots each one filled. Counts SLOTS, not
+        # checks: three dispatches inside one window kept time once.
+        "slots_by_trigger": _slots_by_trigger(filled),
     }
+
+
+def _slots_by_trigger(filled: dict[int, str]) -> dict[str, int]:
+    out: dict[str, int] = {}
+    for how in filled.values():
+        out[how] = out.get(how, 0) + 1
+    return dict(sorted(out.items(), key=lambda kv: (-kv[1], kv[0])))
+
+
+def _timekeeper(filled: dict[int, str]) -> str | None:
+    """Whichever timer filled the most slots, or None when none did.
+
+    Ties go to the schedule: if a cron and a push each filled two, the honest
+    headline is that the schedule is working, and the push is incidental.
+    """
+    counts = _slots_by_trigger(filled)
+    if not counts:
+        return None
+    best = max(counts.values())
+    leaders = [how for how, n in counts.items() if n == best]
+    for how in leaders:
+        if _is_a_schedule(how):
+            return how
+    return leaders[0]
 
 
 def _slot_row(runs: list[dict[str, Any]], start: datetime, slot: int,

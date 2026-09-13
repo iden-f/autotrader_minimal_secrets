@@ -186,6 +186,12 @@ jobs:
           # that only happened because somebody pushed is a measurement of
           # that person, not of the schedule - see insight.coverage.
           RUN_TRIGGER:         ${{ github.event_name }}
+          # And WHICH outside timer, when there is one. An external cron is
+          # the recommended way to keep this on time, and "a timer somewhere
+          # is working" is not an answer you can act on when it stops. The
+          # caller names itself in client_payload.from; anything else is
+          # ignored, because this string reaches a dashboard.
+          RUN_TRIGGER_FROM:    ${{ github.event.client_payload.from }}
           # Non-secret settings live in config.json. Only credentials are here,
           # and every one of them is optional - the bot enables whichever
           # channels it finds and says so in the log.
