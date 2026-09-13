@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-09-13T00:38:28+00:00",
+ "generated_at": "2026-09-13T00:49:15+00:00",
  "notify": {
   "ntfy_topic": "autotrader-2q592ak9gnx7sqrere5r",
   "ntfy_url": "https://ntfy.sh/autotrader-2q592ak9gnx7sqrere5r",
@@ -2693,7 +2693,7 @@
    "photo_count": 12,
    "thumb": "thumbs/dc98e0d2-e5ef-454e-8313-308eb4389ada.webp",
    "per_1000km": 391.7,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "cddef74d-d4dd-4627-85e5-bb70687a3f0e",
@@ -2742,7 +2742,7 @@
    "photo_count": 2,
    "thumb": "thumbs/cddef74d-d4dd-4627-85e5-bb70687a3f0e.webp",
    "per_1000km": 1126.4,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "a00d0e86-d214-4f7f-bf05-a714ad0a9727",
@@ -2801,7 +2801,7 @@
    "photo_count": 12,
    "thumb": "thumbs/a00d0e86-d214-4f7f-bf05-a714ad0a9727.webp",
    "per_1000km": 1716.6,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "6dc0a009-ffac-4b3b-865e-eb307a562d16",
@@ -2860,7 +2860,7 @@
    "photo_count": 12,
    "thumb": "thumbs/6dc0a009-ffac-4b3b-865e-eb307a562d16.webp",
    "per_1000km": 663.8,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "6aed63a2-6cf3-4c09-90e7-d8eec032e2aa",
@@ -2924,7 +2924,7 @@
    "photo_count": 12,
    "thumb": "thumbs/6aed63a2-6cf3-4c09-90e7-d8eec032e2aa.webp",
    "per_1000km": 949.6,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "6599fe62-364d-4eee-a40a-61441ad5387f",
@@ -2972,7 +2972,7 @@
    "photo_count": 1,
    "thumb": "thumbs/6599fe62-364d-4eee-a40a-61441ad5387f.webp",
    "per_1000km": 515.0,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "5b75a3c1-ef4b-4a57-877b-e536739f02cf",
@@ -3031,7 +3031,7 @@
    "photo_count": 12,
    "thumb": "thumbs/5b75a3c1-ef4b-4a57-877b-e536739f02cf.webp",
    "per_1000km": 1062.4,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "302d3539-e684-458a-ba76-bc57f1e138c3",
@@ -3090,7 +3090,7 @@
    "photo_count": 12,
    "thumb": "thumbs/302d3539-e684-458a-ba76-bc57f1e138c3.webp",
    "per_1000km": 624.5,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "2b2d13d1-feaa-4c7e-ae10-92f0e9c5978a",
@@ -3154,7 +3154,7 @@
    "photo_count": 12,
    "thumb": "thumbs/2b2d13d1-feaa-4c7e-ae10-92f0e9c5978a.webp",
    "per_1000km": 641.7,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "0d995e07-1ec8-47ef-aef7-0cbb117e04d1",
@@ -3213,7 +3213,7 @@
    "photo_count": 12,
    "thumb": "thumbs/0d995e07-1ec8-47ef-aef7-0cbb117e04d1.webp",
    "per_1000km": 838.8,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "d5ab509e-9f04-4b9b-830a-3e4733d615ae",
@@ -10771,7 +10771,7 @@
    "is_new": false,
    "photo_count": 11,
    "per_1000km": null,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "f43c9faa-4b84-4ba6-8cce-40acdce4005c",
@@ -10815,7 +10815,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": 7240.7,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "f1b1cd3e-3266-4d0b-990c-d7657cac5d33",
@@ -10859,7 +10859,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": 11213.7,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "f03bb4a6-439a-4e35-9a59-a85ebb9344df",
@@ -10903,7 +10903,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": null,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "d88b83d7-2ff3-4333-8020-d733d3824e40",
@@ -10947,7 +10947,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": null,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "d0c9c72a-4602-44b9-8d28-d6b9f778ed1d",
@@ -10991,7 +10991,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": null,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "c77d8fa5-db14-427b-96a3-b465ca58702b",
@@ -11035,7 +11035,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": 7776.5,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "b7f615cd-cce2-4416-b2b0-e696d828d819",
@@ -11079,7 +11079,7 @@
    "is_new": false,
    "photo_count": 3,
    "per_1000km": null,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "9a01dd27-ad0b-4c99-adbc-7c64ca9fbca0",
@@ -11128,7 +11128,7 @@
    "price_change": 1920,
    "photo_count": 12,
    "per_1000km": 5933.9,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "9984a76e-3f73-4619-8319-b81b9fbca43b",
@@ -11172,7 +11172,7 @@
    "is_new": false,
    "photo_count": 3,
    "per_1000km": null,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "96b0e88a-4d76-4447-ae19-46b95953fcf3",
@@ -11216,7 +11216,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": 8442.6,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "968f7414-ac1b-4a21-91fa-312941364e72",
@@ -11260,7 +11260,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": null,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "952a47d4-1c09-40b0-88ca-499d48d7fc7b",
@@ -11304,7 +11304,7 @@
    "is_new": false,
    "photo_count": 3,
    "per_1000km": null,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "7e7edac7-9800-497f-bf15-bff3fd4046e3",
@@ -11348,7 +11348,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": null,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "7be7aa3e-b469-48f3-9f1f-2574c7aef939",
@@ -11392,7 +11392,7 @@
    "is_new": false,
    "photo_count": 11,
    "per_1000km": null,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "75bf4b0c-f7ea-4a7e-abee-94235ebeb759",
@@ -11436,7 +11436,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": null,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "6e18ff92-8484-4f2c-a949-3b0d72be836d",
@@ -11480,7 +11480,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": null,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "6d48c03a-11f3-414a-ad5e-6b9af91c0325",
@@ -11524,7 +11524,7 @@
    "is_new": false,
    "photo_count": 3,
    "per_1000km": null,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "5bfbe886-a5ec-4ff0-ada5-358e2e968572",
@@ -11568,7 +11568,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": null,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "52aa329f-11ae-4936-a8f3-0a6e72cc2ef0",
@@ -11612,7 +11612,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": 7097.4,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "32dc5029-f764-4c3e-95fe-da915a01ffdf",
@@ -11661,7 +11661,7 @@
    "price_change": -399,
    "photo_count": 12,
    "per_1000km": 4960.8,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "30e2687e-9c30-4528-984e-6259c7994866",
@@ -11705,7 +11705,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": 7192.9,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "2e8aa049-eee1-485d-918a-deb605e7dbb9",
@@ -11749,7 +11749,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": null,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "22943f6a-6f5e-4aaf-8d17-9b6949c019b4",
@@ -11793,7 +11793,7 @@
    "is_new": false,
    "photo_count": 3,
    "per_1000km": null,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "0e7d9c92-3a10-4eb8-8fe2-b38b45b412d7",
@@ -11837,7 +11837,7 @@
    "is_new": false,
    "photo_count": 12,
    "per_1000km": 7348.9,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "0b85b6f4-df54-4ddb-b9b1-757c18e4a233",
@@ -11886,7 +11886,7 @@
    "price_change": 1920,
    "photo_count": 12,
    "per_1000km": 8329.7,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "07a43d0c-da0c-4fc8-9f2a-5a9a64ac23d5",
@@ -11930,7 +11930,7 @@
    "is_new": false,
    "photo_count": 3,
    "per_1000km": null,
-   "days_listed": 2
+   "days_listed": 3
   },
   {
    "id": "f9e02b57-cb16-45eb-86d2-4033f655486a",
@@ -20456,14 +20456,14 @@
   "expected": 48,
   "checks": 50,
   "successful": 50,
-  "slots_covered": 39,
+  "slots_covered": 37,
   "complained": 0,
   "clean": 50,
-  "pct": 81.2,
+  "pct": 77.1,
   "longest_gap_minutes": 208.5,
   "expected_interval_minutes": 30,
   "truncated": false,
-  "since": "2026-09-12T00:38:28+00:00",
+  "since": "2026-09-12T00:49:15+00:00",
   "slots": [
    0,
    1,
@@ -20478,7 +20478,7 @@
    1,
    1,
    1,
-   1,
+   0,
    0,
    1,
    1,
@@ -20502,7 +20502,7 @@
    1,
    1,
    1,
-   1,
+   0,
    0,
    1,
    1,
@@ -20522,7 +20522,7 @@
   "window_hours": 24
  },
  "market": {
-  "at": "2026-09-13T00:38:28+00:00",
+  "at": "2026-09-13T00:49:15+00:00",
   "window": {
    "ids_span_days": 3,
    "watching_days": 3,
