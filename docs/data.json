@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-09-13T22:28:17+00:00",
+ "generated_at": "2026-09-13T22:35:05+00:00",
  "notify": {
   "ntfy_topic": "autotrader-2q592ak9gnx7sqrere5r",
   "ntfy_url": "https://ntfy.sh/autotrader-2q592ak9gnx7sqrere5r",
@@ -4836,30 +4836,30 @@
     "text": "within 1,000 km of Vancouver, BC"
    },
    "shape": {
+    "bytes": "lots",
+    "listing_count": 32,
+    "markers": {
+     "data_listing_id": "none",
+     "initial_state": "none",
+     "json_ld": "few",
+     "legacy_links": "none",
+     "next_data": "few",
+     "offer_links": "many",
+     "vehicle_cdn": "lots"
+    },
+    "scores": {
+     "anchors": 15,
+     "embedded_json": 32,
+     "jsonld": 15,
+     "regex": 32
+    },
     "strategy": "embedded_json",
     "working": [
      "anchors",
      "embedded_json",
      "jsonld",
      "regex"
-    ],
-    "scores": {
-     "jsonld": 15,
-     "embedded_json": 32,
-     "anchors": 15,
-     "regex": 32
-    },
-    "listing_count": 32,
-    "markers": {
-     "json_ld": "few",
-     "next_data": "few",
-     "initial_state": "none",
-     "offer_links": "many",
-     "legacy_links": "none",
-     "data_listing_id": "none",
-     "vehicle_cdn": "lots"
-    },
-    "bytes": "lots"
+    ]
    }
   },
   {
@@ -4930,30 +4930,30 @@
     "text": "within 1,000 km of Vancouver, BC"
    },
    "shape": {
+    "bytes": "lots",
+    "listing_count": 24,
+    "markers": {
+     "data_listing_id": "none",
+     "initial_state": "none",
+     "json_ld": "few",
+     "legacy_links": "none",
+     "next_data": "few",
+     "offer_links": "many",
+     "vehicle_cdn": "lots"
+    },
+    "scores": {
+     "anchors": 6,
+     "embedded_json": 24,
+     "jsonld": 6,
+     "regex": 24
+    },
     "strategy": "embedded_json",
     "working": [
      "anchors",
      "embedded_json",
      "jsonld",
      "regex"
-    ],
-    "scores": {
-     "jsonld": 6,
-     "embedded_json": 24,
-     "anchors": 6,
-     "regex": 24
-    },
-    "listing_count": 24,
-    "markers": {
-     "json_ld": "few",
-     "next_data": "few",
-     "initial_state": "none",
-     "offer_links": "many",
-     "legacy_links": "none",
-     "data_listing_id": "none",
-     "vehicle_cdn": "lots"
-    },
-    "bytes": "lots"
+    ]
    }
   },
   {
@@ -5023,30 +5023,30 @@
     "text": "within 1,000 km of Vancouver, BC"
    },
    "shape": {
+    "bytes": "lots",
+    "listing_count": 25,
+    "markers": {
+     "data_listing_id": "none",
+     "initial_state": "none",
+     "json_ld": "few",
+     "legacy_links": "none",
+     "next_data": "few",
+     "offer_links": "many",
+     "vehicle_cdn": "lots"
+    },
+    "scores": {
+     "anchors": 5,
+     "embedded_json": 25,
+     "jsonld": 5,
+     "regex": 25
+    },
     "strategy": "embedded_json",
     "working": [
      "anchors",
      "embedded_json",
      "jsonld",
      "regex"
-    ],
-    "scores": {
-     "jsonld": 5,
-     "embedded_json": 25,
-     "anchors": 5,
-     "regex": 25
-    },
-    "listing_count": 25,
-    "markers": {
-     "json_ld": "few",
-     "next_data": "few",
-     "initial_state": "none",
-     "offer_links": "many",
-     "legacy_links": "none",
-     "data_listing_id": "none",
-     "vehicle_cdn": "lots"
-    },
-    "bytes": "lots"
+    ]
    }
   }
  ],
@@ -5209,58 +5209,58 @@
  "runs": [
   {
    "at": "2026-09-13T22:28:17+00:00",
-   "ok": true,
-   "duration_s": 26.8,
-   "searches_run": 3,
-   "searches_failed": 0,
-   "listings_seen": 81,
-   "new": 0,
-   "price_drops": 0,
-   "price_rises": 0,
-   "removed": 0,
-   "filtered_out": 53,
-   "unpriced": 0,
-   "priced": 0,
-   "relisted": 0,
-   "qualified": 0,
    "baselines": [],
-   "invariants": [],
-   "shut_out": [],
+   "budget_exhausted": false,
+   "diagnostics": [],
+   "disabled_channels": [],
+   "dry_run": false,
+   "duration_s": 26.8,
+   "empty_parses": [],
+   "errors": [],
+   "filtered_out": 53,
+   "first_run": false,
    "hidden_events": {
     "price_rise": 1
    },
-   "skipped": false,
+   "invariants": [],
+   "listings_seen": 81,
+   "minutes": 1.0,
+   "minutes_label": "exempt",
    "missed_by": 0,
-   "requests_made": 13,
-   "budget_exhausted": false,
-   "empty_parses": [],
-   "diagnostics": [],
-   "shape_drift": [],
-   "disabled_channels": [],
-   "first_run": false,
-   "validation_ok": true,
+   "new": 0,
    "notified": [],
-   "errors": [],
-   "warnings": [],
-   "strategies": {
-    "bmw-m4-up-to-2020-f82-fc136e": "embedded_json",
-    "bmw-m3-2015-2020-f80-7e1845": "embedded_json",
-    "bmw-x3-m-up-to-2020-f97-7d9aaf": "embedded_json"
-   },
-   "quiet": false,
-   "dry_run": false,
+   "ok": true,
    "photos": {
-    "kept": 25,
-    "fetched": 0,
-    "failed": 0,
-    "pruned": 0,
     "bytes": 1352158,
+    "failed": 0,
+    "fetched": 0,
+    "kept": 25,
+    "pruned": 0,
     "samples": []
    },
-   "your_call": 0,
+   "price_drops": 0,
+   "price_rises": 0,
+   "priced": 0,
+   "qualified": 0,
+   "quiet": false,
+   "relisted": 0,
+   "removed": 0,
+   "requests_made": 13,
+   "searches_failed": 0,
+   "searches_run": 3,
+   "shape_drift": [],
+   "shut_out": [],
+   "skipped": false,
+   "strategies": {
+    "bmw-m3-2015-2020-f80-7e1845": "embedded_json",
+    "bmw-m4-up-to-2020-f82-fc136e": "embedded_json",
+    "bmw-x3-m-up-to-2020-f97-7d9aaf": "embedded_json"
+   },
    "trigger": "push",
-   "minutes": 1.0,
-   "minutes_label": "exempt"
+   "unpriced": 0,
+   "validation_ok": true,
+   "warnings": [],
+   "your_call": 0
   },
   {
    "at": "2026-09-13T20:47:12+00:00",
@@ -7055,58 +7055,58 @@
  },
  "last_run": {
   "at": "2026-09-13T22:28:17+00:00",
-  "ok": true,
-  "duration_s": 26.8,
-  "searches_run": 3,
-  "searches_failed": 0,
-  "listings_seen": 81,
-  "new": 0,
-  "price_drops": 0,
-  "price_rises": 0,
-  "removed": 0,
-  "filtered_out": 53,
-  "unpriced": 0,
-  "priced": 0,
-  "relisted": 0,
-  "qualified": 0,
   "baselines": [],
-  "invariants": [],
-  "shut_out": [],
+  "budget_exhausted": false,
+  "diagnostics": [],
+  "disabled_channels": [],
+  "dry_run": false,
+  "duration_s": 26.8,
+  "empty_parses": [],
+  "errors": [],
+  "filtered_out": 53,
+  "first_run": false,
   "hidden_events": {
    "price_rise": 1
   },
-  "skipped": false,
+  "invariants": [],
+  "listings_seen": 81,
+  "minutes": 1.0,
+  "minutes_label": "exempt",
   "missed_by": 0,
-  "requests_made": 13,
-  "budget_exhausted": false,
-  "empty_parses": [],
-  "diagnostics": [],
-  "shape_drift": [],
-  "disabled_channels": [],
-  "first_run": false,
-  "validation_ok": true,
+  "new": 0,
   "notified": [],
-  "errors": [],
-  "warnings": [],
-  "strategies": {
-   "bmw-m4-up-to-2020-f82-fc136e": "embedded_json",
-   "bmw-m3-2015-2020-f80-7e1845": "embedded_json",
-   "bmw-x3-m-up-to-2020-f97-7d9aaf": "embedded_json"
-  },
-  "quiet": false,
-  "dry_run": false,
+  "ok": true,
   "photos": {
-   "kept": 25,
-   "fetched": 0,
-   "failed": 0,
-   "pruned": 0,
    "bytes": 1352158,
+   "failed": 0,
+   "fetched": 0,
+   "kept": 25,
+   "pruned": 0,
    "samples": []
   },
-  "your_call": 0,
+  "price_drops": 0,
+  "price_rises": 0,
+  "priced": 0,
+  "qualified": 0,
+  "quiet": false,
+  "relisted": 0,
+  "removed": 0,
+  "requests_made": 13,
+  "searches_failed": 0,
+  "searches_run": 3,
+  "shape_drift": [],
+  "shut_out": [],
+  "skipped": false,
+  "strategies": {
+   "bmw-m3-2015-2020-f80-7e1845": "embedded_json",
+   "bmw-m4-up-to-2020-f82-fc136e": "embedded_json",
+   "bmw-x3-m-up-to-2020-f97-7d9aaf": "embedded_json"
+  },
   "trigger": "push",
-  "minutes": 1.0,
-  "minutes_label": "exempt"
+  "unpriced": 0,
+  "validation_ok": true,
+  "warnings": [],
+  "your_call": 0
  },
  "health": {
   "counts": {
@@ -7127,9 +7127,9 @@
     "name": "BMW M4 up to 2020 (F82)",
     "winner": "embedded_json",
     "scores": {
-     "jsonld": 15,
-     "embedded_json": 32,
      "anchors": 15,
+     "embedded_json": 32,
+     "jsonld": 15,
      "regex": 32
     },
     "working": [
@@ -7146,12 +7146,12 @@
      "regex"
     ],
     "markers": {
-     "json_ld": "few",
-     "next_data": "few",
-     "initial_state": "none",
-     "offer_links": "many",
-     "legacy_links": "none",
      "data_listing_id": "none",
+     "initial_state": "none",
+     "json_ld": "few",
+     "legacy_links": "none",
+     "next_data": "few",
+     "offer_links": "many",
      "vehicle_cdn": "lots"
     }
    },
@@ -7159,9 +7159,9 @@
     "name": "BMW M3 2015-2020 (F80)",
     "winner": "embedded_json",
     "scores": {
-     "jsonld": 6,
-     "embedded_json": 24,
      "anchors": 6,
+     "embedded_json": 24,
+     "jsonld": 6,
      "regex": 24
     },
     "working": [
@@ -7178,12 +7178,12 @@
      "regex"
     ],
     "markers": {
-     "json_ld": "few",
-     "next_data": "few",
-     "initial_state": "none",
-     "offer_links": "many",
-     "legacy_links": "none",
      "data_listing_id": "none",
+     "initial_state": "none",
+     "json_ld": "few",
+     "legacy_links": "none",
+     "next_data": "few",
+     "offer_links": "many",
      "vehicle_cdn": "lots"
     }
    },
@@ -7191,9 +7191,9 @@
     "name": "BMW X3 M up to 2020 (F97)",
     "winner": "embedded_json",
     "scores": {
-     "jsonld": 5,
-     "embedded_json": 25,
      "anchors": 5,
+     "embedded_json": 25,
+     "jsonld": 5,
      "regex": 25
     },
     "working": [
@@ -7210,12 +7210,12 @@
      "regex"
     ],
     "markers": {
-     "json_ld": "few",
-     "next_data": "few",
-     "initial_state": "none",
-     "offer_links": "many",
-     "legacy_links": "none",
      "data_listing_id": "none",
+     "initial_state": "none",
+     "json_ld": "few",
+     "legacy_links": "none",
+     "next_data": "few",
+     "offer_links": "many",
      "vehicle_cdn": "lots"
     }
    }
@@ -9170,18 +9170,18 @@
   }
  },
  "coverage": {
-  "window_hours": 16.0,
+  "window_hours": 16.1,
   "asked_window_hours": 24,
   "partial": true,
   "too_short": false,
   "since_change": "2026-09-13T06:30:00+00:00",
-  "expected": 7,
+  "expected": 8,
   "checks": 11,
   "successful": 11,
-  "slots_covered": 6,
+  "slots_covered": 7,
   "complained": 0,
   "clean": 11,
-  "pct": 85.7,
+  "pct": 87.5,
   "longest_gap_minutes": 176.9,
   "expected_interval_minutes": 120,
   "truncated": false,
@@ -9192,6 +9192,7 @@
    1,
    1,
    0,
+   1,
    1,
    1
   ],
@@ -9205,14 +9206,15 @@
   "schedule_fired": 0,
   "timekeeper": "unattributed",
   "slots_by_trigger": {
-   "unattributed": 6
+   "unattributed": 6,
+   "push": 1
   }
  },
  "cost": {
-  "checks": 30,
-  "minutes": 16.9,
-  "billed_minutes": 37,
-  "mean_seconds": 33.8,
+  "checks": 29,
+  "minutes": 16.3,
+  "billed_minutes": 35,
+  "mean_seconds": 33.7,
   "window_hours": 24
  },
  "budget": {
@@ -9238,7 +9240,7 @@
   "should_stop": false
  },
  "market": {
-  "at": "2026-09-13T22:28:17+00:00",
+  "at": "2026-09-13T22:35:05+00:00",
   "window": {
    "ids_span_days": 0,
    "watching_days": 0,
