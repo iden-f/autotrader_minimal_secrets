@@ -266,6 +266,10 @@ class SearchResult:
     # True when the last page added nothing new, i.e. we reached the end of the
     # results rather than stopping at max_pages with more still to read.
     complete: bool
+    # Set when a page after the first could not be read. What was read is
+    # kept; `complete` is False, so absence from it is not treated as
+    # evidence that a car has gone.
+    partial_error: str | None = None
 
 
 def scrape_search(search, cfg: Config, fetcher: Fetcher) -> "SearchResult":
@@ -283,9 +287,26 @@ def scrape_search(search, cfg: Config, fetcher: Fetcher) -> "SearchResult":
     page_size = 0
     referer = "https://www.autotrader.ca/"
 
+    partial_error: str | None = None
     for page in range(1, max_pages + 1):
         url = page_url(search.url, page, per_page)
-        response = fetcher.get(url, referer=referer)
+        try:
+            response = fetcher.get(url, referer=referer)
+        except (FetchError, BlockedError) as exc:
+            # PAGE ONE IS A FAILURE. ANY LATER PAGE IS A SHORTER READ.
+            #
+            # The network dying on page 2 of 3 used to throw away page 1 with
+            # it: the whole check was wasted, the slot was uncovered, and a
+            # car that only ever appears on page 1 was not seen. Keeping what
+            # was read is strictly better, and safe, because `complete` stays
+            # False - which is the flag that makes the removal path ask a
+            # car's own listing page before believing it has gone.
+            if page == 1 or not found:
+                raise
+            partial_error = str(exc)
+            log.warning("%s: stopped at page %d of %d - %s",
+                        search.name, page, max_pages, exc)
+            break
         referer = url
         result = parse_search_page(response.text, url)
         if page == 1:
@@ -324,7 +345,7 @@ def scrape_search(search, cfg: Config, fetcher: Fetcher) -> "SearchResult":
             break
 
     return SearchResult(list(found.values()), strategy, said_no_results,
-                        candidates, first_page, complete)
+                        candidates, first_page, complete, partial_error)
 
 
 # What each rule is called when a person is being told it turned everything
@@ -561,6 +582,13 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                 candidates = result.candidates
                 first_page = result.first_page
                 report.strategies[search.id] = strategy
+                if result.partial_error:
+                    report.warnings.append(
+                        f"{search.name}: read {_many(len(listings), 'listing')} "
+                        f"and then could not reach the next page "
+                        f"({result.partial_error}). Keeping what was read; "
+                        f"nothing will be called gone on a search this run "
+                        f"did not finish.")
             except BudgetExhausted as exc:
                 # Not a failure: we deliberately stopped. Leave the remaining
                 # searches for the next run rather than marking them broken.

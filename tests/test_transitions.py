@@ -334,3 +334,136 @@ class TestTheWholeCycleAtOnce:
         assert entry.get("relisted_at")
         assert not entry.get("removed_at")
         assert entry["price"] == 82000
+
+
+# ---------------------------------------------------------------------------
+# Every transition, enumerated rather than chosen.
+
+#: The states a listing can be in, as facts a person could check on the page,
+#: and one page of results that puts a car into each. Two rules are in play so
+#: that "hidden" and "hidden with no price" are both reachable without
+#: reconfiguring the bot between steps.
+STATES = {
+    "visible":         {"price": 88000, "km": 60000},
+    "hidden":          {"price": 139888, "km": 60000},
+    "unpriced":        {"price": None, "km": 60000},
+    "hidden_unpriced": {"price": None, "km": 200000},
+    "gone":            None,             # absent from the results
+}
+RULES = {"max_price": 100000, "max_mileage_km": 150000}
+
+
+def put_in(b, state, *, car="a"):
+    """Drive the bot until the car is in that state, and check it got there."""
+    if state == "gone":
+        # A car has to exist before it can leave. Then two consecutive checks
+        # that miss it, a schedule-interval apart: both conditions are real -
+        # a car is gone when checks have missed it AND time has passed with
+        # nobody seeing it.
+        b.check([dict(STATES["visible"], id=car), KEEP])
+        b.check([KEEP])
+        b.check([KEEP])
+    else:
+        b.check([dict(STATES[state], id=car), KEEP])
+    return b.entry(car)
+
+
+KEEP = {"id": "keep", "price": 50000, "km": 10000}
+
+
+def describe(entry):
+    """Which of the five states this entry is actually in."""
+    if entry.get("status") == "gone":
+        return "gone"
+    priced = entry.get("price") is not None
+    if entry.get("filtered"):
+        return "hidden" if priced else "hidden_unpriced"
+    return "visible" if priced else "unpriced"
+
+
+def expected_end(start, end):
+    """Where the bot should land, which is not always where it was pushed.
+
+    A price the bot has seen is sticky. AutoTrader drops the figure off a
+    card and puts it back - the same car, the same ad - and treating that as
+    "the seller withdrew the price" would fire a call-for-price alert every
+    time the site hiccuped. So a car that has had a price cannot be driven
+    back to having none; it keeps the last one it saw, and whether a rule
+    hides it is still decided fresh.
+
+    Written out here rather than special-cased inside the assertion, because
+    the whole point of enumerating is that the exceptions are visible.
+    """
+    if end in ("unpriced", "hidden_unpriced"):
+        # "gone" included: a car can only leave a market it was seen in, and
+        # put_in() seeds it as a visible, priced car before making it vanish.
+        # A car that comes back without a figure on its card is the same car.
+        had_a_price = start in ("visible", "hidden", "gone")
+        if had_a_price:
+            return "hidden" if end == "hidden_unpriced" else "visible"
+    return end
+
+
+@pytest.mark.parametrize("start", sorted(STATES))
+@pytest.mark.parametrize("end", sorted(STATES))
+def test_every_transition_keeps_the_books(bench, start, end):
+    """Twenty-five pairs, driven for real, with the same three assertions.
+
+    Three separate bugs in this rebuild have been a car changing state and the
+    bookkeeping not following it: a car rejected by one search and wanted by
+    another, stored and never announced; a car that stopped being
+    call-for-price and kept a ceiling it was no longer measured against as its
+    reason for silence; a car marked gone by a rotating result window. None of
+    them crashed, and each was found late by reading state.json by hand.
+
+    The hand-picked cycle above covers the seven steps someone thought of.
+    This covers the ones nobody did.
+    """
+    b = bench(filters=RULES)
+    before = put_in(b, start)
+    assert describe(before) == start, f"could not reach {start}"
+
+    if end == "gone":
+        b.check([KEEP])
+        report = b.check([KEEP])
+    else:
+        report = b.check([dict(STATES[end], id="a"), KEEP])
+
+    state = b.state()
+    assert not report.invariants, report.invariants
+    assert_books_balance(report, state)
+    after = b.entry("a")
+    want = expected_end(start, end)
+    assert describe(after) == want, (
+        f"{start} -> {end} ended in {describe(after)}, expected {want}")
+
+
+@pytest.mark.parametrize("state", sorted(s for s in STATES if s != "gone"))
+def test_a_car_already_told_about_is_never_announced_as_new_again(bench, state):
+    """Whatever it does next. The one thing v1 got wrong every single run."""
+    b = bench(filters=RULES)
+    put_in(b, "visible")
+    assert b.entry("a").get("notified_at"), "it should have been announced once"
+    told = b.entry("a")["notified_at"]
+
+    put_in(b, state)
+    entry = b.entry("a")
+    assert entry.get("notified_at"), f"{state} lost the record of being told"
+    if state == "visible":
+        assert entry["notified_at"] == told, "it was announced a second time"
+    # And never as a discovery: a car coming back is a relisting.
+    kinds = [c.kind for digest in b.sink.digests for c in digest
+             if c.listing.id == uuid_for("a")]
+    assert kinds.count("new") <= 1, kinds
+
+
+@pytest.mark.parametrize("state", ["hidden", "hidden_unpriced"])
+def test_a_hidden_car_names_a_rule_that_is_true_right_now(bench, state):
+    b = bench(filters=RULES)
+    put_in(b, state)
+    entry = b.entry("a")
+    reason = str(entry.get("quiet_reason") or "")
+    assert reason.startswith("hidden by your rules"), reason
+    # And loses it the moment it stops applying.
+    put_in(b, "visible")
+    assert not str(b.entry("a").get("quiet_reason") or "").startswith("hidden")
