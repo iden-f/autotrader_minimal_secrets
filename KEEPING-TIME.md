@@ -26,12 +26,29 @@ and 18:55 UTC on 13 September all succeeded, after the allowance was gone. A
 `$0` Actions spending limit does not change this: a spending limit caps
 *billable* usage, and there is none here to cap.
 
-**The schedule is the weak part, not the money.** Measured over 10.5 hours of
-genuine silence on the night of 13-14 September - nothing pushed, nothing
-dispatched by hand - GitHub's cron filled **2 of 5 two-hour slots, 40%**, with
-a longest gap of **4h42m**. The histogram is `[1, 0, 0, 1, 0]`. That is the
-honest number for GitHub's scheduler alone on this repository, and it is below
-the 60% a watch like this needs.
+**The schedule is the weak part, not the money.** Two measurements, the second
+of which is a full day rather than part of one:
+
+*Over 10.5 hours of genuine silence on the night of 13-14 September* - nothing
+pushed, nothing dispatched by hand - GitHub's cron filled **2 of 5 two-hour
+slots, 40%**, longest gap **4h42m**, histogram `[1, 0, 0, 1, 0]`.
+
+*Over the whole of 14 September UTC*, counted from GitHub's own run list and
+counting only `event: schedule`: **5 of 12 two-hour windows, 41.7%**. GitHub
+was asked for 24 firings and delivered 9.
+
+```
+window   00  02  04  06  08  10  12  14  16  18  20  22
+firings   2   0   2   0   0   0   1   0   0   2   0   2
+```
+
+Look at the shape rather than the percentage. **Every window that fired at
+all fired twice** - the `11` and `41` offsets arriving as a pair - and seven
+windows got nothing whatever. GitHub drops *whole windows*. Six consecutive
+hours, 06:00 to 12:00, had no scheduled firing at all.
+
+The two numbers agree, one of them is a full day, and both are far below the
+60% a watch like this needs.
 
 **A second cron offset helps less than it should.** GitHub fired 5 of the 10
 firings the two offsets asked for - and all 5 landed inside just 2 of the 5
