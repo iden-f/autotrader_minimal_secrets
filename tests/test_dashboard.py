@@ -218,3 +218,67 @@ class TestTheCallersThatPassNoEnvironment:
                       "dashboard": {"enabled": True}})
         state = State({"version": 2, "listings": {}, "searches": {}, "runs": []})
         assert dashboard.write(cfg, state, path=tmp_path / "docs/data.json")
+
+
+class TestAFiringThatStoodDownIsNotACheck:
+    """Three tiles described a run that read nothing.
+
+    A firing that stands down because a check has just happened is recorded -
+    it proves its timer is alive and it held a runner for the fifteen seconds
+    it took to decide not to work. It read no pages, made no requests and
+    took no time. With the page reading last_run, "Last good check 3h ago",
+    "Requests last check 0" and "Check took 0s" all described that non-check,
+    and the header said the site had been checked more recently than it had.
+
+    Bounded by the deduplication floor rather than unbounded, which is
+    exactly what makes it the kind of wrong nobody notices.
+    """
+
+    def state_with(self, tmp_path, runs):
+        from autotrader.state import State
+        state = State(path=tmp_path / "s.json")
+        state.data["runs"] = runs
+        return state
+
+    def test_it_is_not_the_last_check(self, tmp_path):
+        state = self.state_with(tmp_path, [
+            {"at": "2026-09-14T19:34:00+00:00", "ok": True, "skipped": True,
+             "searches_run": 0, "duration_s": 0.0},
+            {"at": "2026-09-14T19:19:00+00:00", "ok": True, "searches_run": 3,
+             "searches_failed": 0, "duration_s": 58.7},
+        ])
+        assert state.last_run["at"].startswith("2026-09-14T19:34")
+        assert state.last_check["at"].startswith("2026-09-14T19:19")
+        assert state.last_check["duration_s"] == 58.7
+
+    def test_nor_is_a_run_that_could_not_read_a_single_search(self, tmp_path):
+        state = self.state_with(tmp_path, [
+            {"at": "2026-09-14T19:34:00+00:00", "ok": False, "searches_run": 2,
+             "searches_failed": 2},
+            {"at": "2026-09-14T17:19:00+00:00", "ok": True, "searches_run": 2,
+             "searches_failed": 0},
+        ])
+        assert state.last_check["at"].startswith("2026-09-14T17:19")
+
+    def test_a_partial_read_is_still_a_check(self, tmp_path):
+        """One search down is a narrower watch, not a blind one."""
+        state = self.state_with(tmp_path, [
+            {"at": "2026-09-14T19:34:00+00:00", "ok": False, "searches_run": 2,
+             "searches_failed": 1},
+        ])
+        assert state.last_check["at"].startswith("2026-09-14T19:34")
+
+    def test_a_watcher_that_has_only_ever_stood_down_has_no_last_check(self, tmp_path):
+        state = self.state_with(tmp_path, [
+            {"at": "2026-09-14T19:34:00+00:00", "ok": True, "skipped": True},
+        ])
+        assert state.last_check is None, \
+            "the page must say 'not checked yet' rather than pick the firing"
+
+    def test_the_page_is_given_both(self, tmp_path):
+        """It asks two questions - is the timer alive, and how old is this -
+        and they have different answers."""
+        from pathlib import Path
+        app = Path("docs/app.js").read_text(encoding="utf-8")
+        assert app.count("d.last_check || d.last_run") == 2, (
+            "both the header and the Status tiles read the last CHECK")

@@ -478,12 +478,25 @@ def coverage(runs: list[dict[str, Any]], expected_minutes: int = 30,
     # leaves that hole. A run that read the site and then complained about
     # itself is a separate fault, reported separately, and the Status view
     # shows both.
-    read_stamps = sorted(
-        t for t in (_dt(r.get("at")) for r in runs if _read_the_site(r))
-        if t is not None and t >= start)
-    ok_stamps = sorted(t for t in (_dt(r.get("at")) for r in runs
-                                   if r.get("ok"))
-                       if t is not None and t >= start)
+    # BOTH COUNTED OVER THE SAME SET.
+    #
+    # `clean` used to count every run in the window whose exit code was zero,
+    # and `complained` was read_stamps minus that. A firing that stood down
+    # because a check had just happened exits zero and never reads the site,
+    # so it landed in one count and not the other, and the Status card read
+    # "-2 of 7 checks complained". A negative count of a thing that happened
+    # is the clearest possible sign that two numbers are being subtracted
+    # across different populations.
+    #
+    # The question is "of the checks that read the site, how many then
+    # complained about themselves", so both halves are of the checks that
+    # read the site.
+    in_window = [r for r in runs
+                 if (_dt(r.get("at")) or start) >= start and _dt(r.get("at"))]
+    looked = [r for r in in_window if _read_the_site(r)]
+    read_stamps = sorted(t for t in (_dt(r.get("at")) for r in looked) if t)
+    ok_stamps = sorted(t for t in (_dt(r.get("at")) for r in looked
+                                   if r.get("ok")) if t)
 
     # Distinct slots, not checks. Two checks in the same half hour cover one
     # half hour; counting them as two lets a burst of manual runs report

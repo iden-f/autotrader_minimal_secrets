@@ -723,6 +723,29 @@ class State:
         runs = self.data.get("runs") or []
         return runs[0] if runs else None
 
+    @property
+    def last_check(self) -> dict[str, Any] | None:
+        """The most recent run that actually read the searches.
+
+        Not the same as the most recent RUN. A firing that stands down
+        because a check has just happened is recorded - it proves its timer
+        is alive - and it read nothing, took no time and made no requests.
+        With the page reading last_run, three tiles described that non-check:
+        "Last good check 3h ago", "Requests last check 0", "Check took 0s".
+        The error is bounded by the deduplication floor rather than unbounded,
+        which is exactly what makes it the kind nobody notices.
+        """
+        for run in (self.data.get("runs") or []):
+            if run.get("skipped"):
+                continue
+            ran = int(run.get("searches_run") or 0)
+            failed = int(run.get("searches_failed") or 0)
+            if ran and failed < ran:
+                return run
+            if not ran and run.get("ok"):
+                return run      # a record from before those counters existed
+        return None
+
     # ---------------- the schedule ----------------
 
     def note_schedule(self, interval_minutes: int) -> bool:

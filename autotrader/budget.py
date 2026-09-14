@@ -186,14 +186,24 @@ class Ledger:
         if not drawing:
             return (f"{exempt:,.0f} minute{'' if exempt == 1 else 's'} spent, "
                     f"none of {'it' if exempt == 1 else 'them'} on the allowance")
-        bits = [f"{drawing:,.0f} of {self.allowance:,} this month"]
+        # NOT "11 of 3,000 this month" again. The tile's own figure is
+        # already "11 / 3,000" in type three times this size, directly above
+        # this line, and the note read "11 of 3,000 this month - about 99 by
+        # month end - 11 more ran exempt - 11 unlabelled". Four elevens, three
+        # of which were the same eleven, in a tile whose job is to be glanced
+        # at.
+        bits = []
         if projection is not None:
             bits.append(f"about {projection:,.0f} by month end")
+        if self.unknown and self.unknown >= drawing:
+            # All of it unlabelled: say that instead of the total again.
+            bits.append("none of it labelled, so all of it counted as drawing")
+        elif self.unknown:
+            bits.append(f"{self.unknown:,.0f} of them unlabelled, "
+                        f"counted as drawing")
         if exempt:
             bits.append(f"{exempt:,.0f} more ran exempt")
-        if self.unknown:
-            bits.append(f"{self.unknown:,.0f} unlabelled, counted as drawing")
-        return " \u00b7 ".join(bits)
+        return " \u00b7 ".join(bits) or f"of {self.allowance:,} this month"
 
     def verdict(self, now: datetime) -> dict[str, Any]:
         """Where this month stands, in numbers and in a sentence."""

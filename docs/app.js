@@ -357,7 +357,18 @@ function triggerWord(key) {
 function trustState() {
   const d = app.data;
   if (!d) return { state: 'ok', text: 'Loading…' };
-  const run = d.last_run || {};
+  // The last run that READ the site, not the last run. A firing that stands
+  // down because a check just happened is recorded - it proves its timer is
+  // alive - and it read nothing. "Checked 3h ago" pointing at one of those
+  // is the page reporting a check that did not happen, by up to the
+  // deduplication floor, which is short enough that nobody notices.
+  const run = d.last_check || d.last_run || {};
+  // And the last FIRING, which is a different question. "Is what I am
+  // looking at old" is answered by the last check; "did the last attempt go
+  // wrong" is answered by the last run, and a run whose every search failed
+  // to load is not a check at all - so reading both from one record meant
+  // the total failure this banner exists for could not reach it.
+  const firing = d.last_run || run;
 
   // Offline outranks everything else this function can say. "Checked 3 days
   // ago" with no other context reads as "the bot is broken" when the truth
@@ -382,8 +393,13 @@ function trustState() {
   // asked here is about the site, not about the publish step.
   const ageMin = (Date.now() - Date.parse(run.at || d.generated_at)) / 60000;
   const expected = cov.expected_interval_minutes || 30;
-  const failing = run.ok === false || (run.errors || []).length > 0;
-  const stale = ageMin > expected * 3;
+  const failing = firing.ok === false || (firing.errors || []).length > 0;
+  // The same threshold the bot alarms on, published with the coverage block.
+  // This line used to be `expected * 3`, which is a second definition of
+  // "too long ago": changing health.silent_after_hours moved the email and
+  // left the page saying everything was fine.
+  const quietAfterMin = (cov.silent_after_hours || 0) * 60 || expected * 3;
+  const stale = ageMin > quietAfterMin;
   // Coverage this poor means cars can arrive and go between checks, which is
   // worth an amber light even when the most recent check was a minute ago.
   const pct = coveragePct(cov);
@@ -393,25 +409,23 @@ function trustState() {
   // reporting it as "0% coverage" tells somebody who has just set this up
   // that it is already broken.
   if (!run.at) {
-    return {
-      state: 'stale',
-      text: 'Not checked yet',
-      alarm: {
-        level: 'warn',
-        text: 'No check has run yet. The first one records everything already on the site as a starting point rather than announcing all of it at you, so expect the feed to stay quiet until something actually changes.',
-        detail: '',
-      },
-    };
+    // No alarm. A fresh install is not a fault, the pill beside this already
+    // says "Not checked yet", and every view has an empty state that explains
+    // the first run in context - so the banner was the same paragraph, in
+    // different words, eight lines above the one that belonged there.
+    return { state: 'stale', text: 'Not checked yet' };
   }
 
   if (failing) {
     return {
       state: 'bad',
-      text: `Last check failed ${when(run.at)}`,
+      text: `Last check failed ${when(firing.at)}`,
       alarm: {
         level: 'bad',
         text: 'The last check did not finish cleanly, so what you are looking at may be out of date.',
-        detail: (run.errors || [])[0] || (run.invariants || [])[0] || '',
+        // The bot's own words, verbatim, so monospace is right here.
+        mono: true,
+        detail: (firing.errors || [])[0] || (firing.invariants || [])[0] || '',
       },
     };
   }
@@ -495,7 +509,13 @@ function renderTrust() {
     alarm.dataset.level = t.alarm.level;
     document.getElementById('alarm-text').textContent = t.alarm.text;
     const detail = document.getElementById('alarm-detail');
-    detail.innerHTML = t.alarm.detail ? `<code>${esc(t.alarm.detail)}</code>` : '';
+    // Monospace for machine output, prose for prose. Everything went through
+    // <code>, so "Longest gap: 7.8 hours." sat under a normally-set sentence
+    // in a typewriter face, which reads as a fragment of a log that leaked
+    // into the copy rather than as the second half of the sentence above it.
+    detail.innerHTML = !t.alarm.detail ? ''
+      : t.alarm.mono ? `<code>${esc(t.alarm.detail)}</code>`
+      : esc(t.alarm.detail);
   } else {
     alarm.hidden = true;
   }
@@ -535,7 +555,12 @@ function go(view, opts = {}) {
 
 /* ----------------------------------------------------------------- feed */
 function feedEvents() {
-  return (app.data?.events || []);
+  // Array-checked, not just truthy. A data.json from an older build - or a
+  // half-written one - carries this as an object, and `{} || []` is `{}`,
+  // whose .filter does not exist. The page threw on first render and showed
+  // nothing at all, which is the worst way to handle a file it could read.
+  const rows = app.data?.events;
+  return Array.isArray(rows) ? rows : [];
 }
 const isUnread = e => !app.lastSeen || e.at > app.lastSeen;
 
@@ -927,8 +952,47 @@ function noResults() {
     s.appendChild(b);
   };
 
-  // Nothing is narrowed, so this is the watch itself being empty.
+  // Nothing is narrowed - but "Live" is itself a filter, so an empty Live
+  // list is not the same thing as an empty watch. With a price ceiling that
+  // hid all 108 cars the searches had found, this said "The searches have
+  // not turned up a car" over a chip row reading "Hidden by a rule 108",
+  // and sent the reader to the Searches tab to look for a fault that was not
+  // there. Three different situations, three different things to do.
   if (!narrowing.length) {
+    const all = app.data.listings || [];
+    const hidden = all.filter(l => l.status === 'active' && l.filtered);
+    const gone = all.filter(l => l.status === 'gone');
+    if (!all.length) {
+      s.innerHTML = `<h2>No cars yet</h2>
+        <p>The searches have not turned up a car. The Searches tab says how many
+           listings each one read last time it ran.</p>`;
+      return s;
+    }
+    if (hidden.length) {
+      s.innerHTML = `<h2>Every car found is hidden by one of your rules</h2>
+        <p>The searches are working — they are holding
+           ${hidden.length} car${hidden.length === 1 ? '' : 's'}, and your
+           rules hide all of them. Nothing is lost: each one says which rule
+           turned it away, and loosening that rule brings them straight back.</p>`;
+      offer({
+        what: 'your rules',
+        label: `Show the ${hidden.length} hidden`,
+        clear: () => { app.chip = 'hidden'; },
+      });
+      return s;
+    }
+    if (gone.length) {
+      s.innerHTML = `<h2>Every car it was watching has left the market</h2>
+        <p>${gone.length} listing${gone.length === 1 ? ' has' : 's have'} come
+           down and nothing new has arrived yet. They are kept with their last
+           price rather than deleted.</p>`;
+      offer({
+        what: 'the live list',
+        label: `Show the ${gone.length} gone`,
+        clear: () => { app.chip = 'gone'; },
+      });
+      return s;
+    }
     s.innerHTML = `<h2>No cars yet</h2>
       <p>The searches have not turned up a car. The Searches tab says how many
          listings each one read last time it ran.</p>`;
@@ -1175,6 +1239,34 @@ function renderMarket() {
   const host = document.querySelector('[data-view="market"]');
   host.innerHTML = '';
   const m = app.data.market || {};
+
+  // NOTHING TO SAY ABOUT, SAID ONCE.
+  //
+  // With no cars, this view rendered its whole skeleton: a paragraph reading
+  // "the tiles count all 0 listings the searches returned", six tiles of
+  // em-dashes and zeros, and two buttons offering to download them. That is
+  // not an empty state, it is a full state with the numbers taken out, and
+  // it is the first thing anyone sees on the day they set this up.
+  const carsHere = (app.data.listings || []).length;
+  if (!carsHere) {
+    const head = el('div', 'view__head measure');
+    head.innerHTML = '<h1 id="market-h">The market</h1>';
+    host.appendChild(head);
+    host.appendChild(emptyState(
+      app.data.last_check ? 'No cars to compare yet' : 'Nothing measured yet',
+      app.data.last_check
+        ? 'The searches have not turned up a car, so there is no market to '
+          + 'describe. This page fills in on its own: medians once six '
+          + 'comparable cars are being watched, and how fast things sell '
+          + 'once the bot has seen some of them leave.'
+        : 'This page is about what a hundred cars say together - what the '
+          + 'median asks, how long they sit, how often a price actually '
+          + 'moves. None of that can be said from a standing start, so it '
+          + 'stays empty until the first check has run and then fills in as '
+          + 'the watch gets older.'));
+    return;
+  }
+
   const head = el('div', 'view__head measure');
   // Listings counts what you can see; the market is the whole market. Two
   // different numbers under one word is how a dashboard loses trust, so the
@@ -1606,7 +1698,12 @@ function renderStatus() {
   const host = document.querySelector('[data-view="status"]');
   host.innerHTML = '';
   const d = app.data;
-  const run = d.last_run || {};
+  // See trustState: "Last good check", "Requests last check" and "Check
+  // took" are all questions about a CHECK, and a firing that stood down is
+  // not one. All three read 0 the first time this page was rendered after a
+  // deduplicated firing.
+  const run = d.last_check || d.last_run || {};
+  const firing = d.last_run || {};
   const cov = d.coverage || {};
   const h = d.health || {};
 
@@ -1660,13 +1757,22 @@ function renderStatus() {
                   .map(triggerWord))}.`
       }</dd>` : ''}</div>
     <div class="stat"><dt>Last good check</dt><dd>${when(run.at)}</dd>
-      <dd class="stat__note">${stamp(run.at)}</dd></div>
+      <dd class="stat__note">${stamp(run.at)}${
+        // When the most recent firing was not this check, say what it was.
+        // Otherwise the tile is true and the page is quietly missing the
+        // most recent thing that happened.
+        firing.at && firing.at !== run.at
+          ? ` \u00b7 ${firing.skipped
+                ? 'a firing stood down'
+                : (firing.ok === false ? 'a firing failed' : 'a firing ran')} ${when(firing.at)}`
+          : ''}</dd></div>
     <div class="stat" data-tone="${cov.longest_gap_minutes > 180 ? 'warn' : ''}"><dt>Longest gap</dt>
       <dd class="num">${cov.longest_gap_minutes ? Math.round(cov.longest_gap_minutes / 60 * 10) / 10 : '—'}h</dd>
       <dd class="stat__note">between good checks</dd></div>
     <div class="stat"><dt>Requests last check</dt><dd class="num">${run.requests_made ?? '—'}</dd>
       <dd class="stat__note">budget ${h.budget?.limit ?? '—'}</dd></div>
-    <div class="stat"><dt>Check took</dt><dd class="num">${run.duration_s ?? '—'}s</dd>
+    <div class="stat"><dt>Check took</dt><dd class="num">${
+      run.duration_s == null ? '—' : Math.round(run.duration_s)}s</dd>
       <dd class="stat__note">${d.cost
         ? `${d.cost.checks} checks · ${d.cost.billed_minutes ?? d.cost.minutes} billed minutes in ${d.cost.window_hours}h`
           + (cov.stood_down ? ` · ${num(cov.stood_down)} firing${

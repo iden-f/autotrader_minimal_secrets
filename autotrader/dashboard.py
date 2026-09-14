@@ -328,15 +328,27 @@ def build_payload(cfg: Config, state: State, env: dict[str, str] | None = None
             for name, h in (state.data.get("channels") or {}).items()
         },
         "last_run": state.last_run,
+        # The last run that actually read the site. See State.last_check:
+        # a firing that stood down is a run and is not a check, and the page
+        # asks both questions - "is the timer alive" and "how old is what I
+        # am looking at" - which have different answers.
+        "last_check": state.last_check,
         "health": health,
         # Derived, not stored: the run counters only ever counted changes on
         # cars that passed the filters, so a price drop on a hidden car was
         # real, recorded, and missing from every number the bot printed.
         "events": insight.events(state.listings.values()),
         "comparables": insight.comparables(state.listings.values()),
-        "coverage": insight.coverage(
-            runs, int(cfg.get("health.expected_interval_minutes", 30) or 30),
-            since_change=state.schedule_changed_at),
+        "coverage": dict(
+            insight.coverage(
+                runs, int(cfg.get("health.expected_interval_minutes", 30) or 30),
+                since_change=state.schedule_changed_at),
+            # The page decided for itself when a check was "too long ago" -
+            # three times the interval - while the alarm that emails you used
+            # health.silent_after_hours. Two thresholds for one idea, and
+            # changing the setting moved only one of them. Published here so
+            # the page uses the number the bot actually alarms on.
+            silent_after_hours=float(cfg.get("health.silent_after_hours") or 0)),
         "cost": insight.minutes_spent(runs),
         # What the month has cost and where that is heading. A bot that can
         # spend someone's money should say what it is spending, on the page

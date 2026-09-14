@@ -323,3 +323,63 @@ def test_a_deduplicated_scheduled_firing_still_proves_the_cron_is_alive():
     assert cov["schedule_fired"] == 3, "deduplicated firings are still firings"
     assert cov["slots_scheduled"] == 1, "only one slot was actually filled by it"
     assert cov["slots_covered"] == 2
+
+
+class TestACountOfThingsThatHappenedIsNeverNegative:
+    """The Status card read "-2 of 7 checks complained".
+
+    `clean` counted every run in the window whose exit code was zero;
+    `complained` was the number that read the site minus that. A firing that
+    stands down because a check just happened exits zero and never reads the
+    site, so it landed in one population and not the other. Two numbers
+    subtracted across different populations, and the giveaway was a negative
+    count of a thing that had happened.
+    """
+
+    @staticmethod
+    def at(minutes_ago, **over):
+        from datetime import timedelta
+        row = {"at": (clock.now() - timedelta(minutes=minutes_ago)).isoformat(),
+               "ok": True, "searches_run": 2, "searches_failed": 0}
+        row.update(over)
+        return row
+
+    def coverage(self, runs):
+        from autotrader import insight
+        return insight.coverage(runs, expected_minutes=120, window_hours=24,
+                                since_change=None)
+
+    def test_standing_down_does_not_make_the_complaint_count_negative(self):
+        runs = [self.at(30, skipped=True), self.at(90, skipped=True),
+                self.at(150), self.at(210, ok=False)]
+        cov = self.coverage(runs)
+        assert cov["complained"] == 1
+        assert cov["clean"] == 1
+        assert cov["stood_down"] == 2
+
+    def test_the_two_halves_add_up_to_the_checks_that_looked(self):
+        """Whatever the mix, clean + complained is `successful`.
+
+        `successful` is the denominator the page prints beside `complained`,
+        which is the whole reason they have to be counted over one set.
+        """
+        import itertools
+        for pattern in itertools.product([True, False], repeat=4):
+            runs = [self.at(30 + 60 * n, ok=ok, skipped=not ok and n % 2 == 0)
+                    for n, ok in enumerate(pattern)]
+            cov = self.coverage(runs)
+            assert cov["clean"] + cov["complained"] == cov["successful"], (
+                pattern, cov)
+            assert cov["complained"] >= 0, (pattern, cov)
+
+    def test_a_run_that_could_not_read_anything_is_in_neither(self):
+        """It did not cover its slot and it did not complain about itself.
+
+        It is still a check that was attempted, which is a different number
+        and is reported as one.
+        """
+        cov = self.coverage([self.at(30, ok=False, searches_run=2,
+                                     searches_failed=2)])
+        assert cov["checks"] == 1, "a firing that tried"
+        assert cov["successful"] == 0, "and read nothing"
+        assert cov["clean"] == 0 and cov["complained"] == 0
