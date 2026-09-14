@@ -173,11 +173,21 @@ class Ledger:
     def ceiling(self) -> float:
         return round(self.allowance * self.stop_at, 1)
 
-    # The one sentence this guard is not allowed to leave out.
+    # The two sentences this guard is not allowed to leave out.
+    #
+    # The second one is about the counter measuring itself. Minutes are
+    # charged from the runner's `finally`, so every run that finishes - even
+    # one that crashes - is counted. A job KILLED outright is not: a step
+    # timeout, a lost runner, an out-of-memory kill. GitHub bills those
+    # minutes and this ledger has never seen them. The bot cannot find them
+    # without the API, so it says so rather than presenting a floor as a
+    # total.
     BLIND_SPOT = (
         "This is what THIS repository spent. The allowance has one meter per "
         "account and this bot can see one repository, so it cannot tell you "
-        "how much of the allowance is left."
+        "how much of the allowance is left. It is also a floor rather than a "
+        "total: a job killed outright - a timeout, a lost runner - is billed "
+        "by GitHub and never reaches this count."
     )
 
     def _short(self, projection: float | None) -> str:
