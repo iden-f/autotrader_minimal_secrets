@@ -194,3 +194,52 @@ class TestLiveCheck:
         self._wire(monkeypatch, fixture_html("search_cards"))
         main(["--no-colour", "doctor", "--offline", "--live", "--no-sample"])
         assert "Sample parse" not in capsys.readouterr().out
+
+
+class TestTheDoctorReportsACheckRatherThanAFiring:
+    """It printed "last run ...: 0 seen, 0 new, 0 failed" about a firing that
+    stood down because a check had just happened - a run that read nothing,
+    took no time and made no requests. The same bug the dashboard had, in
+    the place someone looks when they are already suspicious."""
+
+    def state_with(self, tmp_path, runs):
+        from autotrader.state import State
+        state = State(path=tmp_path / "state.json")
+        state.data["runs"] = runs
+        state.save()
+        return state
+
+    def test_it_names_the_check_and_notes_the_firing(self, tmp_path, monkeypatch,
+                                                     capsys):
+        from autotrader.cli import main
+        monkeypatch.chdir(tmp_path)
+        from autotrader.config import Config
+        cfg = Config.defaults(tmp_path / "config.json")
+        cfg.add_search("https://www.autotrader.ca/cars/bmw/m5/?rcp=25", "M5")
+        cfg.save()
+        self.state_with(tmp_path, [
+            {"at": "2026-09-14T19:34:27+00:00", "ok": True, "skipped": True,
+             "searches_run": 0, "listings_seen": 0},
+            {"at": "2026-09-14T19:19:40+00:00", "ok": True, "searches_run": 1,
+             "searches_failed": 0, "listings_seen": 80, "new": 0},
+        ])
+        main(["doctor", "--offline"])
+        out = capsys.readouterr().out
+        assert "last check 2026-09-14T19:19:40" in out, out
+        assert "80 seen" in out, out
+        assert "a firing stood down at 2026-09-14T19:34:27" in out, out
+
+    def test_a_watcher_that_has_only_ever_stood_down_says_so(self, tmp_path,
+                                                             monkeypatch, capsys):
+        from autotrader.cli import main
+        from autotrader.config import Config
+        monkeypatch.chdir(tmp_path)
+        cfg = Config.defaults(tmp_path / "config.json")
+        cfg.add_search("https://www.autotrader.ca/cars/bmw/m5/?rcp=25", "M5")
+        cfg.save()
+        self.state_with(tmp_path, [
+            {"at": "2026-09-14T19:34:27+00:00", "ok": True, "skipped": True},
+        ])
+        main(["doctor", "--offline"])
+        out = capsys.readouterr().out
+        assert "nothing has read the site yet" in out, out

@@ -364,13 +364,26 @@ def cmd_doctor(args: argparse.Namespace) -> int:
     held = len(state.pending_changes())
     if held:
         print(_warn(f"{_many(held, 'alert')} waiting to be delivered"))
-    last = state.last_run
+    # The last run that READ the site, not the last run. A firing that stands
+    # down because a check has just happened is recorded and read nothing, so
+    # reporting it here printed "0 seen, 0 new, 0 failed" about a check that
+    # never happened - the same bug the dashboard had.
+    last = state.last_check
+    firing = state.last_run
     if last:
         mark = _ok if last.get("ok") else _bad
-        print(mark(f"last run {last.get('at')}: {last.get('listings_seen', 0)} seen, "
+        print(mark(f"last check {last.get('at')}: {last.get('listings_seen', 0)} seen, "
                    f"{last.get('new', 0)} new, {last.get('searches_failed', 0)} failed"))
         for error in (last.get("errors") or [])[:3]:
             print(f"   {RED}{error}{RESET}")
+        if firing and firing.get("at") != last.get("at"):
+            what = ("stood down" if firing.get("skipped")
+                    else "failed" if firing.get("ok") is False else "ran")
+            print(f"   {DIM}a firing {what} at {firing.get('at')}{RESET}")
+    elif firing:
+        print(_warn(f"nothing has read the site yet; the last firing "
+                    f"{'stood down' if firing.get('skipped') else 'failed'} "
+                    f"at {firing.get('at')}"))
     else:
         print(_warn("no run recorded yet - try: python -m autotrader run --dry-run"))
 
@@ -414,7 +427,8 @@ def cmd_doctor(args: argparse.Namespace) -> int:
 
     print()
     if problems:
-        print(_bad(f"{_many(problems, 'problem')} need attention"))
+        print(_bad(f"{_many(problems, 'problem')} "
+                   f"{'needs' if problems == 1 else 'need'} attention"))
     elif warnings:
         print(_warn(f"usable, with {_many(warnings, 'thing')} worth a look"))
     else:

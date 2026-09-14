@@ -462,3 +462,38 @@ class TestThePythonSideHasOneVocabularyToo:
                  if "fromisoformat" in self.code(p)]
         assert users == ["clock.py"], (
             "parse a stored stamp with clock.parse, not by hand: " + str(users))
+
+
+class TestACountAgreesWithItsVerb:
+    """"1 problem need attention".
+
+    The plural helper gets the noun right and knows nothing about the verb
+    after it, so every place that follows a count with one has to agree by
+    hand. This is the class, scanned for rather than the one instance.
+    """
+
+    VERBS = ("are", "have", "need", "were", "do", "say", "were", "were not")
+
+    def package(self):
+        return sorted(Path("autotrader").glob("*.py"))
+
+    def test_no_count_is_followed_by_a_bare_plural_verb(self):
+        import re
+        bad = []
+        pattern = re.compile(
+            r"(?:_many|words\.many)\([^)]*\)\}\s+(" + "|".join(self.VERBS) + r")\b")
+        for path in self.package():
+            for n, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+                match = pattern.search(line)
+                if match:
+                    bad.append(f"{path.name}:{n} '...{match.group(1)}'")
+        assert not bad, (
+            "a count followed by a verb that is plural whatever the count is: "
+            + "; ".join(bad))
+
+    def test_the_doctor_summary_agrees_at_one_and_at_two(self):
+        import re
+        source = Path("autotrader/cli.py").read_text(encoding="utf-8")
+        line = re.search(r"problems == 1 else", source)
+        assert line, "the doctor's summary no longer agrees its verb by hand"
+        assert "'needs' if problems == 1 else 'need'" in source
