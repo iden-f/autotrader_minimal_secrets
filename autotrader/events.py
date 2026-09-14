@@ -328,9 +328,26 @@ def silence(cfg, state, record: dict[str, Any],
                              since_change=state.schedule_changed_at)
     served = cover.get("pct_scheduled")
     missed = int(quiet_for * 60 // max(1, int(every or 30)))
-    thin = served is not None and cover.get("checks", 0) >= 2 and served < 70
+    # Runs the bot cannot attribute to anything are not evidence about the
+    # schedule, in either direction. A repository being worked on produces
+    # pushes and hand runs; records written before the bot learned to note
+    # its own trigger carry none at all. Read as "0% scheduled", that
+    # confidently blamed GitHub for dropping windows it may never have been
+    # asked for - a claim from absent evidence, on the one channel whose
+    # credibility this whole file exists to protect.
+    attributed = sum(n for how, n in (cover.get("by_trigger") or {}).items()
+                     if how != "unattributed")
+    enough = cover.get("checks", 0) >= 2 and attributed >= 2
+    thin = enough and served is not None and served < 70
 
-    if thin:
+    if not enough:
+        why = (f"That is {words.many(missed, 'missed window')} in a row.\n\n"
+               f"This bot cannot tell you whether the schedule is at fault: "
+               f"of the checks it has on record, none came from a timer it "
+               f"could identify - they were pushes, hand runs, or runs from "
+               f"before it started noting how it was started. Check the "
+               f"Actions tab for whether the schedule is firing at all.")
+    elif thin:
         why = (f"That is {words.many(missed, 'missed window')} in a row, and this "
                f"schedule has been serving only {served}% of the firings asked "
                f"of it. So this is most likely GitHub dropping windows rather "
