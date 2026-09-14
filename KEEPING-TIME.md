@@ -97,10 +97,10 @@ runner a day. It is free here for the same reason everything else is, which is
 exactly the argument that turned out to be the wrong way to decide.
 `tests/test_workflows.py` fails if one comes back.
 
-## Option 2, end to end — three steps
+## Option 2, end to end — four steps
 
-Ten minutes. Step 2 tells you whether step 1 worked, so you cannot get halfway
-and not know.
+About five minutes, and step 2 tells you whether step 1 worked, so you cannot
+get halfway and not know.
 
 ### Step 1 — make a token
 
@@ -122,6 +122,15 @@ wrong — if you grant Actions and not Contents it will not work.
 
 Press **Generate token**. Copy the `github_pat_…` string now; GitHub will not
 show it again.
+
+**Put the expiry date in a calendar before you close the tab.** This is the
+one failure in the whole system that can be completely silent: when the token
+expires the timer starts getting 401s and stops being able to start the bot,
+and if it was the only timer, nothing runs and nothing is left to send you
+the "gone quiet" message. See [MAINTENANCE.md](MAINTENANCE.md). The cheap
+insurance is to leave GitHub's own `schedule:` in `watch.yml` switched on
+beside this — 40% of windows is poor as a primary and excellent as a thing
+that notices the primary has died.
 
 > **Honestly:** the permission above is what GitHub's documentation specifies.
 > I could not re-check it from where this was written — `docs.github.com` is
@@ -152,9 +161,20 @@ about ten seconds. A run called "Check AutoTrader" should be there, marked
 repository_dispatch. ...
 ```
 
-Anything else and the script tells you what is wrong and how to fix it — a
-missing permission, a token the repository cannot be seen with, an expired
-token, no network. It interprets whatever GitHub actually replies, including
+**Anything else, and the script says which of these it is and what to do.**
+The table is here so you know what to expect; the script is what you should
+believe, because it is reading GitHub's actual reply and this table is not.
+
+| What comes back | What it means | The fix |
+|---|---|---|
+| **204** | Accepted. There is no reply body and that is correct. | Nothing. Go to step 3. |
+| **401** | GitHub does not recognise the token. | It is mistyped, or it has expired. Fine-grained tokens expire; make a new one. |
+| **403** | The token is real and not allowed to do this. | Almost always a missing **Contents: Read and write**. `repository_dispatch` is filed under Contents, not Actions — that is the usual surprise. |
+| **404** | The token cannot *see* the repository. | GitHub answers 404 rather than 403 for a repository a token has no access to, so this is a scope problem rather than a typo (check the name too). Edit the token and make sure this repository is in **Only select repositories**. |
+| **415** or **422** | GitHub rejected the request body. | Not something you did — a bug in the script. The message includes GitHub's own reply to report. |
+| **000** | curl got no HTTP response at all. | A proxy, a firewall, or no DNS. Try `curl -sS https://api.github.com`. |
+| anything else | A code the script does not know. | It prints GitHub's own message, which is the thing to search for. Nothing was broken by trying. |
+ It interprets whatever GitHub actually replies, including
 codes it does not recognise, in which case it prints GitHub's own message so
 you have something to search for. `tests/test_keep_time.py` exercises every
 one of those branches with a stubbed response, and asserts the event type and

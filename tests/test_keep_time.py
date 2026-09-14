@@ -140,3 +140,70 @@ class TestTheDocumentationMatchesTheScript:
         assert dispatch_curls <= 1, (
             f"{dispatch_curls} copies of the dispatch call in the document; "
             f"the script is the one that is tested")
+
+
+class TestTheTableInTheDocumentMatchesTheScript:
+    """A document that lists status codes the script no longer handles is
+    worse than no table at all: it is a thing the reader will believe.
+
+    The script is the authority - it reads GitHub's actual reply - and the
+    table exists so somebody who cannot run it knows what to expect. These
+    tests keep the two from drifting.
+    """
+
+    def script(self):
+        from pathlib import Path
+        return Path("scripts/keep-time.sh").read_text(encoding="utf-8")
+
+    def doc(self):
+        from pathlib import Path
+        return Path("KEEPING-TIME.md").read_text(encoding="utf-8")
+
+    def codes_the_script_handles(self):
+        import re
+        body = self.script()
+        # From THIS case to the esac that closes it. The script has an
+        # earlier case for its own arguments, and searching from zero found
+        # that one's esac - which is before the start, so the slice came back
+        # empty and the test passed by having nothing to check.
+        start = body.index('case "$CODE" in')
+        block = body[start:body.index("esac", start)]
+        out = set()
+        for line in block.splitlines():
+            match = re.match(r"\s{2}([\d|]+)\)", line)
+            if match:
+                out.update(match.group(1).split("|"))
+        return out
+
+    def test_every_code_the_script_handles_is_in_the_table(self):
+        doc = self.doc()
+        missing = [c for c in sorted(self.codes_the_script_handles())
+                   if f"**{c}**" not in doc]
+        assert not missing, (
+            "the script explains these and the document does not: "
+            + ", ".join(missing))
+
+    def test_the_table_promises_nothing_the_script_cannot_say(self):
+        """A row for a code the script would fall through on is a lie."""
+        import re
+        handled = self.codes_the_script_handles()
+        rows = re.findall(r"^\| \*\*(\d+)\*\*", self.doc(), re.M)
+        extra = [c for c in rows if c not in handled]
+        assert not extra, (
+            "the document explains these and the script does not: "
+            + ", ".join(extra))
+
+    def test_it_says_which_of_the_two_to_believe(self):
+        flat = " ".join(self.doc().lower().split())
+        assert "the script is what you should believe" in flat
+
+    def test_the_step_count_in_the_heading_matches_the_steps(self):
+        """It said three, and there were four."""
+        import re
+        doc = self.doc()
+        heading = re.search(r"^## Option 2, end to end — (\w+) steps$", doc, re.M)
+        assert heading, "the walkthrough heading has changed shape"
+        words = {"two": 2, "three": 3, "four": 4, "five": 5, "six": 6}
+        claimed = words[heading.group(1).lower()]
+        steps = len(re.findall(r"^### Step \d+ ", doc, re.M))
+        assert claimed == steps, f"heading says {claimed}, there are {steps}"
