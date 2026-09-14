@@ -22,6 +22,30 @@ green, the bot is working and whatever else you are seeing can wait.
 
 ---
 
+## Every message it can send you, and what each one means
+
+Eleven, and that is all of them. The list is checked against the code by
+`tests/test_docs.py`, so a twelfth cannot appear without this table growing a
+row. Anything else claiming to be from this bot is not.
+
+| Subject | What happened | How urgent | What to do |
+|---|---|---|---|
+| **AutoTrader watcher is working** | The first check ran and the parser was graded against the real page. | Not urgent - it is good news. | Nothing. It only ever says this once. |
+| **AutoTrader watcher: the first check looks wrong** | The first check ran and what it read does not look like a real results page. | Before you trust anything else. | [Every search returns nothing](#every-search-returns-nothing). |
+| **AutoTrader watcher needs attention** | A search failed three checks in a row, or has been unreadable for six hours. The message says which search, what the error was, and how long. | Same day. Nothing is lost while it is true. | [The run is failing](#the-run-is-failing). |
+| **AutoTrader watcher has gone quiet** | No check has succeeded for six hours and nothing has been started since. The message says whether this looks like GitHub dropping windows or like something changing. | Same day. Nothing is being watched. | [Nothing has run for hours](#nothing-has-run-for-hours). |
+| **AutoTrader watcher is running and failing** | It is being started and failing every time. Not a schedule problem. | Same day. | [The run is failing](#the-run-is-failing) - the Actions log for the last run says what. |
+| **AutoTrader watcher covered only N% of yesterday** | The schedule delivered less than half the checks asked of it. Sent at most once a day. | This week. Cars can come and go between checks. | [The schedule is thin](#the-schedule-is-thin). |
+| **AutoTrader changed how its pages are built** | The shape of the results page moved under the parser. It is still reading, but by a different route. | This week. | Nothing yet. If it becomes "needs attention", [the site changed](#every-search-returns-nothing). |
+| **AutoTrader watcher: its own records do not add up** | A bookkeeping rule the bot checks after every run did not hold. Sent only when the set of broken rules changes. | Before you trust what it has told you. | [Breaking glass](#breaking-glass). The offending entries are named in `diagnostics/invariants.json`. |
+| **This month's runner minutes are heading over** | The projection says this month will pass the ceiling. It has NOT stopped. | This month. | [What this costs](#what-this-costs). |
+| **The watcher has stopped: this month's minutes are spent** | It wrote `BUDGET-STOP` and will not check again until that file is gone. | Now, if you want it watching. | [What this costs](#what-this-costs) - delete `BUDGET-STOP`. |
+| **Switched off <channel> notifications** | A channel rejected the bot's credentials twice, so it stopped trying. | When you next want that channel. | [You stopped getting messages](#you-stopped-getting-messages). |
+| **AutoTrader watcher: your alerts moved** | The ntfy topic changed. Sent to both the old topic and the new one. | Now, or you will hear nothing. | Resubscribe your phone to the topic named in the message. |
+| **AutoTrader: your last N days** | The weekly digest, only if you asked for it. | Never. | Read it or do not. |
+
+---
+
 ## Nothing has run for hours
 
 **How you know**: the Status strip is grey on the right; the trust line says
@@ -314,6 +338,59 @@ in git; there is nothing else to restore.
 
 **Verify a clean clone still works**: that is what `coldstart.yml` does every
 day. Read its last run before assuming a fresh checkout is fine.
+
+---
+
+## Pointing it at a site that has changed underneath it
+
+AutoTrader.ca has already moved platform once during this project's life: the
+results stopped being server-rendered cards and became a `__NEXT_DATA__` JSON
+blob in the page. It cost nothing, because the parser was already reading
+four different shapes and simply fell to the next one. It will happen again,
+and the next one might not be free.
+
+**The order to work in, which is also the order of least to most work:**
+
+1. **Is it the site or the search?** Open the search URL in a browser. Cars
+   on the page and none in the bot is a parser problem. No cars in the
+   browser either and the search itself needs editing — Searches tab.
+
+2. **Ask the bot what it can still read.**
+   ```
+   python -m autotrader doctor --live
+   ```
+   It fetches the real page and prints each of the four strategies with how
+   many listings it got. If any of them is non-zero, nothing is broken: the
+   bot uses whichever wins and records which one it used, and the Searches
+   tab shows that per search.
+
+3. **Capture the page as it is now.**
+   ```
+   python -m autotrader capture --raw
+   ```
+   That writes what the site actually served. Put it in `tests/fixtures/` and
+   write the failing test first — every parser strategy in this project was
+   written against a captured page, and none of them were written against a
+   guess about one.
+
+4. **Add a strategy; do not edit one.** `STRATEGIES` in
+   `autotrader/parser.py` is an ordered tuple of `(name, function)`. Each one
+   is independent, each returns whatever it can find, and the best result
+   wins. A fifth is roughly forty lines and cannot break the other four.
+
+5. **A different site entirely.** The parser takes a car's identity from the
+   UUID at the end of an `/offers/` URL — that, and `autotrader/urls.py`, is
+   the whole of what ties this to autotrader.ca. Everything else (the state
+   file, the change detection, the filters, the alerts, the dashboard) is
+   about listings, not about a website. A second platform is a second
+   `urls.py` and a fifth strategy, not a rewrite.
+
+**What protects you while you do this:** nothing is called sold on a search
+the bot could not read. A run that reads nothing changes nothing, says so in
+the Actions log, and alerts after three of them. A page that loads but
+parses to zero is treated as a failure, not as an empty market — that rule
+exists because the opposite would have announced two hundred cars as removed
+in a single run.
 
 ---
 

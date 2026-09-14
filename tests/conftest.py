@@ -141,3 +141,39 @@ def _no_frozen_clock_leaks():
     from autotrader import clock
     yield
     clock.freeze(None)
+
+
+# --- the suite may not reach the internet -----------------------------------
+#
+# Every page these tests read is a fixture captured from the real site. That
+# is a property worth enforcing rather than trusting: a test that quietly
+# fetches autotrader.ca passes on a good day, fails during an outage, and
+# tells you nothing either way - and one that quietly posts to ntfy sends a
+# real notification to a real phone.
+#
+# Loopback is allowed: the dashboard tests serve docs/ on 127.0.0.1 and drive
+# a browser against it, which is the whole point of them.
+
+@pytest.fixture(scope="session", autouse=True)
+def _no_internet():
+    import socket
+
+    real = socket.socket.connect
+    allowed = {"127.0.0.1", "::1", "localhost"}
+
+    def connect(self, address):
+        host = address[0] if isinstance(address, tuple) else address
+        if isinstance(host, str) and host not in allowed:
+            raise AssertionError(
+                f"a test tried to open a connection to {host!r}. Every page "
+                f"this suite reads is a fixture in tests/fixtures/; if you "
+                f"need a new one, capture it with "
+                f"`python -m autotrader capture` rather than fetching it "
+                f"while the tests run.")
+        return real(self, address)
+
+    socket.socket.connect = connect
+    try:
+        yield
+    finally:
+        socket.socket.connect = real

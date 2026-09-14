@@ -62,7 +62,9 @@ Everything below is optional.
 |---|---|
 | [SETUP.md](SETUP.md) | The click paths: secrets, Pages, the schedule. |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | How it works, module by module, and why. |
-| [RUNBOOK.md](RUNBOOK.md) | Something is wrong. Start here. |
+| [RUNBOOK.md](RUNBOOK.md) | Something is wrong. Start here — it lists every message the bot can send and what each one means. |
+| [MAINTENANCE.md](MAINTENANCE.md) | What will rot, roughly when, and which half of it the bot will tell you about. |
+| [KEEPING-TIME.md](KEEPING-TIME.md) | GitHub serves 40% of the schedule asked of it. This is the five-minute fix. |
 | [DESIGN.md](DESIGN.md) | The dashboard's design rules and vocabulary. |
 | [NOTIFY.md](NOTIFY.md) | Getting the alerts onto your phone. |
 | [EVENTS.md](EVENTS.md) | The standing record of market firsts. |

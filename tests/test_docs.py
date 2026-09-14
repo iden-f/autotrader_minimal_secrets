@@ -259,3 +259,98 @@ class TestTheClaimsAboutBehaviour:
         source = Path("autotrader/dashboard.py").read_text()
         body = source.split("def write(")[1]
         assert body.index("find_secrets") < body.index("tmp.replace(path)")
+
+
+class TestTheRunbookListsEveryMessageTheBotCanSend:
+    """Written for the version of you that has forgotten all of it.
+
+    A message arriving with no entry in the runbook is a message you have to
+    reason about from scratch, on a phone, at the moment you least want to.
+    So the table is checked against the code rather than maintained by
+    memory: a twelfth alert cannot be added without this failing.
+    """
+
+    #: Every subject the package can send, read off the SOURCE rather than
+    #: from a list kept by hand. Found by walking the syntax tree for calls
+    #: to notifiers.alert and for the "subject" key of the dicts events.py
+    #: hands back, so a grep-shaped near-miss cannot pass for one.
+    def subjects(self):
+        import ast
+        from pathlib import Path
+
+        def literal(node):
+            """The fixed part of a subject, or None if it is not one."""
+            if isinstance(node, ast.Constant) and isinstance(node.value, str):
+                return node.value
+            if isinstance(node, ast.JoinedStr):
+                head = node.values[0] if node.values else None
+                if isinstance(head, ast.Constant) and isinstance(head.value, str):
+                    return head.value
+            return None
+
+        found = set()
+        for path in Path("autotrader").glob("*.py"):
+            tree = ast.parse(path.read_text(encoding="utf-8"))
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Call):
+                    name = getattr(node.func, "attr", getattr(node.func, "id", ""))
+                    if name == "alert" and len(node.args) >= 2:
+                        text = literal(node.args[1])
+                        if text:
+                            found.add(text)
+                if isinstance(node, ast.Dict):
+                    for key, value in zip(node.keys, node.values):
+                        if (isinstance(key, ast.Constant)
+                                and key.value == "subject"):
+                            text = literal(value)
+                            if text:
+                                found.add(text)
+        # Subjects assigned to a name and passed in. Two of them, both in
+        # runner.py, and both about the first run.
+        for path in Path("autotrader").glob("*.py"):
+            tree = ast.parse(path.read_text(encoding="utf-8"))
+            for node in ast.walk(tree):
+                if (isinstance(node, ast.Assign) and len(node.targets) == 1
+                        and getattr(node.targets[0], "id", "") == "subject"):
+                    if isinstance(node.value, ast.IfExp):
+                        for branch in (node.value.body, node.value.orelse):
+                            text = literal(branch)
+                            if text:
+                                found.add(text)
+                    else:
+                        text = literal(node.value)
+                        if text:
+                            found.add(text)
+        return found
+
+    def runbook(self):
+        from pathlib import Path
+        return Path("RUNBOOK.md").read_text(encoding="utf-8")
+
+    def test_every_subject_has_a_row(self):
+        book = self.runbook()
+        missing = []
+        for subject in sorted(self.subjects()):
+            # The fixed part of an f-string subject.
+            fixed = subject.split("{")[0].strip().rstrip(":").strip()
+            if len(fixed) < 12:
+                continue
+            if fixed.lower() not in book.lower():
+                missing.append(subject)
+        assert not missing, (
+            "these alerts can be sent and the runbook does not explain them: "
+            + "; ".join(missing))
+
+    def test_the_table_says_what_to_do_for_each(self):
+        """A row that names a message and stops is a row that does not help."""
+        rows = [line for line in self.runbook().splitlines()
+                if line.startswith("| **")]
+        assert len(rows) >= 11, f"only {len(rows)} alerts documented"
+        for row in rows:
+            cells = [c.strip() for c in row.strip("|").split("|")]
+            assert len(cells) == 4, row
+            assert all(cells), f"a blank cell in: {row}"
+
+    def test_it_says_that_is_all_of_them(self):
+        """Otherwise the reader cannot tell a real alert from a fake one."""
+        assert "and that is all of them" in self.runbook()

@@ -143,3 +143,32 @@ class TestOfflineIsNotAFreshPage:
         assert state.index("app.offline") < state.index("if (!run.at)"), (
             "the offline branch has to come before the other verdicts or one "
             "of them answers first")
+
+
+class TestTheSuiteNeverReachesTheSite:
+    """Every page these tests read is a fixture captured from the real site.
+
+    A test that quietly fetches autotrader.ca passes on a good day, fails
+    during an outage, and tells you nothing either way. One that quietly
+    posts to ntfy sends a real notification to a real phone. Enforced in
+    conftest by a guard on socket.connect rather than trusted, so this stays
+    true for tests nobody has written yet.
+    """
+
+    def test_a_connection_to_the_internet_fails_loudly(self):
+        import socket
+        with __import__("pytest").raises(AssertionError, match="fixture"):
+            socket.create_connection(("autotrader.ca", 443), timeout=1)
+
+    def test_loopback_is_allowed(self):
+        """The dashboard tests serve docs/ on 127.0.0.1 and drive a browser
+        against it, which is the whole point of them."""
+        import socket
+        server = socket.socket()
+        server.bind(("127.0.0.1", 0))
+        server.listen(1)
+        try:
+            client = socket.create_connection(server.getsockname(), timeout=2)
+            client.close()
+        finally:
+            server.close()
