@@ -1375,9 +1375,24 @@ function renderMarket() {
     // fat year the axis was that year's own range, so its bar filled the
     // width whatever the prices were - a chart whose only reading came from
     // the tick, next to a sentence that had already given the number.
-    if (fat.length) sec.appendChild(rangeChart(fat, modelRange(row)));
+    // TWO PRESENTATIONS OF ONE COLUMN, AND THEY HAVE TO SAY SO.
+    //
+    // Years with enough cars get a bar; years with too few get their prices
+    // listed. Stacked without a word between them, the chart's axis labels
+    // ran straight into the table's header row, the whole thing read as one
+    // broken table, and 2018 - drawn as a bar - looked like a year the table
+    // had simply lost.
     const thin = years.filter(([, y]) => y.thin);
+    if (fat.length) {
+      sec.appendChild(subhead('By year', 'the line is the full range, the '
+        + 'block the middle half, the tick the median'));
+      sec.appendChild(rangeChart(fat, modelRange(row)));
+    }
     if (thin.length) {
+      sec.appendChild(subhead(
+        fat.length ? 'The other years' : 'By year',
+        `fewer than ${MIN_FOR_A_YEAR_MEDIAN} cars each, so the asking prices `
+        + `themselves rather than a median`));
       sec.appendChild(table(`<thead><tr><th>Year</th><th class="r">Cars</th>
           <th class="r">Asking</th></tr></thead><tbody>` +
         thin.map(([year, y]) =>
@@ -1393,12 +1408,13 @@ function renderMarket() {
           `<tr><td>${esc(trimLabel(name))}</td><td class="r num">${r.n}</td>
             <td class="r num">${r.thin ? priceList(r.prices) : money(r.median)}</td>
             </tr>`).join('') + '</tbody>');
-      trimTable.style.marginTop = 'var(--s4)';
+      sec.appendChild(subhead('By trim',
+        `a median where there are ${MIN_FOR_A_YEAR_MEDIAN} or more of one, `
+        + `the prices themselves below that`));
       sec.appendChild(trimTable);
       sec.appendChild(el('p', 'note',
-        'Asking is a median where there are five or more of a trim, and the '
-        + 'prices themselves below that. "Other" is every trim that is not '
-        + 'one of the words that move a price.'));
+        '"Other" is every trim that is not one of the words that move a '
+        + 'price.'));
     }
     host.appendChild(sec);
   }
@@ -1447,6 +1463,18 @@ function modelRange(row) {
   return ends.length ? { min: Math.min(...ends), max: Math.max(...ends) } : null;
 }
 
+/* Below this many cars of a year, the prices are listed rather than reduced
+   to a median. Mirrors MIN_FOR_A_MEDIAN in autotrader/insight.py, which is
+   what actually decides it; this copy is only what the page says out loud. */
+const MIN_FOR_A_YEAR_MEDIAN = 5;
+
+/* A label over a block, so two blocks stacked cannot read as one. */
+function subhead(title, note) {
+  const h = el('div', 'subhead');
+  h.innerHTML = `<h3>${esc(title)}</h3>${note ? `<span>${esc(note)}</span>` : ''}`;
+  return h;
+}
+
 /* One row per year: the range as a bar, the median as a tick. A box plot
    without the jargon, and it degrades to a table on a phone. */
 function rangeChart(years, axis) {
@@ -1482,7 +1510,10 @@ function rangeChart(years, axis) {
   // on the chart is the one printed beside each bar, which makes the bars
   // decoration.
   const ends = el('div', 'facts');
-  ends.style.cssText = 'justify-content:space-between;margin-top:var(--s2)';
+  // Space below as well as above: this line is the chart's axis, and with
+  // nothing under it the table header that follows read as its next row.
+  ends.style.cssText = ('justify-content:space-between;'
+    + 'margin:var(--s2) 0 var(--s5)');
   ends.innerHTML = `<span class="num">${money(min)}</span>`
     + `<span class="num">${money(max)}</span>`;
   wrap.appendChild(ends);

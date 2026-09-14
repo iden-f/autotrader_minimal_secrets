@@ -339,6 +339,19 @@ a{ color:var(--ev-new); text-underline-offset:2px; }
   .ev__sub{ grid-row:3; grid-column:2/-1; }
 }
 
+/* A label over a block. Two blocks of numbers stacked with nothing between
+   them read as one table, and the reader spends their attention working out
+   that they are not. */
+.subhead{
+  display:flex; flex-wrap:wrap; align-items:baseline; gap:0 var(--s2);
+  margin:var(--s5) 0 var(--s2);
+}
+.subhead h3{
+  margin:0; font-size:var(--t-micro); font-weight:520; letter-spacing:.06em;
+  text-transform:uppercase; color:var(--text-2);
+}
+.subhead span{ font-size:var(--t-small); color:var(--text-3); }
+
 .marker{
   display:flex; align-items:center; gap:var(--s3); margin:var(--s5) 0;
   font-size:var(--t-micro); font-weight:520; letter-spacing:.06em;
