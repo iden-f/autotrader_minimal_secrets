@@ -27,7 +27,7 @@ from autotrader.http import FetchError, Response
 from autotrader.runner import _still_listed, run
 from autotrader.state import Change, State
 
-from .helpers import Capture, FakeFetcher, use_channels
+from .helpers import Capture, FakeFetcher, next_check, use_channels
 
 BASE = "https://www.autotrader.ca/cars/bmw/m5"
 
@@ -49,6 +49,11 @@ def chaos(tmp_path, monkeypatch, fixture_html):
     html = fixture_html("search_next_data")
 
     def go(page=None, **kw):
+        # A schedule-interval between runs. Every countdown this file breaks
+        # on purpose - the removal grace, the silence alarm, the failure
+        # streak - is counted in elapsed time, and two runs in the same
+        # second is not a cadence the bot can ever have.
+        next_check(kw.pop("minutes_later", None))
         return run(cfg, State.load(tmp_path / "state.json"),
                    fetcher=FakeFetcher(page if page is not None else html),
                    env={}, **kw)

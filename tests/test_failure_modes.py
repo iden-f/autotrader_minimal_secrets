@@ -19,7 +19,7 @@ from autotrader.notifiers import Notifier, Result, in_quiet_hours
 from autotrader.runner import run
 from autotrader.state import Change, State
 
-from .helpers import Capture, FakeFetcher
+from .helpers import Capture, FakeFetcher, a_check_later
 
 SEARCH = "https://www.autotrader.ca/cars/bmw/m5/?rcp=15&srt=35&prx=-2&loc=M5V"
 
@@ -297,6 +297,7 @@ class TestListingOddities:
         state.mark_notified(["1"])
 
         state.mark_missing("s", set())
+        a_check_later()
         state.mark_missing("s", set())
         assert state.listings["1"]["status"] == "gone"
 
@@ -329,7 +330,9 @@ class TestListingOddities:
         """
         state = State(path=tmp_path / "s.json")
         state.record(Listing(id="1", url="u", price=100000, price_source="detail", search_id="s"))
-        state.mark_missing("s", set()); state.mark_missing("s", set())
+        state.mark_missing("s", set())
+        a_check_later()
+        state.mark_missing("s", set())
         change = state.record(Listing(id="1", url="u", price=92000,
                                       price_source="detail", search_id="s"))
         assert change.kind == Change.RELISTED

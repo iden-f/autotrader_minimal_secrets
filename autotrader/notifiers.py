@@ -19,7 +19,7 @@ from typing import Any
 
 import requests
 
-from . import render
+from . import clock, render
 from .state import Change
 
 log = logging.getLogger(__name__)
@@ -567,7 +567,11 @@ def in_quiet_hours(settings: dict[str, Any], now: datetime | None = None) -> boo
         tz = ZoneInfo(str(settings.get("timezone") or "UTC"))
     except Exception:  # noqa: BLE001 - a bad tz must not silence notifications
         tz = None
-    now = now or (datetime.now(tz) if tz else datetime.now())
+    # UTC, not the host's local clock. The line above says `or "UTC"`;
+    # falling back to a bare datetime.now() meant an unparseable zone
+    # quietly computed quiet hours in whatever zone the MACHINE was in -
+    # right on a UTC runner, wrong anywhere else, and never reported.
+    now = now or (clock.now().astimezone(tz) if tz else clock.now())
 
     def parse(value: Any) -> int | None:
         """HH:MM to minutes past midnight, or None if it is not a real time."""

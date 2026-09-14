@@ -16,6 +16,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from . import clock
 from .archive import size_report
 from . import geo, insight, thumbs
 from . import budget
@@ -161,7 +162,7 @@ def build_payload(cfg: Config, state: State, env: dict[str, str] | None = None
             try:
                 seen = datetime.fromisoformat(str(first).replace("Z", "+00:00"))
                 item["days_listed"] = max(
-                    0, (datetime.now(timezone.utc) - seen).days)
+                    0, (clock.now() - seen).days)
             except ValueError:
                 pass
         reference = references.get(entry.get("search_id") or "")
@@ -297,7 +298,7 @@ def build_payload(cfg: Config, state: State, env: dict[str, str] | None = None
     server = str(ntfy.get("server") or "https://ntfy.sh").rstrip("/")
 
     return {
-        "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "generated_at": clock.now().isoformat(timespec="seconds"),
         # Where alerts actually go, so the dashboard can show it. An ntfy topic
         # is a destination, not a credential - anyone with the link can
         # subscribe, which NOTIFY.md says plainly.
@@ -346,7 +347,7 @@ def build_payload(cfg: Config, state: State, env: dict[str, str] | None = None
         # What the month has cost and where that is heading. A bot that can
         # spend someone's money should say what it is spending, on the page
         # they already look at, rather than in a billing screen they do not.
-        "budget": budget.load(state, cfg).verdict(datetime.now(timezone.utc)),
+        "budget": budget.load(state, cfg).verdict(clock.now()),
         # What two hundred cars say together, rather than what one says. The
         # window block travels with it: most of this is two days old.
         "market": insight.market(state.listings.values(), runs=state.runs,

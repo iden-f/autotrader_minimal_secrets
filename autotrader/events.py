@@ -20,6 +20,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from . import clock
+
 LEDGER_PATH = Path("EVENTS.md")
 DATA_PATH = Path("docs/events.json")
 
@@ -191,7 +193,7 @@ def merge(found: dict[str, Event], previous: dict[str, Any]) -> dict[str, Any]:
             # answer means the ledger goes on describing a real alert as a
             # guess, or a sent one as still waiting.
             stored["delivered"] = fresh["delivered"]
-    return {"updated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+    return {"updated_at": clock.now().isoformat(timespec="seconds"),
             "first": out,
             "waiting": [k for k in KINDS if k not in out],
             # Which silence has already been reported, so a bot that stays
@@ -262,7 +264,7 @@ def silence(cfg, state, record: dict[str, Any],
     hours = float((cfg.get("health", {}) or {}).get("silent_after_hours", 3) or 0)
     if hours <= 0:
         return None
-    now = now or datetime.now(timezone.utc)
+    now = now or clock.now()
 
     runs = state.data.get("runs") or []
     last_ok = ""
@@ -389,7 +391,7 @@ def thin_coverage(cfg, state, record: dict[str, Any],
     if floor <= 0:
         return None
     expected = int(health.get("expected_interval_minutes", 30) or 30)
-    now = now or datetime.now(timezone.utc)
+    now = now or clock.now()
     cover = insight.coverage(state.data.get("runs") or [], expected, now=now,
                              since_change=state.schedule_changed_at)
     if cover.get("checks", 0) < 2 or cover["pct"] >= floor:

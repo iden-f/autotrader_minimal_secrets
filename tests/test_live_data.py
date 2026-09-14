@@ -17,7 +17,7 @@ from autotrader.parser import parse_search_page
 from autotrader.runner import run
 from autotrader.state import Change, State
 
-from .helpers import Capture, FakeFetcher, use_channels
+from .helpers import Capture, FakeFetcher, next_check, use_channels
 
 BASE = "https://www.autotrader.ca/cars/bmw/m5"
 
@@ -43,6 +43,11 @@ def live(tmp_path, monkeypatch, live_html):
     use_channels(monkeypatch, runner_mod, [sink])
 
     def go(html=None, **kw):
+        # Each run happens a schedule-interval after the last, because every
+        # rule this suite exercises - the removal grace, the silence alarm,
+        # the deduplication floor - is a statement about elapsed time, and
+        # none of them are defined for two runs in the same second.
+        next_check(kw.pop("minutes_later", None))
         return run(cfg, State.load(tmp_path / "state.json"),
                    fetcher=FakeFetcher(html or live_html), env={}, **kw)
 
@@ -625,6 +630,7 @@ class RotatingSite:
 
 class TestARotatingResultWindow:
     def _watch(self, live, site):
+        next_check()
         return run(live.cfg, State.load(live.path / "state.json"),
                    fetcher=site, env={})
 

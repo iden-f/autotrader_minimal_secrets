@@ -12,6 +12,7 @@ import json
 
 import pytest
 
+from autotrader import clock
 from autotrader.cli import main
 from autotrader.config import Config
 from autotrader.listing import Listing
@@ -140,7 +141,7 @@ class TestPruneActuallyCompacts:
 
     def history(self, points: int) -> list[dict]:
         from datetime import datetime, timedelta, timezone
-        start = datetime.now(timezone.utc) - timedelta(days=365)
+        start = clock.now() - timedelta(days=365)
         return [{"at": (start + timedelta(days=n)).isoformat(), "price": 90000 + n}
                 for n in range(points)]
 

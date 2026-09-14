@@ -16,6 +16,7 @@ from pathlib import Path
 
 import pytest
 
+from autotrader import clock
 from autotrader import budget
 from autotrader.config import Config
 from autotrader.state import State
@@ -183,7 +184,7 @@ class TestStoppingRatherThanSpending:
         """Write `days` days of history totalling that share of the ceiling."""
         from autotrader import budget
         state = watcher.state()
-        now = datetime.now(timezone.utc)
+        now = clock.now()
         ledger = budget.load(state, watcher.cfg, now=now)
         per_day = ledger.ceiling() * share_of_ceiling / days
         state.data["actions"] = {
@@ -235,7 +236,7 @@ class TestStoppingRatherThanSpending:
         # exists while there is month left, so on the last day there is
         # nothing to test and the test says so rather than failing.
         from autotrader import budget
-        now = datetime.now(timezone.utc)
+        now = clock.now()
         ledger = budget.load(watcher.state(), watcher.cfg, now=now)
         remaining = ledger.days_remaining(now)
         if remaining < 1:

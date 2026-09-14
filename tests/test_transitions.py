@@ -30,7 +30,7 @@ from autotrader.config import Config
 from autotrader.runner import run
 from autotrader.state import State
 
-from .helpers import Capture, FakeFetcher, use_channels
+from .helpers import Capture, FakeFetcher, next_check, use_channels
 
 BASE = "https://www.autotrader.ca/cars/bmw/m5/"
 
@@ -103,8 +103,17 @@ class Bench:
         self.sink = Capture()
         use_channels(monkeypatch, runner_mod, [self.sink])
 
-    def check(self, cars=None, *, per_search=None):
-        """Run once against this page (or one page per search)."""
+    def check(self, cars=None, *, per_search=None, minutes_later=None):
+        """Run once against this page (or one page per search).
+
+        Each check happens a schedule-interval after the last one, because
+        every rule about whether a car is gone, a search is failing or the
+        bot has gone silent is a statement about elapsed time. Written
+        without this, the suite asserted that two absences zero seconds apart
+        proved a sale - which is the exact mistake the grace period exists to
+        prevent, encoded as a test.
+        """
+        next_check(minutes_later)
         fetcher = FakeFetcher(page(cars if cars is not None else per_search[0]))
         if per_search is not None:
             # Keyed on each search's own URL. A search reads several pages, so

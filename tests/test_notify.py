@@ -1,6 +1,7 @@
 """A broken notification channel must never cost a run."""
 from datetime import datetime
 
+from autotrader import clock
 from autotrader import render
 from autotrader.config import Config
 from autotrader.listing import Listing
@@ -295,7 +296,7 @@ class TestTheCoverageAlertCountsSlots:
         cfg.set("health.expected_interval_minutes", 120)
         cfg.save()
         state = State(path=tmp_path / "state.json")
-        now = datetime.now(timezone.utc)
+        now = clock.now()
         # Four checks in a 24-hour window that asks for twelve.
         state.data["runs"] = [
             {"at": (now - timedelta(hours=h)).isoformat(timespec="seconds"),

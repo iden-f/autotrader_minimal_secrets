@@ -20,6 +20,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
+from . import clock
 from .state import HIDDEN_REASON_PREFIX
 
 REPORT_PATH = Path("diagnostics/invariants.json")
@@ -113,7 +114,7 @@ def check(cfg, state, report=None, payload: dict[str, Any] | None = None,
     # Quiet hours end and outages clear; a queue that only grows means nothing
     # is reaching you and the run should say so rather than counting it as
     # handled.
-    cutoff = (datetime.now(timezone.utc)
+    cutoff = (clock.now()
               - timedelta(hours=STUCK_QUEUE_HOURS)).isoformat(timespec="seconds")
     stranded = [lid for lid, e in listings.items()
                 if isinstance(e.get("pending"), dict)
@@ -255,7 +256,7 @@ def write(violations: list[Violation], cfg=None, state=None,
     if not violations:
         return None
     payload = {
-        "at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "at": clock.now().isoformat(timespec="seconds"),
         "violations": [v.to_dict() for v in violations],
     }
     if state is not None:

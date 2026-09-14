@@ -10,6 +10,7 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
+from autotrader import clock
 from autotrader import events, runner as runner_mod
 from autotrader.config import Config
 from autotrader.runner import run
@@ -46,7 +47,7 @@ def bench(tmp_path, monkeypatch, fixture_html):
 def age_last_run(bench, hours):
     """Rewrite history so the last successful run looks that old."""
     state = bench.state()
-    when = datetime.now(timezone.utc) - timedelta(hours=hours)
+    when = clock.now() - timedelta(hours=hours)
     state.data["runs"][0]["at"] = when.isoformat(timespec="seconds")
     state.save()
 

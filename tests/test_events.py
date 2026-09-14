@@ -8,9 +8,11 @@ import json
 
 import pytest
 
+from autotrader import clock
 from autotrader import events
 from autotrader.listing import Listing
 from autotrader.state import Change, State
+from .helpers import a_check_later
 
 
 @pytest.fixture
@@ -50,6 +52,7 @@ class TestFindingTheFirstOfEachKind:
         state = State(path=tmp_path / "s.json")
         car(state)
         state.mark_missing("s", set())
+        a_check_later()
         state.mark_missing("s", set())
 
         gone = events.update(state, *paths)["first"]["removed"]
@@ -60,6 +63,7 @@ class TestFindingTheFirstOfEachKind:
         state = State(path=tmp_path / "s.json")
         car(state)
         state.mark_missing("s", set())
+        a_check_later()
         state.mark_missing("s", set())
         car(state)                                  # it returns
 
@@ -310,7 +314,7 @@ class TestSilenceAndFailureAreDifferentFaults:
 
     def _ago(self, hours):
         from datetime import datetime, timedelta, timezone
-        return (datetime.now(timezone.utc)
+        return (clock.now()
                 - timedelta(hours=hours)).isoformat(timespec="seconds")
 
     def test_running_and_failing_is_not_reported_as_silence(self, tmp_path):
@@ -353,7 +357,7 @@ class TestRunningIsNotTheSameAsWatching:
 
     def _runs(self, state, n, spread_hours=24):
         from datetime import datetime, timedelta, timezone
-        now = datetime.now(timezone.utc)
+        now = clock.now()
         state.data["runs"] = [
             {"at": (now - timedelta(hours=spread_hours * i / max(1, n))).isoformat(
                 timespec="seconds"), "ok": True}
@@ -372,17 +376,18 @@ class TestRunningIsNotTheSameAsWatching:
         assert events.thin_coverage(self._cfg(), state, {}) is None
 
     def test_it_is_said_once_a_day_not_once_an_hour(self, tmp_path):
-        from datetime import datetime, timezone
         state = self._runs(State(path=tmp_path / "s.json"), 6)
         first = events.thin_coverage(self._cfg(), state, {})
         assert first
         again = events.thin_coverage(
             self._cfg(), state, {"coverage_reported": first["at"]})
         assert again is None
-        tomorrow = datetime.now(timezone.utc).replace(year=2099).isoformat()
+        # Once a DAY, not once ever: yesterday's stamp must not suppress it.
+        # The line that used to stand here built a timestamp for the year 2099
+        # and then asserted the string was truthy, which it always was. It
+        # tested nothing, and it raised ValueError on any leap day.
         assert events.thin_coverage(
             self._cfg(), state, {"coverage_reported": "2000-01-01T00:00:00+00:00"})
-        assert tomorrow
 
     def test_a_floor_of_zero_switches_it_off(self, tmp_path):
         state = self._runs(State(path=tmp_path / "s.json"), 2)

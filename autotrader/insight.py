@@ -15,6 +15,7 @@ import statistics
 from datetime import datetime, timedelta, timezone
 from typing import Any, Iterable
 
+from . import clock
 from .events import delivery_state
 from .listing import name_of
 
@@ -37,11 +38,10 @@ NOTABLE_PCT = 8.0
 KINDS = ("new", "price_drop", "price_rise", "priced", "removed", "relisted")
 
 
-def _dt(value: Any) -> datetime | None:
-    try:
-        return datetime.fromisoformat(str(value).replace("Z", "+00:00"))
-    except (TypeError, ValueError):
-        return None
+#: One parser, in autotrader.clock, so a stamp means the same thing to the
+#: page, the ledger and the state file. This module's own copy returned
+#: whatever offset the string happened to carry.
+_dt = clock.parse
 
 
 def _hours_between(later: datetime, earlier: datetime) -> float:
@@ -427,7 +427,7 @@ def coverage(runs: list[dict[str, Any]], expected_minutes: int = 30,
     12" about a schedule that had produced two checks. A caller that
     genuinely has no stamp passes None and says so.
     """
-    now = now or datetime.now(timezone.utc)
+    now = now or clock.now()
     start = now - timedelta(hours=window_hours)
 
     # A coverage figure is a statement about a schedule, so it may only be
@@ -649,7 +649,7 @@ def minutes_spent(runs: list[dict[str, Any]], window_hours: int = 24,
     is the one to quote; ``minutes`` is kept because it is what shows whether
     the runs themselves are getting slower.
     """
-    now = now or datetime.now(timezone.utc)
+    now = now or clock.now()
     start = now - timedelta(hours=window_hours)
     durations = [float(r.get("duration_s") or 0) for r in runs
                  if (_dt(r.get("at")) or start) >= start]
@@ -676,7 +676,7 @@ def weekly(entries: Iterable[dict[str, Any]], runs: list[dict[str, Any]],
     alerts already say what the bot did, and a weekly note that leads with
     "412 checks completed" is a note about the wrong thing.
     """
-    now = now or datetime.now(timezone.utc)
+    now = now or clock.now()
     start = now - timedelta(days=days)
     since = start.isoformat(timespec="seconds")
     entries = list(entries)
@@ -786,7 +786,7 @@ def compact_history(history: list[dict[str, Any]], *,
     """
     if len(history) <= 2:
         return list(history)
-    now = now or datetime.now(timezone.utc)
+    now = now or clock.now()
     cut = now - timedelta(days=keep_daily_days)
 
     kept: list[dict[str, Any]] = [history[0]]
@@ -926,7 +926,7 @@ def market(entries: Iterable[dict[str, Any]], *, now: datetime | None = None,
     from fewer than a handful of cars is left out rather than rounded into a
     number that looks authoritative.
     """
-    now = now or datetime.now(timezone.utc)
+    now = now or clock.now()
     entries = [e for e in entries
                if not e.get("imported_from") and not e.get("migrated_from")]
     live = [e for e in entries if e.get("status") == "active"]

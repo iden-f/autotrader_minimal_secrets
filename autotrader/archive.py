@@ -19,6 +19,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
+from . import clock
 from .listing import Listing
 
 log = logging.getLogger(__name__)
@@ -38,7 +39,7 @@ def archive_listing(listing: Listing, config: dict[str, Any], fetcher=None,
         folder.mkdir(parents=True, exist_ok=True)
 
         payload = listing.to_dict()
-        payload["archived_at"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
+        payload["archived_at"] = clock.now().isoformat(timespec="seconds")
         (folder / "metadata.json").write_text(
             json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
 
@@ -100,7 +101,7 @@ def prune(config: dict[str, Any], root: Path = ARCHIVE_DIR,
     if keep_days > 0:
         # "saved" timestamps from v1 are naive local time; compare on the date
         # prefix only so both formats sort correctly against the cutoff.
-        cutoff = (datetime.now(timezone.utc) - timedelta(days=keep_days)).strftime("%Y-%m-%d")
+        cutoff = (clock.now() - timedelta(days=keep_days)).strftime("%Y-%m-%d")
         doomed.extend(f for stamp, f in dated if stamp[:10] < cutoff and f not in doomed)
 
     removed: list[str] = []
@@ -152,8 +153,7 @@ def compact(root: Path = ARCHIVE_DIR, *, dry_run: bool = False,
             continue
 
         payload = listing.to_dict()
-        payload["archived_at"] = saved_at or datetime.now(
-            timezone.utc).isoformat(timespec="seconds")
+        payload["archived_at"] = saved_at or clock.stamp()
         payload["compacted_from"] = "v1-archive"
         if not dry_run:
             try:

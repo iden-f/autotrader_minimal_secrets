@@ -1,3 +1,4 @@
+from autotrader import clock
 
 
 class TestCoverageMeasuresTheWatchNotTheExitCode:
@@ -15,7 +16,7 @@ class TestCoverageMeasuresTheWatchNotTheExitCode:
     @staticmethod
     def run_at(minutes_ago, **over):
         from datetime import datetime, timedelta, timezone
-        row = {"at": (datetime.now(timezone.utc)
+        row = {"at": (clock.now()
                       - timedelta(minutes=minutes_ago)).isoformat(),
                "ok": True, "searches_run": 2, "searches_failed": 0}
         row.update(over)
@@ -81,9 +82,31 @@ class TestCoverageMeasuresTheWatchNotTheExitCode:
 
     def test_a_check_every_slot_is_a_hundred_percent(self):
         from autotrader import insight
-        runs = [self.run_at(m) for m in range(0, 24 * 60, 30)]
+        # Mid-slot, not on the edge. Written as range(0, ...) this passed only
+        # because the test's clock and the code's clock were microseconds
+        # apart; under a frozen clock the newest check landed exactly on the
+        # boundary and fell into the slot in progress, and 48 checks read
+        # 97.9%. The check below pins that boundary on purpose.
+        runs = [self.run_at(m) for m in range(15, 24 * 60, 30)]
         cov = insight.coverage(runs, expected_minutes=30, window_hours=24, since_change=None)
         assert cov["pct"] == 100.0
+
+    def test_a_check_landing_this_instant_belongs_to_the_slot_in_progress(self):
+        """The half hour we are standing in has not finished being watched.
+
+        Counting it flatters the figure the moment a run lands and would let
+        a single check in a fresh slot claim that slot was covered before the
+        slot could possibly have been missed.
+        """
+        from autotrader import insight
+        # Frozen, or this test is about microseconds: unfrozen, the code's
+        # clock runs a few microseconds past the test's and the "instant"
+        # check lands in the previous slot after all.
+        clock.freeze(clock.now())
+        cov = insight.coverage([self.run_at(0)], expected_minutes=30,
+                               window_hours=24, since_change=None)
+        assert cov["checks"] == 1, "it still counts as a check that happened"
+        assert cov["slots_covered"] == 0, "but not as a slot already covered"
 
 
 class TestCoverageIsAboutTheScheduleThatIsRunning:

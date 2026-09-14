@@ -42,6 +42,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any
 
+from . import clock
+
 # GitHub Free: 2,000 minutes a month. Pro: 3,000. Whatever the plan, the
 # number belongs in config.json rather than here - this is only the fallback
 # for a bot that has never been told.
@@ -276,7 +278,7 @@ class Ledger:
 
 def load(state: Any, cfg: Any = None, *, now: datetime | None = None) -> Ledger:
     """The ledger for the current month, starting fresh when the month turns."""
-    now = now or datetime.now(timezone.utc)
+    now = now or clock.now()
     raw = dict((state.data.get("actions") or {}))
     month = _month_of(now)
     if raw.get("month") != month:
@@ -345,7 +347,7 @@ def draws_on_the_allowance(cfg: Any, state: Any) -> bool:
 def record(state: Any, minutes: float, *, cfg: Any = None,
            now: datetime | None = None) -> dict[str, Any]:
     """Add this run's minutes to the month and return where that leaves it."""
-    now = now or datetime.now(timezone.utc)
+    now = now or clock.now()
     ledger = load(state, cfg, now=now)
     day = now.date().isoformat()
     row = ledger.days.setdefault(day, _empty_day())

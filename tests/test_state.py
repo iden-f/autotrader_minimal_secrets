@@ -3,6 +3,7 @@ import json
 
 from autotrader.listing import Listing
 from autotrader.state import Change, State
+from .helpers import a_check_later
 
 
 def car(price=None, **kw):
@@ -69,16 +70,47 @@ def test_a_car_must_be_missing_twice_before_it_counts_as_gone(tmp_path):
     s = State(path=tmp_path / "state.json")
     s.record(car(100000))
     assert s.mark_missing("s1", set()) == []
+    a_check_later()
     changes = s.mark_missing("s1", set())
     assert [c.kind for c in changes] == [Change.REMOVED]
     assert s.listings["1"]["status"] == "gone"
+
+
+def test_two_checks_a_minute_apart_do_not_prove_a_sale(tmp_path):
+    """A push and a scheduled firing can land seconds apart.
+
+    Only the scheduled run is deduplicated, so "two consecutive misses" was
+    satisfiable in under a minute - and a minute of absence from one page of
+    results is not evidence that a car sold.
+    """
+    s = State(path=tmp_path / "state.json")
+    s.record(car(100000))
+    s.mark_missing("s1", set())
+    a_check_later(1)
+    assert s.mark_missing("s1", set()) == []
+    assert s.listings["1"]["status"] == "active"
+    a_check_later(90)
+    assert [c.kind for c in s.mark_missing("s1", set())] == [Change.REMOVED]
+
+
+def test_the_wait_is_measured_from_when_it_was_last_seen(tmp_path):
+    """Not from the first miss: a car last seen this morning and missed for
+    the first time this afternoon has already been unaccounted for."""
+    s = State(path=tmp_path / "state.json")
+    s.record(car(100000))
+    s.listings["1"]["last_seen"] = "2000-01-01T00:00:00+00:00"
+    assert s.mark_missing("s1", set()) == []      # one miss is still one miss
+    changes = s.mark_missing("s1", set())
+    assert [c.kind for c in changes] == [Change.REMOVED]
 
 
 def test_a_car_that_comes_back_is_not_marked_gone(tmp_path):
     s = State(path=tmp_path / "state.json")
     s.record(car(100000))
     s.mark_missing("s1", set())
+    a_check_later()
     s.mark_missing("s1", {"1"})
+    a_check_later()
     assert s.mark_missing("s1", set()) == []      # the miss counter reset
 
 
@@ -86,7 +118,9 @@ def test_other_searches_are_untouched_by_a_removal_sweep(tmp_path):
     s = State(path=tmp_path / "state.json")
     s.record(car(100000, id="1", search_id="s1"))
     s.record(car(100000, id="2", search_id="s2"))
-    s.mark_missing("s1", set()); s.mark_missing("s1", set())
+    s.mark_missing("s1", set())
+    a_check_later()
+    s.mark_missing("s1", set())
     assert s.listings["2"]["status"] == "active"
 
 

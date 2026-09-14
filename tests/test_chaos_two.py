@@ -27,6 +27,7 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
+from autotrader import clock
 from autotrader import lock as lock_mod, notifiers, runner as runner_mod, thumbs
 from autotrader.config import Config
 from autotrader.http import FetchError, Response
@@ -305,7 +306,7 @@ class TestTheClockJumps:
         of range reports the bot as silent while it is running fine.
         """
         from autotrader import insight
-        now = datetime.now(timezone.utc)
+        now = clock.now()
         runs = [{"at": (now + timedelta(hours=1)).isoformat(), "ok": True},
                 {"at": (now - timedelta(minutes=30)).isoformat(), "ok": True}]
         cov = insight.coverage(runs, expected_minutes=30, window_hours=24, since_change=None)
@@ -325,7 +326,7 @@ class TestTheClockJumps:
 
     def test_a_negative_age_is_not_reported_as_a_gap(self, bench):
         from autotrader import insight
-        now = datetime.now(timezone.utc)
+        now = clock.now()
         runs = [{"at": (now + timedelta(minutes=90)).isoformat(), "ok": True}]
         cov = insight.coverage(runs, expected_minutes=30, window_hours=24, since_change=None)
         assert (cov.get("longest_gap_minutes") or 0) >= 0

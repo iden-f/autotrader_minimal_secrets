@@ -123,3 +123,16 @@ def _repo_is_left_alone():
         + ". A test is running outside tmp_path - look for a missing "
           "monkeypatch.chdir, or a monkeypatch.undo() that reverted one."
     )
+
+
+@pytest.fixture(autouse=True)
+def _no_frozen_clock_leaks():
+    """A test that stops time puts it back.
+
+    autouse because a leaked freeze is invisible: the next test passes or
+    fails for a reason that has nothing to do with the code it is testing,
+    and which test froze it is not in the failure.
+    """
+    from autotrader import clock
+    yield
+    clock.freeze(None)

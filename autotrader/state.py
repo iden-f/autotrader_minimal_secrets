@@ -19,6 +19,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Iterable
 
+from . import clock
 from .listing import Listing
 
 # The opening of every "we said nothing because a rule of yours hid it"
@@ -40,7 +41,14 @@ MAX_PRICE_POINTS = 40
 
 
 def utcnow() -> str:
-    return datetime.now(timezone.utc).isoformat(timespec="seconds")
+    """The ISO stamp this bot writes into state.
+
+    Kept as a name because seventeen call sites use it; the clock itself
+    lives in autotrader.clock so the suite can be run as if it were another
+    date. See that module for why.
+    """
+    return clock.stamp()
+
 
 
 class Change:
@@ -519,12 +527,34 @@ class State:
         return out
 
     def mark_missing(self, search_id: str, seen_ids: set[str],
-                     *, grace_runs: int = 2, confirm=None) -> list[Change]:
+                     *, grace_runs: int = 2, grace_minutes: int = 90,
+                     confirm=None, now: datetime | None = None) -> list[Change]:
         """Flag listings from ``search_id`` that stopped appearing.
 
-        A car needs to be absent from several consecutive runs before it counts
-        as gone, because a single page of results can drop a car for reasons
-        that have nothing to do with it being sold.
+        A car needs to be absent from several consecutive checks AND for a
+        stretch of real time before it counts as gone, because a single page
+        of results can drop a car for reasons that have nothing to do with it
+        being sold.
+
+        BOTH, because either alone is wrong at this bot's actual cadence.
+
+        Counting runs assumes runs are evenly spaced, and they are not. GitHub
+        served 40% of the schedule asked of it here: two checks fell 4h42m
+        apart, and two others landed minutes apart in the same window. Under
+        "two consecutive misses" the same rule meant nine hours of grace in
+        the first case and two minutes in the second - and two minutes is not
+        evidence of anything. A push or a hand-run is not deduplicated, so a
+        pair of checks can be seconds apart by design.
+
+        Counting only minutes is wrong the other way: a car absent from one
+        unlucky page two hours ago is not confirmed gone by the clock alone,
+        because nothing has looked at it since.
+
+        So: at least ``grace_runs`` consecutive checks missed it, and at least
+        ``grace_minutes`` have passed since it was last seen. The default
+        matches ``health.min_interval_minutes`` - the closest two scheduled
+        checks are ever allowed to be - so the fastest possible removal is
+        exactly as fast as the schedule can actually establish one.
 
         Absence is only evidence when we looked at the whole result set. On a
         search with more results than the bot reads - 186 cars against the 60
@@ -536,6 +566,7 @@ class State:
         ask again next run rather than guessing).
         """
         changes: list[Change] = []
+        now = now or clock.now()
         for lid, entry in self.listings.items():
             if entry.get("search_id") != search_id or entry.get("status") != "active":
                 continue
@@ -547,6 +578,14 @@ class State:
             misses = int(entry.get("misses", 0)) + 1
             entry["misses"] = misses
             if misses < grace_runs:
+                continue
+
+            # Held at the threshold rather than climbing past it, so the
+            # "grace-bounded" invariant still reads misses <= grace_runs and
+            # a car waiting on the clock is not reported as a stuck one.
+            entry["misses"] = max(grace_runs, 0)
+            waited = clock.minutes_since(entry.get("last_seen"), now)
+            if waited is not None and waited < grace_minutes:
                 continue
 
             verdict = confirm(entry) if confirm is not None else True
@@ -769,7 +808,7 @@ class State:
             # Zero means "no age limit", as it does for keep_max. It used to
             # mean a cutoff of right now, which quietly deleted every piece of
             # history the moment someone set it to zero to switch it off.
-            cutoff = (datetime.now(timezone.utc)
+            cutoff = (clock.now()
                       - timedelta(days=keep_days)).isoformat()
             for lid, entry in list(self.listings.items()):
                 if entry.get("status") != "gone" or entry.get("pending"):

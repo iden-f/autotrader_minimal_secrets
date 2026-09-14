@@ -92,3 +92,45 @@ class Capture(Notifier):
     def _send_text(self, subject, body):
         self.alerts.append((subject, body))
         return Result("capture", True)
+
+
+# ----------------------------------------------------------- moving time
+
+def next_check(minutes: float | None = None):
+    """Move the clock on to when the next check would really happen.
+
+    Two runs in the same second is not a thing this bot does. Tests that
+    called run() twice in a row were asking the code to distinguish "the car
+    is gone" from "the page rotated" using zero elapsed time, and several
+    rules that are correct in production - the removal grace, the silence
+    alarm, the deduplication floor - are undefined at that spacing. Driven
+    from the same default the bot ships with, so a change to the schedule
+    changes what the suite simulates.
+    """
+    from datetime import timedelta
+
+    from autotrader import clock
+    from autotrader.config import DEFAULTS
+    if minutes is None:
+        minutes = float(DEFAULTS["health"]["expected_interval_minutes"])
+    if clock._FROZEN is None:
+        clock.freeze(clock.now())
+    return clock.advance(timedelta(minutes=minutes))
+
+
+def a_check_later(minutes: float = 91):
+    """Move the clock forward as two real checks would.
+
+    A car is only "gone" after a stretch of real time has passed with nobody
+    seeing it - not after a number of calls. Tests that used to call
+    mark_missing twice in a row were asserting that two checks zero seconds
+    apart proved a sale, which is the thing the rule exists to stop. They now
+    say how long they waited, and the default is one minute past the dedupe
+    floor: the closest together two scheduled checks are ever allowed to be.
+    """
+    from datetime import timedelta
+
+    from autotrader import clock
+    if clock._FROZEN is None:
+        clock.freeze(clock.now())
+    return clock.advance(timedelta(minutes=minutes))

@@ -19,6 +19,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from . import clock
 from .http import BLOCK_MARKERS, looks_blocked
 from .parser import parse_search_page
 
@@ -114,7 +115,7 @@ def capture(url: str, response_text: str, status: int, elapsed_ms: int,
     blocked_markers = [m for m in BLOCK_MARKERS if m in text[:20000].lower()]
 
     return {
-        "captured_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "captured_at": clock.now().isoformat(timespec="seconds"),
         "search": search_name,
         "url": url,
         "http_status": status,

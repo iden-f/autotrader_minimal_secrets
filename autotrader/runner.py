@@ -19,6 +19,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from . import clock
 from . import archive as archive_mod
 from . import thumbs as thumbs_mod
 from . import dashboard, diagnose, filters, invariants, notifiers
@@ -363,24 +364,19 @@ def _why_none_survived(dropped: list[tuple[Listing, filters.Verdict]]) -> str:
 def _minutes_since_last_ok(state: State) -> float | None:
     """How long since a run last succeeded, or None if none ever has."""
     for run in (state.data.get("runs") or []):
-        if not run.get("ok"):
-            continue
-        try:
-            when = datetime.fromisoformat(str(run.get("at")).replace("Z", "+00:00"))
-        except (TypeError, ValueError):
-            continue
-        return max(0.0, (datetime.now(timezone.utc) - when).total_seconds() / 60.0)
+        if run.get("ok"):
+            age = clock.minutes_since(run.get("at"))
+            if age is not None:
+                return age
     return None
 
 
 def _minutes_since_any_run(state: State) -> float | None:
     """How long since a run happened at all, working or not."""
     for run in (state.data.get("runs") or []):
-        try:
-            when = datetime.fromisoformat(str(run.get("at")).replace("Z", "+00:00"))
-        except (TypeError, ValueError):
-            continue
-        return max(0.0, (datetime.now(timezone.utc) - when).total_seconds() / 60.0)
+        age = clock.minutes_since(run.get("at"))
+        if age is not None:
+            return age
     return None
 
 
@@ -1041,8 +1037,16 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                         entry.pop("gone_evidence", None)
                         return True
 
-                for change in state.mark_missing(search.id, seen_anywhere,
-                                                 confirm=confirm):
+                # The removal grace is a stretch of TIME, not a number of
+                # runs, and the stretch is the one the schedule guarantees:
+                # two scheduled checks are never closer together than the
+                # dedupe floor, so a car cannot be called gone faster than
+                # two real checks could establish it. Single-sourced from the
+                # same setting the deduplication uses, so the two cannot drift.
+                for change in state.mark_missing(
+                        search.id, seen_anywhere, confirm=confirm,
+                        grace_minutes=int(cfg.get("health.min_interval_minutes")
+                                          or 0)):
                     report.removed += 1
                     if search_notify.get("removed", False):
                         queue(change)
