@@ -8,12 +8,12 @@
    },
    "2026-09-14": {
     "drawing": 0.0,
-    "exempt": 5.0,
+    "exempt": 6.0,
     "unknown": 0.0
    }
   },
   "month": "2026-09",
-  "runs": 14
+  "runs": 15
  },
  "channels": {
   "email": {
@@ -5562,6 +5562,50 @@
  },
  "runs": [
   {
+   "at": "2026-09-14T13:17:16+00:00",
+   "baselines": [],
+   "budget_exhausted": false,
+   "diagnostics": [],
+   "disabled_channels": [],
+   "dry_run": false,
+   "duration_s": 0.0,
+   "empty_parses": [],
+   "errors": [],
+   "filtered_out": 0,
+   "first_run": false,
+   "hidden_events": {},
+   "invariants": [],
+   "listings_seen": 0,
+   "minutes": 1.0,
+   "minutes_label": "exempt",
+   "missed_by": 0,
+   "new": 0,
+   "notified": [],
+   "ok": true,
+   "photos": {},
+   "price_drops": 0,
+   "price_rises": 0,
+   "priced": 0,
+   "qualified": 0,
+   "quiet": false,
+   "relisted": 0,
+   "removed": 0,
+   "requests_made": 0,
+   "searches_failed": 0,
+   "searches_run": 0,
+   "shape_drift": [],
+   "shut_out": [],
+   "skipped": true,
+   "strategies": {},
+   "trigger": "schedule",
+   "unpriced": 0,
+   "validation_ok": true,
+   "warnings": [
+    "the last successful check was 39 minutes ago and the schedule asks for one every 120 - skipping this one rather than checking the site twice for the same answer."
+   ],
+   "your_call": 0
+  },
+  {
    "at": "2026-09-14T12:37:56+00:00",
    "baselines": [],
    "budget_exhausted": false,
@@ -9028,59 +9072,6 @@
     "2021-2023 BMW M5: read 20 listings and none passed your rules for it (12 too far away, 8 outside the year range). It is working - it just has nothing to show you."
    ],
    "your_call": 0
-  },
-  {
-   "at": "2026-09-12T11:00:14+00:00",
-   "baselines": [],
-   "budget_exhausted": false,
-   "diagnostics": [],
-   "disabled_channels": [],
-   "dry_run": false,
-   "duration_s": 27.8,
-   "empty_parses": [],
-   "errors": [],
-   "filtered_out": 117,
-   "first_run": false,
-   "hidden_events": {},
-   "invariants": [],
-   "listings_seen": 199,
-   "missed_by": 0,
-   "new": 0,
-   "notified": [],
-   "ok": true,
-   "photos": {
-    "bytes": 404858,
-    "failed": 0,
-    "fetched": 0,
-    "kept": 70,
-    "pruned": 1,
-    "samples": []
-   },
-   "price_drops": 0,
-   "price_rises": 0,
-   "priced": 0,
-   "qualified": 0,
-   "quiet": false,
-   "relisted": 0,
-   "removed": 0,
-   "requests_made": 12,
-   "searches_failed": 0,
-   "searches_run": 2,
-   "shape_drift": [],
-   "shut_out": [
-    "2021-2023 BMW M5"
-   ],
-   "skipped": false,
-   "strategies": {
-    "2021-2023-bmw-m5-310324": "embedded_json",
-    "bmw-m5-bargains-any-year-f2f097": "jsonld"
-   },
-   "unpriced": 1,
-   "validation_ok": true,
-   "warnings": [
-    "2021-2023 BMW M5: read 19 listings and none passed your rules for it (12 too far away, 7 outside the year range). It is working - it just has nothing to show you."
-   ],
-   "your_call": 0
   }
  ],
  "schedule": {
@@ -9195,7 +9186,7 @@
    }
   }
  },
- "updated_at": "2026-09-14T12:37:56+00:00",
+ "updated_at": "2026-09-14T13:17:16+00:00",
  "version": 2,
  "watch_started": "2026-09-09T20:55:29+00:00"
 }
