@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from . import dashboard, notifiers
+from . import dashboard, notifiers, words
 from .archive import prune as prune_archives
 from .archive import size_report
 from .config import CHANNEL_SECRETS, Config, ConfigError
@@ -44,13 +44,8 @@ def _warn(text: str) -> str:
 # ----------------------------------------------------------------- commands
 
 
-def _many(count, one: str, more: str = "") -> str:
-    """Three listings, or one listing. Never one listing with an (s) after it.
-
-    Terminal output is the thing this whole project spent a session not
-    looking like, and every count in it carried the parenthesis.
-    """
-    return f"{count} {one if count == 1 else (more or one + 's')}"
+#: In autotrader.words, with the rest of the vocabulary.
+_many = words.many
 
 
 def cmd_run(args: argparse.Namespace) -> int:

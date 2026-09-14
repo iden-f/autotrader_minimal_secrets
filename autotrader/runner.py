@@ -15,11 +15,10 @@ import os
 import re
 import time
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from . import clock
+from . import clock, words
 from . import archive as archive_mod
 from . import thumbs as thumbs_mod
 from . import dashboard, diagnose, filters, invariants, notifiers
@@ -35,13 +34,9 @@ from .urls import normalise_search_url, page_url
 log = logging.getLogger(__name__)
 
 
-def _many(count, one: str, more: str = "") -> str:
-    """Three requests, or one request. Never one request with an (s) after it.
-
-    This line is the first thing anyone reads in an Actions log and it is
-    quoted verbatim into the watchdog's alert, so it is copy.
-    """
-    return f"{count} {one if count == 1 else (more or one + 's')}"
+#: In autotrader.words. It existed here and in cli.py with two different
+#: docstrings and one shared bug waiting to happen.
+_many = words.many
 
 
 @dataclass
@@ -998,7 +993,7 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                 if not complete or mass:
                     checked = [0]
 
-                    def confirm(entry: dict[str, Any]) -> bool | None:
+                    def ask_the_listing_page(entry: dict[str, Any]) -> bool | None:
                         if checked[0] >= REMOVAL_CHECKS_PER_RUN:
                             return None       # ask again next run
                         checked[0] += 1
@@ -1043,6 +1038,8 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                 # dedupe floor, so a car cannot be called gone faster than
                 # two real checks could establish it. Single-sourced from the
                 # same setting the deduplication uses, so the two cannot drift.
+                    confirm = ask_the_listing_page
+
                 for change in state.mark_missing(
                         search.id, seen_anywhere, confirm=confirm,
                         grace_minutes=int(cfg.get("health.min_interval_minutes")

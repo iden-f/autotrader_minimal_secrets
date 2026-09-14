@@ -16,11 +16,11 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from . import clock
+from . import clock, words
 
 LEDGER_PATH = Path("EVENTS.md")
 DATA_PATH = Path("docs/events.json")
@@ -281,12 +281,8 @@ def silence(cfg, state, record: dict[str, Any],
     if not last_ok:
         return None            # it has never worked; that is a different alarm
 
-    try:
-        when = datetime.fromisoformat(last_ok.replace("Z", "+00:00"))
-    except ValueError:
-        return None
-    quiet_for = (now - when).total_seconds() / 3600.0
-    if quiet_for < hours:
+    quiet_for = clock.hours_since(last_ok, now)
+    if quiet_for is None or quiet_for < hours:
         return None
 
     # Say it once per silence, not once an hour for the length of it.
@@ -315,18 +311,52 @@ def silence(cfg, state, record: dict[str, Any],
                      f"what.{detail}"),
         }
 
+    # WHICH SILENCE THIS IS.
+    #
+    # A fixed threshold cannot tell "the timer died" from "GitHub dropped
+    # three windows in a row", and those need opposite reactions. Measured
+    # here, this schedule delivered 40% of the firings asked of it and two
+    # real checks fell 4h42m apart, so a six-hour silence is a normal-looking
+    # day rather than evidence of a fault. Sending someone to the Actions tab
+    # to find nothing wrong, repeatedly, is how a channel gets muted.
+    #
+    # So the alarm says what it can actually see: how much of the recent
+    # schedule has been served. Thin, and the fix is a timer that does not
+    # drop windows. Healthy until now, and something really has changed.
+    from . import insight
+    cover = insight.coverage(runs, int(every or 30), now=now,
+                             since_change=state.schedule_changed_at)
+    served = cover.get("pct_scheduled")
+    missed = int(quiet_for * 60 // max(1, int(every or 30)))
+    thin = served is not None and cover.get("checks", 0) >= 2 and served < 70
+
+    if thin:
+        why = (f"That is {words.many(missed, 'missed window')} in a row, and this "
+               f"schedule has been serving only {served}% of the firings asked "
+               f"of it. So this is most likely GitHub dropping windows rather "
+               f"than anything wrong with the bot - it drops them in runs, not "
+               f"one at a time.\n\nThe fix is a timer that does not drop them: "
+               f"KEEPING-TIME.md sets one up in about five minutes and the bot "
+               f"needs no code change to use it.")
+    else:
+        why = (f"That is {words.many(missed, 'missed window')} in a row, against a "
+               f"schedule that had been serving "
+               f"{served if served is not None else 'most'}% of its firings - "
+               f"so something has changed.\n\nCheck the Actions tab: GitHub "
+               f"disables scheduled workflows on repositories with 60 days of "
+               f"no activity, and a revoked or expired token stops an external "
+               f"timer without announcing it.")
+
     return {
         "since": last_ok,
         "hours": round(quiet_for, 1),
         "failing": False,
+        "served_pct": served,
         "subject": "AutoTrader watcher has gone quiet",
         "body": (f"The last successful check was {quiet_for:.1f} hours ago "
                  f"({last_ok}), and it is supposed to run every "
                  f"{every} minutes. Nothing has been started since, either.\n\n"
-                 f"Nothing is being watched while this is true. Check the "
-                 f"Actions tab: GitHub disables scheduled workflows on "
-                 f"repositories with 60 days of no activity, and drops "
-                 f"scheduled runs under load."),
+                 f"Nothing is being watched while this is true. {why}"),
     }
 
 

@@ -15,7 +15,7 @@ from __future__ import annotations
 import json
 import logging
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -68,11 +68,15 @@ class Change:
     QUALIFIED = "qualified"
 
     def __init__(self, kind: str, listing: Listing, *, old_price: int | None = None,
-                 new_price: int | None = None) -> None:
+                 new_price: int | None = None, held_since: str | None = None) -> None:
         self.kind = kind
         self.listing = listing
         self.old_price = old_price
         self.new_price = new_price
+        #: When this was worked out, if it could not be delivered then. An
+        #: alert held through quiet hours or a channel outage arrives hours
+        #: later and otherwise reads as news; the renderers say how old it is.
+        self.held_since = held_since
 
     @property
     def delta(self) -> int | None:
@@ -523,7 +527,8 @@ class State:
             out.append(Change(pending.get("kind", Change.NEW),
                               Listing.from_dict(entry),
                               old_price=pending.get("old_price"),
-                              new_price=pending.get("new_price")))
+                              new_price=pending.get("new_price"),
+                              held_since=pending.get("since")))
         return out
 
     def mark_missing(self, search_id: str, seen_ids: set[str],

@@ -12,7 +12,6 @@ import hashlib
 import json
 import logging
 import re
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -157,14 +156,9 @@ def build_payload(cfg: Config, state: State, env: dict[str, str] | None = None
         # "we do not know the mileage".
         item["per_1000km_why"] = insight.per_1000km_withheld(
             entry.get("price"), entry.get("mileage_km"))
-        first = entry.get("first_seen")
-        if first:
-            try:
-                seen = datetime.fromisoformat(str(first).replace("Z", "+00:00"))
-                item["days_listed"] = max(
-                    0, (clock.now() - seen).days)
-            except ValueError:
-                pass
+        age = clock.hours_since(entry.get("first_seen"))
+        if age is not None:
+            item["days_listed"] = int(age // 24)
         reference = references.get(entry.get("search_id") or "")
         here = (geo.locate(entry.get("location"), entry.get("province"))
                 if reference else None)

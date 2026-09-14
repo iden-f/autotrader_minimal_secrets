@@ -14,10 +14,10 @@ from __future__ import annotations
 
 import json
 import logging
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from . import clock
 from .archive import ARCHIVE_DIR
 from .config import Config
 from .enrich import detail_from_html
@@ -29,17 +29,17 @@ log = logging.getLogger(__name__)
 
 
 def _iso(stamp: str | None) -> str | None:
-    """v1 wrote 'YYYY-MM-DD HH:MM:SS' with no timezone; assume UTC."""
+    """v1 wrote 'YYYY-MM-DD HH:MM:SS' with no timezone; assume UTC.
+
+    clock.parse does the assuming, for the same reason every other module
+    now asks it: everything this bot writes is UTC, so a stamp that arrives
+    without an offset is UTC and not the local time of whichever machine is
+    doing the reading.
+    """
     if not stamp:
         return None
-    text = str(stamp).strip()
-    try:
-        parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
-    except ValueError:
-        return None
-    if parsed.tzinfo is None:
-        parsed = parsed.replace(tzinfo=timezone.utc)
-    return parsed.isoformat(timespec="seconds")
+    parsed = clock.parse(str(stamp).strip())
+    return None if parsed is None else clock.stamp(parsed)
 
 
 def read_archive(folder: Path) -> tuple[Listing | None, str | None]:

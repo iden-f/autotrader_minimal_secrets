@@ -375,3 +375,90 @@ class TestEveryTriggerTheBotCanRecordHasPageCopy:
         assert SCHEDULE_TRIGGERS <= filtered, (
             f"the page still lists {sorted(SCHEDULE_TRIGGERS - filtered)} as "
             f"something other than the schedule")
+
+
+class TestThePythonSideHasOneVocabularyToo:
+    """The page has been guarded against this since the "$1113 /1000km" card.
+
+    The package had not been. It carried two copies of the plural helper with
+    two different docstrings, a duration formatter only one module could
+    reach, and a removal that read "gone" on Telegram, "REMOVED" in email and
+    "Removed" in the digest - three self-consistent copies, which is exactly
+    why no test noticed.
+    """
+
+    def package(self):
+        return sorted(Path("autotrader").glob("*.py"))
+
+    def code(self, path: Path) -> str:
+        """Source with docstrings and comments blanked, lines preserved.
+
+        The comments in this project discuss the words on purpose, at length,
+        and several of them quote the wrong ones deliberately.
+        """
+        import tokenize
+        lines = path.read_text(encoding="utf-8").splitlines()
+        blank: set[int] = set()
+        with open(path, "rb") as fh:
+            previous = tokenize.INDENT
+            for tok in tokenize.tokenize(fh.readline):
+                docstring = tok.type == tokenize.STRING and previous in (
+                    tokenize.INDENT, tokenize.NEWLINE, tokenize.NL,
+                    tokenize.ENCODING, tokenize.DEDENT)
+                if tok.type == tokenize.COMMENT or docstring:
+                    blank.update(range(tok.start[0], tok.end[0] + 1))
+                if tok.type not in (tokenize.NL, tokenize.COMMENT):
+                    previous = tok.type
+        return "\n".join("" if n + 1 in blank else line
+                          for n, line in enumerate(lines))
+
+    def test_every_dollar_figure_is_grouped(self):
+        """`f"${x}"` beside `f"${y:,}"` is the same currency, two ways."""
+        import re
+        bad = []
+        for path in self.package():
+            for line in self.code(path).splitlines():
+                for match in re.finditer(r"\$\{([^}]*)\}", line):
+                    inner = match.group(1)
+                    if ":," in inner or ":" not in inner and inner.endswith("_text"):
+                        continue
+                    if ":," not in inner:
+                        bad.append(f"{path.name}: ${{{inner}}}")
+        assert not bad, ("a dollar figure written without a thousands "
+                         "separator: " + ", ".join(bad))
+
+    def test_no_price_carries_cents(self):
+        """Every price here is a whole-dollar asking price off a listing."""
+        import re
+        bad = []
+        for path in self.package():
+            for line in self.code(path).splitlines():
+                if re.search(r"\$\{[^}]*:,\.\d", line):
+                    bad.append(f"{path.name}: {line.strip()}")
+        assert not bad, bad
+
+    def test_the_plural_helper_is_defined_once(self):
+        """It was defined twice, in runner.py and cli.py."""
+        import re
+        defined = [p.name for p in self.package()
+                   if re.search(r"^def many\(|^def _many\(", self.code(p), re.M)]
+        assert defined == ["words.py"], defined
+
+    def test_the_duration_formatter_is_defined_once(self):
+        import re
+        defined = [p.name for p in self.package()
+                   if re.search(r"^def span\(|^def _span\(", self.code(p), re.M)]
+        assert defined == ["words.py"], defined
+
+    def test_the_timestamp_parser_is_defined_once(self):
+        """Three modules parsed a stored stamp with their own fromisoformat.
+
+        Two of them returned whatever offset the string carried, so a stamp
+        without one raised TypeError inside a comparison nobody expected could
+        fail.
+        """
+        import re
+        users = [p.name for p in self.package()
+                 if "fromisoformat" in self.code(p)]
+        assert users == ["clock.py"], (
+            "parse a stored stamp with clock.parse, not by hand: " + str(users))

@@ -12,10 +12,10 @@ so it can be run over a fixture and checked.
 from __future__ import annotations
 
 import statistics
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from typing import Any, Iterable
 
-from . import clock
+from . import clock, words
 from .events import delivery_state
 from .listing import name_of
 
@@ -835,27 +835,9 @@ def _count(n: int, word: str, plural: str = "") -> str:
     return f"{n} {word if n == 1 else (plural or word + 's')}"
 
 
-def _days(n: int) -> str:
-    """Two days, or one day. Never one day with an (s) after it."""
-    return "1 day" if n == 1 else f"{n} days"
-
-
-def _span(hours: float) -> str:
-    """How long something has been going on, in the unit that fits.
-
-    A watch three hours old reported "over 0 days of watching", which reads as
-    a rounding error rather than as the true and useful statement that the
-    searches were read this morning.
-    """
-    hours = max(0.0, float(hours or 0))
-    if hours < 1:
-        minutes = int(round(hours * 60))
-        return "under an hour" if minutes < 1 else (
-            "1 minute" if minutes == 1 else f"{minutes} minutes")
-    if hours < 48:
-        whole = int(round(hours))
-        return "1 hour" if whole == 1 else f"{whole} hours"
-    return _days(int(hours // 24))
+#: In autotrader.words, with every other phrase the bot says more than once.
+_days = words.days
+_span = words.span
 
 
 # A median from four cars is a coincidence with a dollar sign on it. Below

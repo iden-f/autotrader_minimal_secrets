@@ -5,6 +5,7 @@ from __future__ import annotations
 import html as htmllib
 from typing import Any
 
+from . import clock
 from .state import Change
 
 MAX_SMS = 1500
@@ -133,23 +134,111 @@ def headline(changes: list[Change]) -> str:
     return "AutoTrader: " + ", ".join(bits)
 
 
-def _change_prefix(change: Change) -> str:
+#: The mark each kind of change wears where a channel can render one.
+_MARKS = {
+    Change.PRICE_DROP: "\u2193",      # down arrow
+    Change.PRICE_RISE: "\u2191",
+    Change.PRICED: "\U0001f4b2",      # heavy dollar sign
+    Change.REMOVED: "\u2716",
+    Change.RELISTED: "\u21ba",        # anticlockwise open circle arrow
+    Change.QUALIFIED: "\u2713",
+}
+
+
+def _change_words(change: Change) -> str:
+    """What this change is, in words. One definition for every channel.
+
+    Telegram used to keep its own copy of this, and that copy knew four of
+    the seven kinds. A relisted car and a car that came back inside your
+    price ceiling both arrived there with no label at all, which made them
+    read as new listings - the one thing they are definitely not. It also
+    said "gone" where everything else said "Removed" and "price published"
+    where everything else said "Price now shown".
+    """
     if change.kind == Change.PRICE_DROP:
-        return f"PRICE DROP ${abs(change.delta or 0):,} off - "
+        return f"PRICE DROP ${abs(change.delta or 0):,} off"
     if change.kind == Change.PRICE_RISE:
-        return f"Price up ${abs(change.delta or 0):,} - "
+        return f"Price up ${abs(change.delta or 0):,}"
     if change.kind == Change.PRICED:
-        return "Price now shown - "
+        return "Price now shown"
     if change.kind == Change.REMOVED:
-        return "Removed - "
+        return "Removed"
     if change.kind == Change.RELISTED:
         if change.delta:
             way = "cheaper" if change.delta < 0 else "dearer"
-            return f"Back on the market, ${abs(change.delta):,} {way} - "
-        return "Back on the market - "
+            return f"Back on the market, ${abs(change.delta):,} {way}"
+        return "Back on the market"
     if change.kind == Change.QUALIFIED:
-        return "Back inside your rules - "
+        return "Back inside your rules"
     return ""
+
+
+#: Below this, saying how old an alert is tells you nothing you would act on.
+HELD_WORTH_SAYING_MINUTES = 60
+
+
+def _held_note(change: Change) -> str:
+    """"held 9 hours" when this alert waited, empty when it did not.
+
+    An alert that could not be delivered - quiet hours, every channel down -
+    is picked back up by a later run and sent then. Without this it arrives
+    looking exactly like news, and "get in early" is the advice a nine-hour-old
+    car least deserves. The bot knows when it worked the change out, so it
+    says so.
+    """
+    from .insight import _span
+    held = clock.hours_since(getattr(change, "held_since", None))
+    if held is None or held * 60 < HELD_WORTH_SAYING_MINUTES:
+        return ""
+    return f"held {_span(held)}"
+
+
+#: The one colour each kind of change wears in the email, which is the only
+#: channel that can show one. Not a vocabulary - the words come from
+#: _change_words, so a kind cannot be worded one way here and another there.
+_BADGE_COLOURS = {
+    Change.NEW: "#1d4ed8",
+    Change.PRICE_DROP: "#0f7b3f",
+    Change.PRICE_RISE: "#9a3412",
+    Change.PRICED: "#0f7b3f",
+    Change.REMOVED: "#6b7280",
+    Change.RELISTED: "#6d28d9",
+    Change.QUALIFIED: "#0369a1",
+}
+_BADGE_FALLBACK = "#374151"
+
+
+def _badge_words(change: Change) -> str:
+    """The short, shouted form for a badge, derived from the long one.
+
+    Derived rather than listed a second time. The email kept its own list and
+    it knew five of the seven kinds, so a relisted car and a car that came
+    back inside your rules arrived with no badge at all - visually identical
+    to a listing with nothing to report.
+    """
+    words = _change_words(change)
+    return (words or "NEW").upper()
+
+
+def _badge_html(change: Change) -> str:
+    colour = _BADGE_COLOURS.get(change.kind, _BADGE_FALLBACK)
+    label = _esc(_badge_words(change))
+    held = _held_note(change)
+    aside = (f'<span style="display:inline-block;margin-left:6px;color:#6b7280;'
+             f'font-size:12px;">{_esc(held)}</span>') if held else ""
+    return (f'<span style="display:inline-block;background:{colour};color:#ffffff;'
+            f'font-size:12px;font-weight:700;padding:3px 8px;border-radius:99px;">'
+            f'{label}</span>{aside}')
+
+
+def _parts(change: Change) -> list[str]:
+    """The label pieces for one change, in order, any of them possibly absent."""
+    return [p for p in (_change_words(change), _held_note(change)) if p]
+
+
+def _change_prefix(change: Change) -> str:
+    parts = _parts(change)
+    return (", ".join(parts) + " - ") if parts else ""
 
 
 def as_text(changes: list[Change], *, limit: int = 12, footer: str = "") -> str:
@@ -204,15 +293,12 @@ def as_telegram_html(changes: list[Change], *, limit: int = 12) -> str:
         listing = change.listing
         title = _esc(listing.display_title)
         link = f'<a href="{_esc(listing.url)}">{title}</a>' if listing.url else f"<b>{title}</b>"
+        parts = _parts(change)
+        mark = _MARKS.get(change.kind, "")
         prefix = ""
-        if change.kind == Change.PRICE_DROP:
-            prefix = f"↓ <b>${abs(change.delta or 0):,} off</b> "
-        elif change.kind == Change.PRICE_RISE:
-            prefix = f"↑ ${abs(change.delta or 0):,} more "
-        elif change.kind == Change.PRICED:
-            prefix = "💲 price published – "
-        elif change.kind == Change.REMOVED:
-            prefix = "✖ gone – "
+        if parts:
+            prefix = (f"{mark} " if mark else "") + \
+                f"<b>{_esc(', '.join(parts))}</b> – "
         lines.append("")
         lines.append(f"{prefix}{link}")
         lines.append(f"<i>{_esc(' | '.join(_facts(listing)))}</i>")
@@ -234,25 +320,7 @@ def as_email_html(changes: list[Change], *, limit: int = 25,
     cards: list[str] = []
     for change in changes[:limit]:
         listing = change.listing
-        badge = ""
-        if change.kind == Change.PRICE_DROP:
-            badge = (f'<span style="display:inline-block;background:#0f7b3f;color:#ffffff;'
-                     f'font-size:12px;font-weight:700;padding:3px 8px;border-radius:99px;">'
-                     f'&#8595; ${abs(change.delta or 0):,} off</span>')
-        elif change.kind == Change.PRICE_RISE:
-            badge = (f'<span style="display:inline-block;background:#9a3412;color:#ffffff;'
-                     f'font-size:12px;font-weight:700;padding:3px 8px;border-radius:99px;">'
-                     f'&#8593; ${abs(change.delta or 0):,}</span>')
-        elif change.kind == Change.NEW:
-            badge = ('<span style="display:inline-block;background:#1d4ed8;color:#ffffff;'
-                     'font-size:12px;font-weight:700;padding:3px 8px;border-radius:99px;">NEW</span>')
-        elif change.kind == Change.PRICED:
-            badge = ('<span style="display:inline-block;background:#0f7b3f;color:#ffffff;'
-                     'font-size:12px;font-weight:700;padding:3px 8px;border-radius:99px;">'
-                     'PRICE SHOWN</span>')
-        elif change.kind == Change.REMOVED:
-            badge = ('<span style="display:inline-block;background:#6b7280;color:#ffffff;'
-                     'font-size:12px;font-weight:700;padding:3px 8px;border-radius:99px;">REMOVED</span>')
+        badge = _badge_html(change)
 
         photo = ""
         if listing.thumbnail:
