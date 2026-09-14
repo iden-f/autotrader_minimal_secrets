@@ -52,7 +52,7 @@ from autotrader.notifiers import Notifier, Result  # noqa: E402
 from autotrader.runner import run  # noqa: E402
 from autotrader.state import State  # noqa: E402
 
-from .helpers import Capture, FakeFetcher, use_channels  # noqa: E402
+from .helpers import Capture, FakeFetcher, next_check, use_channels  # noqa: E402
 
 SEARCH = "https://www.autotrader.ca/cars/bmw/m5/?rcp=15&srt=35&prx=-2&loc=M5V"
 
@@ -73,7 +73,12 @@ def bench(tmp_path, monkeypatch, fixture_html, archive_html):
 
     details = {i: archive_html(i) for i in ("13166607", "68819631", "13221555")}
 
-    def go(search_html=None, fail=None, config=None):
+    def go(search_html=None, fail=None, config=None, minutes_later=None):
+        # A schedule-interval between runs. Every countdown the bot keeps -
+        # the removal grace, the silence alarm, how long a search has been
+        # unreadable - is counted in elapsed time, and two runs in the same
+        # second is not a cadence it can ever have.
+        next_check(minutes_later)
         return run(config or cfg, State.load(tmp_path / "state.json"),
                    fetcher=FakeFetcher(search_html or fixture_html("search_cards"),
                                        details, fail))

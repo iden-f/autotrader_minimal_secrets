@@ -126,7 +126,9 @@ them re-triggers itself.
 > path*, which is why the bot now lives at `.github/workflows/watch.yml`
 > rather than the old `run_bot.yml`: a new path comes back enabled.
 >
-> You now also get told when it breaks, after three failed runs in a row.
+> You now also get told when it breaks - after three failed checks in a row,
+> or as soon as a search has been unreadable for six hours, whichever comes
+> first. The second half matters because the schedule is not evenly spaced.
 
 **Full click-by-click setup — Telegram, secrets, the schedule, Pages — is in
 [SETUP.md](SETUP.md).**
@@ -414,7 +416,7 @@ Kept here because these are the failure modes worth not repeating.
 | Price drops | Not detected at all. | Tracked per car, confirmed against the listing page before alerting. |
 | Photos | Saved every `<img src>`, which was 400 manufacturer logos and no cars. | Real photo URLs from schema.org data. |
 | Repository size | 9.6 MB of raw HTML for 50 cars, growing forever. | Metadata by default, with a retention policy. |
-| When it broke | Nothing. It failed for a month unnoticed. | Warns you after 3 failed runs in a row, or as soon as a page loads but parses nothing. |
+| When it broke | Nothing. It failed for a month unnoticed. | Warns you after 3 failed checks in a row, or after six hours unreadable, or as soon as a page loads but parses nothing - and says how long it has been broken, not just how often. |
 | Getting started | Seven secrets before the first alert. | Configures itself; needs no token at all. |
 | Trusting the parser | Never checked. | Grades its own first run and refuses to record anything that looks wrong. |
 | Request volume | Unbounded: every listing cost 16 extra requests. | Per-run budget, capped detail lookups, jittered pacing. |

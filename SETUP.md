@@ -192,9 +192,17 @@ activity**. This bot commits its results whenever something changes, which
 normally keeps the repo active — but a bot that is failing commits nothing.
 That is the trap that caught v1.
 
-You now get told: after 3 failed runs in a row, the bot messages you on every
-channel you have configured. If you ever *stop* hearing from it entirely,
-check **Actions** first.
+You now get told. After 3 failed checks in a row - or after a search has gone
+six hours without a successful read, whichever happens first - the bot
+messages you on every channel you have configured, and the message says how
+long it has been broken rather than only how many times.
+
+Both conditions exist because the schedule is not evenly spaced: GitHub
+serves roughly 40% of the firings asked of it, so three checks can span most
+of a day, and a count on its own would let a search stay broken all morning
+without reaching the threshold.
+
+If you ever *stop* hearing from it entirely, check **Actions** first.
 
 ---
 

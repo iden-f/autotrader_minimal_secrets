@@ -93,6 +93,10 @@ class Capture(Notifier):
         self.alerts.append((subject, body))
         return Result("capture", True)
 
+    def alerts_matching(self, phrase):
+        """Alerts whose subject contains `phrase`, case-insensitively."""
+        return [(s, b) for s, b in self.alerts if phrase.lower() in s.lower()]
+
 
 # ----------------------------------------------------------- moving time
 

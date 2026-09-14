@@ -1477,13 +1477,31 @@ def _health_check(cfg: Config, state: State, report: RunReport,
     """
     if threshold <= 0 or not may_notify:
         return
+    # A count of failures is not a length of time, and this bot's checks are
+    # not evenly spaced: GitHub served 40% of the schedule asked of it, and
+    # three consecutive failures have been as far apart as nine hours. Under
+    # the count alone, a search could be unreadable all morning without
+    # reaching the threshold, and the message that eventually arrived said
+    # "3 failed runs in a row" without saying whether that meant six minutes
+    # or six hours. So: either enough failures, or long enough in the dark,
+    # and the message says which.
+    dark_after = float(cfg.get("health.silent_after_hours") or 0)
+    from .insight import _span
     broken = []
     for search in cfg.active_searches:
         health = state.search_health(search.id)
         failures = int(health.get("consecutive_failures", 0))
-        if failures >= threshold:
-            broken.append(f"- {search.name}: {failures} failed runs in a row. "
-                          f"Last error: {health.get('last_error') or 'unknown'}")
+        if failures <= 0:
+            continue
+        dark = clock.hours_since(health.get("last_ok"))
+        long_enough = dark_after > 0 and dark is not None and dark >= dark_after
+        if failures < threshold and not long_enough:
+            continue
+        when = (f"last read successfully {_span(dark)} ago"
+                if dark is not None else "it has never been read successfully")
+        broken.append(f"- {search.name}: {_many(failures, 'failed check')} in "
+                      f"a row, {when}. "
+                      f"Last error: {health.get('last_error') or 'unknown'}")
     if not broken:
         return
     if not (cfg.get("notifications.notify_on.errors", True)):

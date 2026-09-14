@@ -10,7 +10,7 @@ from autotrader.notifiers import Notifier, Result
 from autotrader.runner import run
 from autotrader.state import Change, State
 
-from .helpers import Capture, FakeFetcher
+from .helpers import Capture, FakeFetcher, next_check
 
 SEARCH = "https://www.autotrader.ca/cars/bmw/m5/?rcp=15&srt=35&prx=-2&loc=M5V"
 
@@ -102,6 +102,38 @@ def test_repeated_failures_raise_a_health_alert(bench):
     subject, body = bench.sink.alerts[-1]
     assert "needs attention" in subject.lower()
     assert "BMW M5" in body
+
+
+def test_the_alert_says_how_long_it_has_been_broken_not_just_how_often(bench):
+    """"3 failed runs in a row" is the same sentence after six minutes and
+    after six hours, and the two need different reactions."""
+    bench.run()                                   # one good read to date from
+    for _ in range(3):
+        bench.run(fail=BlockedError("anti-bot page"))
+    _, body = bench.sink.alerts[-1]
+    assert "last read successfully" in body, body
+    assert "hours" in body or "minutes" in body, body
+
+
+def test_a_search_dark_for_long_enough_is_reported_before_the_third_failure(bench):
+    """The threshold is a count, and the schedule is not evenly spaced.
+
+    GitHub served 40% of the schedule asked of it here. Two failed checks can
+    span most of a day, and a search unreadable all morning should not wait
+    for a third firing that may not come.
+    """
+    bench.cfg.set("health.silent_after_hours", 6)
+    bench.cfg.save()
+    bench.run()
+    bench.run(fail=BlockedError("anti-bot page"))
+    assert not bench.sink.alerts_matching("needs attention"), \
+        "one failure minutes ago is not yet a story"
+
+    next_check(minutes=9 * 60)
+    bench.run(fail=BlockedError("anti-bot page"))
+    said = bench.sink.alerts_matching("needs attention")
+    assert said, "two failures across nine dark hours is"
+    assert "2 failed checks" in said[-1][1], said[-1][1]
 
 
 def test_a_single_healthy_run_raises_no_alarm(bench):

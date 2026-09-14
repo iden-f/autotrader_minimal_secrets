@@ -194,17 +194,18 @@ DEFAULTS: dict[str, Any] = {
         "expected_interval_minutes": 120,
         # Two checks closer together than this tell you the same thing twice,
         # so a scheduled one arriving inside the window is skipped without
-        # touching the site.
+        # touching the site. An external timer and GitHub's own cron both
+        # aim at the same schedule, and a duplicate check is load on someone
+        # else's site in exchange for nothing.
         #
-        # It was 8, which was fine when one pacemaker was keeping time. Three
-        # of them running concurrently - which they now do, having previously
-        # cancelled each other - dispatch on nine offset minutes, and an
-        # 8-minute floor would have turned a check every 30 minutes into one
-        # every 10. That is three times the load on somebody else's site to
-        # learn the same thing, which is not a trade this project gets to
-        # make quietly. At 24 the redundancy buys resilience instead: if one
-        # pacemaker dies, another's dispatch lands in the same window and the
-        # check still happens on time.
+        # It is also the floor on the removal grace: a car cannot be declared
+        # sold faster than two real checks could establish it. See
+        # state.mark_missing - that rule reads this number rather than
+        # keeping its own, so the two cannot drift apart.
+        #
+        # Three quarters of the interval, not all of it. GitHub fires a
+        # schedule early as readily as late; at exactly the interval, an
+        # early firing is discarded and the check waits for the next window.
         "min_interval_minutes": 90,
         # No successful check for this long and the bot is not watching
         # anything, whatever the reason.
