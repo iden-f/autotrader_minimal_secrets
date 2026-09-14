@@ -60,11 +60,35 @@ class TestTheScheduleFiringTwice:
         assert report.requests_made == 0
         assert any("checking the site twice" in w for w in report.warnings)
 
-    def test_standing_down_is_not_recorded_as_a_run(self, bench):
+    def test_standing_down_IS_recorded(self, bench):
+        """It used to be dropped, and that hid the schedule.
+
+        A firing the bot refuses is evidence the timer that produced it is
+        alive, and it held a runner for the fifteen seconds it took to
+        decide. Measured on the night of 13 September: GitHub fired the cron
+        five times and state held two, so `schedule_fired` - which exists to
+        count exactly those refusals - reported the schedule doing less than
+        it had.
+        """
         bench.run()
         before = len(bench.state().data["runs"])
         bench.run(SCHEDULED)
-        assert len(bench.state().data["runs"]) == before
+        runs = bench.state().data["runs"]
+        assert len(runs) == before + 1
+        newest = max(runs, key=lambda r: str(r.get("at")))
+        assert newest["skipped"] is True
+        assert newest["minutes"], "it held a runner and must pay for it"
+
+    def test_but_it_is_not_counted_as_a_check(self, bench):
+        """Recording it must not inflate the number on the Status tab. It
+        covered no slot and read no page."""
+        from autotrader import insight
+        bench.run()
+        bench.run(SCHEDULED)
+        runs = bench.state().data["runs"]
+        cov = insight.coverage(runs, 120, since_change=None)
+        assert cov["stood_down"] == 1
+        assert cov["checks"] == len(runs) - 1
 
     def test_a_run_someone_asked_for_always_happens(self, bench):
         """Only a schedule is deduplicated. If you typed it, you want it."""

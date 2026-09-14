@@ -470,6 +470,11 @@ def run(cfg: Config | None = None, state: State | None = None, *,
                 f"schedule asks for one every {expected} - skipping this one "
                 f"rather than checking the site twice for the same answer.")
             report.skipped = True
+            # Written down, not dropped. This firing is evidence the timer
+            # that produced it is alive, and it held a runner for the fifteen
+            # seconds it took to decide not to work.
+            if not dry_run:
+                _write_the_run_down(cfg, state, report, env, notify)
             return report
         if gap > expected * 2:
             report.missed_by = round(gap)
@@ -1214,46 +1219,66 @@ def run(cfg: Config | None = None, state: State | None = None, *,
         if fetcher is not None:
             fetcher.close()
         if not dry_run:
-            # What GitHub says this repository is, so the minute ledger can
-            # tell minutes that are merely spent from minutes that are
-            # charged. Absent outside Actions, and absence means "assume
-            # charged" - see budget.draws_on_the_allowance.
-            visibility = (env or {}).get("REPO_VISIBILITY", "").strip()
-            if visibility:
-                state.data.setdefault("repo", {})["visibility"] = visibility
-            # The runner label too. The exemption is a property of BOTH: a
-            # larger runner is billed on a public repository like any other,
-            # so "public" alone is not evidence that a minute was free.
-            runner_label = (env or {}).get("REPO_RUNNER", "").strip()
-            if runner_label:
-                state.data.setdefault("repo", {})["runner"] = runner_label
-            # What started this check, so coverage can tell a schedule doing
-            # its job from somebody pushing to the repository.
-            report.trigger = _trigger_of(env or {})
-            # The interval this run was asked for, so coverage can be
-            # measured against the schedule that was actually running.
-            try:
-                if state.note_schedule(
-                        int(cfg.get("health.expected_interval_minutes", 30) or 30)):
-                    log.info("the check interval changed; coverage restarts from now")
-            except Exception as exc:   # noqa: BLE001
-                log.warning("could not record the schedule: %s", exc)
-            # What this run cost, before the run is written down - so a run
-            # that crashed still pays for the runner it held.
-            try:
-                report.budget = _charge_the_budget(cfg, state, report, env, notify)
-            except Exception as exc:   # noqa: BLE001 - never fail a check over accounting
-                log.warning("could not update the minute ledger: %s", exc)
-            # This is the whole point: state is written even if something above
-            # blew up, so a failure costs one run, never the entire history.
-            state.record_run(report.to_dict())
-            try:
-                state.save()
-            except OSError as exc:
-                log.error("could not save state: %s", exc)
-                report.errors.append(f"could not save state: {exc}")
+            _write_the_run_down(cfg, state, report, env, notify)
 
     return report
+
+
+def _write_the_run_down(cfg: Config, state: State, report: "RunReport",
+                        env: dict[str, str], notify: bool) -> None:
+    """Everything a finished run owes the ledger, however it finished.
+
+    A run that exits early still held a runner and still proves its timer
+    fired, so it is written down like any other. This used to live inside the
+    check's `finally:` and the deduplication path returned BEFORE that block -
+    so for every scheduled firing the bot correctly refused, state recorded
+    nothing at all.
+
+    Measured on the night of 13 September: GitHub fired the cron five times
+    and state held two. `schedule_fired` was built to count exactly those
+    refused firings as evidence the cron is alive, and it could not see them,
+    so it reported the schedule doing less than it had. A metric wrong in the
+    unflattering direction is still a metric that is wrong.
+    """
+    # What GitHub says this repository is, so the minute ledger can tell
+    # minutes that are merely spent from minutes that are charged. Absent
+    # outside Actions, and absence means "assume charged" - see
+    # budget.draws_on_the_allowance.
+    visibility = (env or {}).get("REPO_VISIBILITY", "").strip()
+    if visibility:
+        state.data.setdefault("repo", {})["visibility"] = visibility
+    # The runner label too. The exemption is a property of BOTH: a larger
+    # runner is billed on a public repository like any other, so "public"
+    # alone is not evidence that a minute was free.
+    runner_label = (env or {}).get("REPO_RUNNER", "").strip()
+    if runner_label:
+        state.data.setdefault("repo", {})["runner"] = runner_label
+    # What started this check, so coverage can tell a schedule doing its job
+    # from somebody pushing to the repository.
+    report.trigger = _trigger_of(env or {})
+    # The interval this run was asked for, so coverage can be measured
+    # against the schedule that was actually running.
+    try:
+        if state.note_schedule(
+                int(cfg.get("health.expected_interval_minutes", 30) or 30)):
+            log.info("the check interval changed; coverage restarts from now")
+    except Exception as exc:   # noqa: BLE001
+        log.warning("could not record the schedule: %s", exc)
+    # What this run cost, before the run is written down - so a run that
+    # crashed, or one that exited in fifteen seconds, still pays for the
+    # runner it held.
+    try:
+        report.budget = _charge_the_budget(cfg, state, report, env, notify)
+    except Exception as exc:   # noqa: BLE001 - never fail a check over accounting
+        log.warning("could not update the minute ledger: %s", exc)
+    # This is the whole point: state is written even if something above blew
+    # up, so a failure costs one run, never the entire history.
+    state.record_run(report.to_dict())
+    try:
+        state.save()
+    except OSError as exc:
+        log.error("could not save state: %s", exc)
+        report.errors.append(f"could not save state: {exc}")
 
 
 # Which timer started this check, named so a person can go and look at it.

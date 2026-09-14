@@ -26,10 +26,29 @@ and 18:55 UTC on 13 September all succeeded, after the allowance was gone. A
 `$0` Actions spending limit does not change this: a spending limit caps
 *billable* usage, and there is none here to cap.
 
-**The schedule is the weak part, not the money.** Over the 14 hours after the
-two-hourly schedule went live: 6 of 7 slots covered, but only **2 of 7 by the
-schedule**. The rest came from pushes and from an external dispatcher that has
-since stopped. Longest gap 2h57m.
+**The schedule is the weak part, not the money.** Measured over 10.5 hours of
+genuine silence on the night of 13-14 September - nothing pushed, nothing
+dispatched by hand - GitHub's cron filled **2 of 5 two-hour slots, 40%**, with
+a longest gap of **4h42m**. The histogram is `[1, 0, 0, 1, 0]`. That is the
+honest number for GitHub's scheduler alone on this repository, and it is below
+the 60% a watch like this needs.
+
+**A second cron offset helps less than it should.** GitHub fired 5 of the 10
+firings the two offsets asked for - and all 5 landed inside just 2 of the 5
+windows:
+
+| Firing | Window | What happened |
+|---|---|---|
+| 22:34Z | 0 | stood down (a check 6 min earlier) |
+| 00:08Z | 0 | **checked** |
+| 00:22Z | 0 | stood down |
+| 04:50Z | 3 | **checked** |
+| 05:23Z | 3 | stood down |
+
+Windows 1, 2 and 4 got nothing at all. GitHub drops *whole windows*, not
+individual firings, so `11` and `41` are not two independent chances at a
+window - they arrive as a pair or not at all. A timer on a different cadence
+is the fix; a third offset is not.
 
 ## Options, ranked
 

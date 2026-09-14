@@ -171,15 +171,32 @@ class TestStoppingRatherThanSpending:
                               "state": staticmethod(
                                   lambda: State.load(tmp_path / "state.json"))})
 
-    def spend_the_month(self, watcher, per_day: float):
+    # Seeded RELATIVE to the ceiling and to how much month is left, never as
+    # a rate times the day of the month.
+    #
+    # The old version wrote 195 minutes a day into every day so far, which on
+    # the 13th totalled 2,535 against a 2,550 ceiling and read "heading over",
+    # and on the 14th totalled 2,730 and read "already over". The test that
+    # distinguishes those two states flipped on a calendar date with no code
+    # change at all.
+    def seed(self, watcher, *, share_of_ceiling: float, days: int = 2):
+        """Write `days` days of history totalling that share of the ceiling."""
+        from autotrader import budget
         state = watcher.state()
         now = datetime.now(timezone.utc)
+        ledger = budget.load(state, watcher.cfg, now=now)
+        per_day = ledger.ceiling() * share_of_ceiling / days
         state.data["actions"] = {
             "month": f"{now.year:04d}-{now.month:02d}",
-            "days": {f"{now.year:04d}-{now.month:02d}-{d:02d}": per_day
-                     for d in range(1, max(2, now.day) + 1)},
+            "days": {f"{now.year:04d}-{now.month:02d}-{d:02d}":
+                     {"drawing": per_day} for d in range(1, days + 1)},
             "runs": 400}
         state.save()
+        return ledger
+
+    def spend_the_month(self, watcher, per_day: float):
+        """Past the ceiling outright, whatever the date."""
+        self.seed(watcher, share_of_ceiling=1.4)
 
     def test_an_ordinary_run_leaves_no_stop_file(self, watcher):
         report = watcher.run()
@@ -214,7 +231,21 @@ class TestStoppingRatherThanSpending:
 
     def test_projected_over_warns_without_stopping(self, watcher):
         """Heading over is a warning; being over is a stop. Different things."""
-        self.spend_the_month(watcher, 195.0)
+        # Under the ceiling today, over it by month end. That state only
+        # exists while there is month left, so on the last day there is
+        # nothing to test and the test says so rather than failing.
+        from autotrader import budget
+        now = datetime.now(timezone.utc)
+        ledger = budget.load(watcher.state(), watcher.cfg, now=now)
+        remaining = ledger.days_remaining(now)
+        if remaining < 1:
+            pytest.skip("the month ends today; there is no 'heading over'")
+        # The run itself adds a THIRD day, which dilutes the rate the
+        # projection is built from - so the seed has to be chosen for the
+        # ledger as it will be after the run, not as it is now. With 2 seeded
+        # days totalling S and one more minute today, per_day is S/3 and the
+        # projection is S + (S/3)*remaining. Aiming that 20% past the ceiling:
+        self.seed(watcher, share_of_ceiling=3.6 / (3 + remaining))
         report = watcher.run()
         assert not (watcher.path / "BUDGET-STOP").exists()
         assert any("month ends at about" in w for w in report.warnings), report.warnings

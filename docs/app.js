@@ -1669,6 +1669,8 @@ function renderStatus() {
     <div class="stat"><dt>Check took</dt><dd class="num">${run.duration_s ?? '—'}s</dd>
       <dd class="stat__note">${d.cost
         ? `${d.cost.checks} checks · ${d.cost.billed_minutes ?? d.cost.minutes} billed minutes in ${d.cost.window_hours}h`
+          + (cov.stood_down ? ` · ${num(cov.stood_down)} firing${
+              cov.stood_down === 1 ? '' : 's'} stood down` : '')
         : ''}</dd></div>
     ${d.budget ? `<div class="stat" data-tone="${
         d.budget.state === 'stop' ? 'bad' : d.budget.state === 'over' ? 'warn' : ''}">

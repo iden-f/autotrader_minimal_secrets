@@ -452,8 +452,16 @@ def coverage(runs: list[dict[str, Any]], expected_minutes: int = 30,
     complete = int(math.floor(measured_hours * 60 / max(1, expected_minutes)))
     expected = max(1, complete)
 
-    stamps = sorted(t for t in (_dt(r.get("at")) for r in runs)
+    # Runs that tried to check, which is not every run recorded. A firing
+    # that stood down because a check had just happened is written down now -
+    # it proves its timer is alive and it held a runner - but calling it a
+    # "check" would inflate the count on the Status tab with runs that
+    # deliberately did nothing.
+    stamps = sorted(t for t in (_dt(r.get("at")) for r in runs
+                                if not r.get("skipped"))
                     if t is not None and t >= start)
+    stood_down = sum(1 for r in runs
+                     if r.get("skipped") and (_dt(r.get("at")) or start) >= start)
 
     # Covered, not ok.
     #
@@ -550,6 +558,10 @@ def coverage(runs: list[dict[str, Any]], expected_minutes: int = 30,
         "since_change": changed.isoformat(timespec="seconds") if changed else None,
         "expected": expected,
         "checks": len(stamps),
+        # Firings that found a check too recent to repeat. Not a fault - it is
+        # the deduplication working - and worth showing beside the count of
+        # checks so two timers running together do not look like waste.
+        "stood_down": stood_down,
         "successful": len(read_stamps),
         "slots_covered": len(covered),
         # Runs that read the site but reported a problem about themselves.
