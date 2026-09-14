@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-09-14T22:32:44+00:00",
+ "generated_at": "2026-09-14T23:40:55+00:00",
  "notify": {
   "ntfy_topic": "autotrader-2q592ak9gnx7sqrere5r",
   "ntfy_url": "https://ntfy.sh/autotrader-2q592ak9gnx7sqrere5r",
@@ -10652,11 +10652,10 @@
   "longest_gap_minutes": 466.9,
   "expected_interval_minutes": 120,
   "truncated": false,
-  "since": "2026-09-13T22:32:44+00:00",
+  "since": "2026-09-13T23:40:55+00:00",
   "slots": [
    1,
    0,
-   0,
    1,
    0,
    0,
@@ -10665,6 +10664,7 @@
    0,
    0,
    1,
+   0,
    0
   ],
   "slots_scheduled": 4,
@@ -10702,21 +10702,21 @@
   "ceiling": 2550.0,
   "label": "exempt",
   "why": "GitHub reports this repository as public and its jobs run on standard runners, which GitHub does not bill",
-  "blind_spot": "This is what THIS repository spent. The allowance has one meter per account and this bot can see one repository, so it cannot tell you how much of the allowance is left.",
+  "blind_spot": "This is what THIS repository spent. The allowance has one meter per account and this bot can see one repository, so it cannot tell you how much of the allowance is left. It is also a floor rather than a total: a job killed outright - a timeout, a lost runner - is billed by GitHub and never reaches this count.",
   "short": "about 99 by month end · none of it labelled, so all of it counted as drawing · 11 more ran exempt",
   "state": "ok",
-  "text": "11 allowance minutes used, about 99 by month end against 3,000. This is what THIS repository spent. The allowance has one meter per account and this bot can see one repository, so it cannot tell you how much of the allowance is left. A further 11 minutes ran exempt. 11 minutes could not be labelled and are counted as drawing.",
+  "text": "11 allowance minutes used, about 99 by month end against 3,000. This is what THIS repository spent. The allowance has one meter per account and this bot can see one repository, so it cannot tell you how much of the allowance is left. It is also a floor rather than a total: a job killed outright - a timeout, a lost runner - is billed by GitHub and never reaches this count. A further 11 minutes ran exempt. 11 minutes could not be labelled and are counted as drawing.",
   "can_still_run": true,
   "should_stop": false
  },
  "market": {
-  "at": "2026-09-14T22:32:44+00:00",
+  "at": "2026-09-14T23:40:55+00:00",
   "window": {
    "ids_span_days": 1,
    "watching_days": 1,
    "cars_with_two_prices": 3,
    "thin": true,
-   "note": "3 of 109 cars have been priced more than once, over 41 hours of watching. Anything below described as a trend is really a snapshot until that number grows."
+   "note": "3 of 109 cars have been priced more than once, over 42 hours of watching. Anything below described as a trend is really a snapshot until that number grows."
   },
   "live": 108,
   "gone": 1,

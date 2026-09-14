@@ -1880,9 +1880,6 @@ function renderStatus() {
   // Said once, under the row, because it qualifies every minute in it. It
   // used to be the fifth line of a stat tile, which is where a sentence goes
   // to not be read.
-  if (d.budget?.blind_spot) {
-    host.appendChild(el('p', 'note measure', esc(d.budget.blind_spot)));
-  }
 
   // When the checks happened, not just how many. A percentage cannot tell a
   // schedule that is thin everywhere from one that is absent for six hours
@@ -1997,6 +1994,57 @@ function renderStatus() {
     s2.appendChild(p);
   }
   host.appendChild(s2);
+
+  // WHAT THIS PAGE CANNOT TELL YOU.
+  //
+  // Every figure above is bounded by something, and the bounds were spread
+  // across a document, a commit message and four comments in the source -
+  // which is to say they were nowhere a person would find them at the moment
+  // they were deciding whether to believe a number.
+  //
+  // Built from the same values the tiles are built from, so it cannot
+  // describe a system other than this one. A line that stops applying stops
+  // appearing.
+  const limits = [];
+  if (d.budget?.blind_spot) limits.push(d.budget.blind_spot);
+  const gap = cov.longest_gap_minutes;
+  if (gap) {
+    limits.push(`A car could have been listed and taken down inside the `
+      + `longest gap between checks - ${hours(gap / 60)} - and nothing here `
+      + `would ever have known about it. That is what the coverage figure is `
+      + `for.`);
+  }
+  if (cov.partial) {
+    limits.push(`Coverage is measured over ${hours(cov.window_hours)} rather `
+      + `than a full day, because that is how long the current schedule has `
+      + `been running. It is not yet a statement about a day.`);
+  }
+  const unattributed = (cov.by_trigger || {}).unattributed || 0;
+  if (unattributed) {
+    limits.push(unattributed === 1
+      ? `One check on record carries no note of what started it, so it `
+        + `counts towards coverage and not towards the schedule. It may have `
+        + `been the schedule; this cannot say.`
+      : `${num(unattributed)} of the checks on record carry no note of what `
+        + `started them, so they count towards coverage and not towards the `
+        + `schedule. They may have been the schedule; this cannot say.`);
+  }
+  limits.push('A listing coming down means the seller stopped advertising '
+    + 'it. Whether it sold, and for what, is not on the site and is not '
+    + 'guessed at here.');
+  if (limits.length) {
+    const s3 = el('section', 'section measure');
+    s3.innerHTML = '<div class="section__head"><h2>What this page cannot '
+      + 'tell you</h2></div>';
+    const list = el('ul', 'limits');
+    for (const line of limits) {
+      const li = el('li');
+      li.textContent = line;
+      list.appendChild(li);
+    }
+    s3.appendChild(list);
+    host.appendChild(s3);
+  }
   void rows;
 }
 

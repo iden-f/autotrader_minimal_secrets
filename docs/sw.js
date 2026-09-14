@@ -23,7 +23,7 @@
  *   2. The shell is cache-first, because correctness there comes from BUILD
  *      rather than from revalidation.
  */
-const BUILD = '16521cb61be5';
+const BUILD = '225c29cbb2cb';
 const SHELL = `atw-shell-${BUILD}`;
 const DATA = `atw-data-${BUILD}`;
 /* Photos, in a cache that OUTLIVES a build. The shell and the data are

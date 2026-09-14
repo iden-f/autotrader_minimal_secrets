@@ -1336,3 +1336,76 @@ class TestTheFourKeysWorthHaving:
                     view), view
         finally:
             ctx.close()
+
+
+class TestThePageStatesItsOwnLimits:
+    """Every figure on the Status tab is bounded by something, and the bounds
+    were spread across a document, a commit message and four comments in the
+    source - which is to say they were nowhere a person would find them at
+    the moment they were deciding whether to believe a number.
+
+    Built from the same values the tiles are built from, so it cannot
+    describe a system other than this one.
+    """
+
+    def limits(self, page):
+        return page.evaluate(
+            "() => [...document.querySelectorAll('.limits li')].map(e => e.textContent)")
+
+    def test_the_section_is_there_and_is_not_empty(self, browser, site):
+        ctx, page, _ = _page(browser, site, 1440, "light", view="status")
+        try:
+            page.wait_for_timeout(300)
+            lines = self.limits(page)
+            assert len(lines) >= 2, lines
+        finally:
+            ctx.close()
+
+    def test_it_says_the_allowance_figure_is_only_this_repository(self, browser, site):
+        ctx, page, _ = _page(browser, site, 1440, "light", view="status")
+        try:
+            page.wait_for_timeout(300)
+            said = " ".join(self.limits(page))
+            assert "one meter per account" in said, said
+        finally:
+            ctx.close()
+
+    def test_it_names_the_longest_gap_rather_than_describing_one(self, browser, site):
+        """A generic caveat is furniture. This one carries the number."""
+        ctx, page, _ = _page(browser, site, 1440, "light", view="status")
+        try:
+            page.wait_for_timeout(300)
+            said = " ".join(self.limits(page))
+            gap = page.evaluate(
+                "() => (app.data.coverage || {}).longest_gap_minutes")
+            if gap:
+                assert "longest gap between checks" in said, said
+                # However the page words a duration - "7.8 hours", "24
+                # hours", "3 days" - the number in it is the gap's, not a
+                # figure from somewhere else.
+                shown = page.evaluate("h => hours(h)", gap / 60)
+                assert shown in said, (shown, said)
+        finally:
+            ctx.close()
+
+    def test_it_never_claims_a_car_sold(self, browser, site):
+        ctx, page, _ = _page(browser, site, 1440, "light", view="status")
+        try:
+            page.wait_for_timeout(300)
+            said = " ".join(self.limits(page))
+            assert "stopped advertising" in said, said
+        finally:
+            ctx.close()
+
+    def test_the_caveat_is_not_printed_twice(self, browser, site):
+        """It used to sit under the tiles as well, which is how a caveat
+        becomes furniture that nobody reads."""
+        ctx, page, _ = _page(browser, site, 1440, "light", view="status")
+        try:
+            page.wait_for_timeout(300)
+            body = page.evaluate(
+                "() => document.querySelector('[data-view=\"status\"]').textContent")
+            assert body.count("one meter per account") == 1, \
+                "the blind spot appears more than once"
+        finally:
+            ctx.close()

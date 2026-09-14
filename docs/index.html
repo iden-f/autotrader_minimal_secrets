@@ -352,6 +352,16 @@ a{ color:var(--ev-new); text-underline-offset:2px; }
 }
 .subhead span{ font-size:var(--t-small); color:var(--text-3); }
 
+/* The bounds on every figure above, in the one place a person is deciding
+   whether to believe one. */
+.limits{ list-style:none; margin:0; padding:0; }
+.limits li{
+  font-size:var(--t-small); color:var(--text-2); line-height:1.55;
+  padding:var(--s3) 0 var(--s3) var(--s4);
+  border-left:2px solid var(--line);
+}
+.limits li + li{ border-top:1px solid var(--line); }
+
 /* Said only where there is a keyboard to say it about. */
 .only-keyboard kbd{
   font:inherit; background:var(--surface-2); border:1px solid var(--line);
