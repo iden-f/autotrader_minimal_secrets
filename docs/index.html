@@ -352,6 +352,37 @@ a{ color:var(--ev-new); text-underline-offset:2px; }
 }
 .subhead span{ font-size:var(--t-small); color:var(--text-3); }
 
+/* Said only where there is a keyboard to say it about. */
+.only-keyboard kbd{
+  font:inherit; background:var(--surface-2); border:1px solid var(--line);
+  border-radius:var(--r-sm); padding:1px var(--s2);
+}
+@media (max-width:699px){ .only-keyboard{ display:none; } }
+
+/* The shortcut list. A panel rather than a modal: it explains four keys and
+   does not deserve to take the screen away from you. */
+.shortcuts{
+  position:fixed; right:var(--s4); bottom:var(--s4); z-index:40;
+  max-width:min(340px, calc(100vw - var(--s6)));
+  background:var(--surface); border:1px solid var(--line);
+  border-radius:var(--r-md); box-shadow:var(--shadow-overlay);
+  padding:var(--s4); font-size:var(--t-small);
+}
+.shortcuts dl{
+  display:grid; grid-template-columns:auto 1fr; gap:var(--s2) var(--s3);
+  margin:0 0 var(--s3);
+}
+.shortcuts dt, .shortcuts dd{ margin:0; }
+.shortcuts dd{ color:var(--text-2); }
+.shortcuts kbd{
+  font:inherit; font-variant-numeric:tabular-nums; white-space:nowrap;
+  background:var(--surface-2); border:1px solid var(--line);
+  border-radius:var(--r-sm); padding:1px var(--s2); color:var(--text);
+}
+/* It is a keyboard affordance, so it stays out of the way where there is no
+   keyboard. Nothing is lost: every one of the four has a visible control. */
+@media (max-width:699px){ .shortcuts{ display:none; } }
+
 .marker{
   display:flex; align-items:center; gap:var(--s3); margin:var(--s5) 0;
   font-size:var(--t-micro); font-weight:520; letter-spacing:.06em;

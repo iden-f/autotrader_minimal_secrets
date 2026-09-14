@@ -1234,3 +1234,105 @@ class TestTheFeedShowsTheCarNotJustItsName:
             assert not overlaps, f"overlapping by {overlaps}px at {width}px"
         finally:
             ctx.close()
+
+
+class TestTheFourKeysWorthHaving:
+    """A shortcut nobody can discover is a shortcut nobody uses.
+
+    Four, deliberately: get to a view, find a car, get out, see the list. A
+    page with a dozen has none, because nobody learns a dozen.
+    """
+
+    def test_the_number_keys_switch_views(self, browser, site):
+        ctx, page, errors = _page(browser, site, 1440, "light")
+        try:
+            for key, want in (("3", "market"), ("5", "status"), ("1", "feed")):
+                page.keyboard.press(key)
+                page.wait_for_timeout(250)
+                assert want in page.evaluate("() => location.hash"), key
+            assert not errors, errors
+        finally:
+            ctx.close()
+
+    def test_slash_finds_a_car(self, browser, site):
+        """And lands the cursor in the box, which needs the hash to settle
+        first: go() sets location.hash, and the hashchange that follows is a
+        separate task that routes again and puts focus back on <main>."""
+        ctx, page, _ = _page(browser, site, 1440, "light")
+        try:
+            page.keyboard.press("/")
+            page.wait_for_timeout(400)
+            assert page.evaluate("() => (document.activeElement||{}).id") == "q"
+        finally:
+            ctx.close()
+
+    def test_a_slash_typed_into_the_box_is_a_slash(self, browser, site):
+        ctx, page, _ = _page(browser, site, 1440, "light")
+        try:
+            page.keyboard.press("/")
+            page.wait_for_timeout(400)
+            page.keyboard.type("bl/ue")
+            page.wait_for_timeout(200)
+            assert page.evaluate(
+                "() => document.getElementById('q').value") == "bl/ue"
+        finally:
+            ctx.close()
+
+    def test_a_number_typed_into_the_box_does_not_change_view(self, browser, site):
+        ctx, page, _ = _page(browser, site, 1440, "light")
+        try:
+            page.keyboard.press("/")
+            page.wait_for_timeout(400)
+            page.keyboard.type("330")
+            page.wait_for_timeout(250)
+            assert "listings" in page.evaluate("() => location.hash")
+            assert page.evaluate(
+                "() => document.getElementById('q').value") == "330"
+        finally:
+            ctx.close()
+
+    def test_escape_clears_what_you_typed(self, browser, site):
+        ctx, page, _ = _page(browser, site, 1440, "light")
+        try:
+            page.keyboard.press("/")
+            page.wait_for_timeout(400)
+            page.keyboard.type("blue")
+            page.wait_for_timeout(200)
+            page.keyboard.press("Escape")
+            page.wait_for_timeout(300)
+            assert page.evaluate("() => document.getElementById('q').value") == ""
+        finally:
+            ctx.close()
+
+    def test_question_mark_shows_the_list_and_hides_it_again(self, browser, site):
+        ctx, page, _ = _page(browser, site, 1440, "light")
+        try:
+            page.keyboard.press("?")
+            page.wait_for_timeout(300)
+            assert page.evaluate("() => !!document.getElementById('shortcuts')")
+            rows = page.evaluate(
+                "() => document.querySelectorAll('#shortcuts dt').length")
+            assert rows == 4, f"{rows} shortcuts listed; four is the budget"
+            page.keyboard.press("?")
+            page.wait_for_timeout(300)
+            assert not page.evaluate("() => !!document.getElementById('shortcuts')")
+        finally:
+            ctx.close()
+
+    def test_every_shortcut_also_has_a_visible_control(self, browser, site):
+        """It is an accelerator, not the only way to do something. The panel
+        is hidden on a phone, where there is no keyboard to accelerate."""
+        ctx, page, _ = _page(browser, site, 390, "light")
+        try:
+            page.keyboard.press("?")
+            page.wait_for_timeout(300)
+            shown = page.evaluate("""() => {
+                const el = document.getElementById('shortcuts');
+                return el ? getComputedStyle(el).display !== 'none' : false; }""")
+            assert not shown, "the shortcut panel is showing on a phone"
+            for view in ("feed", "listings", "market", "searches", "status"):
+                assert page.evaluate(
+                    "v => !!document.querySelector(`[data-view-link=\"${v}\"]`)",
+                    view), view
+        finally:
+            ctx.close()

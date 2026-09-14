@@ -589,7 +589,9 @@ function welcome() {
     <p><b>Alerts</b> go to ${(d.notify?.active || []).join(', ') || 'nowhere yet — no channel is switched on'}.
        <b>Feed</b> is what changed since you last looked. <b>Status</b> says whether
        the bot itself is healthy, and the dot beside the title up there says it at a glance.</p>
-    <p>Add a search by pasting its link on the Searches tab.</p>`;
+    <p>Add a search by pasting its link on the Searches tab.</p>
+    <p class="only-keyboard">On a keyboard: <kbd>1</kbd>–<kbd>5</kbd> for the
+       tabs, <kbd>/</kbd> to find a car, <kbd>?</kbd> for the rest.</p>`;
   const b = el('button', 'btn btn--primary', 'Got it');
   b.type = 'button';
   b.addEventListener('click', () => {
@@ -1037,6 +1039,33 @@ function noResults() {
        narrowing the list on its own.</p>`;
   for (const choice of narrowing) offer(choice);
   return s;
+}
+
+/* The shortcut list, shown by "?" and from the welcome box.
+
+   A shortcut nobody can discover is a shortcut nobody uses, and a page that
+   only reveals them in a blog post has none. Four rows; if this ever needs
+   scrolling, the shortcuts have stopped being worth having. */
+const SHORTCUTS = [
+  ['1 – 5', 'Feed, Listings, Market, Searches, Status'],
+  ['/', 'Find a car by colour, city, trim or seller'],
+  ['Esc', 'Close a car, or clear what you typed'],
+  ['?', 'This list'],
+];
+
+function showShortcuts() {
+  let box = document.getElementById('shortcuts');
+  if (box) { box.remove(); return; }         // pressed twice: put it away
+  box = el('div', 'shortcuts');
+  box.id = 'shortcuts';
+  box.innerHTML = '<dl>' + SHORTCUTS.map(([key, what]) =>
+    `<dt><kbd>${esc(key)}</kbd></dt><dd>${esc(what)}</dd>`).join('') + '</dl>';
+  const close = el('button', 'btn', 'Close');
+  close.type = 'button';
+  close.addEventListener('click', () => box.remove());
+  box.appendChild(close);
+  document.body.appendChild(box);
+  close.focus();
 }
 
 // h2, not h3. These sit directly under the view's h1 with nothing between,
@@ -2454,7 +2483,46 @@ async function boot() {
   document.getElementById('sheet-close').addEventListener('click', closeSheet);
   document.getElementById('scrim').addEventListener('click', closeSheet);
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && document.getElementById('sheet').dataset.open === '1') closeSheet();
+    // SHORTCUTS, ON A KEYBOARD, FOR THE THINGS WORTH A SHORTCUT.
+    //
+    // Four, deliberately. A page with a dozen of them has none, because
+    // nobody learns a dozen. These are: get to a view, find a car, see the
+    // list, get out of whatever you are in.
+    //
+    // Never while typing. A "/" inside the search box is a slash.
+    const typing = /^(input|textarea|select)$/i.test(
+      (document.activeElement || {}).tagName || '');
+    const sheetOpen = document.getElementById('sheet').dataset.open === '1';
+    if (!typing && !sheetOpen && !e.metaKey && !e.ctrlKey && !e.altKey) {
+      if (e.key >= '1' && e.key <= String(VIEWS.length)) {
+        e.preventDefault();
+        go(VIEWS[Number(e.key) - 1].id);
+        return;
+      }
+      if (e.key === '/') {
+        e.preventDefault();
+        go('listings');
+        // After the hash settles. go() sets location.hash, the hashchange
+        // that follows is a separate task, and it routes again and puts
+        // focus back on <main> - so focusing the box here put the cursor
+        // somewhere that was about to lose it.
+        setTimeout(() => {
+          const box = document.getElementById('q');
+          if (box) { box.focus(); box.select(); }
+        }, 0);
+        return;
+      }
+      if (e.key === '?') { e.preventDefault(); showShortcuts(); return; }
+    }
+    // Escape gets you out of whatever you are in, innermost first.
+    if (e.key === 'Escape') {
+      if (sheetOpen) { closeSheet(); return; }
+      if (typing && document.activeElement.id === 'q' && app.q) {
+        app.q = '';
+        renderListings();
+        return;
+      }
+    }
     if (e.key === 'Tab' && document.getElementById('sheet').dataset.open === '1') {
       const f = document.getElementById('sheet').querySelectorAll(
         'a[href],button,input,select,[tabindex]:not([tabindex="-1"])');
