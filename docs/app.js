@@ -748,6 +748,14 @@ function eventRow(e) {
      <time class="ev__when" datetime="${esc(e.at)}">${when(e.at)}</time>
      <span class="ev__title">${esc(name)}</span>${fig}
      <span class="ev__sub">${sub.join('')}</span>`;
+  // The car, not just its name. This view is a list of things that happened
+  // to cars, and it was a hundred and nine lines of text: "2017 BMW X3 AWD
+  // 4dr xDrive28i" over "2010 BMW X3 30i" over "2019 BMW X3 xDrive30i", none
+  // of which you can tell apart at a glance and all of which the bot has
+  // already downloaded a photograph of. The box has a fixed size whether or
+  // not a picture arrives, so nothing moves when one does.
+  const car = byId(e.listing_id);
+  if (car) b.prepend(shot(car, 'ev__shot'));
   b.addEventListener('click', () => openSheet(e.listing_id));
   li.appendChild(b);
   return li;

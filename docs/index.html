@@ -264,7 +264,7 @@ a{ color:var(--ev-new); text-underline-offset:2px; }
 /* ------------------------------------------------------------------ feed */
 .feed{ list-style:none; margin:0; padding:0; }
 .ev{
-  display:grid; grid-template-columns:auto 1fr auto; gap:0 var(--s3);
+  display:grid; grid-template-columns:auto auto 1fr auto; gap:0 var(--s3);
   align-items:baseline;
   padding:var(--s3) var(--s3) var(--s3) var(--s4);
   border-left:2px solid var(--line);
@@ -282,20 +282,41 @@ a{ color:var(--ev-new); text-underline-offset:2px; }
 .ev[data-kind="relisted"]{ border-left-color:var(--ev-back); }
 .ev[data-kind="priced"]{ border-left-color:var(--ev-priced); }
 
+/* The photograph, spanning both rows at the left. A fixed box, filled or
+   empty: the picture arriving must not move the line under it. */
+.ev__shot{
+  /* position:relative is load-bearing, not decoration: .shot__fallback is
+     absolutely positioned with inset:0, so without a positioned parent it
+     lays itself out against the page. One row with no photo covered the
+     whole feed in a grey rectangle. */
+  position:relative;
+  grid-column:1; grid-row:1/3; align-self:center;
+  width:56px; height:42px; flex:none; overflow:hidden;
+  border-radius:var(--r-sm); background:var(--surface-2);
+}
+.ev__shot img{ width:100%; height:100%; object-fit:cover; display:block; }
+.ev__shot .shot__fallback{
+  width:100%; height:100%; display:flex; align-items:center;
+  justify-content:center; color:var(--text-3);
+}
+/* The words under the glyph do not fit in 56px and are already on the row. */
+.ev__shot .shot__fallback span{ display:none; }
+.ev__shot .shot__fallback svg{ width:20px; height:20px; }
 .ev__when{
-  grid-row:1; font-size:var(--t-micro); color:var(--text-3);
+  grid-column:2; grid-row:1; font-size:var(--t-micro); color:var(--text-3);
   font-variant-numeric:tabular-nums; white-space:nowrap;
 }
 .ev__title{
-  grid-row:1; font-size:var(--t-h2); font-weight:520; color:var(--text);
+  grid-column:3; grid-row:1; font-size:var(--t-h2); font-weight:520;
+  color:var(--text);
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
 }
 .ev__fig{
-  grid-row:1; font-size:var(--t-h2); font-weight:560;
+  grid-column:4; grid-row:1; font-size:var(--t-h2); font-weight:560;
   font-variant-numeric:tabular-nums; white-space:nowrap;
 }
 .ev__sub{
-  grid-column:2/-1; grid-row:2; margin-top:var(--s1);
+  grid-column:3/-1; grid-row:2; margin-top:var(--s1);
   font-size:var(--t-small); color:var(--text-2);
   display:flex; flex-wrap:wrap; gap:0 var(--s2);
 }
@@ -306,12 +327,16 @@ a{ color:var(--ev-new); text-underline-offset:2px; }
 }
 .drop{ color:var(--ev-drop); }
 .rise{ color:var(--ev-rise); }
+/* On a phone the row stacks: the time on its own line above the car, the
+   figure beside the car, the detail underneath. The photograph keeps the
+   left column and spans all three lines. */
 @media (max-width:559px){
-  .ev{ grid-template-columns:1fr auto; }
-  .ev__when{ grid-column:1/-1; grid-row:1; margin-bottom:var(--s1); }
-  .ev__title{ grid-row:2; grid-column:1; }
-  .ev__fig{ grid-row:2; grid-column:2; }
-  .ev__sub{ grid-row:3; grid-column:1/-1; }
+  .ev{ grid-template-columns:auto 1fr auto; }
+  .ev__shot{ grid-column:1; grid-row:1/4; }
+  .ev__when{ grid-column:2/-1; grid-row:1; margin-bottom:var(--s1); }
+  .ev__title{ grid-row:2; grid-column:2; }
+  .ev__fig{ grid-row:2; grid-column:3; }
+  .ev__sub{ grid-row:3; grid-column:2/-1; }
 }
 
 .marker{
@@ -357,7 +382,13 @@ a{ color:var(--ev-new); text-underline-offset:2px; }
   width:100%; height:100%; object-fit:cover; display:block;
   background:var(--surface-2);
 }
-/* A photo that fails is not an empty box. It says what the car is. */
+/* A photo that fails is not an empty box. It says what the car is.
+
+   It is absolutely positioned, so every container that holds one has to be
+   position:relative. A third one that forgets covers the page with a grey
+   rectangle - which is what happened the first time the feed grew a
+   thumbnail. */
+.card__shot, .ev__shot{ position:relative; }
 .shot__fallback{
   position:absolute; inset:0; display:flex; flex-direction:column;
   align-items:center; justify-content:center; gap:var(--s2);

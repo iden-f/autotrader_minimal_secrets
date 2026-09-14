@@ -1160,3 +1160,77 @@ def test_no_stat_tile_is_mostly_empty_because_of_its_neighbour(browser, site, wi
             f"in a {worst['box']}px card ({worst['filled']:.0%} full)")
     finally:
         ctx.close()
+
+
+class TestTheFeedShowsTheCarNotJustItsName:
+    """A hundred and nine lines of "2017 BMW X3 AWD 4dr xDrive28i".
+
+    The Feed is a list of things that happened to cars and it was text only,
+    while the bot had already downloaded a photograph of every one of them.
+    You can tell an M3 from an X3 at a glance from a picture and not from a
+    trim string.
+    """
+
+    @pytest.mark.parametrize("width", WIDTHS)
+    def test_every_row_has_a_photo_box(self, browser, site, width):
+        ctx, page, _ = _page(browser, site, width, "light", view="feed")
+        try:
+            page.wait_for_timeout(400)
+            rows = page.evaluate("() => document.querySelectorAll('.ev').length")
+            shots = page.evaluate(
+                "() => document.querySelectorAll('.ev .ev__shot').length")
+            assert rows, "no feed rows to check"
+            assert shots == rows, f"{rows - shots} rows have no photo box"
+        finally:
+            ctx.close()
+
+    @pytest.mark.parametrize("width", WIDTHS)
+    def test_the_box_is_one_size_whether_or_not_a_picture_arrives(self, browser,
+                                                                  site, width):
+        """Or the line under it moves when one does, which is layout shift."""
+        ctx, page, _ = _page(browser, site, width, "light", view="feed")
+        try:
+            page.wait_for_timeout(600)
+            sizes = page.evaluate(
+                """() => [...document.querySelectorAll('.ev__shot')]
+                    .map(e => { const r = e.getBoundingClientRect();
+                                return Math.round(r.width) + 'x' + Math.round(r.height); })""")
+            assert len(set(sizes)) <= 1, sorted(set(sizes))
+        finally:
+            ctx.close()
+
+    @pytest.mark.parametrize("width", WIDTHS)
+    def test_a_missing_photo_stays_inside_its_own_box(self, browser, site, width):
+        """.shot__fallback is position:absolute with inset:0. Without a
+        positioned parent it lays itself out against the page - one row with
+        no photo covered the entire feed in a grey rectangle."""
+        ctx, page, _ = _page(browser, site, width, "light", view="feed")
+        try:
+            page.wait_for_timeout(600)
+            worst = page.evaluate(
+                """() => Math.max(0, ...[...document.querySelectorAll(
+                    '.ev .shot__fallback')].map(e => e.getBoundingClientRect().width))""")
+            assert worst <= 80, f"a fallback is {worst}px wide at {width}px"
+        finally:
+            ctx.close()
+
+    @pytest.mark.parametrize("width", WIDTHS)
+    def test_the_photo_never_sits_on_top_of_the_name(self, browser, site, width):
+        ctx, page, _ = _page(browser, site, width, "light", view="feed")
+        try:
+            page.wait_for_timeout(600)
+            overlaps = page.evaluate("""() => {
+              const out = [];
+              for (const ev of document.querySelectorAll('.ev')) {
+                const shot = ev.querySelector('.ev__shot');
+                const title = ev.querySelector('.ev__title');
+                if (!shot || !title) continue;
+                const a = shot.getBoundingClientRect(), b = title.getBoundingClientRect();
+                if (b.left < a.right - 1 && b.top < a.bottom && b.bottom > a.top) {
+                  out.push(Math.round(a.right - b.left));
+                }
+              }
+              return out.slice(0, 3); }""")
+            assert not overlaps, f"overlapping by {overlaps}px at {width}px"
+        finally:
+            ctx.close()
