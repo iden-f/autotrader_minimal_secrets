@@ -907,14 +907,20 @@ def cmd_events(args: argparse.Namespace) -> int:
             if any(r.ok for r in results):
                 record["silence_reported"] = quiet["since"]
                 events.save(record)
-    elif state.last_run:
-        print(_ok(f"last successful check {state.last_run.get('at')}"))
+    elif state.last_check:
+        # last_check, not last_run: a firing that stood down is a run and is
+        # not a check, and this line says "check".
+        print(_ok(f"last successful check {state.last_check.get('at')}"))
 
     # Running and being useful are different questions. A watcher served one
     # check in eight is never silent and is still missing most of the market.
     thin = events.thin_coverage(cfg, state, record)
     if thin:
-        print(_bad(f"only {thin['pct']}% of the expected checks happened"))
+        print(_bad(
+            f"only {thin['pct']}% of the expected checks happened"
+            + (f" - {thin['slots_covered']} of {thin['expected']} slots in "
+               f"{_many(round(thin['window_hours']), 'hour')}"
+               if thin.get("window_hours") else "")))
         if args.notify:
             results = notifiers.alert(cfg, thin["subject"], thin["body"],
                                       dict(os.environ))

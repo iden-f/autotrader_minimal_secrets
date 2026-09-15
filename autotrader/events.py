@@ -457,6 +457,13 @@ def thin_coverage(cfg, state, record: dict[str, Any],
     longest = cover.get("longest_gap_minutes") or 0
     return {
         "pct": cover["pct"],
+        # The window the percentage is OF. A bare "25%" printed next to a
+        # dashboard reading 33.3% is two numbers from one bot disagreeing
+        # with no explanation, and the explanation is only ever that they
+        # cover different stretches of time.
+        "window_hours": cover.get("window_hours"),
+        "slots_covered": cover.get("slots_covered"),
+        "expected": cover.get("expected"),
         "at": now.isoformat(timespec="seconds"),
         "subject": f"AutoTrader watcher covered only {cover['pct']}% of yesterday",
         # slots_covered, not successful. cover["pct"] is the share of SLOTS

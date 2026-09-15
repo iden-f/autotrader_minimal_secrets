@@ -207,3 +207,41 @@ class TestTheTableInTheDocumentMatchesTheScript:
         claimed = words[heading.group(1).lower()]
         steps = len(re.findall(r"^### Step \d+ ", doc, re.M))
         assert claimed == steps, f"heading says {claimed}, there are {steps}"
+
+
+class TestTheStubItselfIsRight:
+    """A test double that lies makes every test using it a lie.
+
+    The canned body was written "${FAKE_BODY:-{}}", which POSIX sh parses as
+    the expansion ${FAKE_BODY:-{ followed by a literal }. Every reply came
+    back with one brace too many, and the first place it showed was a
+    hand-run of the script printing `GitHub said: {"message":"..."}}` - which
+    reads as a bug in the thing being handed over.
+    """
+
+    def curl(self, **env):
+        import os
+        import subprocess
+        return subprocess.run(["sh", "tests/fixtures/fake-curl.sh"],
+                              capture_output=True, text=True,
+                              env={**os.environ, **env}).stdout
+
+    def test_the_body_comes_back_exactly_as_given(self):
+        body = '{"message":"Resource not accessible by personal access token"}'
+        assert self.curl(FAKE_BODY=body, FAKE_CODE="403") == f"{body}\n403"
+
+    def test_the_default_body_is_an_empty_object(self):
+        assert self.curl() == "{}\n204"
+
+    def test_the_script_quotes_it_back_unchanged(self):
+        import os
+        import subprocess
+        body = '{"message":"nope"}'
+        out = subprocess.run(
+            ["sh", "scripts/keep-time.sh", "--from", "x"],
+            capture_output=True, text=True,
+            env={**os.environ, "FAKE_BODY": body, "FAKE_CODE": "403",
+                 "KEEP_TIME_CURL": "tests/fixtures/fake-curl.sh",
+                 "GITHUB_TOKEN": "github_pat_fake"})
+        said = out.stdout + out.stderr
+        assert f"GitHub said: {body}" in said, said

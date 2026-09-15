@@ -488,3 +488,52 @@ class TestOneDeliveryRuleNotTwo:
     def test_the_states_are_the_states(self):
         from autotrader.events import DELIVERY_STATES
         assert set(DELIVERY_STATES) == set(self.CASES)
+
+
+class TestAPercentageAlwaysSaysWhatItIsOf:
+    """"only 25.0% of the expected checks happened" beside a dashboard
+    reading 33.3% is two numbers from one bot disagreeing with no
+    explanation, and the explanation is only ever that they cover different
+    stretches of time."""
+
+    def _state(self, tmp_path, n=3, spread_hours=24, name="s.json"):
+        from datetime import timedelta
+        state = State(path=tmp_path / name)
+        now = clock.now()
+        state.data["runs"] = [
+            {"at": (now - timedelta(hours=spread_hours * i / max(1, n))).isoformat(
+                timespec="seconds"), "ok": True, "searches_run": 2,
+             "searches_failed": 0}
+            for i in range(n)]
+        return state
+
+    def cfg(self):
+        return {"health": {"expected_interval_minutes": 120,
+                           "coverage_floor_pct": 50}}
+
+    def test_the_window_comes_back_with_the_percentage(self, tmp_path):
+        said = events.thin_coverage(self.cfg(), self._state(tmp_path), {})
+        assert said
+        for key in ("pct", "window_hours", "slots_covered", "expected"):
+            assert said.get(key) is not None, key
+
+    def test_the_parts_agree_with_the_percentage(self, tmp_path):
+        said = events.thin_coverage(self.cfg(), self._state(tmp_path), {})
+        assert said
+        assert said["pct"] == round(
+            said["slots_covered"] / said["expected"] * 100, 1)
+
+    def test_the_command_prints_the_window(self, tmp_path, monkeypatch, capsys):
+        from autotrader.cli import main
+        from autotrader.config import Config
+        monkeypatch.chdir(tmp_path)
+        cfg = Config.defaults(tmp_path / "config.json")
+        cfg.add_search("https://www.autotrader.ca/cars/bmw/m5/?rcp=25", "M5")
+        cfg.set("health.coverage_floor_pct", 50)
+        cfg.save()
+        # state.json, which is the file the command reads.
+        self._state(tmp_path, name="state.json").save()
+        main(["events"])
+        out = capsys.readouterr().out
+        assert "% of the expected checks happened" in out, out
+        assert "slots in" in out, out

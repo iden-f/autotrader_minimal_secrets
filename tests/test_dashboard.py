@@ -291,3 +291,38 @@ class TestAFiringThatStoodDownIsNotACheck:
         assert "d.last_check || d.last_run" not in app, (
             "the fallback belongs inside lastCheck, where it can work the "
             "answer out from the runs rather than taking the firing")
+
+
+class TestADeduplicatedFiringDoesNotBlankTheWarnings:
+    """Shape drift, the request budget and the diagnostics are all products
+    of a run that READ the site. A firing that stood down has none of them,
+    so taking them off the last run hid a live warning until the next check.
+    """
+
+    def payload(self, tmp_path, runs):
+        from autotrader.config import Config
+        from autotrader.dashboard import build_payload
+        from autotrader.state import State
+        cfg = Config.defaults(tmp_path / "config.json")
+        cfg.add_search("https://www.autotrader.ca/cars/bmw/m5/?rcp=25", "M5")
+        cfg.save()
+        state = State(path=tmp_path / "state.json")
+        state.data["runs"] = runs
+        return build_payload(cfg, state, {})
+
+    def test_the_drift_warning_survives_a_firing_that_stood_down(self, tmp_path,
+                                                                 monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        payload = self.payload(tmp_path, [
+            {"at": "2026-09-14T19:34:00+00:00", "ok": True, "skipped": True,
+             "searches_run": 0, "requests_made": 0, "shape_drift": [],
+             "diagnostics": []},
+            {"at": "2026-09-14T17:19:00+00:00", "ok": True, "searches_run": 2,
+             "searches_failed": 0, "requests_made": 32,
+             "shape_drift": ["jsonld stopped matching"],
+             "diagnostics": ["diagnostics/shape.json"]},
+        ])
+        health = payload["health"]
+        assert health["drift"] == ["jsonld stopped matching"]
+        assert health["budget"]["used"] == 32
+        assert health["diagnostics"] == ["diagnostics/shape.json"]

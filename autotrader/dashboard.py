@@ -250,7 +250,12 @@ def build_payload(cfg: Config, state: State, env: dict[str, str] | None = None
             "markers": shape.get("markers") or {},
         }
 
-    last = state.last_run or {}
+    # The last CHECK, because every field taken off it below is a product of
+    # a run that read the site: the shape drift it noticed, the requests it
+    # spent, the diagnostics it wrote. A firing that stood down has none of
+    # them, so reading it blanked a live shape-drift warning off the page
+    # and showed "0 of 250" requests until the next check.
+    last = state.last_check or state.last_run or {}
     ok_streak = 0
     for run in runs:
         if not run.get("ok"):
