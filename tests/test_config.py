@@ -104,3 +104,40 @@ def test_junk_entries_are_ignored_rather_than_crashing(tmp_path):
         "not an object", {"no_url": True},
         {"url": "https://www.autotrader.ca/cars/bmw/m5/?a=1"}]}))
     assert len(Config.load(path).searches) == 1
+
+
+class TestTheDefaultsAgreeWithEachOther:
+    """A setting can be sensible on its own and wrong beside another.
+
+    silent_after_hours shipped as 3 against a 120-minute schedule - one and a
+    half windows. GitHub drops windows in pairs, so a fresh install would have
+    alarmed most days for a schedule working exactly as measured, and an alarm
+    that cries wolf is an alarm that gets muted.
+    """
+
+    def health(self):
+        from autotrader.config import DEFAULTS
+        return DEFAULTS["health"]
+
+    def test_the_silence_alarm_allows_at_least_three_missed_windows(self):
+        h = self.health()
+        windows = h["silent_after_hours"] * 60 / h["expected_interval_minutes"]
+        assert windows >= 2.5, (
+            f"the alarm fires after {windows:.1f} missed windows; GitHub drops "
+            f"them in pairs, so anything under three is a weekly false alarm")
+
+    def test_the_dedupe_floor_is_shorter_than_the_interval(self):
+        """Or an early firing - GitHub fires early as readily as late - is
+        discarded and the check waits for the next window."""
+        h = self.health()
+        assert h["min_interval_minutes"] < h["expected_interval_minutes"]
+
+    def test_the_removal_grace_is_the_dedupe_floor(self):
+        """Single-sourced: a car cannot be called gone faster than two real
+        checks could establish it. state.mark_missing reads this number."""
+        import inspect
+
+        from autotrader import runner
+        source = inspect.getsource(runner.run)
+        assert 'health.min_interval_minutes' in source, \
+            "the removal grace must read the deduplication floor, not its own"

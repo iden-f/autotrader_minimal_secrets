@@ -180,10 +180,13 @@ Force one now: **Check AutoTrader** → **Run workflow** → **Run workflow**.
 A green tick means it worked. Open the run and read the log — it prints how
 many listings it found and which channels it notified.
 
-> **Why every 30 minutes and not 15?** GitHub queues `schedule` jobs on a
-> best-effort basis. The old `*/15` never actually ran every 15 minutes — the
-> real gaps in your history were 25 to 50 minutes. Asking for less waste gets
-> you the same coverage. Change the `cron:` line in `watch.yml` if you disagree.
+> **Why every two hours, and why two offsets?** GitHub queues `schedule` jobs
+> on a best-effort basis and drops whole windows rather than individual
+> firings. Measured over a full day here, it served 5 of 12 windows — and
+> every window it served, it served twice, because the `11` and `41` offsets
+> arrive as a pair or not at all. Asking more often does not fix that; a timer
+> on a different cadence does, which is [KEEPING-TIME.md](KEEPING-TIME.md).
+> Change the `cron:` line in `watch.yml` if you disagree.
 
 ### If it goes quiet again
 

@@ -353,3 +353,80 @@ class TestTheRunbookListsEveryMessageTheBotCanSend:
     def test_it_says_that_is_all_of_them(self):
         """Otherwise the reader cannot tell a real alert from a fake one."""
         assert "and that is all of them" in self.runbook()
+
+
+class TestTheDocumentsQuoteTheSettingsTheBotShips:
+    """The README described a thirty-minute schedule and a three-hour silence
+    alarm for a bot that had been on two hours and six for weeks. Every number
+    in it was true when it was written.
+    """
+
+    def docs(self):
+        from pathlib import Path
+        return {name: Path(name).read_text(encoding="utf-8")
+                for name in ("README.md", "RUNBOOK.md", "MAINTENANCE.md",
+                             "SETUP.md", "KEEPING-TIME.md")}
+
+    def defaults(self):
+        from autotrader.config import DEFAULTS
+        return DEFAULTS["health"]
+
+    def test_no_document_names_a_different_check_interval(self):
+        import re
+        every = int(self.defaults()["expected_interval_minutes"])
+        bad = []
+        for name, text in self.docs().items():
+            for match in re.finditer(
+                    r"(?:every|asking for one (?:run|check) every|one check every)"
+                    r"\s+(?:\*\*)?(\d+|thirty|sixty|two|three)\s*"
+                    r"(minutes?|hours?)", text, re.I):
+                # "every two hours, not every thirty minutes" is a contrast,
+                # not a claim. The half after "not" is the thing being
+                # corrected and is supposed to disagree with the setting.
+                before = " ".join(
+                    text[max(0, match.start() - 16):match.start()].lower().split())
+                if before.endswith("not") or before.endswith("rather than"):
+                    continue
+                n, unit = match.group(1).lower(), match.group(2).lower()
+                n = {"thirty": 30, "sixty": 60, "two": 2, "three": 3}.get(n, n)
+                minutes = int(n) * (60 if unit.startswith("hour") else 1)
+                if minutes != every:
+                    bad.append(f"{name}: '{match.group(0)}' (ships {every} min)")
+        assert not bad, "; ".join(bad)
+
+    def test_no_document_names_a_different_silence_threshold(self):
+        import re
+        hours = float(self.defaults()["silent_after_hours"])
+        bad = []
+        for name, text in self.docs().items():
+            for match in re.finditer(
+                    r"no check has succeeded for\s+(\w+)\s+hours", text, re.I):
+                word = match.group(1).lower()
+                got = {"two": 2, "three": 3, "four": 4, "five": 5, "six": 6,
+                       "seven": 7, "eight": 8}.get(word)
+                if got is None:
+                    try:
+                        got = float(word)
+                    except ValueError:
+                        continue
+                if got != hours:
+                    bad.append(f"{name}: '{match.group(0)}' (ships {hours:g}h)")
+        assert not bad, "; ".join(bad)
+
+    def test_the_failure_threshold_is_the_one_the_code_uses(self):
+        import re
+        after = int(self.defaults()["alert_after_failures"])
+        bad = []
+        for name, text in self.docs().items():
+            for match in re.finditer(
+                    r"after\s+(\w+)\s+failed\s+(?:runs|checks)", text, re.I):
+                word = match.group(1).lower()
+                got = {"two": 2, "three": 3, "four": 4}.get(word)
+                if got is None:
+                    try:
+                        got = int(word)
+                    except ValueError:
+                        continue
+                if got != after:
+                    bad.append(f"{name}: '{match.group(0)}' (ships {after})")
+        assert not bad, "; ".join(bad)

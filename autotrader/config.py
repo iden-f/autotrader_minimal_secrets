@@ -209,7 +209,18 @@ DEFAULTS: dict[str, Any] = {
         "min_interval_minutes": 90,
         # No successful check for this long and the bot is not watching
         # anything, whatever the reason.
-        "silent_after_hours": 3,
+        #
+        # THREE WINDOWS, not a round number. This was 3 hours against a
+        # 120-minute schedule, which is one and a half windows - and GitHub
+        # drops windows in pairs, so a fresh install would have alarmed on
+        # most days for something that was working exactly as measured. An
+        # alarm that cries wolf is an alarm that gets muted, and then the
+        # real silence is the one nobody hears.
+        #
+        # tests/test_config.py holds this to at least 2.5 intervals, so
+        # lengthening the schedule without lengthening this cannot happen
+        # quietly.
+        "silent_after_hours": 6,
     },
     "dashboard": {"enabled": True, "max_listings": 500},
 }

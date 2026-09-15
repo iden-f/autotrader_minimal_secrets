@@ -112,14 +112,17 @@ Run your search on autotrader.ca, copy the address bar, then pick one:
 Actions → *I understand my workflows, go ahead and enable them*. To run it
 right away: Actions → **Check AutoTrader** → *Run workflow*.
 
-It asks to check every 30 minutes. **It will not get every one.** GitHub drops
-scheduled runs under load, and measured here it serves roughly one slot in
-seven, with gaps of a few hours being normal. The Status tab shows exactly
-which half-hours were covered and which were not, because that gap is what
-decides whether a car can be listed and sold without you hearing about it.
-Three staggered pacemaker workflows exist to get more independent chances at
-a runner; [ARCHITECTURE.md](ARCHITECTURE.md) explains how, and why none of
-them re-triggers itself.
+It asks to check every two hours. **It will not get every one.** Counted over
+a full day from GitHub's own run list, scheduled runs filled 5 of the 12
+windows — 41.7% — and seven windows got nothing at all. The Status tab shows
+exactly which two-hour windows were covered and which were not, because that
+gap is what decides whether a car can be listed and sold without you hearing
+about it.
+
+The fix is a timer that does not drop windows, and it is one paste:
+[KEEPING-TIME.md](KEEPING-TIME.md). The bot already accepts
+`repository_dispatch` and already deduplicates it, so an outside timer running
+beside GitHub's own cron costs nothing when both arrive.
 
 > **If it goes quiet for months, check the Actions tab.** GitHub disables
 > scheduled workflows on a repository with no activity for 60 days, and a
@@ -366,19 +369,38 @@ a distance the bot applies itself appears nowhere in the link.
 
 ## When the schedule lets you down
 
-GitHub fires cron late, early, twice, or not at all. Measured here: a gap of
-4 hours 46 minutes on a schedule asking for one run every thirty, and, the same
-evening, two runs five minutes apart.
+**It asks GitHub for a check every two hours and gets about two in five.**
+Counted from GitHub's own run list over the whole of 14 September UTC, taking
+only scheduled runs: **5 of 12 two-hour windows, 41.7%**, with seven windows
+getting nothing at all and six consecutive hours — 06:00 to 12:00 — with no
+scheduled firing whatever. An independent 10.5-hour measurement the night
+before said 40%. This is not a fault in the code and there is nothing in it
+to fix.
 
-- A **second scheduled run** minutes after a successful one stands down without
-  spending a request. Only a schedule is deduplicated — a run you asked for
-  always happens, and `--force` overrides it either way.
-- A **missed window** is measured and said out loud: "the last successful check
-  was 4.8 hours ago, not 30 minutes; the schedule dropped 9 runs."
+[KEEPING-TIME.md](KEEPING-TIME.md) is the five-minute fix: an external timer
+posting `repository_dispatch`, which the bot already accepts and already
+deduplicates. It needs a token and a cron entry and no code change.
+
+Until then, and afterwards too, the bot is built to survive it:
+
+- A **second scheduled run** soon after a successful one stands down without
+  spending a request, and is still written down — it proves its timer is alive.
+  Only a schedule is deduplicated: a run you asked for always happens, and
+  `--force` overrides it either way.
+- **Every countdown is in minutes, not runs.** A car is gone when two
+  consecutive checks have missed it *and* 90 minutes have passed since it was
+  last seen; a search is broken after three failed checks *or* six hours
+  unreadable, whichever comes first. Both halves matter, because two checks
+  can be four hours apart or three minutes apart and neither spacing is rare.
+- A **missed window** is measured and said out loud, with the elapsed time
+  rather than a count: "the last successful check was 7.8 hours ago".
 - **Silence is watched by something else.** A watcher cannot report its own
   absence — the run that would tell you is the run that is not happening — so a
   separate hourly job reads the state file and raises the alarm when no check
-  has succeeded for three hours. Once per silence, not once an hour.
+  has succeeded for six hours. Once per silence, not once an hour. And it says
+  *which* silence: a schedule serving 40% of its windows is a normal-looking
+  day, and sending you to the Actions tab to find nothing wrong is how a
+  channel gets muted.
 
 ## The first time each thing really happens
 

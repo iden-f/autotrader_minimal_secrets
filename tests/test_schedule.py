@@ -160,22 +160,35 @@ class TestNoticingItsOwnSilence:
         return events.update(bench.state(), bench.path / "EVENTS.md",
                              bench.path / "events.json")
 
+    @staticmethod
+    def past_the_threshold(bench):
+        """An hour past whatever the bot is configured to call silence.
+
+        Written as "5 hours" until the default moved from 3 to 6, at which
+        point three tests asserted an alarm the bot had been correctly
+        reconfigured not to raise. The threshold is a setting; the test asks
+        the setting.
+        """
+        hours = float(bench.cfg.get("health.silent_after_hours"))
+        age_last_run(bench, hours=hours + 1)
+        return hours + 1
+
     def test_a_healthy_bot_raises_nothing(self, bench):
         bench.run()
         assert events.silence(bench.cfg, bench.state(), self._record(bench)) is None
 
     def test_a_long_silence_is_reported(self, bench):
         bench.run()
-        age_last_run(bench, hours=5)
+        waited = self.past_the_threshold(bench)
 
         alarm = events.silence(bench.cfg, bench.state(), self._record(bench))
-        assert alarm and alarm["hours"] == pytest.approx(5, abs=0.1)
+        assert alarm and alarm["hours"] == pytest.approx(waited, abs=0.1)
         assert "gone quiet" in alarm["subject"]
         assert "Nothing is being watched" in alarm["body"]
 
     def test_it_is_said_once_per_silence_not_once_an_hour(self, bench):
         bench.run()
-        age_last_run(bench, hours=5)
+        self.past_the_threshold(bench)
         record = self._record(bench)
         alarm = events.silence(bench.cfg, bench.state(), record)
 
@@ -194,7 +207,7 @@ class TestNoticingItsOwnSilence:
 
     def test_a_fresh_success_ends_the_silence(self, bench):
         bench.run()
-        age_last_run(bench, hours=5)
+        self.past_the_threshold(bench)
         record = self._record(bench)
         record["silence_reported"] = events.silence(
             bench.cfg, bench.state(), record)["since"]
