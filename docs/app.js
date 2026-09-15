@@ -435,7 +435,12 @@ function trustState() {
       text: `Checked ${when(run.at)}`,
       alarm: {
         level: 'warn',
-        text: `No check has landed for ${Math.round(ageMin / 60)} hours, against one expected every ${expected} minutes. Cars may have come and gone since.`,
+        // every(), like everywhere else. This line said "one expected every
+        // 120 minutes" beside a page that elsewhere says "about every 2
+        // hours" - one interval, two units, in the alarm nobody reads twice.
+        text: `No check has landed for ${hours(ageMin / 60)}, against one `
+            + `expected every ${every(expected)}. Cars may have come and gone `
+            + `since.`,
         // slots_covered, not successful: the percentage beside it is the
         // share of half-hour slots that had a check, and pairing it with the
         // number of runs printed "79.2% - 51 of 48 expected checks" on a page
@@ -1910,8 +1915,8 @@ function renderStatus() {
     ends.innerHTML = `<span>${when(cov.since)}</span><span>now</span>`;
     sec.appendChild(ends);
     sec.appendChild(el('p', 'note',
-      `Each mark is ${cov.expected_interval_minutes || 30} minutes. `
-      + `Longest gap ${Math.round((cov.longest_gap_minutes || 0) / 6) / 10} hours.`));
+      `Each mark is ${every(cov.expected_interval_minutes || 30)}. `
+      + `Longest gap ${hours((cov.longest_gap_minutes || 0) / 60)}.`));
     host.appendChild(sec);
   }
 

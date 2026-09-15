@@ -494,3 +494,27 @@ class TestACountAgreesWithItsVerb:
         line = re.search(r"problems == 1 else", source)
         assert line, "the doctor's summary no longer agrees its verb by hand"
         assert "'needs' if problems == 1 else 'need'" in source
+
+
+class TestOneUnitPerInterval:
+    """The page said "one expected every 120 minutes" in the stale alarm and
+    "re-read about every 2 hours" in the welcome box. One interval, two
+    units, four hundred pixels apart."""
+
+    def code(self):
+        return Path("docs/app.js").read_text(encoding="utf-8")
+
+    def test_no_interval_is_printed_as_raw_minutes(self):
+        import re
+        bad = [line.strip() for line in self.code().splitlines()
+               if re.search(r"\$\{(?:expected|cov\.expected_interval_minutes)"
+                            r"[^}]*\}\s*minutes", line)]
+        assert not bad, ("an interval printed in raw minutes rather than "
+                         "through every(): " + "; ".join(bad))
+
+    def test_no_duration_is_printed_as_raw_hours(self):
+        import re
+        bad = [line.strip() for line in self.code().splitlines()
+               if re.search(r"Math\.round\([^)]*/\s*60\)\}\s*hours", line)]
+        assert not bad, ("a duration printed by hand rather than through "
+                         "hours(): " + "; ".join(bad))
