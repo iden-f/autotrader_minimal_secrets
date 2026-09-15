@@ -398,7 +398,7 @@ Until then, and afterwards too, the bot is built to survive it:
   absence — the run that would tell you is the run that is not happening — so a
   separate hourly job reads the state file and raises the alarm when no check
   has succeeded for six hours. Once per silence, not once an hour. And it says
-  *which* silence: a schedule serving 40% of its windows is a normal-looking
+  *which* silence: a schedule serving two windows in five is a normal-looking
   day, and sending you to the Actions tab to find nothing wrong is how a
   channel gets muted.
 

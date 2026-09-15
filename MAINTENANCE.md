@@ -5,8 +5,10 @@ decay on their own, roughly when each one is due, and how you will find out —
 because for half of them the bot tells you, and for the other half it cannot.
 
 If you read only one line: **the two that will actually bite you are the
-personal access token expiring and AutoTrader changing its pages.** Both are
-covered below and both announce themselves.
+personal access token expiring and AutoTrader changing its pages.** The
+second one announces itself. The first one does not — it is the only failure
+here that can be completely silent, and it is also the only one with a date
+you can write down in advance. Write it down.
 
 ---
 
@@ -97,8 +99,8 @@ Authorization header. KEEPING-TIME.md has the exact steps and
 `scripts/keep-time.sh` will tell you in plain words if the new one is wrong.
 
 The cheap insurance: leave GitHub's own `schedule:` in `watch.yml` enabled
-alongside the external timer. It serves 40% of its windows, which is poor as
-a primary and excellent as a thing that notices the primary has died.
+alongside the external timer. It serves 41.7% of its windows, which is poor
+as a primary and excellent as a thing that notices the primary has died.
 
 ### The external timer's account lapses — years, or never
 

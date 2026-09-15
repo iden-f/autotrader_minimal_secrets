@@ -172,3 +172,39 @@ class TestTheSuiteNeverReachesTheSite:
             client.close()
         finally:
             server.close()
+
+
+class TestTheWorkerStampMatchesWhatItCaches:
+    """The BUILD line is the whole update mechanism for an installed app: a
+    browser installs a new worker when the bytes of sw.js change, and a new
+    worker re-fetches everything it caches.
+
+    It is derived on every publish, so nobody has to remember to bump it -
+    but a commit that changes app.js or index.html without publishing leaves
+    the worker pointing at a build that no longer exists. The first deploy
+    after such a commit serves a page an installed app will not pick up,
+    until the next check republishes and restamps.
+    """
+
+    def test_the_committed_worker_is_stamped_for_the_committed_page(self):
+        import re
+        from pathlib import Path
+
+        from autotrader.dashboard import _BUILD_LINE, SW_WATCHES
+        import hashlib
+
+        docs = Path("docs")
+        source = (docs / "sw.js").read_text(encoding="utf-8")
+        digest = hashlib.sha256()
+        for name in SW_WATCHES:
+            digest.update((docs / name).read_bytes())
+        digest.update(_BUILD_LINE.sub("", source).encode("utf-8"))
+        want = digest.hexdigest()[:12]
+
+        have = re.search(r"^const BUILD = '([^']*)';$", source, re.M)
+        assert have, "sw.js has no BUILD line"
+        assert have.group(1) == want, (
+            f"docs/sw.js is stamped {have.group(1)} for a page that now "
+            f"hashes to {want}. Run `python -m autotrader dashboard` and "
+            f"commit the restamped worker, or an installed app keeps serving "
+            f"the page it already had.")
