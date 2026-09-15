@@ -253,16 +253,29 @@ Twelve checks a day, one job each, on `cron: '11 */2 * * *'` **and
 `'41 */2 * * *'`** - two offsets inside one two-hour window, not two windows.
 That is the whole schedule. Everything below is why it is not more.
 
-**Why two offsets.** Measured on 13 September: GitHub served *zero* of the
-first two two-hourly slots after this schedule went live, and the last
-scheduled firing before that was ten hours earlier. The checks in between came
-from pushes and hand dispatches - from somebody working on the repository,
-which is not a schedule. The second offset is 30 minutes after the first, well
-inside the 90-minute deduplication floor in `health.min_interval_minutes`: if
-the first firing is served, the second finds a check half an hour old and
-exits without touching the site, costing a job-minute and no requests. If the
-first is dropped, the second *is* the check. Twenty-four job-minutes a day at
-the very worst.
+**Why two offsets, and why they help less than they look like they should.**
+The second offset is 30 minutes after the first, well inside the 90-minute
+deduplication floor in `health.min_interval_minutes`: if the first firing is
+served, the second finds a check half an hour old and exits without touching
+the site, costing a job-minute and no requests. Twenty-four job-minutes a day
+at the very worst.
+
+That was the argument, and a full day of data says the insurance is thinner
+than it sounds. Over the whole of 14 September UTC, counting only
+`event: schedule`, GitHub delivered 9 of the 24 firings asked for - and they
+fell into just 5 of the 12 windows:
+
+```
+window   00  02  04  06  08  10  12  14  16  18  20  22
+firings   2   0   2   0   0   0   1   0   0   2   0   2
+```
+
+**Every window that fired at all fired twice.** GitHub drops whole windows,
+not individual firings, so `11` and `41` are not two independent chances at a
+window - they arrive as a pair or not at all. The second offset costs almost
+nothing and buys almost nothing, and a third would buy less. What fixes this
+is a timer on a different cadence, which is what KEEPING-TIME.md sets up and
+what `repository_dispatch` in `watch.yml` exists to accept.
 
 The interval is unchanged at 120 minutes, and `config.json` still says so,
 because that is still what this asks for - two offsets are insurance against a
@@ -271,7 +284,8 @@ offset stays inside the floor, so a third one cannot quietly become a second
 scrape.
 
 **What GitHub charges.** Every *job* is rounded up to a whole minute. A check
-takes about 35 seconds, so it costs one minute; a check plus a separate
+averages 26 seconds over the last day and has run as long as 59, so it costs
+one minute either way; a check plus a separate
 publishing job costs two. That one fact decides the shape of this - the lever
 is the number of jobs, not the number of seconds - which is why publishing is
 now a step inside the check rather than the second job it used to be, and why
@@ -341,13 +355,20 @@ the value of the public-repository exemption - deliberately, so the guard
 trips early on a public repo and on time on a private one. Deleting the file
 resumes, and a new month clears it by itself.
 
-**What the schedule buys, honestly.** GitHub drops scheduled runs; measured
-here, roughly one slot in seven on a bad day. Asking for twelve and being
-served eight or nine means a real interval of two to four hours, and a car
-listed and sold inside one of those gaps is missed. That is the trade, and it
-is now a decision instead of an accident. Three levers cost no scheduled job
-at all: `repository_dispatch` from anything that can make one authenticated
-POST (see RUNBOOK.md), a push to `config.json`, and the Run workflow button.
+**What the schedule buys, honestly.** GitHub drops scheduled runs. Measured
+over a full day - 14 September UTC, counting only `event: schedule` - it
+served **5 of the 12 windows asked for, 41.7%**, with a six-hour stretch that
+got nothing at all. That is a real interval of four hours or worse, and a car
+listed and taken down inside one of those gaps is never seen. The bot's
+rules are written around it: every countdown is in elapsed minutes rather
+than in runs, because two checks can be four hours apart or three minutes
+apart and neither spacing is rare.
+
+That is the trade, and it is now a decision instead of an accident. Three
+levers cost no scheduled job at all: `repository_dispatch` from anything that
+can make one authenticated POST (KEEPING-TIME.md sets one up in about five
+minutes and is the only thing here that moves the number much), a push to
+`config.json`, and the Run workflow button.
 
 A fourth was described here for days and never existed:
 `poke-the-watcher.yml` in `iden-f/autotrader_notifier`, firing

@@ -153,8 +153,13 @@ a narrow search. The warning says which.
 
 ## The schedule is thin
 
-**How you know**: Status says something like "35% - 17 of 48 half-hours had a
-check", and "When it checked" is mostly grey.
+**How you know**: Status says something like "33.3% - 4 of 12 2-hour slots had
+a check", and "When it checked" is mostly grey.
+
+**This is the normal state of the bot and not a fault.** Measured over the
+whole of 14 September UTC from GitHub's own run list, counting only scheduled
+runs: 5 of 12 windows, 41.7%, with six consecutive hours that got nothing.
+GitHub drops whole windows rather than individual firings.
 
 **Read the interval first.** The bot asks for a check every **two hours**, not
 every thirty minutes, and it says so on the Status tab. Twelve checks a day is
@@ -165,14 +170,20 @@ It matters because a car can be listed and sold inside a gap.
 
 **Levers, in order of how much they help:**
 
-1. Ask for a check directly. It costs the same as a scheduled one and never
-   gets dropped:
+1. **Put an outside timer on it.** [KEEPING-TIME.md](KEEPING-TIME.md) is four
+   steps and about five minutes: a token, a script that tells you in plain
+   words whether the token works, a free hosted cron, and how to confirm on
+   the Status tab that it is the thing keeping time. This is the lever that
+   actually moves the number, because it removes GitHub's scheduler from the
+   path without moving the work off free runners.
+
+   To ask for one check by hand, from a clone:
    ```bash
-   curl -X POST -H "Authorization: Bearer $TOKEN" \
-     https://api.github.com/repos/iden-f/autotrader_minimal_secrets/dispatches \
-     -d '{"event_type":"check"}'
+   GITHUB_TOKEN=github_pat_... sh scripts/keep-time.sh --from my-mac
    ```
-   A phone shortcut pointed at that is the most reliable clock this bot has.
+   It prints what GitHub actually replied and what to do about it. A phone
+   shortcut pointed at the same endpoint is the most reliable clock this bot
+   has.
 2. Push to the repository occasionally. GitHub deprioritises schedules in quiet
    repositories and eventually disables them outright - the sibling repository
    `autotrader_notifier` is `disabled_inactivity` right now for exactly that.
