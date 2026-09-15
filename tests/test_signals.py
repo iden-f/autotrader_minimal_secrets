@@ -226,7 +226,6 @@ class TestTheFeedShowsTheNewKinds:
         """A kind with no entry in KIND renders as a blank chip."""
         import re
         from pathlib import Path
-        from autotrader import insight
         js = Path("docs/app.js").read_text()
         block = re.search(r"const KIND = \{(.*?)\n\};", js, re.S).group(1)
         known = set(re.findall(r"^\s*(\w+):", block, re.M))

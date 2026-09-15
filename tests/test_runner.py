@@ -1,16 +1,15 @@
 """End-to-end behaviour, including the failure modes that killed version 1."""
 import json
 
-import pytest
 
 from autotrader import notifiers, runner as runner_mod
 from autotrader.config import Config
-from autotrader.http import BlockedError, FetchError, Response
-from autotrader.notifiers import Notifier, Result
+from autotrader.http import BlockedError, FetchError
+from autotrader.notifiers import Notifier
 from autotrader.runner import run
 from autotrader.state import Change, State
 
-from .helpers import Capture, FakeFetcher, next_check
+from .helpers import FakeFetcher, next_check
 
 SEARCH = "https://www.autotrader.ca/cars/bmw/m5/?rcp=15&srt=35&prx=-2&loc=M5V"
 

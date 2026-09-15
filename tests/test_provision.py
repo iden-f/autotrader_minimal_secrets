@@ -2,9 +2,7 @@
 import json
 import re
 
-import argparse
 
-import pytest
 
 from autotrader.config import Config
 from autotrader.provision import (adopt_legacy_search, bootstrap, ensure_notifications,

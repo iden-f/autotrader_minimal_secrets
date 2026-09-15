@@ -25,7 +25,7 @@ from autotrader import notifiers, runner as runner_mod
 from autotrader.config import Config, ConfigError
 from autotrader.http import FetchError, Response
 from autotrader.runner import _still_listed, run
-from autotrader.state import Change, State
+from autotrader.state import State
 
 from .helpers import Capture, FakeFetcher, next_check, use_channels
 
@@ -233,7 +233,7 @@ class TestADeadChannel:
         self._channels(monkeypatch, dead, good)
 
         for cycle in range(4):
-            report = chaos.run(cheaper(chaos.html, 2000 * cycle))
+            chaos.run(cheaper(chaos.html, 2000 * cycle))
 
         assert chaos.state()["channels"]["dead"]["disabled_at"]
         assert good.digests, "the working channel stopped getting alerts too"

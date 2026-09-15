@@ -3,7 +3,7 @@ import json
 
 import pytest
 
-from autotrader import notifiers, runner as runner_mod
+from autotrader import runner as runner_mod
 from autotrader.config import Config
 from autotrader.notifiers import Notifier, Result, is_permanent_failure
 from autotrader.state import State

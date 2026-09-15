@@ -313,7 +313,7 @@ class TestSilenceAndFailureAreDifferentFaults:
         return state
 
     def _ago(self, hours):
-        from datetime import datetime, timedelta, timezone
+        from datetime import timedelta
         return (clock.now()
                 - timedelta(hours=hours)).isoformat(timespec="seconds")
 
@@ -356,7 +356,7 @@ class TestRunningIsNotTheSameAsWatching:
                            "coverage_floor_pct": floor}}
 
     def _runs(self, state, n, spread_hours=24):
-        from datetime import datetime, timedelta, timezone
+        from datetime import timedelta
         now = clock.now()
         state.data["runs"] = [
             {"at": (now - timedelta(hours=spread_hours * i / max(1, n))).isoformat(

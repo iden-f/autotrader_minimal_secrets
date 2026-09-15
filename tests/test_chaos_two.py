@@ -21,7 +21,6 @@ from __future__ import annotations
 
 import json
 import os
-import re
 import time
 from datetime import datetime, timedelta, timezone
 
@@ -30,7 +29,6 @@ import pytest
 from autotrader import clock
 from autotrader import lock as lock_mod, notifiers, runner as runner_mod, thumbs
 from autotrader.config import Config
-from autotrader.http import FetchError, Response
 from autotrader.runner import run
 from autotrader.state import State
 

@@ -22,14 +22,10 @@ the claim says out loud what it cannot see.
 """
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
-import pytest
 
 from autotrader import budget, clock, insight
-from autotrader.config import Config
-from autotrader.state import State
 
 
 class TestTheCostLedgerSaysItIsAFloor:

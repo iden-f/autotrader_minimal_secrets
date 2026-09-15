@@ -10,7 +10,7 @@ import re
 
 import pytest
 
-from autotrader import notifiers, runner as runner_mod
+from autotrader import runner as runner_mod
 from autotrader.config import Config
 from autotrader.http import FetchError, Response
 from autotrader.parser import parse_search_page

@@ -17,7 +17,6 @@ The timeline below is the real one, rounded to the minute.
 
 from __future__ import annotations
 
-import json
 
 import pytest
 

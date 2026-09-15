@@ -12,14 +12,12 @@ import pytest
 from autotrader import notifiers, runner as runner_mod
 from autotrader.archive import archive_listing
 from autotrader.config import Config
-from autotrader.http import BlockedError, BudgetExhausted, Fetcher, Response
 from autotrader.lock import AlreadyRunning, run_lock
 from autotrader.listing import Listing
 from autotrader.notifiers import Notifier, Result, in_quiet_hours
-from autotrader.runner import run
 from autotrader.state import Change, State
 
-from .helpers import Capture, FakeFetcher, a_check_later
+from .helpers import a_check_later
 
 SEARCH = "https://www.autotrader.ca/cars/bmw/m5/?rcp=15&srt=35&prx=-2&loc=M5V"
 
@@ -73,8 +71,6 @@ class TestCorruptState:
 
 class TestDiskProblems:
     def test_a_full_disk_during_archiving_does_not_kill_the_run(self, tmp_path, monkeypatch):
-        real_write = os.write
-
         def no_space(*args, **kwargs):
             raise OSError(errno.ENOSPC, "No space left on device")
 

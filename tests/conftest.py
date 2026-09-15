@@ -45,10 +45,8 @@ def archive_ids():
 
 import pytest as _pytest  # noqa: E402
 
-from autotrader import notifiers, runner as runner_mod  # noqa: E402
+from autotrader import runner as runner_mod  # noqa: E402
 from autotrader.config import Config  # noqa: E402
-from autotrader.http import Response  # noqa: E402
-from autotrader.notifiers import Notifier, Result  # noqa: E402
 from autotrader.runner import run  # noqa: E402
 from autotrader.state import State  # noqa: E402
 

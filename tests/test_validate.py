@@ -1,5 +1,4 @@
 """The first real run has to judge its own output - nobody else can."""
-import pytest
 
 from autotrader.listing import Listing
 from autotrader.parser import parse_search_page

@@ -285,8 +285,7 @@ class TestTheCoverageAlertCountsSlots:
     """
 
     def test_the_fraction_matches_the_percentage(self, tmp_path, monkeypatch):
-        import json
-        from datetime import datetime, timedelta, timezone
+        from datetime import timedelta
         from autotrader import events
         from autotrader.config import Config
         from autotrader.state import State

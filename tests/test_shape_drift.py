@@ -1,13 +1,9 @@
 """Early warning that the site has changed shape, before the bot goes dark."""
 import json
 
-import pytest
 
-from autotrader import runner as runner_mod
 from autotrader.shape import compare, describe, fingerprint
-from autotrader.state import State
 
-from .helpers import use_channels
 
 
 def shot(html="<html></html>", strategy="jsonld", scores=None, count=10):
@@ -54,7 +50,6 @@ class TestComparison:
         assert not serious
 
     def test_a_vanished_structural_marker_is_serious(self):
-        before = compare(None, shot('<script type="application/ld+json">{}</script>'))
         base = shot('<script type="application/ld+json">{}</script>')
         after = shot("<html>no structured data</html>")
         reasons, serious = compare(base, after)

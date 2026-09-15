@@ -967,7 +967,6 @@ class TestThePageCannotOverstateCoverage:
     keeping it alive is somebody pushing to the repository."""
 
     def _say(self, page, cov):
-        import json
         page.evaluate(
             "c => { app.data.coverage = Object.assign({}, app.data.coverage, c);"
             " renderTrust(); go('status'); }", cov)

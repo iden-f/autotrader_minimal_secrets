@@ -5,8 +5,7 @@ a schedule that asks for one every 30 minutes - nine dropped in a row - and,
 earlier the same evening, two runs five minutes apart. Neither is a fault the
 bot can fix. Both are faults it can notice.
 """
-import json
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 
 import pytest
 

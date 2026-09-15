@@ -416,7 +416,7 @@ class TestTheDenominatorCanMove:
     a car that "did not cut its price"."""
 
     def watched_for(self, i, hours, **kw):
-        from datetime import datetime, timedelta, timezone
+        from datetime import timedelta
         base = dict(price=60000, year=2019, make="BMW", model="M5")
         base.update(kw)
         entry = car(i, **base)

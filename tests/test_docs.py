@@ -152,7 +152,6 @@ class TestTheMechanismsTheRunbookReliesOn:
         assert list(watch["jobs"]) == ["check"], list(watch["jobs"])
 
     def test_the_corrupt_state_file_is_named_correctly(self):
-        from autotrader import state
         assert "state.corrupt.json" in DOCS["RUNBOOK.md"]
         assert "corrupt" in Path("autotrader/state.py").read_text()
 

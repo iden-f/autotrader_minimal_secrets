@@ -18,7 +18,6 @@ scenario.
 from __future__ import annotations
 
 import json
-import subprocess
 
 import pytest
 
@@ -101,7 +100,6 @@ class TestTheAllowanceRunsOut:
 
     def test_the_workflow_reads_it_before_it_installs_anything(self):
         """A stopped bot that still spends a minute checking is not stopped."""
-        import re
         text = (
             __import__("pathlib").Path(".github/workflows/watch.yml")
             .read_text(encoding="utf-8"))

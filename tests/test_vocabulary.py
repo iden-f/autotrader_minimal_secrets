@@ -282,7 +282,6 @@ class TestOneFormatterPerIdea:
         differently. If this fails, either route the new call through money(),
         num() or signed(), or add it here on purpose.
         """
-        import re
         calls = [l.strip() for l in self.code_lines() if "toLocaleString" in l]
         # money() and num() define the grouping; signed() reuses it; the
         # coverage strip's tooltip formats a DATE, not a figure.
@@ -292,7 +291,6 @@ class TestOneFormatterPerIdea:
     def test_the_slot_word_is_derived_not_typed(self):
         """"half-hours" was typed into five strings while the schedule
         happened to be half-hourly, and stayed there when it stopped."""
-        import re
         for line in self.code_lines():
             if "half-hour" in line:
                 assert "slotWord" in line or "mins === 30" in line, line.strip()
@@ -457,7 +455,6 @@ class TestThePythonSideHasOneVocabularyToo:
         without one raised TypeError inside a comparison nobody expected could
         fail.
         """
-        import re
         users = [p.name for p in self.package()
                  if "fromisoformat" in self.code(p)]
         assert users == ["clock.py"], (

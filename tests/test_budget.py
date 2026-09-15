@@ -10,7 +10,6 @@ the repository would have noticed the day it changed.
 
 from __future__ import annotations
 
-import json
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -213,7 +212,7 @@ class TestStoppingRatherThanSpending:
 
     def test_a_spent_month_writes_the_stop_file(self, watcher):
         self.spend_the_month(watcher, 400.0)
-        report = watcher.run()
+        watcher.run()
         stop = watcher.path / "BUDGET-STOP"
         assert stop.exists(), "nothing stopped the bot spending past its allowance"
         text = stop.read_text()

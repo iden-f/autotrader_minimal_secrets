@@ -76,7 +76,7 @@ def test_loading_config_never_reads_the_environment(tmp_path, monkeypatch):
 
 def test_disabled_searches_are_not_run(tmp_path):
     cfg = Config.defaults(tmp_path / "c.json")
-    search = cfg.add_search("https://www.autotrader.ca/cars/bmw/m5/?rcp=15")
+    cfg.add_search("https://www.autotrader.ca/cars/bmw/m5/?rcp=15")
     cfg.data["searches"][0]["enabled"] = False
     assert cfg.searches and cfg.active_searches == []
 

@@ -15,7 +15,7 @@ class TestCoverageMeasuresTheWatchNotTheExitCode:
 
     @staticmethod
     def run_at(minutes_ago, **over):
-        from datetime import datetime, timedelta, timezone
+        from datetime import timedelta
         row = {"at": (clock.now()
                       - timedelta(minutes=minutes_ago)).isoformat(),
                "ok": True, "searches_run": 2, "searches_failed": 0}

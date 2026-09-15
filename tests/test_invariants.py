@@ -9,9 +9,8 @@ import json
 
 import pytest
 
-from autotrader import invariants, notifiers, runner as runner_mod
+from autotrader import invariants, runner as runner_mod
 from autotrader.config import Config
-from autotrader.listing import Listing
 from autotrader.runner import run
 from autotrader.state import State
 

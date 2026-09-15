@@ -8,7 +8,6 @@ dashboard pointed at three entirely different cars.
 """
 from __future__ import annotations
 
-import json
 
 import pytest
 
@@ -140,7 +139,7 @@ class TestPruneActuallyCompacts:
     """
 
     def history(self, points: int) -> list[dict]:
-        from datetime import datetime, timedelta, timezone
+        from datetime import timedelta
         start = clock.now() - timedelta(days=365)
         return [{"at": (start + timedelta(days=n)).isoformat(), "price": 90000 + n}
                 for n in range(points)]
