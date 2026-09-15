@@ -1408,3 +1408,78 @@ class TestThePageStatesItsOwnLimits:
                 "the blind spot appears more than once"
         finally:
             ctx.close()
+
+
+class TestAPublishedFileFromBeforeTheFix:
+    """The page is updated by a push; the data file is only rewritten by a
+    check. Between the two - which at this schedule is hours - the new page
+    is reading an old file, and it has to be right anyway.
+
+    Found by restoring docs/data.json to what is actually published and
+    looking at the page: "-2 of 7 checks complained" was back, along with
+    "Requests last check 0" and "Check took 0s", because both fixes lived in
+    the code that WRITES the file.
+    """
+
+    def old_shape(self, payload):
+        """That file, as it was published before either fix."""
+        import copy
+        d = copy.deepcopy(payload)
+        d.pop("last_check", None)
+        d["coverage"] = dict(d["coverage"], complained=-2)
+        d["runs"] = [
+            {"at": "2026-09-14T19:34:27+00:00", "ok": True, "skipped": True,
+             "searches_run": 0, "duration_s": 0.0, "requests_made": 0},
+            {"at": "2026-09-14T19:19:40+00:00", "ok": True, "searches_run": 3,
+             "searches_failed": 0, "duration_s": 58.7, "requests_made": 32},
+        ]
+        d["last_run"] = d["runs"][0]
+        return d
+
+    def page_with(self, browser, site, payload):
+        """Routed BEFORE the first navigation.
+
+        Routing after one and reloading does not work: the service worker is
+        registered by then and answers data.json from its own cache, so the
+        page reads the real fixture and the test passes for the wrong reason.
+        It did, until the assertion printed what the page had actually loaded.
+        """
+        import json
+        ctx = browser.new_context(viewport={"width": 1440, "height": 900},
+                                  color_scheme="light",
+                                  service_workers="block")
+        page = ctx.new_page()
+        errors: list[str] = []
+        page.on("pageerror", lambda e: errors.append(str(e)))
+        page.route("**/data.json", lambda route: route.fulfill(
+            status=200, content_type="application/json",
+            body=json.dumps(self.old_shape(payload))))
+        page.goto(site, wait_until="networkidle")
+        page.wait_for_timeout(600)
+        page.click('[data-view-link="status"]')
+        page.wait_for_timeout(400)
+        return ctx, page, errors
+
+    def test_it_works_out_the_last_check_from_the_runs(self, browser, site, payload):
+        ctx, page, errors = self.page_with(browser, site, payload)
+        try:
+            body = page.evaluate(
+                "() => document.querySelector('[data-view=\"status\"]').textContent")
+            # Not the timestamp: the browser renders it in its own zone.
+            # These three are the figures that were 0, 0 and 0.
+            assert "59s" in body, body[:400]
+            assert "32" in body
+            assert "a firing stood down" in body, body[:400]
+            assert not errors, errors
+        finally:
+            ctx.close()
+
+    def test_it_never_prints_a_negative_count(self, browser, site, payload):
+        ctx, page, _ = self.page_with(browser, site, payload)
+        try:
+            body = page.evaluate(
+                "() => document.querySelector('[data-view=\"status\"]').textContent")
+            assert "-2 of" not in body, body[:400]
+            assert "complained" not in body or "-" not in body.split("complained")[0][-8:]
+        finally:
+            ctx.close()

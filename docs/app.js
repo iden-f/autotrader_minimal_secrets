@@ -362,7 +362,7 @@ function trustState() {
   // alive - and it read nothing. "Checked 3h ago" pointing at one of those
   // is the page reporting a check that did not happen, by up to the
   // deduplication floor, which is short enough that nobody notices.
-  const run = d.last_check || d.last_run || {};
+  const run = lastCheck(d);
   // And the last FIRING, which is a different question. "Is what I am
   // looking at old" is answered by the last check; "did the last attempt go
   // wrong" is answered by the last run, and a run whose every search failed
@@ -559,6 +559,25 @@ function go(view, opts = {}) {
 }
 
 /* ----------------------------------------------------------------- feed */
+/* The last run that READ the site.
+
+   d.last_check is written by the bot, and a data.json published before that
+   key existed does not carry one - which is exactly the state this page is
+   in for the first hours after an update, because the file is only rewritten
+   by a check. Falling back to d.last_run there would put "Requests last
+   check 0" and "Check took 0s" back on the page, so the fallback works it
+   out from the runs the file already carries. */
+function lastCheck(d) {
+  if (d.last_check) return d.last_check;
+  for (const run of (d.runs || [])) {
+    if (run.skipped) continue;
+    const ran = Number(run.searches_run) || 0;
+    const failed = Number(run.searches_failed) || 0;
+    if (ran ? failed < ran : run.ok) return run;
+  }
+  return d.last_run || {};
+}
+
 function feedEvents() {
   // Array-checked, not just truthy. A data.json from an older build - or a
   // half-written one - carries this as an object, and `{} || []` is `{}`,
@@ -1775,7 +1794,7 @@ function renderStatus() {
   // took" are all questions about a CHECK, and a firing that stood down is
   // not one. All three read 0 the first time this page was rendered after a
   // deduplicated firing.
-  const run = d.last_check || d.last_run || {};
+  const run = lastCheck(d);
   const firing = d.last_run || {};
   const cov = d.coverage || {};
   const h = d.health || {};
@@ -1804,7 +1823,12 @@ function renderStatus() {
           + `${cov.successful ?? 0} check${cov.successful === 1 ? '' : 's'} in that time.`
         : `${cov.slots_covered ?? cov.successful ?? 0} of ${cov.expected ?? 0} ${slotWord(cov)}`
           + `${cov.partial ? ` in the ${hours(cov.window_hours)} since the schedule changed` : ''}`
-          + `${cov.complained ? ` · ${cov.complained} of ${cov.successful} checks complained` : ''}`
+          // `> 0`, not truthy. An older data.json carries a `complained`
+          // computed by subtracting two populations, and -2 is truthy: the
+          // card read "-2 of 7 checks complained" until the next check
+          // rewrote the file. A count of things that happened is never
+          // negative, whatever the file says.
+          + `${cov.complained > 0 ? ` · ${cov.complained} of ${cov.successful} checks complained` : ''}`
         }</dd>
       ${covKept && covKept.level !== 'all' ? `<dd class="stat__note">${
         covKept.level === 'unknown'
