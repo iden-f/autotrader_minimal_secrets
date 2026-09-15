@@ -275,10 +275,19 @@ class TestAFiringThatStoodDownIsNotACheck:
         assert state.last_check is None, \
             "the page must say 'not checked yet' rather than pick the firing"
 
-    def test_the_page_is_given_both(self, tmp_path):
+    def test_the_page_asks_for_the_check_rather_than_the_run(self, tmp_path):
         """It asks two questions - is the timer alive, and how old is this -
-        and they have different answers."""
+        and they have different answers.
+
+        Through lastCheck(), which falls back to working it out from the runs
+        when the published file predates the key. Both places that need the
+        answer go through it; neither reads last_run for this.
+        """
         from pathlib import Path
         app = Path("docs/app.js").read_text(encoding="utf-8")
-        assert app.count("d.last_check || d.last_run") == 2, (
+        assert app.count("= lastCheck(d);") == 2, (
             "both the header and the Status tiles read the last CHECK")
+        assert "function lastCheck(" in app
+        assert "d.last_check || d.last_run" not in app, (
+            "the fallback belongs inside lastCheck, where it can work the "
+            "answer out from the runs rather than taking the firing")
