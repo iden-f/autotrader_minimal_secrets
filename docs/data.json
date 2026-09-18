@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-09-18T20:52:47+00:00",
+ "generated_at": "2026-09-18T21:12:26+00:00",
  "notify": {
   "ntfy_topic": "autotrader-2q592ak9gnx7sqrere5r",
   "ntfy_url": "https://ntfy.sh/autotrader-2q592ak9gnx7sqrere5r",
@@ -17208,30 +17208,30 @@
     "text": "within 1,000 km of Vancouver, BC"
    },
    "shape": {
+    "bytes": "lots",
+    "listing_count": 32,
+    "markers": {
+     "data_listing_id": "none",
+     "initial_state": "none",
+     "json_ld": "few",
+     "legacy_links": "none",
+     "next_data": "few",
+     "offer_links": "many",
+     "vehicle_cdn": "lots"
+    },
+    "scores": {
+     "anchors": 16,
+     "embedded_json": 32,
+     "jsonld": 16,
+     "regex": 32
+    },
     "strategy": "embedded_json",
     "working": [
      "anchors",
      "embedded_json",
      "jsonld",
      "regex"
-    ],
-    "scores": {
-     "jsonld": 16,
-     "embedded_json": 32,
-     "anchors": 16,
-     "regex": 32
-    },
-    "listing_count": 32,
-    "markers": {
-     "json_ld": "few",
-     "next_data": "few",
-     "initial_state": "none",
-     "offer_links": "many",
-     "legacy_links": "none",
-     "data_listing_id": "none",
-     "vehicle_cdn": "lots"
-    },
-    "bytes": "lots"
+    ]
    }
   },
   {
@@ -17302,30 +17302,30 @@
     "text": "within 1,000 km of Vancouver, BC"
    },
    "shape": {
+    "bytes": "lots",
+    "listing_count": 27,
+    "markers": {
+     "data_listing_id": "none",
+     "initial_state": "none",
+     "json_ld": "few",
+     "legacy_links": "none",
+     "next_data": "few",
+     "offer_links": "many",
+     "vehicle_cdn": "lots"
+    },
+    "scores": {
+     "anchors": 7,
+     "embedded_json": 27,
+     "jsonld": 7,
+     "regex": 27
+    },
     "strategy": "embedded_json",
     "working": [
      "anchors",
      "embedded_json",
      "jsonld",
      "regex"
-    ],
-    "scores": {
-     "jsonld": 7,
-     "embedded_json": 27,
-     "anchors": 7,
-     "regex": 27
-    },
-    "listing_count": 27,
-    "markers": {
-     "json_ld": "few",
-     "next_data": "few",
-     "initial_state": "none",
-     "offer_links": "many",
-     "legacy_links": "none",
-     "data_listing_id": "none",
-     "vehicle_cdn": "lots"
-    },
-    "bytes": "lots"
+    ]
    }
   },
   {
@@ -17395,30 +17395,30 @@
     "text": "within 1,000 km of Vancouver, BC"
    },
    "shape": {
+    "bytes": "lots",
+    "listing_count": 25,
+    "markers": {
+     "data_listing_id": "none",
+     "initial_state": "none",
+     "json_ld": "few",
+     "legacy_links": "none",
+     "next_data": "few",
+     "offer_links": "many",
+     "vehicle_cdn": "lots"
+    },
+    "scores": {
+     "anchors": 5,
+     "embedded_json": 25,
+     "jsonld": 5,
+     "regex": 25
+    },
     "strategy": "embedded_json",
     "working": [
      "anchors",
      "embedded_json",
      "jsonld",
      "regex"
-    ],
-    "scores": {
-     "jsonld": 5,
-     "embedded_json": 25,
-     "anchors": 5,
-     "regex": 25
-    },
-    "listing_count": 25,
-    "markers": {
-     "json_ld": "few",
-     "next_data": "few",
-     "initial_state": "none",
-     "offer_links": "many",
-     "legacy_links": "none",
-     "data_listing_id": "none",
-     "vehicle_cdn": "lots"
-    },
-    "bytes": "lots"
+    ]
    }
   }
  ],
@@ -17580,17 +17580,17 @@
  },
  "runs": [
   {
-   "at": "2026-09-18T20:52:47+00:00",
+   "at": "2026-09-18T21:12:26+00:00",
    "ok": true,
-   "duration_s": 98.5,
-   "searches_run": 3,
+   "duration_s": 0.0,
+   "searches_run": 0,
    "searches_failed": 0,
-   "listings_seen": 84,
+   "listings_seen": 0,
    "new": 0,
    "price_drops": 0,
    "price_rises": 0,
-   "removed": 1,
-   "filtered_out": 55,
+   "removed": 0,
+   "filtered_out": 0,
    "unpriced": 0,
    "priced": 0,
    "relisted": 0,
@@ -17598,12 +17598,10 @@
    "baselines": [],
    "invariants": [],
    "shut_out": [],
-   "hidden_events": {
-    "price_drop": 1
-   },
-   "skipped": false,
+   "hidden_events": {},
+   "skipped": true,
    "missed_by": 0,
-   "requests_made": 51,
+   "requests_made": 0,
    "budget_exhausted": false,
    "empty_parses": [],
    "diagnostics": [],
@@ -17614,62 +17612,108 @@
    "notified": [],
    "errors": [],
    "warnings": [
+    "the last successful check was 20 minutes ago and the schedule asks for one every 120 - skipping this one rather than checking the site twice for the same answer."
+   ],
+   "strategies": {},
+   "quiet": false,
+   "dry_run": false,
+   "photos": {},
+   "your_call": 0,
+   "trigger": "schedule",
+   "minutes": 1.0,
+   "minutes_label": "exempt"
+  },
+  {
+   "at": "2026-09-18T20:52:47+00:00",
+   "baselines": [],
+   "budget_exhausted": false,
+   "diagnostics": [],
+   "disabled_channels": [],
+   "dry_run": false,
+   "duration_s": 98.5,
+   "empty_parses": [],
+   "errors": [],
+   "filtered_out": 55,
+   "first_run": false,
+   "hidden_events": {
+    "price_drop": 1
+   },
+   "invariants": [],
+   "listings_seen": 84,
+   "minutes": 3.0,
+   "minutes_label": "exempt",
+   "missed_by": 0,
+   "new": 0,
+   "notified": [],
+   "ok": true,
+   "photos": {
+    "bytes": 1830738,
+    "failed": 0,
+    "fetched": 4,
+    "kept": 37,
+    "pruned": 0,
+    "samples": [
+     {
+      "bytes": 31140,
+      "h": 360,
+      "status": 200,
+      "type": "image/webp",
+      "url": "https://prod.pictures.autoscout24.net/listing-images/6d0c0467-93df-47f6-81ce-09e2b8e16323_784e9fca-1cb0-4503-a87c-958fe5",
+      "w": 480
+     },
+     {
+      "bytes": 21926,
+      "h": 359,
+      "status": 200,
+      "type": "image/webp",
+      "url": "https://prod.pictures.autoscout24.net/listing-images/6d0c0467-93df-47f6-81ce-09e2b8e16323_dffe593e-fe20-48a8-987e-2d8e00",
+      "w": 480
+     },
+     {
+      "bytes": 9622,
+      "h": 360,
+      "status": 200,
+      "type": "image/webp",
+      "url": "https://prod.pictures.autoscout24.net/listing-images/c7499eb1-fee8-44a2-9009-a9f439e046c4_6dbd7d36-0d1d-47ef-b625-59a8b2",
+      "w": 480
+     },
+     {
+      "bytes": 7910,
+      "h": 360,
+      "status": 200,
+      "type": "image/webp",
+      "url": "https://prod.pictures.autoscout24.net/listing-images/c7499eb1-fee8-44a2-9009-a9f439e046c4_8626a499-f888-4a9b-b410-a2c807",
+      "w": 480
+     }
+    ]
+   },
+   "price_drops": 0,
+   "price_rises": 0,
+   "priced": 0,
+   "qualified": 0,
+   "quiet": false,
+   "relisted": 0,
+   "removed": 1,
+   "requests_made": 51,
+   "searches_failed": 0,
+   "searches_run": 3,
+   "shape_drift": [],
+   "shut_out": [],
+   "skipped": false,
+   "strategies": {
+    "bmw-m3-2015-2020-f80-7e1845": "embedded_json",
+    "bmw-m4-up-to-2020-f82-fc136e": "embedded_json",
+    "bmw-x3-m-up-to-2020-f97-7d9aaf": "embedded_json"
+   },
+   "trigger": "schedule",
+   "unpriced": 0,
+   "validation_ok": true,
+   "warnings": [
     "BMW M4 up to 2020 (F82): 17 of 49 watched cars are missing at once - checking their listing pages before calling any of them sold.",
     "BMW M3 2015-2020 (F80): 12 of 39 watched cars are missing at once - checking their listing pages before calling any of them sold.",
     "BMW X3 M up to 2020 (F97): 225 of 250 watched cars are missing at once - checking their listing pages before calling any of them sold."
    ],
-   "strategies": {
-    "bmw-m4-up-to-2020-f82-fc136e": "embedded_json",
-    "bmw-m3-2015-2020-f80-7e1845": "embedded_json",
-    "bmw-x3-m-up-to-2020-f97-7d9aaf": "embedded_json"
-   },
-   "quiet": false,
-   "dry_run": false,
-   "photos": {
-    "kept": 37,
-    "fetched": 4,
-    "failed": 0,
-    "pruned": 0,
-    "bytes": 1830738,
-    "samples": [
-     {
-      "url": "https://prod.pictures.autoscout24.net/listing-images/6d0c0467-93df-47f6-81ce-09e2b8e16323_784e9fca-1cb0-4503-a87c-958fe5",
-      "status": 200,
-      "type": "image/webp",
-      "bytes": 31140,
-      "w": 480,
-      "h": 360
-     },
-     {
-      "url": "https://prod.pictures.autoscout24.net/listing-images/6d0c0467-93df-47f6-81ce-09e2b8e16323_dffe593e-fe20-48a8-987e-2d8e00",
-      "status": 200,
-      "type": "image/webp",
-      "bytes": 21926,
-      "w": 480,
-      "h": 359
-     },
-     {
-      "url": "https://prod.pictures.autoscout24.net/listing-images/c7499eb1-fee8-44a2-9009-a9f439e046c4_6dbd7d36-0d1d-47ef-b625-59a8b2",
-      "status": 200,
-      "type": "image/webp",
-      "bytes": 9622,
-      "w": 480,
-      "h": 360
-     },
-     {
-      "url": "https://prod.pictures.autoscout24.net/listing-images/c7499eb1-fee8-44a2-9009-a9f439e046c4_8626a499-f888-4a9b-b410-a2c807",
-      "status": 200,
-      "type": "image/webp",
-      "bytes": 7910,
-      "w": 480,
-      "h": 360
-     }
-    ]
-   },
-   "your_call": 0,
-   "trigger": "schedule",
-   "minutes": 3.0,
-   "minutes_label": "exempt"
+   "your_call": 0
   },
   {
    "at": "2026-09-18T17:51:29+00:00",
@@ -19233,50 +19277,6 @@
     "BMW X3 M up to 2020 (F97): 65 of 89 watched cars are missing at once - checking their listing pages before calling any of them sold."
    ],
    "your_call": 0
-  },
-  {
-   "at": "2026-09-15T21:43:15+00:00",
-   "baselines": [],
-   "budget_exhausted": false,
-   "diagnostics": [],
-   "disabled_channels": [],
-   "dry_run": false,
-   "duration_s": 0.0,
-   "empty_parses": [],
-   "errors": [],
-   "filtered_out": 0,
-   "first_run": false,
-   "hidden_events": {},
-   "invariants": [],
-   "listings_seen": 0,
-   "minutes": 1.0,
-   "minutes_label": "exempt",
-   "missed_by": 0,
-   "new": 0,
-   "notified": [],
-   "ok": true,
-   "photos": {},
-   "price_drops": 0,
-   "price_rises": 0,
-   "priced": 0,
-   "qualified": 0,
-   "quiet": false,
-   "relisted": 0,
-   "removed": 0,
-   "requests_made": 0,
-   "searches_failed": 0,
-   "searches_run": 0,
-   "shape_drift": [],
-   "shut_out": [],
-   "skipped": true,
-   "strategies": {},
-   "trigger": "schedule",
-   "unpriced": 0,
-   "validation_ok": true,
-   "warnings": [
-    "the last successful check was 26 minutes ago and the schedule asks for one every 120 - skipping this one rather than checking the site twice for the same answer."
-   ],
-   "your_call": 0
   }
  ],
  "channel_health": {
@@ -19294,17 +19294,17 @@
   }
  },
  "last_run": {
-  "at": "2026-09-18T20:52:47+00:00",
+  "at": "2026-09-18T21:12:26+00:00",
   "ok": true,
-  "duration_s": 98.5,
-  "searches_run": 3,
+  "duration_s": 0.0,
+  "searches_run": 0,
   "searches_failed": 0,
-  "listings_seen": 84,
+  "listings_seen": 0,
   "new": 0,
   "price_drops": 0,
   "price_rises": 0,
-  "removed": 1,
-  "filtered_out": 55,
+  "removed": 0,
+  "filtered_out": 0,
   "unpriced": 0,
   "priced": 0,
   "relisted": 0,
@@ -19312,12 +19312,10 @@
   "baselines": [],
   "invariants": [],
   "shut_out": [],
-  "hidden_events": {
-   "price_drop": 1
-  },
-  "skipped": false,
+  "hidden_events": {},
+  "skipped": true,
   "missed_by": 0,
-  "requests_made": 51,
+  "requests_made": 0,
   "budget_exhausted": false,
   "empty_parses": [],
   "diagnostics": [],
@@ -19328,61 +19326,15 @@
   "notified": [],
   "errors": [],
   "warnings": [
-   "BMW M4 up to 2020 (F82): 17 of 49 watched cars are missing at once - checking their listing pages before calling any of them sold.",
-   "BMW M3 2015-2020 (F80): 12 of 39 watched cars are missing at once - checking their listing pages before calling any of them sold.",
-   "BMW X3 M up to 2020 (F97): 225 of 250 watched cars are missing at once - checking their listing pages before calling any of them sold."
+   "the last successful check was 20 minutes ago and the schedule asks for one every 120 - skipping this one rather than checking the site twice for the same answer."
   ],
-  "strategies": {
-   "bmw-m4-up-to-2020-f82-fc136e": "embedded_json",
-   "bmw-m3-2015-2020-f80-7e1845": "embedded_json",
-   "bmw-x3-m-up-to-2020-f97-7d9aaf": "embedded_json"
-  },
+  "strategies": {},
   "quiet": false,
   "dry_run": false,
-  "photos": {
-   "kept": 37,
-   "fetched": 4,
-   "failed": 0,
-   "pruned": 0,
-   "bytes": 1830738,
-   "samples": [
-    {
-     "url": "https://prod.pictures.autoscout24.net/listing-images/6d0c0467-93df-47f6-81ce-09e2b8e16323_784e9fca-1cb0-4503-a87c-958fe5",
-     "status": 200,
-     "type": "image/webp",
-     "bytes": 31140,
-     "w": 480,
-     "h": 360
-    },
-    {
-     "url": "https://prod.pictures.autoscout24.net/listing-images/6d0c0467-93df-47f6-81ce-09e2b8e16323_dffe593e-fe20-48a8-987e-2d8e00",
-     "status": 200,
-     "type": "image/webp",
-     "bytes": 21926,
-     "w": 480,
-     "h": 359
-    },
-    {
-     "url": "https://prod.pictures.autoscout24.net/listing-images/c7499eb1-fee8-44a2-9009-a9f439e046c4_6dbd7d36-0d1d-47ef-b625-59a8b2",
-     "status": 200,
-     "type": "image/webp",
-     "bytes": 9622,
-     "w": 480,
-     "h": 360
-    },
-    {
-     "url": "https://prod.pictures.autoscout24.net/listing-images/c7499eb1-fee8-44a2-9009-a9f439e046c4_8626a499-f888-4a9b-b410-a2c807",
-     "status": 200,
-     "type": "image/webp",
-     "bytes": 7910,
-     "w": 480,
-     "h": 360
-    }
-   ]
-  },
+  "photos": {},
   "your_call": 0,
   "trigger": "schedule",
-  "minutes": 3.0,
+  "minutes": 1.0,
   "minutes_label": "exempt"
  },
  "health": {
@@ -19404,9 +19356,9 @@
     "name": "BMW M4 up to 2020 (F82)",
     "winner": "embedded_json",
     "scores": {
-     "jsonld": 16,
-     "embedded_json": 32,
      "anchors": 16,
+     "embedded_json": 32,
+     "jsonld": 16,
      "regex": 32
     },
     "working": [
@@ -19423,12 +19375,12 @@
      "regex"
     ],
     "markers": {
-     "json_ld": "few",
-     "next_data": "few",
-     "initial_state": "none",
-     "offer_links": "many",
-     "legacy_links": "none",
      "data_listing_id": "none",
+     "initial_state": "none",
+     "json_ld": "few",
+     "legacy_links": "none",
+     "next_data": "few",
+     "offer_links": "many",
      "vehicle_cdn": "lots"
     }
    },
@@ -19436,9 +19388,9 @@
     "name": "BMW M3 2015-2020 (F80)",
     "winner": "embedded_json",
     "scores": {
-     "jsonld": 7,
-     "embedded_json": 27,
      "anchors": 7,
+     "embedded_json": 27,
+     "jsonld": 7,
      "regex": 27
     },
     "working": [
@@ -19455,12 +19407,12 @@
      "regex"
     ],
     "markers": {
-     "json_ld": "few",
-     "next_data": "few",
-     "initial_state": "none",
-     "offer_links": "many",
-     "legacy_links": "none",
      "data_listing_id": "none",
+     "initial_state": "none",
+     "json_ld": "few",
+     "legacy_links": "none",
+     "next_data": "few",
+     "offer_links": "many",
      "vehicle_cdn": "lots"
     }
    },
@@ -19468,9 +19420,9 @@
     "name": "BMW X3 M up to 2020 (F97)",
     "winner": "embedded_json",
     "scores": {
-     "jsonld": 5,
-     "embedded_json": 25,
      "anchors": 5,
+     "embedded_json": 25,
+     "jsonld": 5,
      "regex": 25
     },
     "working": [
@@ -19487,12 +19439,12 @@
      "regex"
     ],
     "markers": {
-     "json_ld": "few",
-     "next_data": "few",
-     "initial_state": "none",
-     "offer_links": "many",
-     "legacy_links": "none",
      "data_listing_id": "none",
+     "initial_state": "none",
+     "json_ld": "few",
+     "legacy_links": "none",
+     "next_data": "few",
+     "offer_links": "many",
      "vehicle_cdn": "lots"
     }
    }
@@ -19501,7 +19453,7 @@
   "ok_streak": 60,
   "runs_kept": 60,
   "budget": {
-   "used": 51,
+   "used": 0,
    "limit": 250,
    "exhausted": false
   },
@@ -19526,25 +19478,6 @@
    }
   },
   {
-   "kind": "price_drop",
-   "at": "2026-09-18T20:51:46+00:00",
-   "listing_id": "fd3d3102-426e-478f-8067-a4597043af59",
-   "title": "2025 BMW M3",
-   "year": 2025,
-   "make": "BMW",
-   "model": "M3",
-   "price": 119969,
-   "filtered": true,
-   "filter_reason": "year 2025 above maximum 2020",
-   "delivery": {
-    "state": "quiet",
-    "text": "hidden by your rules: year 2025 above maximum 2020"
-   },
-   "old_price": 120269,
-   "new_price": 119969,
-   "delta": -300
-  },
-  {
    "kind": "new",
    "at": "2026-09-18T20:51:46+00:00",
    "listing_id": "0b9e1a47-392d-4ba6-bcf1-05721403bfc9",
@@ -19563,12 +19496,12 @@
   {
    "kind": "new",
    "at": "2026-09-18T20:51:46+00:00",
-   "listing_id": "9a17c1a9-fbc4-481e-bc46-1450d33970bf",
+   "listing_id": "181bc231-c480-428c-9ef4-29cd787e630d",
    "title": "2024 BMW X3",
    "year": 2024,
    "make": "BMW",
    "model": "X3",
-   "price": 49950,
+   "price": 46888,
    "filtered": true,
    "filter_reason": "year 2024 above maximum 2020",
    "delivery": {
@@ -19595,44 +19528,12 @@
   {
    "kind": "new",
    "at": "2026-09-18T20:51:46+00:00",
-   "listing_id": "d8a88354-0477-4af7-9aba-9c8ac2cc5538",
-   "title": "2026 BMW X3",
-   "year": 2026,
-   "make": "BMW",
-   "model": "X3",
-   "price": null,
-   "filtered": true,
-   "filter_reason": "year 2026 above maximum 2020",
-   "delivery": {
-    "state": "quiet",
-    "text": "hidden by your rules: year 2026 above maximum 2020"
-   }
-  },
-  {
-   "kind": "new",
-   "at": "2026-09-18T20:51:46+00:00",
    "listing_id": "64e7f2f7-08f0-47a4-8d3c-3e078e7a3aeb",
    "title": "2026 BMW X3",
    "year": 2026,
    "make": "BMW",
    "model": "X3",
    "price": 71688,
-   "filtered": true,
-   "filter_reason": "year 2026 above maximum 2020",
-   "delivery": {
-    "state": "quiet",
-    "text": "hidden by your rules: year 2026 above maximum 2020"
-   }
-  },
-  {
-   "kind": "new",
-   "at": "2026-09-18T20:51:46+00:00",
-   "listing_id": "b772badf-9476-434d-bb14-ff15c065831d",
-   "title": "2026 BMW X3",
-   "year": 2026,
-   "make": "BMW",
-   "model": "X3",
-   "price": 65288,
    "filtered": true,
    "filter_reason": "year 2026 above maximum 2020",
    "delivery": {
@@ -19659,7 +19560,39 @@
   {
    "kind": "new",
    "at": "2026-09-18T20:51:46+00:00",
-   "listing_id": "fd003e65-b4c1-4760-b2e2-b5d0aca0ede9",
+   "listing_id": "98df6093-8295-4e8e-a106-a42ecaba45a0",
+   "title": "2021 BMW X3",
+   "year": 2021,
+   "make": "BMW",
+   "model": "X3",
+   "price": 28800,
+   "filtered": true,
+   "filter_reason": "year 2021 above maximum 2020",
+   "delivery": {
+    "state": "quiet",
+    "text": "hidden by your rules: year 2021 above maximum 2020"
+   }
+  },
+  {
+   "kind": "new",
+   "at": "2026-09-18T20:51:46+00:00",
+   "listing_id": "9a17c1a9-fbc4-481e-bc46-1450d33970bf",
+   "title": "2024 BMW X3",
+   "year": 2024,
+   "make": "BMW",
+   "model": "X3",
+   "price": 49950,
+   "filtered": true,
+   "filter_reason": "year 2024 above maximum 2020",
+   "delivery": {
+    "state": "quiet",
+    "text": "hidden by your rules: year 2024 above maximum 2020"
+   }
+  },
+  {
+   "kind": "new",
+   "at": "2026-09-18T20:51:46+00:00",
+   "listing_id": "b772badf-9476-434d-bb14-ff15c065831d",
    "title": "2026 BMW X3",
    "year": 2026,
    "make": "BMW",
@@ -19675,34 +19608,53 @@
   {
    "kind": "new",
    "at": "2026-09-18T20:51:46+00:00",
-   "listing_id": "181bc231-c480-428c-9ef4-29cd787e630d",
-   "title": "2024 BMW X3",
-   "year": 2024,
+   "listing_id": "d8a88354-0477-4af7-9aba-9c8ac2cc5538",
+   "title": "2026 BMW X3",
+   "year": 2026,
    "make": "BMW",
    "model": "X3",
-   "price": 46888,
+   "price": null,
    "filtered": true,
-   "filter_reason": "year 2024 above maximum 2020",
+   "filter_reason": "year 2026 above maximum 2020",
    "delivery": {
     "state": "quiet",
-    "text": "hidden by your rules: year 2024 above maximum 2020"
+    "text": "hidden by your rules: year 2026 above maximum 2020"
    }
   },
   {
    "kind": "new",
    "at": "2026-09-18T20:51:46+00:00",
-   "listing_id": "98df6093-8295-4e8e-a106-a42ecaba45a0",
-   "title": "2021 BMW X3",
-   "year": 2021,
+   "listing_id": "fd003e65-b4c1-4760-b2e2-b5d0aca0ede9",
+   "title": "2026 BMW X3",
+   "year": 2026,
    "make": "BMW",
    "model": "X3",
-   "price": 28800,
+   "price": 65288,
    "filtered": true,
-   "filter_reason": "year 2021 above maximum 2020",
+   "filter_reason": "year 2026 above maximum 2020",
    "delivery": {
     "state": "quiet",
-    "text": "hidden by your rules: year 2021 above maximum 2020"
+    "text": "hidden by your rules: year 2026 above maximum 2020"
    }
+  },
+  {
+   "kind": "price_drop",
+   "at": "2026-09-18T20:51:46+00:00",
+   "listing_id": "fd3d3102-426e-478f-8067-a4597043af59",
+   "title": "2025 BMW M3",
+   "year": 2025,
+   "make": "BMW",
+   "model": "M3",
+   "price": 119969,
+   "filtered": true,
+   "filter_reason": "year 2025 above maximum 2020",
+   "delivery": {
+    "state": "quiet",
+    "text": "hidden by your rules: year 2025 above maximum 2020"
+   },
+   "old_price": 120269,
+   "new_price": 119969,
+   "delta": -300
   },
   {
    "kind": "new",
@@ -26272,6 +26224,10 @@
    "sample": 0,
    "why_not": "it has left the market - the last price the bot saw is the one recorded above, and it is not compared against cars still for sale"
   },
+  "0b9e1a47-392d-4ba6-bcf1-05721403bfc9": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
   "0ba28d75-33e8-4d4d-aab6-a4c2b2220df0": {
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
@@ -26353,6 +26309,10 @@
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
   "1786e92f-2526-423c-92d1-16b08e546138": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "181bc231-c480-428c-9ef4-29cd787e630d": {
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
@@ -26552,6 +26512,10 @@
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
+  "5293d508-8d1c-4b4a-a289-abf148eaec41": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
   "52d1843f-ed25-4e6c-82d7-6adc37b0b1cd": {
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
@@ -26640,6 +26604,10 @@
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
+  "64e7f2f7-08f0-47a4-8d3c-3e078e7a3aeb": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
   "653a8a77-3cee-467d-a068-2a626d358f7c": {
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
@@ -26709,6 +26677,10 @@
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
   "6f5ffc2f-60fd-4c1d-b35f-1b0f3d57b876": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "715076e7-3dca-437d-a991-a300c586d8c8": {
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
@@ -26884,6 +26856,14 @@
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
+  "98df6093-8295-4e8e-a106-a42ecaba45a0": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "9a17c1a9-fbc4-481e-bc46-1450d33970bf": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
   "9b0f9a08-672f-4e62-984d-f6354babcb15": {
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
@@ -27017,6 +26997,10 @@
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
   "b63c09c8-302b-4033-b94e-defc6cd0a109": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "b772badf-9476-434d-bb14-ff15c065831d": {
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
@@ -27157,6 +27141,10 @@
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
   "d8a78d46-6518-46c4-acc7-2265861c1ec6": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "d8a88354-0477-4af7-9aba-9c8ac2cc5538": {
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
@@ -27372,6 +27360,10 @@
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
+  "fd003e65-b4c1-4760-b2e2-b5d0aca0ede9": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
   "fd3d3102-426e-478f-8067-a4597043af59": {
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
@@ -27391,46 +27383,6 @@
   "fefe4ca3-2007-4b14-b6ba-e5625382be33": {
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
-  },
-  "0b9e1a47-392d-4ba6-bcf1-05721403bfc9": {
-   "sample": 0,
-   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
-  },
-  "9a17c1a9-fbc4-481e-bc46-1450d33970bf": {
-   "sample": 0,
-   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
-  },
-  "5293d508-8d1c-4b4a-a289-abf148eaec41": {
-   "sample": 0,
-   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
-  },
-  "d8a88354-0477-4af7-9aba-9c8ac2cc5538": {
-   "sample": 0,
-   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
-  },
-  "64e7f2f7-08f0-47a4-8d3c-3e078e7a3aeb": {
-   "sample": 0,
-   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
-  },
-  "b772badf-9476-434d-bb14-ff15c065831d": {
-   "sample": 0,
-   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
-  },
-  "715076e7-3dca-437d-a991-a300c586d8c8": {
-   "sample": 0,
-   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
-  },
-  "fd003e65-b4c1-4760-b2e2-b5d0aca0ede9": {
-   "sample": 0,
-   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
-  },
-  "181bc231-c480-428c-9ef4-29cd787e630d": {
-   "sample": 0,
-   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
-  },
-  "98df6093-8295-4e8e-a106-a42ecaba45a0": {
-   "sample": 0,
-   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   }
  },
  "coverage": {
@@ -27441,16 +27393,16 @@
   "since_change": "2026-09-13T06:30:00+00:00",
   "expected": 12,
   "checks": 6,
-  "stood_down": 5,
+  "stood_down": 6,
   "successful": 6,
   "slots_covered": 6,
-  "complained": -5,
-  "clean": 11,
+  "complained": -6,
+  "clean": 12,
   "pct": 50.0,
   "longest_gap_minutes": 431.0,
   "expected_interval_minutes": 120,
   "truncated": false,
-  "since": "2026-09-17T20:52:47+00:00",
+  "since": "2026-09-17T21:12:26+00:00",
   "slots": [
    1,
    1,
@@ -27459,8 +27411,8 @@
    0,
    1,
    0,
-   0,
    1,
+   0,
    0,
    1,
    1
@@ -27471,28 +27423,28 @@
    "schedule": 6
   },
   "propped_up": false,
-  "schedule_fired": 11,
+  "schedule_fired": 12,
   "timekeeper": "schedule",
   "slots_by_trigger": {
    "schedule": 6
   }
  },
  "cost": {
-  "checks": 11,
+  "checks": 12,
   "minutes": 9.6,
-  "billed_minutes": 21,
-  "mean_seconds": 52.5,
+  "billed_minutes": 22,
+  "mean_seconds": 48.1,
   "window_hours": 24
  },
  "budget": {
   "month": "2026-09",
-  "runs": 56,
+  "runs": 57,
   "days_elapsed": 6,
   "days_to_reset": 13,
-  "exempt_minutes": 76.0,
+  "exempt_minutes": 77.0,
   "drawing_minutes": 11.0,
   "unknown_minutes": 11.0,
-  "used": 87.0,
+  "used": 88.0,
   "per_day": 1.83,
   "projected": 33.0,
   "allowance": 3000,
@@ -27500,14 +27452,14 @@
   "label": "exempt",
   "why": "GitHub reports this repository as public and its jobs run on standard runners, which GitHub does not bill",
   "blind_spot": "This is what THIS repository spent. The allowance has one meter per account and this bot can see one repository, so it cannot tell you how much of the allowance is left.",
-  "short": "11 of 3,000 this month · about 33 by month end · 76 more ran exempt · 11 unlabelled, counted as drawing",
+  "short": "11 of 3,000 this month · about 33 by month end · 77 more ran exempt · 11 unlabelled, counted as drawing",
   "state": "ok",
-  "text": "11 allowance minutes used, about 33 by month end against 3,000. This is what THIS repository spent. The allowance has one meter per account and this bot can see one repository, so it cannot tell you how much of the allowance is left. A further 76 minutes ran exempt. 11 minutes could not be labelled and are counted as drawing.",
+  "text": "11 allowance minutes used, about 33 by month end against 3,000. This is what THIS repository spent. The allowance has one meter per account and this bot can see one repository, so it cannot tell you how much of the allowance is left. A further 77 minutes ran exempt. 11 minutes could not be labelled and are counted as drawing.",
   "can_still_run": true,
   "should_stop": false
  },
  "market": {
-  "at": "2026-09-18T20:52:47+00:00",
+  "at": "2026-09-18T21:12:26+00:00",
   "window": {
    "ids_span_days": 5,
    "watching_days": 5,
