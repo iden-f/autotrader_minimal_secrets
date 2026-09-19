@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-09-19T05:00:06+00:00",
+ "generated_at": "2026-09-19T07:18:54+00:00",
  "notify": {
   "ntfy_topic": "autotrader-2q592ak9gnx7sqrere5r",
   "ntfy_url": "https://ntfy.sh/autotrader-2q592ak9gnx7sqrere5r",
@@ -11,19 +11,74 @@
  "repo": "iden-f/autotrader_minimal_secrets",
  "repo_issues": false,
  "stats": {
-  "total": 373,
-  "active": 44,
+  "total": 376,
+  "active": 45,
   "gone": 10,
-  "with_price": 40,
+  "with_price": 41,
   "min_price": 2150,
   "max_price": 89995,
   "median_price": 48888
  },
  "listings": [
   {
+   "id": "1e3a6266-ba40-4ab8-a449-0676b55d7e0c",
+   "url": "https://www.autotrader.ca/offers/bmw-m4-competition-gasoline-black-cat_ma13gr202608va306mt13040-1e3a6266-ba40-4ab8-a449-0676b55d7e0c",
+   "title": "2018 BMW M4",
+   "year": 2018,
+   "make": "BMW",
+   "model": "M4",
+   "trim": "Competition",
+   "price": 64000,
+   "currency": "CAD",
+   "mileage_km": 50000,
+   "location": "Langley",
+   "province": "BC",
+   "seller": "",
+   "body": "Coupe",
+   "color": "Black",
+   "transmission": "Automatic",
+   "drivetrain": "",
+   "fuel": "Gasoline",
+   "engine": "",
+   "images": [
+    "https://prod.pictures.autoscout24.net/listing-images/1e3a6266-ba40-4ab8-a449-0676b55d7e0c_8b3c9104-ad9f-45ec-8331-abd9ff46c310.jpg/1920x1080.jpg"
+   ],
+   "search_id": "bmw-m4-up-to-2020-f82-fc136e",
+   "search_name": "BMW M4 up to 2020 (F82)",
+   "first_seen": "2026-09-19T07:17:38+00:00",
+   "last_seen": "2026-09-19T07:17:38+00:00",
+   "status": "active",
+   "price_history": [
+    {
+     "at": "2026-09-19T07:17:38+00:00",
+     "price": 64000
+    }
+   ],
+   "price_source": "search",
+   "filtered": false,
+   "filter_reason": "",
+   "filter_rule": "",
+   "unpriced": false,
+   "enriched": true,
+   "misses": 0,
+   "seller_type": "private",
+   "notified_at": "2026-09-19T07:18:50+00:00",
+   "is_new": false,
+   "photo_count": 1,
+   "thumb": "thumbs/1e3a6266-ba40-4ab8-a449-0676b55d7e0c.jpg",
+   "thumbs": [
+    "thumbs/1e3a6266-ba40-4ab8-a449-0676b55d7e0c.jpg"
+   ],
+   "per_1000km": 1280.0,
+   "per_1000km_why": null,
+   "days_listed": 0,
+   "distance_km": 39,
+   "distance_from": "Vancouver, BC"
+  },
+  {
    "id": "004b5362-1a51-482c-8a09-a6d9ea9676ed",
    "url": "https://www.autotrader.ca/offers/bmw-x3-28i-xdrive-local-bc-vehicle-no-accident-gasoline-white-cat_ma13gr18387va3241mt333tr478954-004b5362-1a51-482c-8a09-a6d9ea9676ed",
-   "title": "2014 BMW X3",
+   "title": "2014 BMW X3 28i xDrive. LOCAL BC VEHICLE. NO",
    "year": 2014,
    "make": "BMW",
    "model": "X3",
@@ -41,12 +96,23 @@
    "fuel": "Gasoline",
    "engine": "",
    "images": [
-    "https://prod.pictures.autoscout24.net/listing-images/004b5362-1a51-482c-8a09-a6d9ea9676ed_3fdee809-767d-4cb2-a965-04bb753cdad0.jpg/1920x1080.jpg"
+    "https://prod.pictures.autoscout24.net/listing-images/004b5362-1a51-482c-8a09-a6d9ea9676ed_3fdee809-767d-4cb2-a965-04bb753cdad0.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/004b5362-1a51-482c-8a09-a6d9ea9676ed_3f875a75-cfb3-4f8d-a5ba-88c1830f2199.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/004b5362-1a51-482c-8a09-a6d9ea9676ed_66b59514-4482-4576-a7b5-2ddc8fd0ed2b.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/004b5362-1a51-482c-8a09-a6d9ea9676ed_306dbcd9-2011-4cc9-b42b-1202fa944c04.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/004b5362-1a51-482c-8a09-a6d9ea9676ed_1a62878b-8048-4746-a956-0323017bd0b8.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/004b5362-1a51-482c-8a09-a6d9ea9676ed_fe817a84-45c0-4257-910d-80b63ccbb5e1.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/004b5362-1a51-482c-8a09-a6d9ea9676ed_f35509b9-3de7-4324-9a72-d80912a1c36c.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/004b5362-1a51-482c-8a09-a6d9ea9676ed_b67ccd00-d822-4ab7-99d2-44e83d2cc126.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/004b5362-1a51-482c-8a09-a6d9ea9676ed_0cd34de3-1b2b-4f5c-a3a5-a80780e2da1a.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/004b5362-1a51-482c-8a09-a6d9ea9676ed_0e33d395-fd2c-4cc5-868e-03c8343053f9.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/004b5362-1a51-482c-8a09-a6d9ea9676ed_48e437e5-1c4c-41e9-aeee-4620b23e63e2.jpg/250x188.webp",
+    "https://prod.pictures.autoscout24.net/listing-images/004b5362-1a51-482c-8a09-a6d9ea9676ed_d7ecbd18-923f-4519-a1f9-9b8873cb1b42.jpg/250x188.webp"
    ],
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-19T04:59:19+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -64,10 +130,12 @@
    "seller_type": "dealer",
    "notified_at": "2026-09-19T05:00:05+00:00",
    "is_new": false,
-   "photo_count": 1,
+   "photo_count": 12,
    "thumb": "thumbs/004b5362-1a51-482c-8a09-a6d9ea9676ed.jpg",
    "thumbs": [
-    "thumbs/004b5362-1a51-482c-8a09-a6d9ea9676ed.jpg"
+    "thumbs/004b5362-1a51-482c-8a09-a6d9ea9676ed.jpg",
+    "thumbs/004b5362-1a51-482c-8a09-a6d9ea9676ed-1.webp",
+    "thumbs/004b5362-1a51-482c-8a09-a6d9ea9676ed-2.webp"
    ],
    "per_1000km": 108.4,
    "per_1000km_why": null,
@@ -126,7 +194,7 @@
    "filter_rule": "",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 2,
    "seller_type": "dealer",
    "notified_at": "2026-09-18T17:40:25+00:00",
    "is_new": false,
@@ -186,7 +254,7 @@
    "filter_rule": "",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 2,
    "seller_type": "private",
    "notified_at": "2026-09-18T17:40:25+00:00",
    "is_new": false,
@@ -474,7 +542,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-17T07:35:11+00:00",
-   "last_seen": "2026-09-19T04:58:30+00:00",
+   "last_seen": "2026-09-19T07:17:38+00:00",
    "status": "active",
    "price_history": [
     {
@@ -918,7 +986,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-14T04:50:34+00:00",
-   "last_seen": "2026-09-19T04:58:40+00:00",
+   "last_seen": "2026-09-19T07:17:42+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1067,7 +1135,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1093,7 +1161,7 @@
    "photo_count": 0,
    "per_1000km": 655.7,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 818,
    "distance_from": "Vancouver, BC"
   },
@@ -1134,7 +1202,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1161,7 +1229,7 @@
    ],
    "per_1000km": 1112.9,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 674,
    "distance_from": "Vancouver, BC"
   },
@@ -1202,7 +1270,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1234,7 +1302,7 @@
    ],
    "per_1000km": 369.6,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 674,
    "distance_from": "Vancouver, BC"
   },
@@ -1275,7 +1343,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1302,7 +1370,7 @@
    ],
    "per_1000km": 404.0,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 818,
    "distance_from": "Vancouver, BC"
   },
@@ -1370,7 +1438,7 @@
    ],
    "per_1000km": null,
    "per_1000km_why": "at 269,112 km the asking price tracks condition rather than kilometres, so the ratio stops meaning anything",
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 674,
    "distance_from": "Vancouver, BC"
   },
@@ -1405,7 +1473,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1432,7 +1500,7 @@
    ],
    "per_1000km": 471.5,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 818,
    "distance_from": "Vancouver, BC"
   },
@@ -1473,7 +1541,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T05:39:11+00:00",
-   "last_seen": "2026-09-19T04:58:40+00:00",
+   "last_seen": "2026-09-19T07:17:42+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1500,7 +1568,7 @@
    ],
    "per_1000km": 1310.0,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 0,
    "distance_from": "Vancouver, BC"
   },
@@ -1534,7 +1602,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T05:39:11+00:00",
-   "last_seen": "2026-09-19T04:58:40+00:00",
+   "last_seen": "2026-09-19T07:17:42+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1561,7 +1629,7 @@
    ],
    "per_1000km": 1041.7,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 674,
    "distance_from": "Vancouver, BC"
   },
@@ -1602,7 +1670,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T05:39:11+00:00",
-   "last_seen": "2026-09-19T04:58:40+00:00",
+   "last_seen": "2026-09-19T07:17:42+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1629,7 +1697,7 @@
    ],
    "per_1000km": 604.6,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 11,
    "distance_from": "Vancouver, BC"
   },
@@ -1670,7 +1738,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T05:39:11+00:00",
-   "last_seen": "2026-09-19T04:58:40+00:00",
+   "last_seen": "2026-09-19T07:17:42+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1702,7 +1770,7 @@
    ],
    "per_1000km": 2130.6,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 0,
    "distance_from": "Vancouver, BC"
   },
@@ -1738,7 +1806,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T05:39:11+00:00",
-   "last_seen": "2026-09-19T04:58:40+00:00",
+   "last_seen": "2026-09-19T07:17:42+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1765,7 +1833,7 @@
    ],
    "per_1000km": 507.1,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 13,
    "distance_from": "Vancouver, BC"
   },
@@ -1799,7 +1867,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:38:24+00:00",
-   "last_seen": "2026-09-19T04:58:30+00:00",
+   "last_seen": "2026-09-19T07:17:38+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1826,7 +1894,7 @@
    ],
    "per_1000km": 1408.2,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 674,
    "distance_from": "Vancouver, BC"
   },
@@ -1867,7 +1935,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:38:24+00:00",
-   "last_seen": "2026-09-19T04:58:30+00:00",
+   "last_seen": "2026-09-19T07:17:38+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1894,7 +1962,7 @@
    ],
    "per_1000km": 728.4,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 674,
    "distance_from": "Vancouver, BC"
   },
@@ -1935,7 +2003,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:38:24+00:00",
-   "last_seen": "2026-09-19T04:58:30+00:00",
+   "last_seen": "2026-09-19T07:17:38+00:00",
    "status": "active",
    "price_history": [
     {
@@ -1962,7 +2030,7 @@
    ],
    "per_1000km": 625.6,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 11,
    "distance_from": "Vancouver, BC"
   },
@@ -2003,7 +2071,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:38:24+00:00",
-   "last_seen": "2026-09-19T04:58:30+00:00",
+   "last_seen": "2026-09-19T07:17:38+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2030,7 +2098,7 @@
    ],
    "per_1000km": 545.5,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 674,
    "distance_from": "Vancouver, BC"
   },
@@ -2068,7 +2136,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:38:24+00:00",
-   "last_seen": "2026-09-19T04:58:30+00:00",
+   "last_seen": "2026-09-19T07:17:38+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2095,7 +2163,7 @@
    ],
    "per_1000km": 2396.0,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 13,
    "distance_from": "Vancouver, BC"
   },
@@ -2136,7 +2204,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:38:24+00:00",
-   "last_seen": "2026-09-19T04:58:30+00:00",
+   "last_seen": "2026-09-19T07:17:38+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2163,7 +2231,7 @@
    ],
    "per_1000km": 1286.8,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 11,
    "distance_from": "Vancouver, BC"
   },
@@ -2204,7 +2272,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:38:24+00:00",
-   "last_seen": "2026-09-19T04:58:30+00:00",
+   "last_seen": "2026-09-19T07:17:38+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2231,7 +2299,7 @@
    ],
    "per_1000km": 1008.8,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 818,
    "distance_from": "Vancouver, BC"
   },
@@ -2272,7 +2340,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:38:24+00:00",
-   "last_seen": "2026-09-19T04:58:30+00:00",
+   "last_seen": "2026-09-19T07:17:38+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2304,7 +2372,7 @@
    ],
    "per_1000km": 905.4,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 674,
    "distance_from": "Vancouver, BC"
   },
@@ -2345,7 +2413,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:38:24+00:00",
-   "last_seen": "2026-09-19T04:58:30+00:00",
+   "last_seen": "2026-09-19T07:17:38+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2372,7 +2440,7 @@
    ],
    "per_1000km": 1203.1,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 13,
    "distance_from": "Vancouver, BC"
   },
@@ -2413,7 +2481,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:38:24+00:00",
-   "last_seen": "2026-09-19T04:58:30+00:00",
+   "last_seen": "2026-09-19T07:17:38+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2449,7 +2517,7 @@
    ],
    "per_1000km": 376.0,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 13,
    "distance_from": "Vancouver, BC"
   },
@@ -2490,7 +2558,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:38:24+00:00",
-   "last_seen": "2026-09-19T04:58:30+00:00",
+   "last_seen": "2026-09-19T07:17:38+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2522,7 +2590,7 @@
    ],
    "per_1000km": 1091.8,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 13,
    "distance_from": "Vancouver, BC"
   },
@@ -2563,7 +2631,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:38:24+00:00",
-   "last_seen": "2026-09-19T04:58:30+00:00",
+   "last_seen": "2026-09-19T07:17:38+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2590,7 +2658,7 @@
    ],
    "per_1000km": 408.3,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 5,
    "distance_from": "Vancouver, BC"
   },
@@ -2631,7 +2699,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:38:24+00:00",
-   "last_seen": "2026-09-19T04:58:30+00:00",
+   "last_seen": "2026-09-19T07:17:38+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2658,7 +2726,7 @@
    ],
    "per_1000km": 1044.5,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 684,
    "distance_from": "Vancouver, BC"
   },
@@ -2699,7 +2767,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:38:24+00:00",
-   "last_seen": "2026-09-19T04:58:30+00:00",
+   "last_seen": "2026-09-19T07:17:38+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2731,7 +2799,7 @@
    ],
    "per_1000km": 672.7,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 674,
    "distance_from": "Vancouver, BC"
   },
@@ -2766,7 +2834,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:38:24+00:00",
-   "last_seen": "2026-09-19T04:58:30+00:00",
+   "last_seen": "2026-09-19T07:17:38+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2793,8 +2861,102 @@
    ],
    "per_1000km": 429.9,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 11,
+   "distance_from": "Vancouver, BC"
+  },
+  {
+   "id": "a1a3538b-937d-4090-a09c-1fc19de25fcc",
+   "url": "https://www.autotrader.ca/offers/bmw-x3-xdrive30i-gasoline-black-cat_ma13gr18387va3241mt341tr478954-a1a3538b-937d-4090-a09c-1fc19de25fcc",
+   "title": "2023 BMW X3",
+   "year": 2023,
+   "make": "BMW",
+   "model": "X3",
+   "trim": "xDrive30i",
+   "price": 32498,
+   "currency": "CAD",
+   "mileage_km": 109634,
+   "location": "Sainte-Julie",
+   "province": "QC",
+   "seller": "",
+   "body": "SUV",
+   "color": "Black",
+   "transmission": "Automatic",
+   "drivetrain": "",
+   "fuel": "Gasoline",
+   "engine": "",
+   "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
+   "search_name": "BMW X3 M up to 2020 (F97)",
+   "first_seen": "2026-09-19T07:17:53+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
+   "status": "active",
+   "price_history": [
+    {
+     "at": "2026-09-19T07:17:53+00:00",
+     "price": 32498
+    }
+   ],
+   "price_source": "search",
+   "filtered": true,
+   "filter_reason": "year 2023 above maximum 2020",
+   "filter_rule": "max_year",
+   "unpriced": false,
+   "enriched": true,
+   "misses": 0,
+   "seller_type": "dealer",
+   "quiet_reason": "hidden by your rules: year 2023 above maximum 2020",
+   "is_new": false,
+   "photo_count": 0,
+   "per_1000km": 296.4,
+   "per_1000km_why": null,
+   "days_listed": 0
+  },
+  {
+   "id": "3bb74ea5-b80a-4ee4-8e12-2b7ac82682fd",
+   "url": "https://www.autotrader.ca/offers/bmw-x3-black-cat_ma13gr18387va3241mt345tr5341-3bb74ea5-b80a-4ee4-8e12-2b7ac82682fd",
+   "title": "2024 BMW X3",
+   "year": 2024,
+   "make": "BMW",
+   "model": "X3",
+   "trim": "X3",
+   "price": 56591,
+   "currency": "CAD",
+   "mileage_km": 80734,
+   "location": "Kitchener",
+   "province": "ON",
+   "seller": "",
+   "body": "SUV",
+   "color": "Black",
+   "transmission": "Automatic",
+   "drivetrain": "",
+   "fuel": "",
+   "engine": "",
+   "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
+   "search_name": "BMW X3 M up to 2020 (F97)",
+   "first_seen": "2026-09-19T07:17:53+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
+   "status": "active",
+   "price_history": [
+    {
+     "at": "2026-09-19T07:17:53+00:00",
+     "price": 56591
+    }
+   ],
+   "price_source": "search",
+   "filtered": true,
+   "filter_reason": "year 2024 above maximum 2020",
+   "filter_rule": "max_year",
+   "unpriced": false,
+   "enriched": true,
+   "misses": 0,
+   "seller_type": "dealer",
+   "quiet_reason": "hidden by your rules: year 2024 above maximum 2020",
+   "is_new": false,
+   "photo_count": 0,
+   "per_1000km": 701.0,
+   "per_1000km_why": null,
+   "days_listed": 0,
+   "distance_km": 3289,
    "distance_from": "Vancouver, BC"
   },
   {
@@ -2820,7 +2982,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-19T04:59:19+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2838,7 +3000,7 @@
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: Moose Jaw, SK is 1,263 km from Vancouver, BC, beyond the 1,000 km you asked for",
    "is_new": false,
-   "photo_count": 1,
+   "photo_count": 12,
    "per_1000km": 120.6,
    "per_1000km_why": null,
    "days_listed": 0,
@@ -2848,7 +3010,7 @@
   {
    "id": "f775575f-f57e-4d53-8b95-5cb5a8dd1f76",
    "url": "https://www.autotrader.ca/offers/bmw-x3-30-xdrive-sports-activity-vehicle-grey-cat_ma13gr18387va3241mt12007tr478954-f775575f-f57e-4d53-8b95-5cb5a8dd1f76",
-   "title": "2026 BMW X3",
+   "title": "2026 BMW X3 30 xDrive Sports Activity Vehicle",
    "year": 2026,
    "make": "BMW",
    "model": "X3",
@@ -2868,7 +3030,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-19T04:59:19+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2886,7 +3048,7 @@
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
-   "photo_count": 1,
+   "photo_count": 4,
    "per_1000km": null,
    "per_1000km_why": "only 10 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
@@ -2896,7 +3058,7 @@
   {
    "id": "edc02cbf-895b-4c2b-854b-010f378d548a",
    "url": "https://www.autotrader.ca/offers/bmw-x3-30-xdrive-sports-activity-vehicle-grey-cat_ma13gr18387va3241mt12007tr478954-edc02cbf-895b-4c2b-854b-010f378d548a",
-   "title": "2026 BMW X3",
+   "title": "2026 BMW X3 30 xDrive Sports Activity Vehicle",
    "year": 2026,
    "make": "BMW",
    "model": "X3",
@@ -2916,7 +3078,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-19T04:59:19+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2934,7 +3096,7 @@
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
-   "photo_count": 1,
+   "photo_count": 4,
    "per_1000km": null,
    "per_1000km_why": "only 10 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
@@ -2944,7 +3106,7 @@
   {
    "id": "da238e9b-9aa7-40fd-b3b2-19efca88cd79",
    "url": "https://www.autotrader.ca/offers/bmw-m3-competition-sedan-gasoline-cat_ma13gr202607-da238e9b-9aa7-40fd-b3b2-19efca88cd79",
-   "title": "2026 BMW M3",
+   "title": "2026 BMW M3 Competition Sedan",
    "year": 2026,
    "make": "BMW",
    "model": "M3",
@@ -2964,7 +3126,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-19T04:59:19+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -2982,7 +3144,7 @@
    "seller_type": "private",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
-   "photo_count": 1,
+   "photo_count": 8,
    "per_1000km": null,
    "per_1000km_why": "only 16,250 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0
@@ -2990,7 +3152,7 @@
   {
    "id": "d479fcc4-e43e-433b-8bb2-5f98f1d6a1ea",
    "url": "https://www.autotrader.ca/offers/bmw-x3-xdrive30i-gasoline-blue-cat_ma13gr18387va3241mt341tr478954-d479fcc4-e43e-433b-8bb2-5f98f1d6a1ea",
-   "title": "2023 BMW X3",
+   "title": "2023 BMW X3 xDrive30i",
    "year": 2023,
    "make": "BMW",
    "model": "X3",
@@ -3010,7 +3172,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-19T04:59:19+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3072,7 +3234,7 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 0,
+   "misses": 1,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2024 above maximum 2020",
    "is_new": false,
@@ -3086,7 +3248,7 @@
   {
    "id": "c8c61acb-e1b6-49b3-899c-f56f39104159",
    "url": "https://www.autotrader.ca/offers/bmw-x3-30-xdrive-sports-activity-vehicle-grey-cat_ma13gr18387va3241mt12007tr478954-c8c61acb-e1b6-49b3-899c-f56f39104159",
-   "title": "2026 BMW X3",
+   "title": "2026 BMW X3 30 xDrive Sports Activity Vehicle",
    "year": 2026,
    "make": "BMW",
    "model": "X3",
@@ -3106,7 +3268,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-19T04:59:19+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3124,7 +3286,7 @@
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
-   "photo_count": 1,
+   "photo_count": 4,
    "per_1000km": null,
    "per_1000km_why": "only 10 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
@@ -3134,7 +3296,7 @@
   {
    "id": "aa106dfd-8c15-4d45-b811-34de4f3ed1cb",
    "url": "https://www.autotrader.ca/offers/bmw-m4-competition-coupe-gasoline-grey-cat_ma13gr202608ge10761va306mt13041tr17955-aa106dfd-8c15-4d45-b811-34de4f3ed1cb",
-   "title": "2027 BMW M4",
+   "title": "2027 BMW M4 Competition Coupe",
    "year": 2027,
    "make": "BMW",
    "model": "M4",
@@ -3154,7 +3316,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-19T04:59:19+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3172,7 +3334,7 @@
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2027 above maximum 2020",
    "is_new": false,
-   "photo_count": 1,
+   "photo_count": 4,
    "per_1000km": null,
    "per_1000km_why": "only 10 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
@@ -3182,7 +3344,7 @@
   {
    "id": "a8f0f588-25f4-41d1-bb99-828e79473267",
    "url": "https://www.autotrader.ca/offers/bmw-x3-xdrive30i-sports-activity-vehicle-gasoline-cat_ma13gr18387va3241mt341tr478954-a8f0f588-25f4-41d1-bb99-828e79473267",
-   "title": "2019 BMW X3",
+   "title": "2019 BMW X3 xDrive30i Sports Activity Vehicle",
    "year": 2019,
    "make": "BMW",
    "model": "X3",
@@ -3202,7 +3364,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-19T04:59:19+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3220,22 +3382,22 @@
    "seller_type": "private",
    "quiet_reason": "hidden by your rules: Carnduff, SK is beyond the 1,000 km you asked for around Vancouver, BC",
    "is_new": false,
-   "photo_count": 1,
+   "photo_count": 11,
    "per_1000km": 278.4,
    "per_1000km_why": null,
    "days_listed": 0
   },
   {
    "id": "948b87a4-0093-400b-81f8-7fcf93c95cf1",
-   "url": "https://www.autotrader.ca/offers/bmw-m3-sedan-gasoline-black-cat_ma13gr202607va3047-948b87a4-0093-400b-81f8-7fcf93c95cf1",
-   "title": "2025 BMW M3",
+   "url": "https://www.autotrader.ca/offers/bmw-m3-carbon-int-premium-pack-carbon-int-premium-p-gasoline-black-cat_ma13gr202607va3047-948b87a4-0093-400b-81f8-7fcf93c95cf1",
+   "title": "2025 BMW M3 Sedan",
    "year": 2025,
    "make": "BMW",
    "model": "M3",
    "trim": "Sedan",
    "price": 99888,
    "currency": "CAD",
-   "mileage_km": 6913,
+   "mileage_km": 6893,
    "location": "Laval",
    "province": "QC",
    "seller": "",
@@ -3248,7 +3410,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-19T04:59:19+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3268,7 +3430,7 @@
    "is_new": false,
    "photo_count": 1,
    "per_1000km": null,
-   "per_1000km_why": "only 6,913 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
+   "per_1000km_why": "only 6,893 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
    "distance_km": 3671,
    "distance_from": "Vancouver, BC"
@@ -3276,7 +3438,7 @@
   {
    "id": "8be19f75-a199-4b73-b1f1-c32319b9137c",
    "url": "https://www.autotrader.ca/offers/bmw-x3-30-xdrive-sports-activity-vehicle-grey-cat_ma13gr18387va3241mt12007tr478954-8be19f75-a199-4b73-b1f1-c32319b9137c",
-   "title": "2026 BMW X3",
+   "title": "2026 BMW X3 30 xDrive Sports Activity Vehicle",
    "year": 2026,
    "make": "BMW",
    "model": "X3",
@@ -3296,7 +3458,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-19T04:59:19+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3314,7 +3476,7 @@
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
-   "photo_count": 1,
+   "photo_count": 4,
    "per_1000km": null,
    "per_1000km_why": "only 10 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
@@ -3324,7 +3486,7 @@
   {
    "id": "88dc5f24-2588-433e-b14f-e6b5cd745d3d",
    "url": "https://www.autotrader.ca/offers/bmw-x3-30-xdrive-sports-activity-vehicle-black-cat_ma13gr18387va3241mt12007tr478954-88dc5f24-2588-433e-b14f-e6b5cd745d3d",
-   "title": "2026 BMW X3",
+   "title": "2026 BMW X3 30 xDrive Sports Activity Vehicle",
    "year": 2026,
    "make": "BMW",
    "model": "X3",
@@ -3344,7 +3506,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-19T04:59:19+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3362,7 +3524,7 @@
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
-   "photo_count": 1,
+   "photo_count": 4,
    "per_1000km": null,
    "per_1000km_why": "only 10 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
@@ -3372,7 +3534,7 @@
   {
    "id": "86b90920-16d1-4753-866d-915a0bd5829a",
    "url": "https://www.autotrader.ca/offers/bmw-m3-competition-gasoline-black-cat_ma13gr202607ge10757va3047tr17951-86b90920-16d1-4753-866d-915a0bd5829a",
-   "title": "2027 BMW M3",
+   "title": "2027 BMW M3 Competition",
    "year": 2027,
    "make": "BMW",
    "model": "M3",
@@ -3392,7 +3554,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-19T04:59:19+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3410,7 +3572,7 @@
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2027 above maximum 2020",
    "is_new": false,
-   "photo_count": 1,
+   "photo_count": 11,
    "per_1000km": null,
    "per_1000km_why": "only 90 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
@@ -3420,7 +3582,7 @@
   {
    "id": "838986e0-cb03-429c-a0f9-756381526306",
    "url": "https://www.autotrader.ca/offers/bmw-x3-30-xdrive-sports-activity-vehicle-grey-cat_ma13gr18387va3241mt12007tr478954-838986e0-cb03-429c-a0f9-756381526306",
-   "title": "2026 BMW X3",
+   "title": "2026 BMW X3 30 xDrive Sports Activity Vehicle",
    "year": 2026,
    "make": "BMW",
    "model": "X3",
@@ -3440,7 +3602,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-19T04:59:19+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3458,7 +3620,7 @@
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
-   "photo_count": 1,
+   "photo_count": 4,
    "per_1000km": null,
    "per_1000km_why": "only 10 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
@@ -3468,7 +3630,7 @@
   {
    "id": "733de5bb-7f64-4213-a6dc-97b5b7fe8656",
    "url": "https://www.autotrader.ca/offers/bmw-x3-30-xdrive-sports-activity-vehicle-grey-cat_ma13gr18387va3241mt12007tr478954-733de5bb-7f64-4213-a6dc-97b5b7fe8656",
-   "title": "2026 BMW X3",
+   "title": "2026 BMW X3 30 xDrive Sports Activity Vehicle",
    "year": 2026,
    "make": "BMW",
    "model": "X3",
@@ -3488,7 +3650,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-19T04:59:19+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3506,7 +3668,7 @@
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
-   "photo_count": 1,
+   "photo_count": 4,
    "per_1000km": null,
    "per_1000km_why": "only 10 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
@@ -3550,7 +3712,7 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 0,
+   "misses": 1,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2023 above maximum 2020",
    "is_new": false,
@@ -3584,7 +3746,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-19T04:59:19+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [],
    "price_source": "",
@@ -3607,7 +3769,7 @@
   {
    "id": "4550c895-51d1-4dea-bc05-5732d4a630ea",
    "url": "https://www.autotrader.ca/offers/bmw-m3-competition-sedan-white-cat_ma13gr202607ge10757va3047tr17951-4550c895-51d1-4dea-bc05-5732d4a630ea",
-   "title": "2027 BMW M3",
+   "title": "2027 BMW M3 Competition Sedan",
    "year": 2027,
    "make": "BMW",
    "model": "M3",
@@ -3627,7 +3789,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-19T04:59:19+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3655,7 +3817,7 @@
   {
    "id": "4418b205-3aaf-4497-9160-c6cbb9143b38",
    "url": "https://www.autotrader.ca/offers/bmw-x3-30-xdrive-sports-activity-vehicle-red-cat_ma13gr18387va3241mt12007tr478954-4418b205-3aaf-4497-9160-c6cbb9143b38",
-   "title": "2026 BMW X3",
+   "title": "2026 BMW X3 30 xDrive Sports Activity Vehicle",
    "year": 2026,
    "make": "BMW",
    "model": "X3",
@@ -3675,7 +3837,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-19T04:59:19+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3693,7 +3855,7 @@
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
-   "photo_count": 1,
+   "photo_count": 4,
    "per_1000km": null,
    "per_1000km_why": "only 10 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
@@ -3703,7 +3865,7 @@
   {
    "id": "204a90cb-efaa-4a94-a334-c9f83ce45ac8",
    "url": "https://www.autotrader.ca/offers/bmw-x3-30-xdrive-sports-activity-vehicle-grey-cat_ma13gr18387va3241mt12007tr478954-204a90cb-efaa-4a94-a334-c9f83ce45ac8",
-   "title": "2026 BMW X3",
+   "title": "2026 BMW X3 30 xDrive Sports Activity Vehicle",
    "year": 2026,
    "make": "BMW",
    "model": "X3",
@@ -3723,7 +3885,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-19T04:59:19+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3741,7 +3903,7 @@
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
-   "photo_count": 1,
+   "photo_count": 4,
    "per_1000km": null,
    "per_1000km_why": "only 10 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
@@ -3751,7 +3913,7 @@
   {
    "id": "1e94d1ef-9b4d-4b34-9dc0-e25c22f4c20e",
    "url": "https://www.autotrader.ca/offers/bmw-x3-30-xdrive-sports-activity-vehicle-red-cat_ma13gr18387va3241mt12007tr478954-1e94d1ef-9b4d-4b34-9dc0-e25c22f4c20e",
-   "title": "2026 BMW X3",
+   "title": "2026 BMW X3 30 xDrive Sports Activity Vehicle",
    "year": 2026,
    "make": "BMW",
    "model": "X3",
@@ -3771,7 +3933,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-19T04:59:19+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3789,7 +3951,7 @@
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
-   "photo_count": 1,
+   "photo_count": 4,
    "per_1000km": null,
    "per_1000km_why": "only 10 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
@@ -3799,7 +3961,7 @@
   {
    "id": "0be64db9-a239-4ee0-b3d5-f0db136e2842",
    "url": "https://www.autotrader.ca/offers/bmw-x3-30-xdrive-sports-activity-vehicle-grey-cat_ma13gr18387va3241mt12007tr478954-0be64db9-a239-4ee0-b3d5-f0db136e2842",
-   "title": "2026 BMW X3",
+   "title": "2026 BMW X3 30 xDrive Sports Activity Vehicle",
    "year": 2026,
    "make": "BMW",
    "model": "X3",
@@ -3819,7 +3981,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-19T04:59:19+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3837,7 +3999,7 @@
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
-   "photo_count": 1,
+   "photo_count": 4,
    "per_1000km": null,
    "per_1000km_why": "only 10 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
@@ -3847,7 +4009,7 @@
   {
    "id": "00dc324b-4db1-4fdc-a3e6-6e102e77bb5f",
    "url": "https://www.autotrader.ca/offers/bmw-x3-30-xdrive-sports-activity-vehicle-black-cat_ma13gr18387va3241mt12007tr478954-00dc324b-4db1-4fdc-a3e6-6e102e77bb5f",
-   "title": "2026 BMW X3",
+   "title": "2026 BMW X3 30 xDrive Sports Activity Vehicle",
    "year": 2026,
    "make": "BMW",
    "model": "X3",
@@ -3867,7 +4029,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-19T04:59:19+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -3885,7 +4047,7 @@
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
-   "photo_count": 1,
+   "photo_count": 4,
    "per_1000km": null,
    "per_1000km_why": "only 10 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
    "days_listed": 0,
@@ -3929,7 +4091,7 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 2,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2024 above maximum 2020",
    "is_new": false,
@@ -3963,7 +4125,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-19T00:15:43+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -4011,7 +4173,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-19T00:15:43+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -4073,7 +4235,7 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 2,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
@@ -4107,7 +4269,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-18T20:51:46+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [],
    "price_source": "",
@@ -4164,7 +4326,7 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 2,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
@@ -4212,7 +4374,7 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 2,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2024 above maximum 2020",
    "is_new": false,
@@ -4260,7 +4422,7 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 2,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2021 above maximum 2020",
    "is_new": false,
@@ -4308,7 +4470,7 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 2,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
@@ -4356,7 +4518,7 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 2,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
@@ -4404,7 +4566,7 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 2,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2025 above maximum 2020",
    "is_new": false,
@@ -4452,7 +4614,7 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 2,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2024 above maximum 2020",
    "is_new": false,
@@ -4486,7 +4648,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-18T20:51:46+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -4548,7 +4710,7 @@
    "filter_rule": "max_distance_km",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 2,
    "seller_type": "private",
    "quiet_reason": "hidden by your rules: Lasalle, QC is beyond the 1,000 km you asked for around Vancouver, BC",
    "is_new": false,
@@ -4589,7 +4751,7 @@
    "filter_rule": "max_year",
    "unpriced": true,
    "enriched": true,
-   "misses": 1,
+   "misses": 2,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2023 above maximum 2020",
    "is_new": false,
@@ -4638,7 +4800,7 @@
    "unpriced": false,
    "enriched": true,
    "priced_at": "2026-09-19T00:15:43+00:00",
-   "misses": 1,
+   "misses": 2,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2024 above maximum 2020",
    "is_new": false,
@@ -4734,7 +4896,7 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 2,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2021 above maximum 2020",
    "is_new": false,
@@ -4782,7 +4944,7 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 2,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
@@ -4830,7 +4992,7 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 2,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2023 above maximum 2020",
    "is_new": false,
@@ -4864,7 +5026,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-18T17:39:37+00:00",
-   "last_seen": "2026-09-19T00:15:43+00:00",
+   "last_seen": "2026-09-19T07:18:29+00:00",
    "status": "active",
    "price_history": [
     {
@@ -4878,7 +5040,7 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 0,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
@@ -5099,7 +5261,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-18T12:56:48+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -6147,7 +6309,7 @@
    "filter_rule": "max_year",
    "unpriced": true,
    "enriched": true,
-   "misses": 1,
+   "misses": 2,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2024 above maximum 2020",
    "is_new": false,
@@ -6181,7 +6343,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-18T07:22:47+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -6320,7 +6482,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-18T07:22:47+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -6507,7 +6669,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-18T07:22:47+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -6708,7 +6870,7 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 0,
+   "misses": 1,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
@@ -6742,7 +6904,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-18T07:22:47+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -6836,7 +6998,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-18T00:11:54+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -7550,7 +7712,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-17T21:21:05+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -7703,7 +7865,7 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 0,
+   "misses": 1,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2024 above maximum 2020",
    "is_new": false,
@@ -7751,7 +7913,7 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 0,
+   "misses": 1,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2021 above maximum 2020",
    "is_new": false,
@@ -7962,7 +8124,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-17T18:10:30+00:00",
-   "last_seen": "2026-09-19T00:16:20+00:00",
+   "last_seen": "2026-09-19T07:18:40+00:00",
    "status": "active",
    "price_history": [
     {
@@ -7976,7 +8138,7 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 0,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2023 above maximum 2020",
    "is_new": false,
@@ -8106,7 +8268,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-17T13:24:20+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -8353,7 +8515,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-17T13:24:20+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -8981,7 +9143,7 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 0,
+   "misses": 1,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
@@ -9154,7 +9316,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-17T07:35:55+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -9435,7 +9597,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-17T07:35:55+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -9574,7 +9736,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-17T07:35:55+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -9668,7 +9830,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-17T07:35:55+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -9716,7 +9878,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-17T07:35:55+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -9778,7 +9940,7 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 0,
+   "misses": 1,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
@@ -9908,7 +10070,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-17T00:25:50+00:00",
-   "last_seen": "2026-09-19T00:15:53+00:00",
+   "last_seen": "2026-09-19T07:18:03+00:00",
    "status": "active",
    "price_history": [
     {
@@ -9922,7 +10084,7 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 0,
    "seller_type": "private",
    "quiet_reason": "hidden by your rules: year 2025 above maximum 2020",
    "is_new": false,
@@ -10499,7 +10661,7 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 0,
+   "misses": 1,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
@@ -10577,7 +10739,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-16T21:17:22+00:00",
-   "last_seen": "2026-09-19T00:16:11+00:00",
+   "last_seen": "2026-09-19T07:18:30+00:00",
    "status": "active",
    "price_history": [
     {
@@ -10591,7 +10753,7 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 0,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2024 above maximum 2020",
    "is_new": false,
@@ -11197,7 +11359,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-16T13:28:50+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -11308,7 +11470,7 @@
    "filter_rule": "max_distance_km",
    "unpriced": false,
    "enriched": true,
-   "misses": 0,
+   "misses": 1,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: Vaughan, ON is 3,341 km from Vancouver, BC, beyond the 1,000 km you asked for",
    "is_new": false,
@@ -11630,7 +11792,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-16T13:28:50+00:00",
-   "last_seen": "2026-09-19T00:16:22+00:00",
+   "last_seen": "2026-09-19T07:18:42+00:00",
    "status": "active",
    "price_history": [
     {
@@ -11644,7 +11806,7 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 0,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2022 above maximum 2020",
    "is_new": false,
@@ -11727,7 +11889,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-16T13:28:50+00:00",
-   "last_seen": "2026-09-19T00:16:15+00:00",
+   "last_seen": "2026-09-19T07:18:34+00:00",
    "status": "active",
    "price_history": [
     {
@@ -11741,7 +11903,7 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 0,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
@@ -12072,7 +12234,7 @@
    "filter_rule": "max_distance_km",
    "unpriced": false,
    "enriched": true,
-   "misses": 0,
+   "misses": 1,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: Vaughan, ON is 3,341 km from Vancouver, BC, beyond the 1,000 km you asked for",
    "is_new": false,
@@ -12192,7 +12354,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-16T07:38:44+00:00",
-   "last_seen": "2026-09-19T00:16:29+00:00",
+   "last_seen": "2026-09-19T07:18:49+00:00",
    "status": "active",
    "price_history": [
     {
@@ -12206,7 +12368,7 @@
    "filter_rule": "max_distance_km",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 0,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: Brantford, ON is 3,321 km from Vancouver, BC, beyond the 1,000 km you asked for",
    "is_new": false,
@@ -12240,7 +12402,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-16T07:38:44+00:00",
-   "last_seen": "2026-09-19T00:16:18+00:00",
+   "last_seen": "2026-09-19T07:18:38+00:00",
    "status": "active",
    "price_history": [
     {
@@ -12254,7 +12416,7 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 0,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
@@ -12336,7 +12498,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-16T00:14:27+00:00",
-   "last_seen": "2026-09-19T00:16:25+00:00",
+   "last_seen": "2026-09-19T07:18:46+00:00",
    "status": "active",
    "price_history": [
     {
@@ -12350,7 +12512,7 @@
    "filter_rule": "max_distance_km",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 0,
    "seller_type": "private",
    "quiet_reason": "hidden by your rules: Ingersoll, ON is beyond the 1,000 km you asked for around Vancouver, BC",
    "is_new": false,
@@ -12620,7 +12782,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-15T21:16:35+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -13059,7 +13221,7 @@
    "filter_rule": "max_distance_km",
    "unpriced": false,
    "enriched": true,
-   "misses": 0,
+   "misses": 1,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: Scarborough, ON is 3,362 km from Vancouver, BC, beyond the 1,000 km you asked for",
    "is_new": false,
@@ -13093,7 +13255,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-15T16:53:31+00:00",
-   "last_seen": "2026-09-19T00:15:47+00:00",
+   "last_seen": "2026-09-19T07:17:56+00:00",
    "status": "active",
    "price_history": [
     {
@@ -13107,7 +13269,7 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 0,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
@@ -13674,7 +13836,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-15T11:38:51+00:00",
-   "last_seen": "2026-09-19T00:16:28+00:00",
+   "last_seen": "2026-09-19T07:18:48+00:00",
    "status": "active",
    "price_history": [],
    "price_source": "",
@@ -13683,7 +13845,7 @@
    "filter_rule": "max_year",
    "unpriced": true,
    "enriched": true,
-   "misses": 1,
+   "misses": 0,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2024 above maximum 2020",
    "is_new": false,
@@ -13731,7 +13893,7 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 0,
+   "misses": 1,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
@@ -13779,7 +13941,7 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 0,
+   "misses": 1,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
@@ -13813,7 +13975,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-15T11:38:51+00:00",
-   "last_seen": "2026-09-19T00:16:13+00:00",
+   "last_seen": "2026-09-19T07:18:32+00:00",
    "status": "active",
    "price_history": [
     {
@@ -13832,7 +13994,7 @@
    "unpriced": false,
    "enriched": true,
    "photos_at": "2026-09-15T16:53:31+00:00",
-   "misses": 1,
+   "misses": 0,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
@@ -13867,7 +14029,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-15T04:48:25+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -13915,7 +14077,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-15T04:48:25+00:00",
-   "last_seen": "2026-09-19T00:15:55+00:00",
+   "last_seen": "2026-09-19T07:18:05+00:00",
    "status": "active",
    "price_history": [
     {
@@ -13929,7 +14091,7 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 0,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2027 above maximum 2020",
    "is_new": false,
@@ -14479,7 +14641,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-14T23:07:00+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -14815,7 +14977,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-14T19:19:15+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -14955,7 +15117,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-14T19:19:15+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -15018,7 +15180,7 @@
    "unpriced": false,
    "enriched": true,
    "priced_at": "2026-09-14T23:07:00+00:00",
-   "misses": 0,
+   "misses": 1,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
@@ -15066,7 +15228,7 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 0,
+   "misses": 1,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2023 above maximum 2020",
    "is_new": false,
@@ -15100,7 +15262,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-14T12:37:37+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -15400,7 +15562,7 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 0,
+   "misses": 1,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2024 above maximum 2020",
    "is_new": false,
@@ -15434,7 +15596,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-14T00:08:37+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -15579,7 +15741,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T08:36:17+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -15627,7 +15789,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T08:36:17+00:00",
-   "last_seen": "2026-09-19T00:16:02+00:00",
+   "last_seen": "2026-09-19T07:18:13+00:00",
    "status": "active",
    "price_history": [
     {
@@ -15641,7 +15803,7 @@
    "filter_rule": "max_distance_km",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 0,
    "seller_type": "private",
    "quiet_reason": "hidden by your rules: Maple, ON is beyond the 1,000 km you asked for around Vancouver, BC",
    "is_new": false,
@@ -15682,7 +15844,7 @@
    "filter_rule": "max_year",
    "unpriced": true,
    "enriched": true,
-   "misses": 0,
+   "misses": 1,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2025 above maximum 2020",
    "is_new": false,
@@ -15730,14 +15892,14 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 0,
+   "misses": 1,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2024 above maximum 2020",
    "is_new": false,
    "photo_count": 12,
    "per_1000km": null,
    "per_1000km_why": "only 15,015 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 0,
    "distance_from": "Vancouver, BC"
   },
@@ -15785,7 +15947,7 @@
    "photo_count": 11,
    "per_1000km": 1434.4,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 0,
    "distance_from": "Vancouver, BC"
   },
@@ -15828,7 +15990,7 @@
    "photo_count": 0,
    "per_1000km": null,
    "per_1000km_why": "no asking price",
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3539,
    "distance_from": "Vancouver, BC"
   },
@@ -15855,7 +16017,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-19T00:15:43+00:00",
+   "last_seen": "2026-09-19T07:18:27+00:00",
    "status": "active",
    "price_history": [
     {
@@ -15873,7 +16035,7 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 0,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2025 above maximum 2020",
    "is_new": false,
@@ -15881,7 +16043,7 @@
    "photo_count": 1,
    "per_1000km": null,
    "per_1000km_why": "only 5,475 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3686,
    "distance_from": "Vancouver, BC"
   },
@@ -15921,14 +16083,14 @@
    "filter_reason": "year 2027 above maximum 2020",
    "unpriced": false,
    "enriched": false,
-   "misses": 0,
+   "misses": 1,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2027 above maximum 2020",
    "is_new": false,
    "photo_count": 12,
    "per_1000km": null,
    "per_1000km_why": "only 90 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3539,
    "distance_from": "Vancouver, BC"
   },
@@ -15969,14 +16131,14 @@
    "filter_rule": "max_distance_km",
    "unpriced": false,
    "enriched": true,
-   "misses": 0,
+   "misses": 1,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: Cambridge, ON is 3,306 km from Vancouver, BC, beyond the 1,000 km you asked for",
    "is_new": false,
    "photo_count": 12,
    "per_1000km": 293.2,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3306,
    "distance_from": "Vancouver, BC"
   },
@@ -16017,14 +16179,14 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 0,
+   "misses": 1,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2027 above maximum 2020",
    "is_new": false,
    "photo_count": 0,
    "per_1000km": null,
    "per_1000km_why": "only 18 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 818,
    "distance_from": "Vancouver, BC"
   },
@@ -16067,7 +16229,7 @@
    "photo_count": 1,
    "per_1000km": null,
    "per_1000km_why": "no asking price",
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3393,
    "distance_from": "Vancouver, BC"
   },
@@ -16094,7 +16256,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -16115,7 +16277,7 @@
    "photo_count": 12,
    "per_1000km": 1460.3,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3359,
    "distance_from": "Vancouver, BC"
   },
@@ -16142,7 +16304,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -16163,7 +16325,7 @@
    "photo_count": 3,
    "per_1000km": null,
    "per_1000km_why": "only 90 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3676,
    "distance_from": "Vancouver, BC"
   },
@@ -16190,7 +16352,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-19T00:15:57+00:00",
+   "last_seen": "2026-09-19T07:18:07+00:00",
    "status": "active",
    "price_history": [
     {
@@ -16204,14 +16366,14 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 0,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2024 above maximum 2020",
    "is_new": false,
    "photo_count": 12,
    "per_1000km": 2917.6,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3362,
    "distance_from": "Vancouver, BC"
   },
@@ -16238,7 +16400,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-19T00:16:09+00:00",
+   "last_seen": "2026-09-19T07:18:25+00:00",
    "status": "active",
    "price_history": [
     {
@@ -16252,14 +16414,14 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 0,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2024 above maximum 2020",
    "is_new": false,
    "photo_count": 12,
    "per_1000km": 6810.1,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 818,
    "distance_from": "Vancouver, BC"
   },
@@ -16307,7 +16469,7 @@
    "photo_count": 12,
    "per_1000km": 489.4,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3359,
    "distance_from": "Vancouver, BC"
   },
@@ -16348,14 +16510,14 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 0,
+   "misses": 1,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
    "photo_count": 1,
    "per_1000km": null,
    "per_1000km_why": "only 11,210 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3643,
    "distance_from": "Vancouver, BC"
   },
@@ -16403,7 +16565,7 @@
    "photo_count": 12,
    "per_1000km": 143.4,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3334,
    "distance_from": "Vancouver, BC"
   },
@@ -16444,14 +16606,14 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": false,
-   "misses": 0,
+   "misses": 1,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
    "photo_count": 12,
    "per_1000km": null,
    "per_1000km_why": "only 910 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3359,
    "distance_from": "Vancouver, BC"
   },
@@ -16500,7 +16662,7 @@
    "photo_count": 1,
    "per_1000km": 2143.3,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3359,
    "distance_from": "Vancouver, BC"
   },
@@ -16541,14 +16703,14 @@
    "filter_rule": "max_distance_km",
    "unpriced": false,
    "enriched": true,
-   "misses": 0,
+   "misses": 1,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: Saskatoon, SK is 1,200 km from Vancouver, BC, beyond the 1,000 km you asked for",
    "is_new": false,
    "photo_count": 12,
    "per_1000km": 1075.9,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 1200,
    "distance_from": "Vancouver, BC"
   },
@@ -16589,14 +16751,14 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 0,
+   "misses": 1,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
    "photo_count": 1,
    "per_1000km": 5426.7,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3672,
    "distance_from": "Vancouver, BC"
   },
@@ -16641,7 +16803,7 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 0,
+   "misses": 1,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2025 above maximum 2020",
    "is_new": false,
@@ -16649,7 +16811,7 @@
    "photo_count": 12,
    "per_1000km": 1898.0,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3696,
    "distance_from": "Vancouver, BC"
   },
@@ -16676,7 +16838,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-19T00:15:43+00:00",
+   "last_seen": "2026-09-19T07:18:23+00:00",
    "status": "active",
    "price_history": [
     {
@@ -16694,7 +16856,7 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 0,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
@@ -16702,7 +16864,7 @@
    "photo_count": 12,
    "per_1000km": null,
    "per_1000km_why": "only 5,882 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3352,
    "distance_from": "Vancouver, BC"
   },
@@ -16743,14 +16905,14 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 2,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2027 above maximum 2020",
    "is_new": false,
    "photo_count": 12,
    "per_1000km": null,
    "per_1000km_why": "only 90 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3539,
    "distance_from": "Vancouver, BC"
   },
@@ -16804,7 +16966,7 @@
    "photo_count": 0,
    "per_1000km": 2179.6,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3289,
    "distance_from": "Vancouver, BC"
   },
@@ -16851,7 +17013,7 @@
    "photo_count": 1,
    "per_1000km": null,
    "per_1000km_why": "only 90 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3686,
    "distance_from": "Vancouver, BC"
   },
@@ -16900,7 +17062,7 @@
    "photo_count": 12,
    "per_1000km": null,
    "per_1000km_why": "only 5,000 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3341,
    "distance_from": "Vancouver, BC"
   },
@@ -16948,7 +17110,7 @@
    "photo_count": 0,
    "per_1000km": 282.4,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 1200,
    "distance_from": "Vancouver, BC"
   },
@@ -16996,7 +17158,7 @@
    "photo_count": 1,
    "per_1000km": null,
    "per_1000km_why": "only 90 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3686,
    "distance_from": "Vancouver, BC"
   },
@@ -17023,7 +17185,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-19T00:15:52+00:00",
+   "last_seen": "2026-09-19T07:18:01+00:00",
    "status": "active",
    "price_history": [
     {
@@ -17037,14 +17199,14 @@
    "filter_rule": "max_distance_km",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 0,
    "seller_type": "private",
    "quiet_reason": "hidden by your rules: Etobicoke, ON is 3,346 km from Vancouver, BC, beyond the 1,000 km you asked for",
    "is_new": false,
    "photo_count": 10,
    "per_1000km": 201.6,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3346,
    "distance_from": "Vancouver, BC"
   },
@@ -17097,7 +17259,7 @@
    "photo_count": 0,
    "per_1000km": 603.1,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 97,
    "distance_from": "Vancouver, BC"
   },
@@ -17140,7 +17302,7 @@
    "photo_count": 0,
    "per_1000km": null,
    "per_1000km_why": "no asking price",
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 0,
    "distance_from": "Vancouver, BC"
   },
@@ -17167,7 +17329,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-19T00:15:50+00:00",
+   "last_seen": "2026-09-19T07:17:59+00:00",
    "status": "active",
    "price_history": [
     {
@@ -17181,14 +17343,14 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": false,
-   "misses": 1,
+   "misses": 0,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2025 above maximum 2020",
    "is_new": false,
    "photo_count": 12,
    "per_1000km": 4755.2,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3289,
    "distance_from": "Vancouver, BC"
   },
@@ -17235,7 +17397,7 @@
    "photo_count": 1,
    "per_1000km": null,
    "per_1000km_why": "only 90 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3686,
    "distance_from": "Vancouver, BC"
   },
@@ -17262,7 +17424,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -17283,7 +17445,7 @@
    "photo_count": 12,
    "per_1000km": null,
    "per_1000km_why": "only 90 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3343,
    "distance_from": "Vancouver, BC"
   },
@@ -17310,7 +17472,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-19T00:16:08+00:00",
+   "last_seen": "2026-09-19T07:18:19+00:00",
    "status": "active",
    "price_history": [
     {
@@ -17324,14 +17486,14 @@
    "filter_rule": "min_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 0,
    "seller_type": "private",
    "quiet_reason": "hidden by your rules: year 2012 below minimum 2015",
    "is_new": false,
    "photo_count": 11,
    "per_1000km": 423.4,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 674,
    "distance_from": "Vancouver, BC"
   },
@@ -17379,7 +17541,7 @@
    "photo_count": 11,
    "per_1000km": null,
    "per_1000km_why": "only 16,366 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 270,
    "distance_from": "Vancouver, BC"
   },
@@ -17406,7 +17568,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-19T00:15:49+00:00",
+   "last_seen": "2026-09-19T07:17:58+00:00",
    "status": "active",
    "price_history": [
     {
@@ -17420,14 +17582,14 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": false,
-   "misses": 1,
+   "misses": 0,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2022 above maximum 2020",
    "is_new": false,
    "photo_count": 12,
    "per_1000km": 1504.9,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 24,
    "distance_from": "Vancouver, BC"
   },
@@ -17476,7 +17638,7 @@
    "photo_count": 8,
    "per_1000km": 488.6,
    "per_1000km_why": null,
-   "days_listed": 5
+   "days_listed": 6
   },
   {
    "id": "60afbe64-8024-41e8-9fcb-79fe330d24d9",
@@ -17518,7 +17680,7 @@
    "photo_count": 0,
    "per_1000km": null,
    "per_1000km_why": "no asking price",
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 38,
    "distance_from": "Vancouver, BC"
   },
@@ -17545,7 +17707,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-19T00:15:43+00:00",
+   "last_seen": "2026-09-19T07:18:17+00:00",
    "status": "active",
    "price_history": [
     {
@@ -17559,14 +17721,14 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 0,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2027 above maximum 2020",
    "is_new": false,
    "photo_count": 12,
    "per_1000km": null,
    "per_1000km_why": "only 90 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3359,
    "distance_from": "Vancouver, BC"
   },
@@ -17593,7 +17755,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-19T00:16:04+00:00",
+   "last_seen": "2026-09-19T07:18:15+00:00",
    "status": "active",
    "price_history": [
     {
@@ -17607,14 +17769,14 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 0,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2023 above maximum 2020",
    "is_new": false,
    "photo_count": 12,
    "per_1000km": null,
    "per_1000km_why": "only 11,550 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3344,
    "distance_from": "Vancouver, BC"
   },
@@ -17662,7 +17824,7 @@
    "photo_count": 12,
    "per_1000km": 240.1,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3348,
    "distance_from": "Vancouver, BC"
   },
@@ -17710,7 +17872,7 @@
    "photo_count": 11,
    "per_1000km": null,
    "per_1000km_why": "only 13,357 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3337,
    "distance_from": "Vancouver, BC"
   },
@@ -17751,14 +17913,14 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 0,
+   "misses": 1,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2027 above maximum 2020",
    "is_new": false,
    "photo_count": 0,
    "per_1000km": null,
    "per_1000km_why": "only 90 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3328,
    "distance_from": "Vancouver, BC"
   },
@@ -17785,7 +17947,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-19T00:16:00+00:00",
+   "last_seen": "2026-09-19T07:18:11+00:00",
    "status": "active",
    "price_history": [
     {
@@ -17799,14 +17961,14 @@
    "filter_rule": "max_distance_km",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 0,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: Toronto, ON is 3,359 km from Vancouver, BC, beyond the 1,000 km you asked for",
    "is_new": false,
    "photo_count": 12,
    "per_1000km": 878.5,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3359,
    "distance_from": "Vancouver, BC"
   },
@@ -17855,7 +18017,7 @@
    "photo_count": 12,
    "per_1000km": null,
    "per_1000km_why": "only 90 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3686,
    "distance_from": "Vancouver, BC"
   },
@@ -17882,7 +18044,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -17903,7 +18065,7 @@
    "photo_count": 0,
    "per_1000km": 1434.4,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3720,
    "distance_from": "Vancouver, BC"
   },
@@ -17952,7 +18114,7 @@
    "photo_count": 5,
    "per_1000km": 2251.8,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3359,
    "distance_from": "Vancouver, BC"
   },
@@ -17992,14 +18154,14 @@
    "filter_reason": "year 2026 above maximum 2020",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 2,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
    "photo_count": 1,
    "per_1000km": null,
    "per_1000km_why": "only 90 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3686,
    "distance_from": "Vancouver, BC"
   },
@@ -18040,14 +18202,14 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 0,
+   "misses": 1,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2027 above maximum 2020",
    "is_new": false,
    "photo_count": 12,
    "per_1000km": null,
    "per_1000km_why": "only 303 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3686,
    "distance_from": "Vancouver, BC"
   },
@@ -18088,14 +18250,14 @@
    "filter_rule": "min_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 0,
+   "misses": 1,
    "seller_type": "private",
    "quiet_reason": "hidden by your rules: year 2013 below minimum 2015",
    "is_new": false,
    "photo_count": 6,
    "per_1000km": 664.9,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3258,
    "distance_from": "Vancouver, BC"
   },
@@ -18122,7 +18284,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-19T00:16:24+00:00",
+   "last_seen": "2026-09-19T07:18:44+00:00",
    "status": "active",
    "price_history": [
     {
@@ -18136,14 +18298,14 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 0,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2024 above maximum 2020",
    "is_new": false,
    "photo_count": 1,
    "per_1000km": 1071.0,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3359,
    "distance_from": "Vancouver, BC"
   },
@@ -18170,7 +18332,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-19T04:59:19+00:00",
+   "last_seen": "2026-09-19T07:17:53+00:00",
    "status": "active",
    "price_history": [
     {
@@ -18191,7 +18353,7 @@
    "photo_count": 12,
    "per_1000km": null,
    "per_1000km_why": "only 5,594 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3289,
    "distance_from": "Vancouver, BC"
   },
@@ -18218,7 +18380,7 @@
    "search_id": "bmw-m4-up-to-2020-f82-fc136e",
    "search_name": "BMW M4 up to 2020 (F82)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-19T00:15:45+00:00",
+   "last_seen": "2026-09-19T07:17:54+00:00",
    "status": "active",
    "price_history": [
     {
@@ -18232,14 +18394,14 @@
    "filter_rule": "max_distance_km",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 0,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: Vaughan, ON is 3,341 km from Vancouver, BC, beyond the 1,000 km you asked for",
    "is_new": false,
    "photo_count": 12,
    "per_1000km": 390.7,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3341,
    "distance_from": "Vancouver, BC"
   },
@@ -18266,7 +18428,7 @@
    "search_id": "bmw-x3-m-up-to-2020-f97-7d9aaf",
    "search_name": "BMW X3 M up to 2020 (F97)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-19T00:16:16+00:00",
+   "last_seen": "2026-09-19T07:18:36+00:00",
    "status": "active",
    "price_history": [
     {
@@ -18280,14 +18442,14 @@
    "filter_rule": "max_distance_km",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 0,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: North York, ON is 3,351 km from Vancouver, BC, beyond the 1,000 km you asked for",
    "is_new": false,
    "photo_count": 12,
    "per_1000km": 201.7,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3351,
    "distance_from": "Vancouver, BC"
   },
@@ -18327,14 +18489,14 @@
    "filter_reason": "year 2026 above maximum 2020",
    "unpriced": false,
    "enriched": true,
-   "misses": 0,
+   "misses": 1,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2026 above maximum 2020",
    "is_new": false,
    "photo_count": 1,
    "per_1000km": null,
    "per_1000km_why": "only 90 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3686,
    "distance_from": "Vancouver, BC"
   },
@@ -18361,7 +18523,7 @@
    "search_id": "bmw-m3-2015-2020-f80-7e1845",
    "search_name": "BMW M3 2015-2020 (F80)",
    "first_seen": "2026-09-13T05:40:00+00:00",
-   "last_seen": "2026-09-19T00:15:59+00:00",
+   "last_seen": "2026-09-19T07:18:09+00:00",
    "status": "active",
    "price_history": [
     {
@@ -18375,14 +18537,14 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 1,
+   "misses": 0,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2025 above maximum 2020",
    "is_new": false,
    "photo_count": 0,
    "per_1000km": null,
    "per_1000km_why": "only 8,912 km on it - that is delivery mileage, not wear, and the ratio would be meaningless",
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3720,
    "distance_from": "Vancouver, BC"
   },
@@ -18427,7 +18589,7 @@
    "filter_rule": "max_year",
    "unpriced": false,
    "enriched": true,
-   "misses": 0,
+   "misses": 1,
    "seller_type": "dealer",
    "quiet_reason": "hidden by your rules: year 2025 above maximum 2020",
    "is_new": false,
@@ -18435,7 +18597,7 @@
    "photo_count": 1,
    "per_1000km": 4967.1,
    "per_1000km_why": null,
-   "days_listed": 5,
+   "days_listed": 6,
    "distance_km": 3336,
    "distance_from": "Vancouver, BC"
   }
@@ -18473,20 +18635,20 @@
     ]
    },
    "health": {
-    "last_ok": "2026-09-19T04:58:29+00:00",
+    "last_ok": "2026-09-19T07:17:36+00:00",
     "last_error": null,
-    "last_count": 34,
+    "last_count": 33,
     "last_strategy": "embedded_json",
     "consecutive_failures": 0,
     "shut_out": null
    },
-   "active_count": 16,
+   "active_count": 17,
    "counts": {
-    "active": 16,
+    "active": 17,
     "filtered": 34,
     "unpriced": 0,
     "gone": 2,
-    "total": 52
+    "total": 53
    },
    "rules": {
     "filters": {
@@ -18517,12 +18679,12 @@
      "regex"
     ],
     "scores": {
-     "jsonld": 16,
-     "embedded_json": 34,
-     "anchors": 16,
-     "regex": 34
+     "jsonld": 17,
+     "embedded_json": 33,
+     "anchors": 17,
+     "regex": 33
     },
-    "listing_count": 34,
+    "listing_count": 33,
     "markers": {
      "json_ld": "few",
      "next_data": "few",
@@ -18566,9 +18728,9 @@
     ]
    },
    "health": {
-    "last_ok": "2026-09-19T04:58:34+00:00",
+    "last_ok": "2026-09-19T07:17:42+00:00",
     "last_error": null,
-    "last_count": 27,
+    "last_count": 26,
     "last_strategy": "embedded_json",
     "consecutive_failures": 0,
     "shut_out": null
@@ -18611,12 +18773,12 @@
      "regex"
     ],
     "scores": {
-     "jsonld": 7,
-     "embedded_json": 27,
-     "anchors": 7,
-     "regex": 27
+     "jsonld": 6,
+     "embedded_json": 26,
+     "anchors": 6,
+     "regex": 26
     },
-    "listing_count": 27,
+    "listing_count": 26,
     "markers": {
      "json_ld": "few",
      "next_data": "few",
@@ -18660,7 +18822,7 @@
     ]
    },
    "health": {
-    "last_ok": "2026-09-19T04:58:44+00:00",
+    "last_ok": "2026-09-19T07:17:46+00:00",
     "last_error": null,
     "last_count": 25,
     "last_strategy": "embedded_json",
@@ -18670,10 +18832,10 @@
    "active_count": 22,
    "counts": {
     "active": 22,
-    "filtered": 248,
+    "filtered": 250,
     "unpriced": 4,
     "gone": 4,
-    "total": 274
+    "total": 276
    },
    "rules": {
     "filters": {
@@ -18881,17 +19043,17 @@
  },
  "runs": [
   {
-   "at": "2026-09-19T05:00:06+00:00",
+   "at": "2026-09-19T07:18:54+00:00",
    "ok": true,
-   "duration_s": 99.3,
+   "duration_s": 80.1,
    "searches_run": 3,
    "searches_failed": 0,
-   "listings_seen": 86,
+   "listings_seen": 84,
    "new": 1,
    "price_drops": 0,
    "price_rises": 0,
    "removed": 0,
-   "filtered_out": 58,
+   "filtered_out": 55,
    "unpriced": 0,
    "priced": 0,
    "relisted": 0,
@@ -18901,8 +19063,8 @@
    "shut_out": [],
    "hidden_events": {},
    "skipped": false,
-   "missed_by": 263,
-   "requests_made": 58,
+   "missed_by": 0,
+   "requests_made": 44,
    "budget_exhausted": false,
    "empty_parses": [],
    "diagnostics": [],
@@ -18915,10 +19077,9 @@
    ],
    "errors": [],
    "warnings": [
-    "the last successful check was 4.4 hours ago, not 120 minutes - the schedule dropped 1 run. Catching up now.",
-    "BMW M4 up to 2020 (F82): 16 of 50 watched cars are missing at once - checking their listing pages before calling any of them sold.",
-    "BMW M3 2015-2020 (F80): 16 of 43 watched cars are missing at once - checking their listing pages before calling any of them sold.",
-    "BMW X3 M up to 2020 (F97): 245 of 270 watched cars are missing at once - checking their listing pages before calling any of them sold."
+    "BMW M4 up to 2020 (F82): 18 of 51 watched cars are missing at once - checking their listing pages before calling any of them sold.",
+    "BMW M3 2015-2020 (F80): 17 of 43 watched cars are missing at once - checking their listing pages before calling any of them sold.",
+    "BMW X3 M up to 2020 (F97): 247 of 272 watched cars are missing at once - checking their listing pages before calling any of them sold."
    ],
    "strategies": {
     "bmw-m4-up-to-2020-f82-fc136e": "embedded_json",
@@ -18928,26 +19089,111 @@
    "quiet": false,
    "dry_run": false,
    "photos": {
-    "kept": 38,
-    "fetched": 1,
+    "kept": 39,
+    "fetched": 3,
     "failed": 0,
     "pruned": 0,
-    "bytes": 1856043,
+    "bytes": 1923084,
     "samples": [
      {
-      "url": "https://prod.pictures.autoscout24.net/listing-images/004b5362-1a51-482c-8a09-a6d9ea9676ed_3fdee809-767d-4cb2-a965-04bb75",
+      "url": "https://prod.pictures.autoscout24.net/listing-images/004b5362-1a51-482c-8a09-a6d9ea9676ed_3f875a75-cfb3-4f8d-a5ba-88c183",
+      "status": 200,
+      "type": "image/webp",
+      "bytes": 20988,
+      "w": 480,
+      "h": 360
+     },
+     {
+      "url": "https://prod.pictures.autoscout24.net/listing-images/004b5362-1a51-482c-8a09-a6d9ea9676ed_66b59514-4482-4576-a7b5-2ddc8f",
+      "status": 200,
+      "type": "image/webp",
+      "bytes": 23092,
+      "w": 480,
+      "h": 360
+     },
+     {
+      "url": "https://prod.pictures.autoscout24.net/listing-images/1e3a6266-ba40-4ab8-a449-0676b55d7e0c_8b3c9104-ad9f-45ec-8331-abd9ff",
       "status": 200,
       "type": "image/jpeg",
-      "bytes": 25305,
-      "w": 480,
+      "bytes": 22961,
+      "w": 479,
       "h": 360
      }
     ]
    },
    "your_call": 0,
    "trigger": "schedule",
-   "minutes": 3.0,
+   "minutes": 2.0,
    "minutes_label": "exempt"
+  },
+  {
+   "at": "2026-09-19T05:00:06+00:00",
+   "baselines": [],
+   "budget_exhausted": false,
+   "diagnostics": [],
+   "disabled_channels": [],
+   "dry_run": false,
+   "duration_s": 99.3,
+   "empty_parses": [],
+   "errors": [],
+   "filtered_out": 58,
+   "first_run": false,
+   "hidden_events": {},
+   "invariants": [],
+   "listings_seen": 86,
+   "minutes": 3.0,
+   "minutes_label": "exempt",
+   "missed_by": 263,
+   "new": 1,
+   "notified": [
+    "ntfy: sent - 1 change"
+   ],
+   "ok": true,
+   "photos": {
+    "bytes": 1856043,
+    "failed": 0,
+    "fetched": 1,
+    "kept": 38,
+    "pruned": 0,
+    "samples": [
+     {
+      "bytes": 25305,
+      "h": 360,
+      "status": 200,
+      "type": "image/jpeg",
+      "url": "https://prod.pictures.autoscout24.net/listing-images/004b5362-1a51-482c-8a09-a6d9ea9676ed_3fdee809-767d-4cb2-a965-04bb75",
+      "w": 480
+     }
+    ]
+   },
+   "price_drops": 0,
+   "price_rises": 0,
+   "priced": 0,
+   "qualified": 0,
+   "quiet": false,
+   "relisted": 0,
+   "removed": 0,
+   "requests_made": 58,
+   "searches_failed": 0,
+   "searches_run": 3,
+   "shape_drift": [],
+   "shut_out": [],
+   "skipped": false,
+   "strategies": {
+    "bmw-m3-2015-2020-f80-7e1845": "embedded_json",
+    "bmw-m4-up-to-2020-f82-fc136e": "embedded_json",
+    "bmw-x3-m-up-to-2020-f97-7d9aaf": "embedded_json"
+   },
+   "trigger": "schedule",
+   "unpriced": 0,
+   "validation_ok": true,
+   "warnings": [
+    "the last successful check was 4.4 hours ago, not 120 minutes - the schedule dropped 1 run. Catching up now.",
+    "BMW M4 up to 2020 (F82): 16 of 50 watched cars are missing at once - checking their listing pages before calling any of them sold.",
+    "BMW M3 2015-2020 (F80): 16 of 43 watched cars are missing at once - checking their listing pages before calling any of them sold.",
+    "BMW X3 M up to 2020 (F97): 245 of 270 watched cars are missing at once - checking their listing pages before calling any of them sold."
+   ],
+   "your_call": 0
   },
   {
    "at": "2026-09-19T00:35:23+00:00",
@@ -20536,50 +20782,6 @@
     "BMW X3 M up to 2020 (F97): 96 of 121 watched cars are missing at once - checking their listing pages before calling any of them sold."
    ],
    "your_call": 0
-  },
-  {
-   "at": "2026-09-16T07:53:31+00:00",
-   "baselines": [],
-   "budget_exhausted": false,
-   "diagnostics": [],
-   "disabled_channels": [],
-   "dry_run": false,
-   "duration_s": 0.0,
-   "empty_parses": [],
-   "errors": [],
-   "filtered_out": 0,
-   "first_run": false,
-   "hidden_events": {},
-   "invariants": [],
-   "listings_seen": 0,
-   "minutes": 1.0,
-   "minutes_label": "exempt",
-   "missed_by": 0,
-   "new": 0,
-   "notified": [],
-   "ok": true,
-   "photos": {},
-   "price_drops": 0,
-   "price_rises": 0,
-   "priced": 0,
-   "qualified": 0,
-   "quiet": false,
-   "relisted": 0,
-   "removed": 0,
-   "requests_made": 0,
-   "searches_failed": 0,
-   "searches_run": 0,
-   "shape_drift": [],
-   "shut_out": [],
-   "skipped": true,
-   "strategies": {},
-   "trigger": "schedule",
-   "unpriced": 0,
-   "validation_ok": true,
-   "warnings": [
-    "the last successful check was 14 minutes ago and the schedule asks for one every 120 - skipping this one rather than checking the site twice for the same answer."
-   ],
-   "your_call": 0
   }
  ],
  "channel_health": {
@@ -20590,24 +20792,24 @@
    "consecutive_failures": 1
   },
   "ntfy": {
-   "last_ok": "2026-09-19T05:00:05+00:00",
+   "last_ok": "2026-09-19T07:18:50+00:00",
    "last_error": null,
    "disabled_at": null,
    "consecutive_failures": 0
   }
  },
  "last_run": {
-  "at": "2026-09-19T05:00:06+00:00",
+  "at": "2026-09-19T07:18:54+00:00",
   "ok": true,
-  "duration_s": 99.3,
+  "duration_s": 80.1,
   "searches_run": 3,
   "searches_failed": 0,
-  "listings_seen": 86,
+  "listings_seen": 84,
   "new": 1,
   "price_drops": 0,
   "price_rises": 0,
   "removed": 0,
-  "filtered_out": 58,
+  "filtered_out": 55,
   "unpriced": 0,
   "priced": 0,
   "relisted": 0,
@@ -20617,8 +20819,8 @@
   "shut_out": [],
   "hidden_events": {},
   "skipped": false,
-  "missed_by": 263,
-  "requests_made": 58,
+  "missed_by": 0,
+  "requests_made": 44,
   "budget_exhausted": false,
   "empty_parses": [],
   "diagnostics": [],
@@ -20631,10 +20833,9 @@
   ],
   "errors": [],
   "warnings": [
-   "the last successful check was 4.4 hours ago, not 120 minutes - the schedule dropped 1 run. Catching up now.",
-   "BMW M4 up to 2020 (F82): 16 of 50 watched cars are missing at once - checking their listing pages before calling any of them sold.",
-   "BMW M3 2015-2020 (F80): 16 of 43 watched cars are missing at once - checking their listing pages before calling any of them sold.",
-   "BMW X3 M up to 2020 (F97): 245 of 270 watched cars are missing at once - checking their listing pages before calling any of them sold."
+   "BMW M4 up to 2020 (F82): 18 of 51 watched cars are missing at once - checking their listing pages before calling any of them sold.",
+   "BMW M3 2015-2020 (F80): 17 of 43 watched cars are missing at once - checking their listing pages before calling any of them sold.",
+   "BMW X3 M up to 2020 (F97): 247 of 272 watched cars are missing at once - checking their listing pages before calling any of them sold."
   ],
   "strategies": {
    "bmw-m4-up-to-2020-f82-fc136e": "embedded_json",
@@ -20644,39 +20845,55 @@
   "quiet": false,
   "dry_run": false,
   "photos": {
-   "kept": 38,
-   "fetched": 1,
+   "kept": 39,
+   "fetched": 3,
    "failed": 0,
    "pruned": 0,
-   "bytes": 1856043,
+   "bytes": 1923084,
    "samples": [
     {
-     "url": "https://prod.pictures.autoscout24.net/listing-images/004b5362-1a51-482c-8a09-a6d9ea9676ed_3fdee809-767d-4cb2-a965-04bb75",
+     "url": "https://prod.pictures.autoscout24.net/listing-images/004b5362-1a51-482c-8a09-a6d9ea9676ed_3f875a75-cfb3-4f8d-a5ba-88c183",
+     "status": 200,
+     "type": "image/webp",
+     "bytes": 20988,
+     "w": 480,
+     "h": 360
+    },
+    {
+     "url": "https://prod.pictures.autoscout24.net/listing-images/004b5362-1a51-482c-8a09-a6d9ea9676ed_66b59514-4482-4576-a7b5-2ddc8f",
+     "status": 200,
+     "type": "image/webp",
+     "bytes": 23092,
+     "w": 480,
+     "h": 360
+    },
+    {
+     "url": "https://prod.pictures.autoscout24.net/listing-images/1e3a6266-ba40-4ab8-a449-0676b55d7e0c_8b3c9104-ad9f-45ec-8331-abd9ff",
      "status": 200,
      "type": "image/jpeg",
-     "bytes": 25305,
-     "w": 480,
+     "bytes": 22961,
+     "w": 479,
      "h": 360
     }
    ]
   },
   "your_call": 0,
   "trigger": "schedule",
-  "minutes": 3.0,
+  "minutes": 2.0,
   "minutes_label": "exempt"
  },
  "health": {
   "counts": {
-   "active": 44,
-   "filtered": 319,
+   "active": 45,
+   "filtered": 321,
    "unpriced": 4,
    "gone": 10,
-   "total": 373
+   "total": 376
   },
   "accounted": {
-   "delivered": 44,
+   "delivered": 45,
    "queued": 0,
-   "quiet": 329,
+   "quiet": 331,
    "unexplained": 0
   },
   "strategies": {
@@ -20684,10 +20901,10 @@
     "name": "BMW M4 up to 2020 (F82)",
     "winner": "embedded_json",
     "scores": {
-     "jsonld": 16,
-     "embedded_json": 34,
-     "anchors": 16,
-     "regex": 34
+     "jsonld": 17,
+     "embedded_json": 33,
+     "anchors": 17,
+     "regex": 33
     },
     "working": [
      "anchors",
@@ -20716,10 +20933,10 @@
     "name": "BMW M3 2015-2020 (F80)",
     "winner": "embedded_json",
     "scores": {
-     "jsonld": 7,
-     "embedded_json": 27,
-     "anchors": 7,
-     "regex": 27
+     "jsonld": 6,
+     "embedded_json": 26,
+     "anchors": 6,
+     "regex": 26
     },
     "working": [
      "anchors",
@@ -20781,7 +20998,7 @@
   "ok_streak": 60,
   "runs_kept": 60,
   "budget": {
-   "used": 58,
+   "used": 44,
    "limit": 250,
    "exhausted": false
   },
@@ -20791,9 +21008,58 @@
  "events": [
   {
    "kind": "new",
+   "at": "2026-09-19T07:17:53+00:00",
+   "listing_id": "a1a3538b-937d-4090-a09c-1fc19de25fcc",
+   "title": "2023 BMW X3",
+   "year": 2023,
+   "make": "BMW",
+   "model": "X3",
+   "price": 32498,
+   "filtered": true,
+   "filter_reason": "year 2023 above maximum 2020",
+   "delivery": {
+    "state": "quiet",
+    "text": "hidden by your rules: year 2023 above maximum 2020"
+   }
+  },
+  {
+   "kind": "new",
+   "at": "2026-09-19T07:17:53+00:00",
+   "listing_id": "3bb74ea5-b80a-4ee4-8e12-2b7ac82682fd",
+   "title": "2024 BMW X3",
+   "year": 2024,
+   "make": "BMW",
+   "model": "X3",
+   "price": 56591,
+   "filtered": true,
+   "filter_reason": "year 2024 above maximum 2020",
+   "delivery": {
+    "state": "quiet",
+    "text": "hidden by your rules: year 2024 above maximum 2020"
+   }
+  },
+  {
+   "kind": "new",
+   "at": "2026-09-19T07:17:38+00:00",
+   "listing_id": "1e3a6266-ba40-4ab8-a449-0676b55d7e0c",
+   "title": "2018 BMW M4",
+   "year": 2018,
+   "make": "BMW",
+   "model": "M4",
+   "price": 64000,
+   "filtered": false,
+   "filter_reason": "",
+   "delivery": {
+    "state": "sent",
+    "at": "2026-09-19T07:18:50+00:00",
+    "text": "sent 2026-09-19T07:18:50+00:00"
+   }
+  },
+  {
+   "kind": "new",
    "at": "2026-09-19T04:59:19+00:00",
    "listing_id": "004b5362-1a51-482c-8a09-a6d9ea9676ed",
-   "title": "2014 BMW X3",
+   "title": "2014 BMW X3 28i xDrive. LOCAL BC VEHICLE. NO",
    "year": 2014,
    "make": "BMW",
    "model": "X3",
@@ -20809,44 +21075,12 @@
   {
    "kind": "new",
    "at": "2026-09-19T04:59:19+00:00",
-   "listing_id": "aa106dfd-8c15-4d45-b811-34de4f3ed1cb",
-   "title": "2027 BMW M4",
-   "year": 2027,
-   "make": "BMW",
-   "model": "M4",
-   "price": 131412,
-   "filtered": true,
-   "filter_reason": "year 2027 above maximum 2020",
-   "delivery": {
-    "state": "quiet",
-    "text": "hidden by your rules: year 2027 above maximum 2020"
-   }
-  },
-  {
-   "kind": "new",
-   "at": "2026-09-19T04:59:19+00:00",
-   "listing_id": "4550c895-51d1-4dea-bc05-5732d4a630ea",
-   "title": "2027 BMW M3",
-   "year": 2027,
-   "make": "BMW",
-   "model": "M3",
-   "price": 122150,
-   "filtered": true,
-   "filter_reason": "year 2027 above maximum 2020",
-   "delivery": {
-    "state": "quiet",
-    "text": "hidden by your rules: year 2027 above maximum 2020"
-   }
-  },
-  {
-   "kind": "new",
-   "at": "2026-09-19T04:59:19+00:00",
-   "listing_id": "da238e9b-9aa7-40fd-b3b2-19efca88cd79",
-   "title": "2026 BMW M3",
+   "listing_id": "00dc324b-4db1-4fdc-a3e6-6e102e77bb5f",
+   "title": "2026 BMW X3 30 xDrive Sports Activity Vehicle",
    "year": 2026,
    "make": "BMW",
-   "model": "M3",
-   "price": 115000,
+   "model": "X3",
+   "price": 79012,
    "filtered": true,
    "filter_reason": "year 2026 above maximum 2020",
    "delivery": {
@@ -20857,28 +21091,76 @@
   {
    "kind": "new",
    "at": "2026-09-19T04:59:19+00:00",
-   "listing_id": "948b87a4-0093-400b-81f8-7fcf93c95cf1",
-   "title": "2025 BMW M3",
-   "year": 2025,
+   "listing_id": "0be64db9-a239-4ee0-b3d5-f0db136e2842",
+   "title": "2026 BMW X3 30 xDrive Sports Activity Vehicle",
+   "year": 2026,
    "make": "BMW",
-   "model": "M3",
-   "price": 99888,
+   "model": "X3",
+   "price": 73362,
    "filtered": true,
-   "filter_reason": "year 2025 above maximum 2020",
+   "filter_reason": "year 2026 above maximum 2020",
    "delivery": {
     "state": "quiet",
-    "text": "hidden by your rules: year 2025 above maximum 2020"
+    "text": "hidden by your rules: year 2026 above maximum 2020"
    }
   },
   {
    "kind": "new",
    "at": "2026-09-19T04:59:19+00:00",
-   "listing_id": "86b90920-16d1-4753-866d-915a0bd5829a",
-   "title": "2027 BMW M3",
+   "listing_id": "1e94d1ef-9b4d-4b34-9dc0-e25c22f4c20e",
+   "title": "2026 BMW X3 30 xDrive Sports Activity Vehicle",
+   "year": 2026,
+   "make": "BMW",
+   "model": "X3",
+   "price": 73362,
+   "filtered": true,
+   "filter_reason": "year 2026 above maximum 2020",
+   "delivery": {
+    "state": "quiet",
+    "text": "hidden by your rules: year 2026 above maximum 2020"
+   }
+  },
+  {
+   "kind": "new",
+   "at": "2026-09-19T04:59:19+00:00",
+   "listing_id": "204a90cb-efaa-4a94-a334-c9f83ce45ac8",
+   "title": "2026 BMW X3 30 xDrive Sports Activity Vehicle",
+   "year": 2026,
+   "make": "BMW",
+   "model": "X3",
+   "price": 72862,
+   "filtered": true,
+   "filter_reason": "year 2026 above maximum 2020",
+   "delivery": {
+    "state": "quiet",
+    "text": "hidden by your rules: year 2026 above maximum 2020"
+   }
+  },
+  {
+   "kind": "new",
+   "at": "2026-09-19T04:59:19+00:00",
+   "listing_id": "4418b205-3aaf-4497-9160-c6cbb9143b38",
+   "title": "2026 BMW X3 30 xDrive Sports Activity Vehicle",
+   "year": 2026,
+   "make": "BMW",
+   "model": "X3",
+   "price": 78112,
+   "filtered": true,
+   "filter_reason": "year 2026 above maximum 2020",
+   "delivery": {
+    "state": "quiet",
+    "text": "hidden by your rules: year 2026 above maximum 2020"
+   }
+  },
+  {
+   "kind": "new",
+   "at": "2026-09-19T04:59:19+00:00",
+   "listing_id": "4550c895-51d1-4dea-bc05-5732d4a630ea",
+   "title": "2027 BMW M3 Competition Sedan",
    "year": 2027,
    "make": "BMW",
    "model": "M3",
-   "price": 130865,
+   "price": 122150,
    "filtered": true,
    "filter_reason": "year 2027 above maximum 2020",
    "delivery": {
@@ -20905,188 +21187,28 @@
   {
    "kind": "new",
    "at": "2026-09-19T04:59:19+00:00",
-   "listing_id": "a8f0f588-25f4-41d1-bb99-828e79473267",
-   "title": "2019 BMW X3",
-   "year": 2019,
+   "listing_id": "5cf1753f-379b-4f1a-b397-b7ece8515fef",
+   "title": "2023 BMW X3",
+   "year": 2023,
    "make": "BMW",
    "model": "X3",
-   "price": 27000,
+   "price": 33897,
    "filtered": true,
-   "filter_reason": "Carnduff, SK is beyond the 1,000 km you asked for around Vancouver, BC",
+   "filter_reason": "year 2023 above maximum 2020",
    "delivery": {
     "state": "quiet",
-    "text": "hidden by your rules: Carnduff, SK is beyond the 1,000 km you asked for around Vancouver, BC"
+    "text": "hidden by your rules: year 2023 above maximum 2020"
    }
   },
   {
    "kind": "new",
    "at": "2026-09-19T04:59:19+00:00",
    "listing_id": "733de5bb-7f64-4213-a6dc-97b5b7fe8656",
-   "title": "2026 BMW X3",
+   "title": "2026 BMW X3 30 xDrive Sports Activity Vehicle",
    "year": 2026,
    "make": "BMW",
    "model": "X3",
    "price": 73362,
-   "filtered": true,
-   "filter_reason": "year 2026 above maximum 2020",
-   "delivery": {
-    "state": "quiet",
-    "text": "hidden by your rules: year 2026 above maximum 2020"
-   }
-  },
-  {
-   "kind": "new",
-   "at": "2026-09-19T04:59:19+00:00",
-   "listing_id": "1e94d1ef-9b4d-4b34-9dc0-e25c22f4c20e",
-   "title": "2026 BMW X3",
-   "year": 2026,
-   "make": "BMW",
-   "model": "X3",
-   "price": 73362,
-   "filtered": true,
-   "filter_reason": "year 2026 above maximum 2020",
-   "delivery": {
-    "state": "quiet",
-    "text": "hidden by your rules: year 2026 above maximum 2020"
-   }
-  },
-  {
-   "kind": "new",
-   "at": "2026-09-19T04:59:19+00:00",
-   "listing_id": "4418b205-3aaf-4497-9160-c6cbb9143b38",
-   "title": "2026 BMW X3",
-   "year": 2026,
-   "make": "BMW",
-   "model": "X3",
-   "price": 78112,
-   "filtered": true,
-   "filter_reason": "year 2026 above maximum 2020",
-   "delivery": {
-    "state": "quiet",
-    "text": "hidden by your rules: year 2026 above maximum 2020"
-   }
-  },
-  {
-   "kind": "new",
-   "at": "2026-09-19T04:59:19+00:00",
-   "listing_id": "8be19f75-a199-4b73-b1f1-c32319b9137c",
-   "title": "2026 BMW X3",
-   "year": 2026,
-   "make": "BMW",
-   "model": "X3",
-   "price": 80062,
-   "filtered": true,
-   "filter_reason": "year 2026 above maximum 2020",
-   "delivery": {
-    "state": "quiet",
-    "text": "hidden by your rules: year 2026 above maximum 2020"
-   }
-  },
-  {
-   "kind": "new",
-   "at": "2026-09-19T04:59:19+00:00",
-   "listing_id": "0be64db9-a239-4ee0-b3d5-f0db136e2842",
-   "title": "2026 BMW X3",
-   "year": 2026,
-   "make": "BMW",
-   "model": "X3",
-   "price": 73362,
-   "filtered": true,
-   "filter_reason": "year 2026 above maximum 2020",
-   "delivery": {
-    "state": "quiet",
-    "text": "hidden by your rules: year 2026 above maximum 2020"
-   }
-  },
-  {
-   "kind": "new",
-   "at": "2026-09-19T04:59:19+00:00",
-   "listing_id": "edc02cbf-895b-4c2b-854b-010f378d548a",
-   "title": "2026 BMW X3",
-   "year": 2026,
-   "make": "BMW",
-   "model": "X3",
-   "price": 72862,
-   "filtered": true,
-   "filter_reason": "year 2026 above maximum 2020",
-   "delivery": {
-    "state": "quiet",
-    "text": "hidden by your rules: year 2026 above maximum 2020"
-   }
-  },
-  {
-   "kind": "new",
-   "at": "2026-09-19T04:59:19+00:00",
-   "listing_id": "204a90cb-efaa-4a94-a334-c9f83ce45ac8",
-   "title": "2026 BMW X3",
-   "year": 2026,
-   "make": "BMW",
-   "model": "X3",
-   "price": 72862,
-   "filtered": true,
-   "filter_reason": "year 2026 above maximum 2020",
-   "delivery": {
-    "state": "quiet",
-    "text": "hidden by your rules: year 2026 above maximum 2020"
-   }
-  },
-  {
-   "kind": "new",
-   "at": "2026-09-19T04:59:19+00:00",
-   "listing_id": "88dc5f24-2588-433e-b14f-e6b5cd745d3d",
-   "title": "2026 BMW X3",
-   "year": 2026,
-   "make": "BMW",
-   "model": "X3",
-   "price": 73762,
-   "filtered": true,
-   "filter_reason": "year 2026 above maximum 2020",
-   "delivery": {
-    "state": "quiet",
-    "text": "hidden by your rules: year 2026 above maximum 2020"
-   }
-  },
-  {
-   "kind": "new",
-   "at": "2026-09-19T04:59:19+00:00",
-   "listing_id": "f775575f-f57e-4d53-8b95-5cb5a8dd1f76",
-   "title": "2026 BMW X3",
-   "year": 2026,
-   "make": "BMW",
-   "model": "X3",
-   "price": 78112,
-   "filtered": true,
-   "filter_reason": "year 2026 above maximum 2020",
-   "delivery": {
-    "state": "quiet",
-    "text": "hidden by your rules: year 2026 above maximum 2020"
-   }
-  },
-  {
-   "kind": "new",
-   "at": "2026-09-19T04:59:19+00:00",
-   "listing_id": "c8c61acb-e1b6-49b3-899c-f56f39104159",
-   "title": "2026 BMW X3",
-   "year": 2026,
-   "make": "BMW",
-   "model": "X3",
-   "price": 78112,
-   "filtered": true,
-   "filter_reason": "year 2026 above maximum 2020",
-   "delivery": {
-    "state": "quiet",
-    "text": "hidden by your rules: year 2026 above maximum 2020"
-   }
-  },
-  {
-   "kind": "new",
-   "at": "2026-09-19T04:59:19+00:00",
-   "listing_id": "00dc324b-4db1-4fdc-a3e6-6e102e77bb5f",
-   "title": "2026 BMW X3",
-   "year": 2026,
-   "make": "BMW",
-   "model": "X3",
-   "price": 79012,
    "filtered": true,
    "filter_reason": "year 2026 above maximum 2020",
    "delivery": {
@@ -21098,7 +21220,7 @@
    "kind": "new",
    "at": "2026-09-19T04:59:19+00:00",
    "listing_id": "838986e0-cb03-429c-a0f9-756381526306",
-   "title": "2026 BMW X3",
+   "title": "2026 BMW X3 30 xDrive Sports Activity Vehicle",
    "year": 2026,
    "make": "BMW",
    "model": "X3",
@@ -21113,33 +21235,113 @@
   {
    "kind": "new",
    "at": "2026-09-19T04:59:19+00:00",
-   "listing_id": "d479fcc4-e43e-433b-8bb2-5f98f1d6a1ea",
-   "title": "2023 BMW X3",
-   "year": 2023,
+   "listing_id": "86b90920-16d1-4753-866d-915a0bd5829a",
+   "title": "2027 BMW M3 Competition",
+   "year": 2027,
    "make": "BMW",
-   "model": "X3",
-   "price": 35900,
+   "model": "M3",
+   "price": 130865,
    "filtered": true,
-   "filter_reason": "year 2023 above maximum 2020",
+   "filter_reason": "year 2027 above maximum 2020",
    "delivery": {
     "state": "quiet",
-    "text": "hidden by your rules: year 2023 above maximum 2020"
+    "text": "hidden by your rules: year 2027 above maximum 2020"
    }
   },
   {
    "kind": "new",
    "at": "2026-09-19T04:59:19+00:00",
-   "listing_id": "fdc637b9-89f9-48ac-83d5-562167e0a0be",
-   "title": "2017 BMW X3",
-   "year": 2017,
+   "listing_id": "88dc5f24-2588-433e-b14f-e6b5cd745d3d",
+   "title": "2026 BMW X3 30 xDrive Sports Activity Vehicle",
+   "year": 2026,
    "make": "BMW",
    "model": "X3",
-   "price": 17995,
+   "price": 73762,
    "filtered": true,
-   "filter_reason": "Moose Jaw, SK is 1,263 km from Vancouver, BC, beyond the 1,000 km you asked for",
+   "filter_reason": "year 2026 above maximum 2020",
    "delivery": {
     "state": "quiet",
-    "text": "hidden by your rules: Moose Jaw, SK is 1,263 km from Vancouver, BC, beyond the 1,000 km you asked for"
+    "text": "hidden by your rules: year 2026 above maximum 2020"
+   }
+  },
+  {
+   "kind": "new",
+   "at": "2026-09-19T04:59:19+00:00",
+   "listing_id": "8be19f75-a199-4b73-b1f1-c32319b9137c",
+   "title": "2026 BMW X3 30 xDrive Sports Activity Vehicle",
+   "year": 2026,
+   "make": "BMW",
+   "model": "X3",
+   "price": 80062,
+   "filtered": true,
+   "filter_reason": "year 2026 above maximum 2020",
+   "delivery": {
+    "state": "quiet",
+    "text": "hidden by your rules: year 2026 above maximum 2020"
+   }
+  },
+  {
+   "kind": "new",
+   "at": "2026-09-19T04:59:19+00:00",
+   "listing_id": "948b87a4-0093-400b-81f8-7fcf93c95cf1",
+   "title": "2025 BMW M3 Sedan",
+   "year": 2025,
+   "make": "BMW",
+   "model": "M3",
+   "price": 99888,
+   "filtered": true,
+   "filter_reason": "year 2025 above maximum 2020",
+   "delivery": {
+    "state": "quiet",
+    "text": "hidden by your rules: year 2025 above maximum 2020"
+   }
+  },
+  {
+   "kind": "new",
+   "at": "2026-09-19T04:59:19+00:00",
+   "listing_id": "a8f0f588-25f4-41d1-bb99-828e79473267",
+   "title": "2019 BMW X3 xDrive30i Sports Activity Vehicle",
+   "year": 2019,
+   "make": "BMW",
+   "model": "X3",
+   "price": 27000,
+   "filtered": true,
+   "filter_reason": "Carnduff, SK is beyond the 1,000 km you asked for around Vancouver, BC",
+   "delivery": {
+    "state": "quiet",
+    "text": "hidden by your rules: Carnduff, SK is beyond the 1,000 km you asked for around Vancouver, BC"
+   }
+  },
+  {
+   "kind": "new",
+   "at": "2026-09-19T04:59:19+00:00",
+   "listing_id": "aa106dfd-8c15-4d45-b811-34de4f3ed1cb",
+   "title": "2027 BMW M4 Competition Coupe",
+   "year": 2027,
+   "make": "BMW",
+   "model": "M4",
+   "price": 131412,
+   "filtered": true,
+   "filter_reason": "year 2027 above maximum 2020",
+   "delivery": {
+    "state": "quiet",
+    "text": "hidden by your rules: year 2027 above maximum 2020"
+   }
+  },
+  {
+   "kind": "new",
+   "at": "2026-09-19T04:59:19+00:00",
+   "listing_id": "c8c61acb-e1b6-49b3-899c-f56f39104159",
+   "title": "2026 BMW X3 30 xDrive Sports Activity Vehicle",
+   "year": 2026,
+   "make": "BMW",
+   "model": "X3",
+   "price": 78112,
+   "filtered": true,
+   "filter_reason": "year 2026 above maximum 2020",
+   "delivery": {
+    "state": "quiet",
+    "text": "hidden by your rules: year 2026 above maximum 2020"
    }
   },
   {
@@ -21161,17 +21363,81 @@
   {
    "kind": "new",
    "at": "2026-09-19T04:59:19+00:00",
-   "listing_id": "5cf1753f-379b-4f1a-b397-b7ece8515fef",
-   "title": "2023 BMW X3",
+   "listing_id": "d479fcc4-e43e-433b-8bb2-5f98f1d6a1ea",
+   "title": "2023 BMW X3 xDrive30i",
    "year": 2023,
    "make": "BMW",
    "model": "X3",
-   "price": 33897,
+   "price": 35900,
    "filtered": true,
    "filter_reason": "year 2023 above maximum 2020",
    "delivery": {
     "state": "quiet",
     "text": "hidden by your rules: year 2023 above maximum 2020"
+   }
+  },
+  {
+   "kind": "new",
+   "at": "2026-09-19T04:59:19+00:00",
+   "listing_id": "da238e9b-9aa7-40fd-b3b2-19efca88cd79",
+   "title": "2026 BMW M3 Competition Sedan",
+   "year": 2026,
+   "make": "BMW",
+   "model": "M3",
+   "price": 115000,
+   "filtered": true,
+   "filter_reason": "year 2026 above maximum 2020",
+   "delivery": {
+    "state": "quiet",
+    "text": "hidden by your rules: year 2026 above maximum 2020"
+   }
+  },
+  {
+   "kind": "new",
+   "at": "2026-09-19T04:59:19+00:00",
+   "listing_id": "edc02cbf-895b-4c2b-854b-010f378d548a",
+   "title": "2026 BMW X3 30 xDrive Sports Activity Vehicle",
+   "year": 2026,
+   "make": "BMW",
+   "model": "X3",
+   "price": 72862,
+   "filtered": true,
+   "filter_reason": "year 2026 above maximum 2020",
+   "delivery": {
+    "state": "quiet",
+    "text": "hidden by your rules: year 2026 above maximum 2020"
+   }
+  },
+  {
+   "kind": "new",
+   "at": "2026-09-19T04:59:19+00:00",
+   "listing_id": "f775575f-f57e-4d53-8b95-5cb5a8dd1f76",
+   "title": "2026 BMW X3 30 xDrive Sports Activity Vehicle",
+   "year": 2026,
+   "make": "BMW",
+   "model": "X3",
+   "price": 78112,
+   "filtered": true,
+   "filter_reason": "year 2026 above maximum 2020",
+   "delivery": {
+    "state": "quiet",
+    "text": "hidden by your rules: year 2026 above maximum 2020"
+   }
+  },
+  {
+   "kind": "new",
+   "at": "2026-09-19T04:59:19+00:00",
+   "listing_id": "fdc637b9-89f9-48ac-83d5-562167e0a0be",
+   "title": "2017 BMW X3",
+   "year": 2017,
+   "make": "BMW",
+   "model": "X3",
+   "price": 17995,
+   "filtered": true,
+   "filter_reason": "Moose Jaw, SK is 1,263 km from Vancouver, BC, beyond the 1,000 km you asked for",
+   "delivery": {
+    "state": "quiet",
+    "text": "hidden by your rules: Moose Jaw, SK is 1,263 km from Vancouver, BC, beyond the 1,000 km you asked for"
    }
   },
   {
@@ -27262,57 +27528,15 @@
     "state": "quiet",
     "text": "hidden by your rules: year 2024 above maximum 2020"
    }
-  },
-  {
-   "kind": "new",
-   "at": "2026-09-13T05:40:00+00:00",
-   "listing_id": "eabce0ca-e8c9-4f38-9671-0785293e8dfe",
-   "title": "2027 BMW M4 Competition Coupe",
-   "year": 2027,
-   "make": "BMW",
-   "model": "M4",
-   "price": 142316,
-   "filtered": true,
-   "filter_reason": "year 2027 above maximum 2020",
-   "delivery": {
-    "state": "quiet",
-    "text": "hidden by your rules: year 2027 above maximum 2020"
-   }
-  },
-  {
-   "kind": "new",
-   "at": "2026-09-13T05:40:00+00:00",
-   "listing_id": "ece4e94d-0931-4b26-85cf-03d9eea108b2",
-   "title": "2025 BMW M4 Coupe",
-   "year": 2025,
-   "make": "BMW",
-   "model": "M4",
-   "price": 95888,
-   "filtered": true,
-   "filter_reason": "year 2025 above maximum 2020",
-   "delivery": {
-    "state": "quiet",
-    "text": "hidden by your rules: year 2025 above maximum 2020"
-   }
-  },
-  {
-   "kind": "new",
-   "at": "2026-09-13T05:40:00+00:00",
-   "listing_id": "ed984c47-9932-4c81-b30f-b7951d7b4b27",
-   "title": "2016 BMW X3 xDrive",
-   "year": 2016,
-   "make": "BMW",
-   "model": "X3",
-   "price": null,
-   "filtered": true,
-   "filter_reason": "St. Catharines, ON is 3,393 km from Vancouver, BC, beyond the 1,000 km you asked for",
-   "delivery": {
-    "state": "quiet",
-    "text": "hidden by your rules: St. Catharines, ON is 3,393 km from Vancouver, BC, beyond the 1,000 km you asked for"
-   }
   }
  ],
  "comparables": {
+  "004b5362-1a51-482c-8a09-a6d9ea9676ed": {
+   "sample": 0,
+   "band": 1,
+   "cohort": "BMW X3 2013-2015",
+   "why_not": "nothing else here is a BMW X3 2013-2015 - this car has no market on this dashboard to be judged against"
+  },
   "03b47c25-ee9f-4c06-942b-7c2c097a26ae": {
    "sample": 1,
    "band": 1,
@@ -27329,7 +27553,7 @@
    "sample": 0,
    "band": 1,
    "cohort": "BMW M4 2017-2019",
-   "why_not": "0 comparables close enough on age and mileage to judge it against. Another 8 are listed with very different kilometres on them. Not scored."
+   "why_not": "0 comparables close enough on age and mileage to judge it against. Another 9 are listed with very different kilometres on them. Not scored."
   },
   "0d366980-3df9-4db7-bb63-a21cf832d4fa": {
    "sample": 0,
@@ -27338,10 +27562,12 @@
    "why_not": "0 comparables close enough on age and mileage to judge it against. Another 3 are listed with very different kilometres on them. Not scored."
   },
   "126cca4a-9df1-4d06-a592-8edd4fe86151": {
-   "sample": 5,
+   "sample": 6,
    "band": 1,
    "cohort": "BMW M4 2017-2019",
-   "why_not": "5 comparables close enough on age and mileage to judge it against. Another 3 are listed with very different kilometres on them. Not scored."
+   "rank": 3,
+   "of": 7,
+   "why_not": "3rd cheapest of 7 BMW M4 2017-2019 here - too few to call it cheap or dear"
   },
   "220ac4e0-bd24-4414-8227-f5732ca3cef5": {
    "sample": 2,
@@ -27398,10 +27624,12 @@
    "why_not": "2 comparables close enough on age and mileage to judge it against. Another 2 are listed with very different kilometres on them. Not scored."
   },
   "4c857c77-395b-4217-b9a0-1112fb7904fb": {
-   "sample": 5,
+   "sample": 6,
    "band": 1,
    "cohort": "BMW M4 2017-2019",
-   "why_not": "5 comparables close enough on age and mileage to judge it against. Another 3 are listed with very different kilometres on them. Not scored."
+   "rank": 6,
+   "of": 7,
+   "why_not": "6th cheapest of 7 BMW M4 2017-2019 here - too few to call it cheap or dear"
   },
   "59573253-0b7b-48f1-ad96-c2b9b4b7cc2a": {
    "sample": 0,
@@ -27458,16 +27686,16 @@
    "why_not": "3 comparables close enough on age and mileage to judge it against. One more is listed with very different kilometres on it. Not scored."
   },
   "7458e16d-dfe4-4a98-b9aa-998a944a7f70": {
-   "sample": 4,
+   "sample": 5,
    "band": 1,
    "cohort": "BMW M4 2017-2019",
-   "why_not": "4 comparables close enough on age and mileage to judge it against. Another 4 are listed with very different kilometres on them. Not scored."
+   "why_not": "5 comparables close enough on age and mileage to judge it against. Another 4 are listed with very different kilometres on them. Not scored."
   },
   "7708d9f2-74b3-40cf-ab8a-9dba0e93b15e": {
    "sample": 0,
    "band": 1,
    "cohort": "BMW M4 2015-2017",
-   "why_not": "0 comparables close enough on age and mileage to judge it against. Another 8 are listed with very different kilometres on them. Not scored."
+   "why_not": "0 comparables close enough on age and mileage to judge it against. Another 9 are listed with very different kilometres on them. Not scored."
   },
   "8aed0f57-2d1f-4ea0-9043-a433d833bbe6": {
    "sample": 2,
@@ -27479,13 +27707,13 @@
    "sample": 2,
    "band": 1,
    "cohort": "BMW M4 2015-2017",
-   "why_not": "2 comparables close enough on age and mileage to judge it against. Another 6 are listed with very different kilometres on them. Not scored."
+   "why_not": "2 comparables close enough on age and mileage to judge it against. Another 7 are listed with very different kilometres on them. Not scored."
   },
   "ac01f1ee-9ccc-4818-833e-cedad78a646d": {
    "sample": 4,
    "band": 1,
    "cohort": "BMW M4 2017-2019",
-   "why_not": "4 comparables close enough on age and mileage to judge it against. Another 4 are listed with very different kilometres on them. Not scored."
+   "why_not": "4 comparables close enough on age and mileage to judge it against. Another 5 are listed with very different kilometres on them. Not scored."
   },
   "b13950f2-45c0-4eaa-8801-8530b208afbd": {
    "sample": 3,
@@ -27530,18 +27758,18 @@
    "why_not": "2 comparables close enough on age and mileage to judge it against. Another 2 are listed with very different kilometres on them. Not scored."
   },
   "e896a563-135e-46ca-94a2-7ede541c1510": {
-   "sample": 6,
+   "sample": 7,
    "band": 1,
    "cohort": "BMW M4 2016-2018",
    "rank": 1,
-   "of": 7,
-   "why_not": "1st cheapest of 7 BMW M4 2016-2018 here - too few to call it cheap or dear"
+   "of": 8,
+   "why_not": "1st cheapest of 8 BMW M4 2016-2018 here - too few to call it cheap or dear"
   },
   "f049e449-390d-4298-999a-afa12e07cbc5": {
-   "sample": 4,
+   "sample": 5,
    "band": 1,
    "cohort": "BMW M4 2017-2019",
-   "why_not": "4 comparables close enough on age and mileage to judge it against. Another 4 are listed with very different kilometres on them. Not scored."
+   "why_not": "5 comparables close enough on age and mileage to judge it against. Another 4 are listed with very different kilometres on them. Not scored."
   },
   "fda32959-1658-4085-8a83-7edcf9c2d7c3": {
    "sample": 2,
@@ -27549,13 +27777,17 @@
    "cohort": "BMW M3 2016-2018",
    "why_not": "2 comparables close enough on age and mileage to judge it against. Another 2 are listed with very different kilometres on them. Not scored."
   },
-  "004b5362-1a51-482c-8a09-a6d9ea9676ed": {
-   "sample": 0,
+  "1e3a6266-ba40-4ab8-a449-0676b55d7e0c": {
+   "sample": 5,
    "band": 1,
-   "cohort": "BMW X3 2013-2015",
-   "why_not": "nothing else here is a BMW X3 2013-2015 - this car has no market on this dashboard to be judged against"
+   "cohort": "BMW M4 2017-2019",
+   "why_not": "5 comparables close enough on age and mileage to judge it against. Another 4 are listed with very different kilometres on them. Not scored."
   },
   "00ce8bfe-45d5-4b17-94a8-1ecbfcdc034c": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "00dc324b-4db1-4fdc-a3e6-6e102e77bb5f": {
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
@@ -27636,6 +27868,10 @@
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
   "0bd50bdd-acfa-4bc0-9c0b-7c8d7b91c74e": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "0be64db9-a239-4ee0-b3d5-f0db136e2842": {
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
@@ -27735,11 +27971,19 @@
    "sample": 0,
    "why_not": "it has left the market - the last price the bot saw is the one recorded above, and it is not compared against cars still for sale"
   },
+  "1e94d1ef-9b4d-4b34-9dc0-e25c22f4c20e": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
   "1f0fbc8e-a659-469f-81da-c968d5871908": {
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
   "202dc782-c0c7-4c82-ab07-f78a097b841f": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "204a90cb-efaa-4a94-a334-c9f83ce45ac8": {
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
@@ -27875,6 +28119,14 @@
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
+  "4418b205-3aaf-4497-9160-c6cbb9143b38": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "4550c895-51d1-4dea-bc05-5732d4a630ea": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
   "45fd5072-9477-4ee8-bfa8-2812fa8bf853": {
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
@@ -27884,6 +28136,10 @@
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
   "48783932-2945-4e42-88a4-c372de0e9724": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "4a338e89-a429-4b3d-ae7a-5da59a1d43be": {
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
@@ -27968,6 +28224,10 @@
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
   "5b9d578b-d8e1-4886-9b47-02ee2900a77d": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "5cf1753f-379b-4f1a-b397-b7ece8515fef": {
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
@@ -28107,6 +28367,10 @@
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
+  "733de5bb-7f64-4213-a6dc-97b5b7fe8656": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
   "737d675a-b26c-4d66-b07d-902c45ca7760": {
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
@@ -28151,6 +28415,10 @@
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
+  "838986e0-cb03-429c-a0f9-756381526306": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
   "84874876-4ca4-4a67-9e61-912cf90780e0": {
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
@@ -28163,6 +28431,10 @@
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
+  "86b90920-16d1-4753-866d-915a0bd5829a": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
   "8720ea9d-d57e-402f-ac5f-52acec393e50": {
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
@@ -28172,6 +28444,10 @@
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
   "88944aef-6209-4b6c-ae00-8d0610cc07a9": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "88dc5f24-2588-433e-b14f-e6b5cd745d3d": {
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
@@ -28200,6 +28476,10 @@
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
   "8bb8cc16-026b-442c-8e2e-1c13ac98f584": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "8be19f75-a199-4b73-b1f1-c32319b9137c": {
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
@@ -28236,6 +28516,10 @@
    "why_not": "it has left the market - the last price the bot saw is the one recorded above, and it is not compared against cars still for sale"
   },
   "93d8f5b5-754b-4314-9e1a-55ea22ce7cf9": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "948b87a4-0093-400b-81f8-7fcf93c95cf1": {
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
@@ -28347,7 +28631,15 @@
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
+  "a8f0f588-25f4-41d1-bb99-828e79473267": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
   "a92c128b-35ae-42a3-989f-23a0e4ede72d": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "aa106dfd-8c15-4d45-b811-34de4f3ed1cb": {
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
@@ -28475,6 +28767,10 @@
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
+  "c8c61acb-e1b6-49b3-899c-f56f39104159": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
   "cae76ee6-e608-44cc-9b44-bf72f4345a3b": {
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
@@ -28492,6 +28788,10 @@
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
   "cdbf8c53-e18e-4d41-b249-18b9397c5bd7": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "cf60fc1f-7b1c-49d9-938a-1dfc97cfffd1": {
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
@@ -28524,6 +28824,10 @@
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
   "d30ef521-b9b3-423b-a644-934a596c4cb9": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "d479fcc4-e43e-433b-8bb2-5f98f1d6a1ea": {
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
@@ -28560,6 +28864,10 @@
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
   "d96a8ec1-bae9-4e9a-9ff1-cf81a37f1ba4": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
+  "da238e9b-9aa7-40fd-b3b2-19efca88cd79": {
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
@@ -28691,6 +28999,10 @@
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
+  "edc02cbf-895b-4c2b-854b-010f378d548a": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
   "ee11a10f-a50e-46c5-afc5-35a938122306": {
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
@@ -28743,6 +29055,10 @@
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
+  "f775575f-f57e-4d53-8b95-5cb5a8dd1f76": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
   "f779072d-a8d9-434b-a66c-265311457330": {
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
@@ -28783,6 +29099,10 @@
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
+  "fdc637b9-89f9-48ac-83d5-562167e0a0be": {
+   "sample": 0,
+   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
+  },
   "fdd8d29e-5a6d-4964-a4a6-03db3cb9192b": {
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
@@ -28795,95 +29115,11 @@
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
-  "aa106dfd-8c15-4d45-b811-34de4f3ed1cb": {
+  "a1a3538b-937d-4090-a09c-1fc19de25fcc": {
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   },
-  "4550c895-51d1-4dea-bc05-5732d4a630ea": {
-   "sample": 0,
-   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
-  },
-  "da238e9b-9aa7-40fd-b3b2-19efca88cd79": {
-   "sample": 0,
-   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
-  },
-  "948b87a4-0093-400b-81f8-7fcf93c95cf1": {
-   "sample": 0,
-   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
-  },
-  "86b90920-16d1-4753-866d-915a0bd5829a": {
-   "sample": 0,
-   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
-  },
-  "4a338e89-a429-4b3d-ae7a-5da59a1d43be": {
-   "sample": 0,
-   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
-  },
-  "a8f0f588-25f4-41d1-bb99-828e79473267": {
-   "sample": 0,
-   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
-  },
-  "733de5bb-7f64-4213-a6dc-97b5b7fe8656": {
-   "sample": 0,
-   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
-  },
-  "1e94d1ef-9b4d-4b34-9dc0-e25c22f4c20e": {
-   "sample": 0,
-   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
-  },
-  "4418b205-3aaf-4497-9160-c6cbb9143b38": {
-   "sample": 0,
-   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
-  },
-  "8be19f75-a199-4b73-b1f1-c32319b9137c": {
-   "sample": 0,
-   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
-  },
-  "0be64db9-a239-4ee0-b3d5-f0db136e2842": {
-   "sample": 0,
-   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
-  },
-  "edc02cbf-895b-4c2b-854b-010f378d548a": {
-   "sample": 0,
-   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
-  },
-  "204a90cb-efaa-4a94-a334-c9f83ce45ac8": {
-   "sample": 0,
-   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
-  },
-  "88dc5f24-2588-433e-b14f-e6b5cd745d3d": {
-   "sample": 0,
-   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
-  },
-  "f775575f-f57e-4d53-8b95-5cb5a8dd1f76": {
-   "sample": 0,
-   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
-  },
-  "c8c61acb-e1b6-49b3-899c-f56f39104159": {
-   "sample": 0,
-   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
-  },
-  "00dc324b-4db1-4fdc-a3e6-6e102e77bb5f": {
-   "sample": 0,
-   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
-  },
-  "838986e0-cb03-429c-a0f9-756381526306": {
-   "sample": 0,
-   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
-  },
-  "d479fcc4-e43e-433b-8bb2-5f98f1d6a1ea": {
-   "sample": 0,
-   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
-  },
-  "fdc637b9-89f9-48ac-83d5-562167e0a0be": {
-   "sample": 0,
-   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
-  },
-  "cf60fc1f-7b1c-49d9-938a-1dfc97cfffd1": {
-   "sample": 0,
-   "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
-  },
-  "5cf1753f-379b-4f1a-b397-b7ece8515fef": {
+  "3bb74ea5-b80a-4ee4-8e12-2b7ac82682fd": {
    "sample": 0,
    "why_not": "a rule of yours hides it, and the comparison is made only against the cars you are actually shopping"
   }
@@ -28895,19 +29131,18 @@
   "too_short": false,
   "since_change": "2026-09-13T06:30:00+00:00",
   "expected": 12,
-  "checks": 6,
+  "checks": 7,
   "stood_down": 5,
-  "successful": 6,
-  "slots_covered": 6,
+  "successful": 7,
+  "slots_covered": 7,
   "complained": -5,
-  "clean": 11,
-  "pct": 50.0,
+  "clean": 12,
+  "pct": 58.3,
   "longest_gap_minutes": 334.0,
   "expected_interval_minutes": 120,
   "truncated": false,
-  "since": "2026-09-18T05:00:06+00:00",
+  "since": "2026-09-18T07:18:54+00:00",
   "slots": [
-   0,
    1,
    0,
    1,
@@ -28918,36 +29153,37 @@
    0,
    1,
    0,
+   1,
    1
   ],
-  "slots_scheduled": 6,
-  "pct_scheduled": 50.0,
+  "slots_scheduled": 7,
+  "pct_scheduled": 58.3,
   "by_trigger": {
-   "schedule": 6
+   "schedule": 7
   },
   "propped_up": false,
-  "schedule_fired": 11,
+  "schedule_fired": 12,
   "timekeeper": "schedule",
   "slots_by_trigger": {
-   "schedule": 6
+   "schedule": 7
   }
  },
  "cost": {
-  "checks": 11,
-  "minutes": 9.5,
-  "billed_minutes": 21,
-  "mean_seconds": 51.9,
+  "checks": 12,
+  "minutes": 10.8,
+  "billed_minutes": 23,
+  "mean_seconds": 54.2,
   "window_hours": 24
  },
  "budget": {
   "month": "2026-09",
-  "runs": 60,
+  "runs": 61,
   "days_elapsed": 7,
   "days_to_reset": 12,
-  "exempt_minutes": 83.0,
+  "exempt_minutes": 85.0,
   "drawing_minutes": 11.0,
   "unknown_minutes": 11.0,
-  "used": 94.0,
+  "used": 96.0,
   "per_day": 1.57,
   "projected": 28.3,
   "allowance": 3000,
@@ -28955,22 +29191,22 @@
   "label": "exempt",
   "why": "GitHub reports this repository as public and its jobs run on standard runners, which GitHub does not bill",
   "blind_spot": "This is what THIS repository spent. The allowance has one meter per account and this bot can see one repository, so it cannot tell you how much of the allowance is left.",
-  "short": "11 of 3,000 this month · about 28 by month end · 83 more ran exempt · 11 unlabelled, counted as drawing",
+  "short": "11 of 3,000 this month · about 28 by month end · 85 more ran exempt · 11 unlabelled, counted as drawing",
   "state": "ok",
-  "text": "11 allowance minutes used, about 28 by month end against 3,000. This is what THIS repository spent. The allowance has one meter per account and this bot can see one repository, so it cannot tell you how much of the allowance is left. A further 83 minutes ran exempt. 11 minutes could not be labelled and are counted as drawing.",
+  "text": "11 allowance minutes used, about 28 by month end against 3,000. This is what THIS repository spent. The allowance has one meter per account and this bot can see one repository, so it cannot tell you how much of the allowance is left. A further 85 minutes ran exempt. 11 minutes could not be labelled and are counted as drawing.",
   "can_still_run": true,
   "should_stop": false
  },
  "market": {
-  "at": "2026-09-19T05:00:06+00:00",
+  "at": "2026-09-19T07:18:54+00:00",
   "window": {
-   "ids_span_days": 5,
-   "watching_days": 5,
+   "ids_span_days": 6,
+   "watching_days": 6,
    "cars_with_two_prices": 20,
    "thin": true,
-   "note": "20 of 373 cars have been priced more than once, over 5 days of watching. Anything below described as a trend is really a snapshot until that number grows."
+   "note": "20 of 376 cars have been priced more than once, over 6 days of watching. Anything below described as a trend is really a snapshot until that number grows."
   },
-  "live": 363,
+  "live": 366,
   "gone": 10,
   "by_year": {
    "2015": {
@@ -28999,12 +29235,12 @@
     "thin": true
    },
    "2018": {
-    "n": 6,
-    "median": 61749,
+    "n": 7,
+    "median": 64000,
     "low": 48888,
     "high": 69000,
-    "q1": 54453,
-    "q3": 66600,
+    "q1": 56308,
+    "q3": 65800,
     "thin": false
    },
    "2019": {
@@ -29033,19 +29269,20 @@
     "q3": 59900,
     "thin": false
    },
+   "competition": {
+    "n": 3,
+    "prices": [
+     64000,
+     64499,
+     65800
+    ],
+    "thin": true
+   },
    "cs": {
     "n": 2,
     "prices": [
      67495,
      72910
-    ],
-    "thin": true
-   },
-   "competition": {
-    "n": 2,
-    "prices": [
-     64499,
-     65800
     ],
     "thin": true
    },
@@ -29059,12 +29296,12 @@
   },
   "by_model": {
    "BMW M4": {
-    "n": 16,
-    "median": 57653,
+    "n": 17,
+    "median": 58999,
     "low": 46995,
     "high": 72910,
-    "q1": 48222,
-    "q3": 67071,
+    "q1": 48444,
+    "q3": 66647,
     "thin": false,
     "label": "BMW M4",
     "by_year": {
@@ -29094,12 +29331,12 @@
       "thin": true
      },
      "2018": {
-      "n": 6,
-      "median": 61749,
+      "n": 7,
+      "median": 64000,
       "low": 48888,
       "high": 69000,
-      "q1": 54453,
-      "q3": 66600,
+      "q1": 56308,
+      "q3": 65800,
       "thin": false
      },
      "2019": {
@@ -29128,19 +29365,20 @@
       "q3": 59900,
       "thin": false
      },
+     "competition": {
+      "n": 3,
+      "prices": [
+       64000,
+       64499,
+       65800
+      ],
+      "thin": true
+     },
      "cs": {
       "n": 2,
       "prices": [
        67495,
        72910
-      ],
-      "thin": true
-     },
-     "competition": {
-      "n": 2,
-      "prices": [
-       64499,
-       65800
       ],
       "thin": true
      },
@@ -29228,7 +29466,7 @@
       "thin": false
      }
     },
-    "hidden": 244
+    "hidden": 246
    },
    "BMW M3": {
     "n": 6,
@@ -29370,17 +29608,17 @@
    "p90": 5,
    "note": "how long a car was listed before it came down - not how long it took to sell, which a listing cannot tell you",
    "biased_short": true,
-   "watching_days": 5
+   "watching_days": 6
   },
   "still_listed_days": {
-   "n": 363,
+   "n": 366,
    "median": 2,
-   "longest": 5,
+   "longest": 6,
    "censored": true,
-   "watching_days": 5
+   "watching_days": 6
   },
   "velocity": {
-   "arrived_7d": 373,
+   "arrived_7d": 376,
    "left_7d": 10,
    "window_is_the_watch": true
   },
@@ -29398,8 +29636,8 @@
   "verdict": "not enough scored cars to test it: 0 called cheap and 0 called dear, and five of each is the minimum worth drawing a conclusion from"
  },
  "archive": {
-  "folders": 44,
-  "bytes": 44997,
+  "folders": 45,
+  "bytes": 46011,
   "html_bytes": 0,
   "image_bytes": 0
  },
