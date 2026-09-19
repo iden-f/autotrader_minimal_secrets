@@ -33,12 +33,12 @@
    },
    "2026-09-19": {
     "drawing": 0.0,
-    "exempt": 2.0,
+    "exempt": 3.0,
     "unknown": 0.0
    }
   },
   "month": "2026-09",
-  "runs": 58
+  "runs": 59
  },
  "channels": {
   "email": {
@@ -18686,6 +18686,50 @@
  },
  "runs": [
   {
+   "at": "2026-09-19T00:35:23+00:00",
+   "baselines": [],
+   "budget_exhausted": false,
+   "diagnostics": [],
+   "disabled_channels": [],
+   "dry_run": false,
+   "duration_s": 0.0,
+   "empty_parses": [],
+   "errors": [],
+   "filtered_out": 0,
+   "first_run": false,
+   "hidden_events": {},
+   "invariants": [],
+   "listings_seen": 0,
+   "minutes": 1.0,
+   "minutes_label": "exempt",
+   "missed_by": 0,
+   "new": 0,
+   "notified": [],
+   "ok": true,
+   "photos": {},
+   "price_drops": 0,
+   "price_rises": 0,
+   "priced": 0,
+   "qualified": 0,
+   "quiet": false,
+   "relisted": 0,
+   "removed": 0,
+   "requests_made": 0,
+   "searches_failed": 0,
+   "searches_run": 0,
+   "shape_drift": [],
+   "shut_out": [],
+   "skipped": true,
+   "strategies": {},
+   "trigger": "schedule",
+   "unpriced": 0,
+   "validation_ok": true,
+   "warnings": [
+    "the last successful check was 19 minutes ago and the schedule asks for one every 120 - skipping this one rather than checking the site twice for the same answer."
+   ],
+   "your_call": 0
+  },
+  {
    "at": "2026-09-19T00:16:31+00:00",
    "baselines": [],
    "budget_exhausted": false,
@@ -22081,105 +22125,6 @@
    "validation_ok": true,
    "warnings": [],
    "your_call": 0
-  },
-  {
-   "at": "2026-09-13T05:45:38+00:00",
-   "baselines": [],
-   "budget_exhausted": false,
-   "diagnostics": [],
-   "disabled_channels": [],
-   "dry_run": false,
-   "duration_s": 56.6,
-   "empty_parses": [],
-   "errors": [],
-   "filtered_out": 55,
-   "first_run": false,
-   "hidden_events": {},
-   "invariants": [],
-   "listings_seen": 81,
-   "missed_by": 0,
-   "new": 0,
-   "notified": [],
-   "ok": true,
-   "photos": {
-    "bytes": 454810,
-    "failed": 0,
-    "fetched": 24,
-    "kept": 24,
-    "pruned": 0,
-    "samples": [
-     {
-      "bytes": 23140,
-      "h": 360,
-      "status": 200,
-      "type": "image/webp",
-      "url": "https://prod.pictures.autoscout24.net/listing-images/03b47c25-ee9f-4c06-942b-7c2c097a26ae_52a1a9c7-03f1-407b-8b1e-ae69ab",
-      "w": 480
-     },
-     {
-      "bytes": 14516,
-      "h": 263,
-      "status": 200,
-      "type": "image/webp",
-      "url": "https://prod.pictures.autoscout24.net/listing-images/0d25fa38-6268-4745-9877-8913890077ee_48ceae84-d5c5-4c57-b876-81e1bb",
-      "w": 480
-     },
-     {
-      "bytes": 8374,
-      "h": 320,
-      "status": 200,
-      "type": "image/webp",
-      "url": "https://prod.pictures.autoscout24.net/listing-images/0d366980-3df9-4db7-bb63-a21cf832d4fa_4d3ed056-6aa6-420b-9ed0-3ce0e6",
-      "w": 480
-     },
-     {
-      "bytes": 22594,
-      "h": 360,
-      "status": 200,
-      "type": "image/webp",
-      "url": "https://prod.pictures.autoscout24.net/listing-images/126cca4a-9df1-4d06-a592-8edd4fe86151_065fc1b8-c34a-4c3d-8569-d26816",
-      "w": 480
-     },
-     {
-      "bytes": 26180,
-      "h": 359,
-      "status": 200,
-      "type": "image/webp",
-      "url": "https://prod.pictures.autoscout24.net/listing-images/23a95a08-4472-4fb9-ab02-321917710f0c_5b47fbe3-b3be-4cf4-a83a-e947ae",
-      "w": 480
-     },
-     {
-      "bytes": 13760,
-      "h": 360,
-      "status": 200,
-      "type": "image/webp",
-      "url": "https://prod.pictures.autoscout24.net/listing-images/29729a93-570e-4b0e-8450-42fbee57d52d_96c49034-78fa-4d60-b230-d8a4b4",
-      "w": 480
-     }
-    ]
-   },
-   "price_drops": 0,
-   "price_rises": 0,
-   "priced": 0,
-   "qualified": 0,
-   "quiet": false,
-   "relisted": 0,
-   "removed": 0,
-   "requests_made": 36,
-   "searches_failed": 0,
-   "searches_run": 3,
-   "shape_drift": [],
-   "shut_out": [],
-   "skipped": false,
-   "strategies": {
-    "bmw-m3-2015-2020-f80-7e1845": "embedded_json",
-    "bmw-m4-up-to-2020-f82-fc136e": "embedded_json",
-    "bmw-x3-m-up-to-2020-f97-7d9aaf": "embedded_json"
-   },
-   "unpriced": 0,
-   "validation_ok": true,
-   "warnings": [],
-   "your_call": 0
   }
  ],
  "schedule": {
@@ -22294,7 +22239,7 @@
    }
   }
  },
- "updated_at": "2026-09-19T00:16:31+00:00",
+ "updated_at": "2026-09-19T00:35:23+00:00",
  "version": 2,
  "watch_started": "2026-09-09T20:55:29+00:00"
 }
